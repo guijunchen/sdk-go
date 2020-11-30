@@ -5,9 +5,12 @@
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker-go/common/crypto"
+	"chainmaker.org/chainmaker-go/common/crypto/asym"
 	"chainmaker.org/chainmaker-go/common/log"
 	"fmt"
 	"go.uber.org/zap"
+	"io/ioutil"
 	"time"
 )
 
@@ -27,6 +30,10 @@ type Config struct {
 	caPaths             []string
 	userKeyFilePath     string
 	userCrtFilePath     string
+	tlsHostName         string
+	orgId               string
+	chainId             string
+	privateKey          crypto.PrivateKey
 }
 
 type Option func(*Config)
@@ -76,6 +83,27 @@ func WithUserCrtFilePath(userCrtFilePath string) Option {
 	}
 }
 
+// 添加TLS HostName
+func WithTLSHostName(tlsHostName string) Option {
+	return func(config *Config) {
+		config.tlsHostName = tlsHostName
+	}
+}
+
+// 添加OrgId
+func WithOrgId(orgId string) Option {
+	return func(config *Config) {
+		config.orgId = orgId
+	}
+}
+
+// 添加ChainId
+func WithChainId(chainId string) Option {
+	return func(config *Config) {
+		config.chainId = chainId
+	}
+}
+
 // 生成SDK配置并校验合法性
 func generateConfig(opts ...Option) (*Config, error) {
 	config := &Config{}
@@ -120,11 +148,37 @@ func checkConfig(config *Config) error {
 		if config.userCrtFilePath == "" {
 			return fmt.Errorf("useTLS is open, should set user crt file path")
 		}
+
+		// 如果开启了TLS认证，需配置TLS HostName
+		if config.tlsHostName == "" {
+			return fmt.Errorf("useTLS is open, should set tls hostname")
+		}
 	}
 
 	// 用户私钥不可为空
 	if config.userKeyFilePath == "" {
 		return fmt.Errorf("user key file path cannot be empty")
+	}
+
+	// 从私钥文件读取用户私钥，转换为privateKey对象
+	var err error
+	skBytes, err := ioutil.ReadFile(config.userKeyFilePath)
+	if err != nil {
+		return fmt.Errorf("read user key file failed, %s", err)
+	}
+	config.privateKey, err = asym.PrivateKeyFromPEM(skBytes, nil)
+	if err != nil {
+		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
+	}
+
+	// OrgId不可为空
+	if config.orgId == "" {
+		return fmt.Errorf("orgId cannot be empty")
+	}
+
+	// ChainId不可为空
+	if config.chainId == "" {
+		return fmt.Errorf("chainId cannot be empty")
 	}
 
 	return nil
