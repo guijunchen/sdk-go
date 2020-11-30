@@ -11,7 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion7
+const _ = grpc.SupportPackageIsVersion6
 
 // RpcNodeClient is the client API for RpcNode service.
 //
@@ -94,25 +94,18 @@ type RpcNodeServer interface {
 type UnimplementedRpcNodeServer struct {
 }
 
-func (UnimplementedRpcNodeServer) SendRequest(context.Context, *TxRequest) (*TxResponse, error) {
+func (*UnimplementedRpcNodeServer) SendRequest(context.Context, *TxRequest) (*TxResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendRequest not implemented")
 }
-func (UnimplementedRpcNodeServer) Subscribe(*TxRequest, RpcNode_SubscribeServer) error {
+func (*UnimplementedRpcNodeServer) Subscribe(*TxRequest, RpcNode_SubscribeServer) error {
 	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
 }
-func (UnimplementedRpcNodeServer) UpdateDebugConfig(context.Context, *DebugConfigRequest) (*DebugConfigResponse, error) {
+func (*UnimplementedRpcNodeServer) UpdateDebugConfig(context.Context, *DebugConfigRequest) (*DebugConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateDebugConfig not implemented")
 }
-func (UnimplementedRpcNodeServer) mustEmbedUnimplementedRpcNodeServer() {}
+func (*UnimplementedRpcNodeServer) mustEmbedUnimplementedRpcNodeServer() {}
 
-// UnsafeRpcNodeServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to RpcNodeServer will
-// result in compilation errors.
-type UnsafeRpcNodeServer interface {
-	mustEmbedUnimplementedRpcNodeServer()
-}
-
-func RegisterRpcNodeServer(s grpc.ServiceRegistrar, srv RpcNodeServer) {
+func RegisterRpcNodeServer(s *grpc.Server, srv RpcNodeServer) {
 	s.RegisterService(&_RpcNode_serviceDesc, srv)
 }
 
