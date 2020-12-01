@@ -7,6 +7,8 @@ package chainmaker_sdk_go
 import (
 	"chainmaker.org/chainmaker-go/common/crypto"
 	"chainmaker.org/chainmaker-go/common/crypto/asym"
+	"chainmaker.org/chainmaker-go/common/crypto/hash"
+	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
 	"chainmaker.org/chainmaker-go/common/log"
 	"fmt"
 	"go.uber.org/zap"
@@ -15,7 +17,7 @@ import (
 )
 
 const (
-	// SDK单ChainMaker节点最大连接数
+	// 单ChainMaker节点最大连接数
 	MaxConnCnt      = 5
 	// 查询交易超时时间
 	GetTxTimeout    = 10 * time.Second
@@ -24,16 +26,27 @@ const (
 )
 
 type Config struct {
+	// 1)以下字段为SDK初始化参数
+	// 1.1)必填项
 	addrsWithConnCnt    map[string](int)
+	userKeyFilePath     string
+	userCrtFilePath     string
+	orgId               string
+	chainId             string
+
+	// 1.2)选填项
+	// logger若不设置，将采用默认日志文件输出日志，建议设置，以便采用集成系统的统一日志输出
 	logger              Logger
 	useTLS              bool
 	caPaths             []string
-	userKeyFilePath     string
-	userCrtFilePath     string
 	tlsHostName         string
-	orgId               string
-	chainId             string
+	hashType            string
+
+	// 2)以下字段为经过处理后的参数
 	privateKey          crypto.PrivateKey
+	userCrtPEM          []byte
+	userCrt             *bcx509.Certificate
+	hasher              hash.Hash
 }
 
 type Option func(*Config)
@@ -104,6 +117,13 @@ func WithChainId(chainId string) Option {
 	}
 }
 
+// 添加hashType
+func WithHashType(hashType string) Option {
+	return func(config *Config) {
+		config.hashType = hashType
+	}
+}
+
 // 生成SDK配置并校验合法性
 func generateConfig(opts ...Option) (*Config, error) {
 	config := &Config{}
@@ -111,7 +131,13 @@ func generateConfig(opts ...Option) (*Config, error) {
 		opt(config)
 	}
 
+	// 校验config参数合法性
 	if err := checkConfig(config); err != nil {
+		return nil, err
+	}
+
+	// 进一步处理config参数
+	if err := dealConfig(config); err != nil {
 		return nil, err
 	}
 
@@ -120,6 +146,7 @@ func generateConfig(opts ...Option) (*Config, error) {
 
 // SDK配置校验
 func checkConfig(config *Config) error {
+
 	// 如果logger未指定，使用默认zap logger
 	if config.logger == nil {
 		config.logger = getDefaultLogger()
@@ -144,11 +171,6 @@ func checkConfig(config *Config) error {
 			return fmt.Errorf("useTLS is open, should set caPath")
 		}
 
-		// 如果开启了TLS认证，需配置用户证书
-		if config.userCrtFilePath == "" {
-			return fmt.Errorf("useTLS is open, should set user crt file path")
-		}
-
 		// 如果开启了TLS认证，需配置TLS HostName
 		if config.tlsHostName == "" {
 			return fmt.Errorf("useTLS is open, should set tls hostname")
@@ -160,15 +182,9 @@ func checkConfig(config *Config) error {
 		return fmt.Errorf("user key file path cannot be empty")
 	}
 
-	// 从私钥文件读取用户私钥，转换为privateKey对象
-	var err error
-	skBytes, err := ioutil.ReadFile(config.userKeyFilePath)
-	if err != nil {
-		return fmt.Errorf("read user key file failed, %s", err)
-	}
-	config.privateKey, err = asym.PrivateKeyFromPEM(skBytes, nil)
-	if err != nil {
-		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
+	// 用户证书不可为空
+	if config.userCrtFilePath == "" {
+		return fmt.Errorf("user crt file path cannot be empty")
 	}
 
 	// OrgId不可为空
@@ -179,6 +195,46 @@ func checkConfig(config *Config) error {
 	// ChainId不可为空
 	if config.chainId == "" {
 		return fmt.Errorf("chainId cannot be empty")
+	}
+
+	// hashType若为空，默认使用SM3
+	if config.hashType == "" {
+		config.hashType = crypto.CRYPTO_ALGO_SM3
+	}
+	return nil
+}
+
+func dealConfig(config *Config) error {
+	var err error
+
+	// 读取用户证书
+	config.userCrtPEM, err = ioutil.ReadFile(config.userCrtFilePath)
+	if err != nil {
+		return fmt.Errorf("read user crt file failed, %s", err.Error())
+	}
+
+	// 从私钥文件读取用户私钥，转换为privateKey对象
+	skBytes, err := ioutil.ReadFile(config.userKeyFilePath)
+	if err != nil {
+		return fmt.Errorf("read user key file failed, %s", err)
+	}
+	config.privateKey, err = asym.PrivateKeyFromPEM(skBytes, nil)
+	if err != nil {
+		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
+	}
+
+	// 根据hashType，构造hasher对象
+	hashType, ok := crypto.HashAlgoMap[config.hashType]
+	if !ok {
+		return fmt.Errorf("invalid hashType, only support: [SM3|SHA256|SHA3_256]")
+	}
+	config.hasher = hash.Hash{
+		HashType: hashType,
+	}
+
+	// 将证书转换为证书对象
+	if config.userCrt, err = ParseCert(config.userCrtPEM); err != nil {
+		return fmt.Errorf("ParseCert failed, %s", err.Error())
 	}
 
 	return nil
