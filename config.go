@@ -7,7 +7,6 @@ package chainmaker_sdk_go
 import (
 	"chainmaker.org/chainmaker-go/common/crypto"
 	"chainmaker.org/chainmaker-go/common/crypto/asym"
-	"chainmaker.org/chainmaker-go/common/crypto/hash"
 	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
 	"chainmaker.org/chainmaker-go/common/log"
 	"fmt"
@@ -40,13 +39,11 @@ type Config struct {
 	useTLS              bool
 	caPaths             []string
 	tlsHostName         string
-	hashType            string
 
 	// 2)以下字段为经过处理后的参数
 	privateKey          crypto.PrivateKey
 	userCrtPEM          []byte
 	userCrt             *bcx509.Certificate
-	hasher              hash.Hash
 }
 
 type Option func(*Config)
@@ -114,13 +111,6 @@ func WithOrgId(orgId string) Option {
 func WithChainId(chainId string) Option {
 	return func(config *Config) {
 		config.chainId = chainId
-	}
-}
-
-// 添加hashType
-func WithHashType(hashType string) Option {
-	return func(config *Config) {
-		config.hashType = hashType
 	}
 }
 
@@ -197,10 +187,6 @@ func checkConfig(config *Config) error {
 		return fmt.Errorf("chainId cannot be empty")
 	}
 
-	// hashType若为空，默认使用SM3
-	if config.hashType == "" {
-		config.hashType = crypto.CRYPTO_ALGO_SM3
-	}
 	return nil
 }
 
@@ -221,15 +207,6 @@ func dealConfig(config *Config) error {
 	config.privateKey, err = asym.PrivateKeyFromPEM(skBytes, nil)
 	if err != nil {
 		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
-	}
-
-	// 根据hashType，构造hasher对象
-	hashType, ok := crypto.HashAlgoMap[config.hashType]
-	if !ok {
-		return fmt.Errorf("invalid hashType, only support: [SM3|SHA256|SHA3_256]")
-	}
-	config.hasher = hash.Hash{
-		HashType: hashType,
 	}
 
 	// 将证书转换为证书对象
