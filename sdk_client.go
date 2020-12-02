@@ -64,6 +64,9 @@ func (cc ChainClient) Stop() error {
 }
 
 func (cc ChainClient) proposalRequest(txType pb.TxType, txId string, payloadBytes []byte) (*pb.TxResponse, error) {
+	if txId == "" {
+		txId = GetRandTxId()
+	}
 
 	timeout := SendTxTimeout
 	if strings.HasPrefix(txType.String(), "QUERY") {
@@ -125,6 +128,8 @@ func (cc ChainClient) proposalRequest(txType pb.TxType, txId string, payloadByte
 
 		return nil, fmt.Errorf("client.call failed, %+v", err)
 	}
+
+	cc.logger.Debugf("[SDK] proposalRequest resp: %+v", resp)
 
 	return resp, nil
 }

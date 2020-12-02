@@ -14,7 +14,7 @@ func (cc ChainClient) ContractCreate(txId string, multiSignPayload []byte) (*pb.
 		txId = GetRandTxId()
 	}
 
-	cc.logger.Infof("[SDK] begin to CREATE contract, [txId:%s]/[payload size:%d]",
+	cc.logger.Debugf("[SDK] begin to CREATE contract, [txId:%s]/[payload size:%d]",
 		txId, len(multiSignPayload))
 
 	resp, err := cc.proposalRequest(pb.TxType_CREATE_USER_CONTRACT, txId, multiSignPayload)
@@ -36,14 +36,14 @@ func (cc ChainClient) ContractInvoke(contractName, method, txId string, params m
 		txId = GetRandTxId()
 	}
 
-	cc.logger.Infof("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
+	cc.logger.Debugf("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, params)
 
 	pairs := paramsMap2KVPairs(params)
 
 	payloadBytes, err := constructTransactPayload(contractName, method, pairs)
 	if err != nil {
-		return nil, fmt.Errorf("marshal transact payload failed, %s", err.Error())
+		return nil, fmt.Errorf("construct transact payload failed, %s", err.Error())
 	}
 
 	resp, err := cc.proposalRequest(pb.TxType_INVOKE_USER_CONTRACT, txId, payloadBytes)
@@ -66,19 +66,19 @@ func (cc ChainClient) ContractQuery(contractName, method, txId string, params ma
 		txId = GetRandTxId()
 	}
 
-	cc.logger.Infof("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
+	cc.logger.Debugf("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, params)
 
 	pairs := paramsMap2KVPairs(params)
 
 	payloadBytes, err := constructQueryPayload(contractName, method, pairs)
 	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
+		return nil, fmt.Errorf("construct query payload failed, %s", err.Error())
 	}
 
 	resp, err := cc.proposalRequest(pb.TxType_QUERY_USER_CONTRACT, txId, payloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_USER_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf("send %s failed, %s", pb.TxType_QUERY_USER_CONTRACT.String(), err.Error())
 	}
 
 	return resp, nil
