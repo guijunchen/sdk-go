@@ -7,7 +7,6 @@ package chainmaker_sdk_go
 import (
 	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"fmt"
-	"github.com/golang/protobuf/proto"
 )
 
 func (cc ChainClient) ContractCreate(txId string, multiSignPayload []byte) (*pb.TxResponse, error) {
@@ -42,13 +41,7 @@ func (cc ChainClient) ContractInvoke(contractName, method, txId string, params m
 
 	pairs := paramsMap2KVPairs(params)
 
-	payload := &pb.TransactPayload{
-		ContractName: contractName,
-		Method:       method,
-		Parameters:   pairs,
-	}
-
-	payloadBytes, err := proto.Marshal(payload)
+	payloadBytes, err := constructTransactPayload(contractName, method, pairs)
 	if err != nil {
 		return nil, fmt.Errorf("marshal transact payload failed, %s", err.Error())
 	}
@@ -78,13 +71,7 @@ func (cc ChainClient) ContractQuery(contractName, method, txId string, params ma
 
 	pairs := paramsMap2KVPairs(params)
 
-	payload := &pb.QueryPayload{
-		ContractName: contractName,
-		Method:       method,
-		Parameters:   pairs,
-	}
-
-	payloadBytes, err := proto.Marshal(payload)
+	payloadBytes, err := constructQueryPayload(contractName, method, pairs)
 	if err != nil {
 		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
 	}
