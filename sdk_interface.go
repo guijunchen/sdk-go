@@ -13,6 +13,9 @@ type SDKInterface interface {
 	// 合约创建
 	ContractCreate(txId string, multiSignPayload []byte) (*pb.TxResponse, error)
 
+	// 合约升级
+	ContractUpgrade(txId string, multiSignPayload []byte) (*pb.TxResponse, error)
+
 	// 合约调用
 	ContractInvoke(contractName, method, txId string, params map[string]string) (*pb.TxResponse, error)
 

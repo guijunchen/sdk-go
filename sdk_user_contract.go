@@ -5,8 +5,9 @@
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"fmt"
+
+	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 )
 
 func (cc ChainClient) ContractCreate(txId string, multiSignPayload []byte) (*pb.TxResponse, error) {
@@ -23,9 +24,31 @@ func (cc ChainClient) ContractCreate(txId string, multiSignPayload []byte) (*pb.
 	}
 
 	resp.ContractResult = &pb.ContractResult{
-		Code: pb.ContractResultCode_OK,
+		Code:    pb.ContractResultCode_OK,
 		Message: pb.ContractResultCode_OK.String(),
-		Result: []byte(txId),
+		Result:  []byte(txId),
+	}
+
+	return resp, nil
+}
+
+func (cc ChainClient) ContractUpgrade(txId string, multiSignPayload []byte) (*pb.TxResponse, error) {
+	if txId == "" {
+		txId = GetRandTxId()
+	}
+
+	cc.logger.Debugf("[SDK] begin to UPGRADE contract, [txId:%s]/[payload size:%d]",
+		txId, len(multiSignPayload))
+
+	resp, err := cc.proposalRequest(pb.TxType_UPGRADE_USER_CONTRACT, txId, multiSignPayload)
+	if err != nil {
+		return nil, fmt.Errorf("%s failed, %s", pb.TxType_UPGRADE_USER_CONTRACT.String(), err.Error())
+	}
+
+	resp.ContractResult = &pb.ContractResult{
+		Code:    pb.ContractResultCode_OK,
+		Message: pb.ContractResultCode_OK.String(),
+		Result:  []byte(txId),
 	}
 
 	return resp, nil
@@ -51,11 +74,10 @@ func (cc ChainClient) ContractInvoke(contractName, method, txId string, params m
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_INVOKE_USER_CONTRACT.String(), err.Error())
 	}
 
-
 	resp.ContractResult = &pb.ContractResult{
-		Code: pb.ContractResultCode_OK,
+		Code:    pb.ContractResultCode_OK,
 		Message: pb.ContractResultCode_OK.String(),
-		Result: []byte(txId),
+		Result:  []byte(txId),
 	}
 
 	return resp, nil

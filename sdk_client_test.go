@@ -25,7 +25,8 @@ const (
 	nodeAddr = "127.0.0.1:12301"
 	connCnt  = 5
 
-	multiSignedPayloadFile = "./testdata/counter-go-demo/collect-signed-all.pb"
+	multiSignedPayloadFile        = "./testdata/counter-go-demo/collect-signed-all.pb"
+	upgradeMultiSignedPayloadFile = "./testdata/counter-go-demo/upgrade-collect-signed-all.pb"
 )
 
 var (
@@ -66,6 +67,8 @@ func TestUserContractCounterGo(t *testing.T) {
 	time.Sleep(5 * time.Second)
 
 	testUserContractCounterGoQuery(t, client)
+
+	testUserContractCounterGoUpgrade(t, client)
 }
 
 func testUserContractCounterGoCreate(t *testing.T, client *ChainClient) {
@@ -76,6 +79,16 @@ func testUserContractCounterGoCreate(t *testing.T, client *ChainClient) {
 	require.Nil(t, err)
 
 	fmt.Printf("CREATE counter-go contract resp: %+v\n", resp)
+}
+
+func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient) {
+	file, err := ioutil.ReadFile(upgradeMultiSignedPayloadFile)
+	require.Nil(t, err)
+
+	resp, err := client.ContractUpgrade("", file)
+	require.Nil(t, err)
+
+	fmt.Printf("UPGRADE counter-go contract resp: %+v\n", resp)
 }
 
 func testUserContractCounterGoInvoke(t *testing.T, client *ChainClient) {
