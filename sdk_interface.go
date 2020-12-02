@@ -9,8 +9,14 @@ import "chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 type SDKInterface interface {
 	Stop() error
 
+	// 合约创建
+	ContractCreate(txId string, multiSignPayload []byte) (*pb.TxResponse, error)
+
 	// 合约调用
 	ContractInvoke(contractName, method, txId string, params map[string]string) (*pb.TxResponse, error)
+
+	// 合约查询
+	ContractQuery(contractName, method, txId string, params map[string]string) (*pb.TxResponse, error)
 
 	SendTransaction(tx *pb.Transaction) (*pb.TxResponse, error)
 

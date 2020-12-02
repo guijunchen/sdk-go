@@ -5,22 +5,23 @@
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"fmt"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
 	"testing"
 )
 
 const (
-	chainId         = "chain1"
-	orgId           = "wx-org1.chainmaker.org"
-	contractName    = "contract1"
-	runtimeType     = pb.RuntimeType_WASMER_RUST
-	certPathPrefix  = "/home/jason/Work/ChainMaker/chainmaker-go/config"
-	tlsHostName     = "chainmaker.org"
+	chainId                 = "chain1"
+	orgId                   = "wx-org1.chainmaker.org"
+	contractName            = "counter-go-1"
+	certPathPrefix          = "./testdata"
+	tlsHostName             = "chainmaker.org"
 
-	nodeAddr        = "127.0.0.1:12301"
-	connCnt         = 5
+	nodeAddr                = "127.0.0.1:12301"
+	connCnt                 = 5
+
+	multiSignedPayloadFile  = "./testdata/counter-go-demo/collect-signed-all.pb"
 )
 
 var (
@@ -50,14 +51,39 @@ func createClient() (*ChainClient, error) {
 	return client, nil
 }
 
-func TestChainClient_ContractInvoke(t *testing.T) {
+func TestContractCreate(t *testing.T) {
 	client, err := createClient()
 	require.Nil(t, err)
 
-	paramsMap := make(map[string]string)
-	paramsMap["aaa"] = "A1"
-	paramsMap["bbb"] = "B1"
+	file, err := ioutil.ReadFile(multiSignedPayloadFile)
+	require.Nil(t, err)
 
-	client.ContractInvoke(contractName, "save", "", paramsMap)
+	resp, err := client.ContractCreate("", file)
+	require.Nil(t, err)
+
+	fmt.Printf("resp: %+v\n", resp)
 }
 
+func TestContractInvoke(t *testing.T) {
+	client, err := createClient()
+	require.Nil(t, err)
+
+	//paramsMap := make(map[string]string)
+	//paramsMap["aaa"] = "A1"
+	//paramsMap["bbb"] = "B1"
+
+	resp, err := client.ContractInvoke(contractName, "increase", "", nil)
+	require.Nil(t, err)
+
+	fmt.Printf("resp: %+v\n", resp)
+}
+
+func TestContractQuery(t *testing.T) {
+	client, err := createClient()
+	require.Nil(t, err)
+
+	resp, err := client.ContractQuery(contractName, "query", "", nil)
+	require.Nil(t, err)
+
+	fmt.Printf("resp: %+v\n", resp)
+}
