@@ -75,6 +75,10 @@ func SignTx(privateKey crypto.PrivateKey, cert *bcx509.Certificate, msg []byte) 
 	return privateKey.SignWithOpts(msg, &opts)
 }
 
+func signPayload(privateKey crypto.PrivateKey, cert *bcx509.Certificate, msg []byte) ([]byte, error) {
+	return SignTx(privateKey, cert, msg)
+}
+
 func paramsMap2KVPairs(params map[string]string) (kvPairs []*pb.KeyValuePair) {
 	for key, val := range params {
 		kvPair := &pb.KeyValuePair{
@@ -118,6 +122,23 @@ func constructTransactPayload(contractName, method string, pairs []*pb.KeyValueP
 	return payloadBytes, nil
 }
 
+func constructConfigUpdatePayload(chainId, contractName, method string, pairs []*pb.KeyValuePair, sequence int) ([]byte, error) {
+	payload := &pb.ConfigUpdatePayload{
+		ChainId:      chainId,
+		ContractName: contractName,
+		Method:       method,
+		Parameters:   pairs,
+		Sequence:     uint64(sequence),
+	}
+
+	payloadBytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("ConfigUpdatePayload marshal failed, %s", err)
+	}
+
+	return payloadBytes, nil
+}
+
 func checkProposalRequestResp(resp *pb.TxResponse, needContractResult bool) error {
 	if resp.Code != pb.TxStatusCode_SUCCESS {
 		return errors.New(resp.Message)
@@ -134,4 +155,64 @@ func checkProposalRequestResp(resp *pb.TxResponse, needContractResult bool) erro
 	}
 
 	return nil
+}
+
+func mergeConfigUpdateSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
+	if len(signedPayloadBytes) == 0 {
+		return nil, fmt.Errorf("input params is empty")
+	}
+
+	allPayload := &pb.ConfigUpdatePayload{}
+	if err := proto.Unmarshal(signedPayloadBytes[0], allPayload); err != nil {
+		return nil, fmt.Errorf("unmarshal No.0 signed payload failed, %s", err)
+	}
+
+	if len(allPayload.Endorsement) != 1 || allPayload.Endorsement[0] == nil {
+		return nil, fmt.Errorf("No.0 signed payload endorsement is empty")
+	}
+
+	allPayloadCopy := proto.Clone(allPayload)
+	allPayloadCopy.(*pb.ConfigUpdatePayload).Endorsement = nil
+
+	for i := 1; i < len(signedPayloadBytes); i++ {
+
+		payload := &pb.ConfigUpdatePayload{}
+		if err := proto.Unmarshal(signedPayloadBytes[i], payload); err != nil {
+			return nil, fmt.Errorf("unmarshal No.%d signed payload failed, %s", i, err)
+		}
+
+		if len(payload.Endorsement) != 1 || payload.Endorsement[0] == nil {
+			return nil, fmt.Errorf("No.%d signed payload endorsement is empty", i)
+		}
+
+		payloadCopy := proto.Clone(payload)
+		payloadCopy.(*pb.ConfigUpdatePayload).Endorsement = nil
+
+		if !checkPayloads(allPayloadCopy, payloadCopy) {
+			return nil, fmt.Errorf("No.%d signed payload not all the same", i)
+		}
+
+		allPayload.Endorsement = append(allPayload.Endorsement, payload.Endorsement[0])
+	}
+
+	mergeSignedPayloadBytes, err := proto.Marshal(allPayload)
+	if err != nil {
+		return nil, fmt.Errorf("marshal merge signed payload failed, %s", err)
+	}
+
+	return mergeSignedPayloadBytes, nil
+}
+
+func checkPayloads(a, b proto.Message) bool {
+	aBytes, err := proto.Marshal(a)
+	if err != nil {
+		return false
+	}
+
+	bBytes, err := proto.Marshal(b)
+	if err != nil {
+		return false
+	}
+
+	return bytes.Equal(aBytes, bBytes)
 }

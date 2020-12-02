@@ -33,6 +33,9 @@ var (
 	caPaths     = []string{certPathPrefix + fmt.Sprintf("/crypto-config/%s/ca", orgId)}
 	userKeyPath = certPathPrefix + fmt.Sprintf("/crypto-config/%s/user/client1/client1.tls.key", orgId)
 	userCrtPath = certPathPrefix + fmt.Sprintf("/crypto-config/%s/user/client1/client1.tls.crt", orgId)
+
+	adminKeyPath = certPathPrefix + "/crypto-config/%s/user/admin%d/admin%d.tls.key"
+	adminCrtPath = certPathPrefix + "/crypto-config/%s/user/admin%d/admin%d.tls.crt"
 )
 
 func createClient() (*ChainClient, error) {
@@ -56,6 +59,27 @@ func createClient() (*ChainClient, error) {
 	return client, nil
 }
 
+func createAdmin(id int) (*ChainClient, error) {
+	admin, err := New(
+		// 必填字段
+		AddNodeAddrWithConnCnt(nodeAddr, connCnt),
+		WithLogger(getDefaultLogger()),
+		WithUserKeyFilePath(fmt.Sprintf(userKeyPath, orgId, id, id)),
+		WithUserCrtFilePath(fmt.Sprintf(userCrtPath, orgId, id, id)),
+		WithOrgId(orgId),
+		WithChainId(chainId),
+		// 选填字段
+		WithUseTLS(true),
+		WithCAPaths(caPaths),
+		WithTLSHostName(tlsHostName),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return admin, nil
+}
+
 func TestUserContractCounterGo(t *testing.T) {
 	client, err := createClient()
 	require.Nil(t, err)
@@ -71,6 +95,26 @@ func TestUserContractCounterGo(t *testing.T) {
 	testUserContractCounterGoUpgrade(t, client)
 }
 
+func TestChainConfig(t *testing.T) {
+	client, err := createClient()
+	require.Nil(t, err)
+
+	admin1, err := createAdmin(1)
+	require.Nil(t, err)
+	admin2, err := createAdmin(2)
+	require.Nil(t, err)
+	admin3, err := createAdmin(3)
+	require.Nil(t, err)
+	admin4, err := createAdmin(4)
+	require.Nil(t, err)
+
+	testGetChainConfig(t, client)
+	testGetChainConfigByBlockHeight(t, client)
+	testGetChainConfigSeq(t, client)
+	testChainConfigCoreUpdate(t, client, admin1, admin2, admin3, admin4, 30, 40)
+}
+
+// [用户合约]
 func testUserContractCounterGoCreate(t *testing.T, client *ChainClient) {
 	file, err := ioutil.ReadFile(multiSignedPayloadFile)
 	require.Nil(t, err)
@@ -103,6 +147,7 @@ func testUserContractCounterGoQuery(t *testing.T, client *ChainClient) {
 	fmt.Printf("QUERY counter-go contract resp: %+v\n", resp)
 }
 
+// [系统合约]
 func TestSystemContractGo(t *testing.T) {
 	client, err := createClient()
 	require.Nil(t, err)
@@ -178,4 +223,57 @@ func testSystemContractGoGetNodeChainList(t *testing.T, client *ChainClient) *pb
 	chainList, err := client.GetNodeChainList()
 	require.Nil(t, err)
 	return chainList
+}
+
+// [链配置]
+func testGetChainConfig(t *testing.T, client *ChainClient) {
+	resp, err := client.ChainConfigGet()
+	require.Nil(t, err)
+	fmt.Printf("GetChainConfig resp: %+v\n", resp)
+}
+
+func testGetChainConfigByBlockHeight(t *testing.T, client *ChainClient) {
+	resp, err := client.ChainConfigGetByBlockHeight(1)
+	require.Nil(t, err)
+	fmt.Printf("GetChainConfig resp: %+v\n", resp)
+}
+
+func testGetChainConfigSeq(t *testing.T, client *ChainClient) {
+	seq, err := client.ChainConfigGetSeq()
+	require.Nil(t, err)
+	fmt.Printf("chainconfig seq: %d\n", seq)
+}
+
+func testChainConfigCoreUpdate(t *testing.T, client,
+	admin1, admin2, admin3, admin4 *ChainClient,
+	txSchedulerTimeout, txSchedulerValidateTimeout int) {
+
+	// 配置块更新payload生成
+	payloadBytes, err := client.ChainConfigCreateCoreUpdatePayload(
+		txSchedulerTimeout, txSchedulerValidateTimeout)
+	require.Nil(t, err)
+
+	// 各组织Admin权限用户签名
+	signedPayloadBytes1, err := admin1.ChainConfigPayloadCollectSign(payloadBytes)
+	require.Nil(t, err)
+
+	signedPayloadBytes2, err := admin2.ChainConfigPayloadCollectSign(payloadBytes)
+	require.Nil(t, err)
+
+	signedPayloadBytes3, err := admin3.ChainConfigPayloadCollectSign(payloadBytes)
+	require.Nil(t, err)
+
+	signedPayloadBytes4, err := admin4.ChainConfigPayloadCollectSign(payloadBytes)
+	require.Nil(t, err)
+
+	// 收集并合并签名
+	mergeSignedPayloadBytes, err := client.ChainConfigPayloadMergeSign([][]byte{signedPayloadBytes1,
+		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
+	require.Nil(t, err)
+
+	// 发送配置更新请求
+	resp, err := client.SendChainConfigUpdateRequest(mergeSignedPayloadBytes)
+	require.Nil(t, err)
+
+	fmt.Printf("chain config [CoreUpdate] resp: %+v", resp)
 }
