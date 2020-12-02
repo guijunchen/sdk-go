@@ -219,8 +219,8 @@ func dealConfig(config *Config) error {
 
 func getDefaultLogger() *zap.SugaredLogger {
 	config := log.LogConfig{
-		Module:   "[DEFAULT]",
-		LogPath:  "./default.log",
+		Module:   "[SDK]",
+		LogPath:  "./sdk.log",
 		LogLevel: log.LEVEL_DEBUG,
 		MaxAge: 30,
 		JsonFormat:   false,

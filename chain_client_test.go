@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"testing"
+	"time"
 )
 
 const (
@@ -51,39 +52,37 @@ func createClient() (*ChainClient, error) {
 	return client, nil
 }
 
-func TestContractCreate(t *testing.T) {
+func TestContractCounterGo(t *testing.T) {
 	client, err := createClient()
 	require.Nil(t, err)
 
+	testContractCounterGoCreate(t, client)
+	time.Sleep(5 * time.Second)
+
+	testContractCounterGoInvoke(t, client)
+	time.Sleep(5 * time.Second)
+
+	testContractCounterGoQuery(t, client)
+}
+
+func testContractCounterGoCreate(t *testing.T, client *ChainClient) {
 	file, err := ioutil.ReadFile(multiSignedPayloadFile)
 	require.Nil(t, err)
 
 	resp, err := client.ContractCreate("", file)
 	require.Nil(t, err)
 
-	fmt.Printf("resp: %+v\n", resp)
+	fmt.Printf("CREATE counter-go contract resp: %+v\n", resp)
 }
 
-func TestContractInvoke(t *testing.T) {
-	client, err := createClient()
-	require.Nil(t, err)
-
-	//paramsMap := make(map[string]string)
-	//paramsMap["aaa"] = "A1"
-	//paramsMap["bbb"] = "B1"
-
+func testContractCounterGoInvoke(t *testing.T, client *ChainClient) {
 	resp, err := client.ContractInvoke(contractName, "increase", "", nil)
 	require.Nil(t, err)
-
-	fmt.Printf("resp: %+v\n", resp)
+	fmt.Printf("INVOKE counter-go contract resp: %+v\n", resp)
 }
 
-func TestContractQuery(t *testing.T) {
-	client, err := createClient()
-	require.Nil(t, err)
-
+func testContractCounterGoQuery(t *testing.T, client *ChainClient) {
 	resp, err := client.ContractQuery(contractName, "query", "", nil)
 	require.Nil(t, err)
-
-	fmt.Printf("resp: %+v\n", resp)
+	fmt.Printf("QUERY counter-go contract resp: %+v\n", resp)
 }
