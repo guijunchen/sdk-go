@@ -117,3 +117,21 @@ func constructTransactPayload(contractName, method string, pairs []*pb.KeyValueP
 
 	return payloadBytes, nil
 }
+
+func checkProposalRequestResp(resp *pb.TxResponse, needContractResult bool) error {
+	if resp.Code != pb.TxStatusCode_SUCCESS {
+		return errors.New(resp.Message)
+	}
+
+	if needContractResult && resp.ContractResult == nil {
+		return fmt.Errorf("contract result is nil")
+	}
+
+	if resp.ContractResult != nil {
+		if resp.ContractResult.Code != pb.ContractResultCode_OK {
+			return errors.New(resp.ContractResult.Message)
+		}
+	}
+
+	return nil
+}
