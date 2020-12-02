@@ -158,7 +158,7 @@ func (cc ChainClient) ChainConfigCreateCoreUpdatePayload(txSchedulerTimeout, txS
 	}
 
 	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_CORE_UPDATE.String(), pairs, seq)
+		pb.ConfigFunction_CORE_UPDATE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf("construct config update payload failed, %s", err)
 	}
@@ -167,12 +167,18 @@ func (cc ChainClient) ChainConfigCreateCoreUpdatePayload(txSchedulerTimeout, txS
 }
 
 func (cc ChainClient) SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*pb.TxResponse, error) {
-	// TODO：待完善
-	//resp, err := cc.chainConfigUpdateRequest(pb.TxType_UPDATE_CHAIN_CONFIG, "", mergeSignedPayloadBytes)
-	//if err != nil {
-	//	return nil, fmt.Errorf("send %s failed, %s", pb.TxType_UPDATE_CHAIN_CONFIG.String(), err.Error())
-	//}
-	//
-	//return resp, nil
-	return nil, nil
+	txId := GetRandTxId()
+
+	resp, err := cc.proposalRequest(pb.TxType_UPDATE_CHAIN_CONFIG, txId, mergeSignedPayloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf("send %s failed, %s", pb.TxType_UPDATE_CHAIN_CONFIG.String(), err.Error())
+	}
+
+	resp.ContractResult = &pb.ContractResult{
+		Code:    pb.ContractResultCode_OK,
+		Message: pb.ContractResultCode_OK.String(),
+		Result:  []byte(txId),
+	}
+
+	return resp, nil
 }
