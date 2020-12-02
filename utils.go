@@ -87,3 +87,33 @@ func paramsMap2KVPairs(params map[string]string) (kvPairs []*pb.KeyValuePair) {
 
 	return
 }
+
+func constructQueryPayload(contractName, method string, pairs []*pb.KeyValuePair) ([]byte, error) {
+	payload := &pb.QueryPayload{
+		ContractName: contractName,
+		Method:       method,
+		Parameters:   pairs,
+	}
+
+	payloadBytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return payloadBytes, nil
+}
+
+func constructTransactPayload(contractName, method string, pairs []*pb.KeyValuePair) ([]byte, error) {
+	payload := &pb.TransactPayload{
+		ContractName: contractName,
+		Method:       method,
+		Parameters:   pairs,
+	}
+
+	payloadBytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return payloadBytes, nil
+}
