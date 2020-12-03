@@ -105,22 +105,33 @@ func TestChainConfig(t *testing.T) {
 	chainConfig = testGetChainConfig(t, client)
 	require.Equal(t, 4, len(chainConfig.Permissions))
 	require.Equal(t, true, proto.Equal(principle, chainConfig.Permissions[3].Principle))
+	permissionResourceName = "NODE_ADDR_DELETE"
+	principle = &pb.Principle{
+		Rule:     "ANY",
+		RoleList: []string{"admin"},
+	}
+	testChainConfigPermissionAdd(t, client, admin1, admin2, admin3, admin4, permissionResourceName, principle)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, 5, len(chainConfig.Permissions))
+	require.Equal(t, true, proto.Equal(principle, chainConfig.Permissions[4].Principle))
 
 	// 7) [PermissionUpdate]
+	permissionResourceName = "TEST_PREMISSION"
 	principle = &pb.Principle{
 		Rule: "ALL",
 	}
 	testChainConfigPermissionUpdate(t, client, admin1, admin2, admin3, admin4, permissionResourceName, principle)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, 4, len(chainConfig.Permissions))
+	require.Equal(t, 5, len(chainConfig.Permissions))
 	require.Equal(t, true, proto.Equal(principle, chainConfig.Permissions[3].Principle))
 
 	// 8) [PermissionDelete]
 	testChainConfigPermissionDelete(t, client, admin1, admin2, admin3, admin4, permissionResourceName)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, 3, len(chainConfig.Permissions))
+	require.Equal(t, 4, len(chainConfig.Permissions))
 
 	// 9) [ConsensusNodeAddrAdd]
 	nodeAddrOrgId := "wx-org4.chainmaker.org"
@@ -145,8 +156,7 @@ func TestChainConfig(t *testing.T) {
 
 	// 9) [ConsensusNodeAddrDelete]
 	nodeAddrOrgId = "wx-org4.chainmaker.org"
-	nodeAddresses = []string{"/ip4/127.0.0.1/tcp/1111/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"}
-	testChainConfigConsensusNodeAddrDelete(t, client, admin1, admin2, admin3, admin4, nodeAddrOrgId, nodeAddresses)
+	testChainConfigConsensusNodeAddrDelete(t, client, admin1, admin2, admin3, admin4, nodeAddrOrgId, nodeNewAddress)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
 	require.Equal(t, nodeAddrOrgId, chainConfig.Consensus.Nodes[3].OrgId)
@@ -287,7 +297,7 @@ func testChainConfigConsensusNodeAddrUpdate(t *testing.T, client,
 
 func testChainConfigConsensusNodeAddrDelete(t *testing.T, client,
 	admin1, admin2, admin3, admin4 *ChainClient,
-	nodeAddrOrgId string, nodeAddresses []string) {
+	nodeAddrOrgId, nodeAddresses string) {
 
 	// 配置块更新payload生成
 	payloadBytes, err := client.ChainConfigCreateConsensusNodeAddrDeletePayload(nodeAddrOrgId, nodeAddresses)

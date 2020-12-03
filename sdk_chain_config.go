@@ -454,7 +454,7 @@ func (cc ChainClient) ChainConfigCreateConsensusNodeAddrUpdatePayload(nodeOrgId,
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateConsensusNodeAddrDeletePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
+func (cc ChainClient) ChainConfigCreateConsensusNodeAddrDeletePayload(nodeOrgId, nodeAddress string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeAddrDelete] to be signed payload")
 
 	seq, err := cc.ChainConfigGetSeq()
@@ -468,8 +468,8 @@ func (cc ChainClient) ChainConfigCreateConsensusNodeAddrDeletePayload(nodeOrgId 
 			Value: nodeOrgId,
 		},
 		{
-			Key:   "addresses",
-			Value: strings.Join(nodeAddresses, ","),
+			Key:   "address",
+			Value: nodeAddress,
 		},
 	}
 
