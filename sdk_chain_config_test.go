@@ -14,6 +14,7 @@ import (
 
 	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestChainConfig(t *testing.T) {
@@ -68,9 +69,9 @@ func TestChainConfig(t *testing.T) {
 	testChainConfigTrustRootAdd(t, client, admin1, admin2, admin3, admin4, trustRootOrgId, trustRootCrt)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, len(chainConfig.TrustRoots), 5)
-	require.Equal(t, chainConfig.TrustRoots[4].OrgId, trustRootOrgId)
-	require.Equal(t, chainConfig.TrustRoots[4].Root, trustRootCrt)
+	require.Equal(t, 5, len(chainConfig.TrustRoots))
+	require.Equal(t, trustRootOrgId, chainConfig.TrustRoots[4].OrgId)
+	require.Equal(t, trustRootCrt, chainConfig.TrustRoots[4].Root)
 
 	// 4) [TrustRootUpdate]
 	admin5, err := createAdmin(orgId5)
@@ -82,9 +83,9 @@ func TestChainConfig(t *testing.T) {
 	testChainConfigTrustRootUpdate(t, client, admin1, admin2, admin3, admin5, trustRootOrgId, trustRootCrt)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, len(chainConfig.TrustRoots), 5)
-	require.Equal(t, chainConfig.TrustRoots[4].OrgId, trustRootOrgId)
-	require.Equal(t, chainConfig.TrustRoots[4].Root, trustRootCrt)
+	require.Equal(t, 5, len(chainConfig.TrustRoots))
+	require.Equal(t, trustRootOrgId, chainConfig.TrustRoots[4].OrgId)
+	require.Equal(t, trustRootCrt, chainConfig.TrustRoots[4].Root)
 
 	// 5) [TrustRootDelete]
 	trustRootOrgId = "wx-org5.chainmaker.org"
@@ -92,7 +93,34 @@ func TestChainConfig(t *testing.T) {
 	testChainConfigTrustRootDelete(t, client, admin1, admin2, admin3, admin5, trustRootOrgId)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, len(chainConfig.TrustRoots), 4)
+	require.Equal(t, 4, len(chainConfig.TrustRoots))
+
+	// 6) [PermissionAdd]
+	permissionResourceName := "TEST_PREMISSION"
+	principle := &pb.Principle{
+		Rule: "ANY",
+	}
+	testChainConfigPermissionAdd(t, client, admin1, admin2, admin3, admin4, permissionResourceName, principle)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, 4, len(chainConfig.Permissions))
+	require.Equal(t, true, proto.Equal(principle, chainConfig.Permissions[3].Principle))
+
+	// 7) [PermissionUpdate]
+	principle = &pb.Principle{
+		Rule: "ALL",
+	}
+	testChainConfigPermissionUpdate(t, client, admin1, admin2, admin3, admin4, permissionResourceName, principle)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, 4, len(chainConfig.Permissions))
+	require.Equal(t, true, proto.Equal(principle, chainConfig.Permissions[3].Principle))
+
+	// 8) [PermissionDelete]
+	testChainConfigPermissionDelete(t, client, admin1, admin2, admin3, admin4, permissionResourceName)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, 3, len(chainConfig.Permissions))
 }
 
 func testGetChainConfig(t *testing.T, client *ChainClient) *pb.ChainConfig {
@@ -167,6 +195,39 @@ func testChainConfigTrustRootDelete(t *testing.T, client,
 
 	// 配置块更新payload生成
 	payloadBytes, err := client.ChainConfigCreateTrustRootDeletePayload(trustRootOrgId)
+	require.Nil(t, err)
+
+	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
+}
+
+func testChainConfigPermissionAdd(t *testing.T, client,
+	admin1, admin2, admin3, admin4 *ChainClient,
+	permissionResourceName string, principle *pb.Principle) {
+
+	// 配置块更新payload生成
+	payloadBytes, err := client.ChainConfigCreatePermissionAddPayload(permissionResourceName, principle)
+	require.Nil(t, err)
+
+	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
+}
+
+func testChainConfigPermissionUpdate(t *testing.T, client,
+	admin1, admin2, admin3, admin4 *ChainClient,
+	permissionResourceName string, principle *pb.Principle) {
+
+	// 配置块更新payload生成
+	payloadBytes, err := client.ChainConfigCreatePermissionUpdatePayload(permissionResourceName, principle)
+	require.Nil(t, err)
+
+	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
+}
+
+func testChainConfigPermissionDelete(t *testing.T, client,
+	admin1, admin2, admin3, admin4 *ChainClient,
+	permissionResourceName string) {
+
+	// 配置块更新payload生成
+	payloadBytes, err := client.ChainConfigCreatePermissionDeletePayload(permissionResourceName)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)

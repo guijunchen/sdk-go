@@ -146,6 +146,23 @@ type SDKInterface interface {
 	// 参数说明：
 	//   - trustRootOrgId：string，组织Id
 	ChainConfigCreateTrustRootDeletePayload(trustRootOrgId string) ([]byte, error)
+
+	// 添加权限配置待签名payload生成
+	// 参数说明：
+	//   - permissionResourceName：string，权限名
+	//   - principle：*pb.Principle，权限规则
+	ChainConfigCreatePermissionAddPayload(permissionResourceName string, principle *pb.Principle) ([]byte, error)
+
+	// 更新权限配置待签名payload生成
+	// 参数说明：
+	//   - permissionResourceName：string，权限名
+	//   - principle：*pb.Principle，权限规则
+	ChainConfigCreatePermissionUpdatePayload(permissionResourceName string, principle *pb.Principle) ([]byte, error)
+
+	// 删除权限配置待签名payload生成
+	// 参数说明：
+	//   - permissionResourceName：string，权限名
+	ChainConfigCreatePermissionDeletePayload(permissionResourceName string) ([]byte, error)
 	// ======================== [(3/5)链配置接口] ========================
 	// =============================== END =============================
 

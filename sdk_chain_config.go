@@ -312,6 +312,87 @@ func (cc ChainClient) ChainConfigCreateTrustRootDeletePayload(trustRootOrgId str
 	return payload, nil
 }
 
+func (cc ChainClient) ChainConfigCreatePermissionAddPayload(permissionResourceName string, principle *pb.Principle) ([]byte, error) {
+	cc.logger.Debug("[SDK] begin to create [PermissionAdd] to be signed payload")
+
+	seq, err := cc.ChainConfigGetSeq()
+	if err != nil {
+		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
+	}
+
+	bytes, err := proto.Marshal(principle)
+	if err != nil {
+		return nil, fmt.Errorf("marshal principle failed, %s", err)
+	}
+
+	pairs := []*pb.KeyValuePair{
+		{
+			Key:   permissionResourceName,
+			Value: string(bytes),
+		},
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		pb.ConfigFunction_PERMISSION_ADD.String(), pairs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf("construct config update payload failed, %s", err)
+	}
+
+	return payload, nil
+}
+
+func (cc ChainClient) ChainConfigCreatePermissionUpdatePayload(permissionResourceName string, principle *pb.Principle) ([]byte, error) {
+	cc.logger.Debug("[SDK] begin to create [PermissionUpdate] to be signed payload")
+
+	seq, err := cc.ChainConfigGetSeq()
+	if err != nil {
+		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
+	}
+
+	bytes, err := proto.Marshal(principle)
+	if err != nil {
+		return nil, fmt.Errorf("marshal principle failed, %s", err)
+	}
+
+	pairs := []*pb.KeyValuePair{
+		{
+			Key:   permissionResourceName,
+			Value: string(bytes),
+		},
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		pb.ConfigFunction_PERMISSION_UPDATE.String(), pairs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf("construct config update payload failed, %s", err)
+	}
+
+	return payload, nil
+}
+
+func (cc ChainClient) ChainConfigCreatePermissionDeletePayload(permissionResourceName string) ([]byte, error) {
+	cc.logger.Debug("[SDK] begin to create [PermissionDelete] to be signed payload")
+
+	seq, err := cc.ChainConfigGetSeq()
+	if err != nil {
+		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
+	}
+
+	pairs := []*pb.KeyValuePair{
+		{
+			Key: permissionResourceName,
+		},
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		pb.ConfigFunction_PERMISSION_DELETE.String(), pairs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf("construct config update payload failed, %s", err)
+	}
+
+	return payload, nil
+}
+
 func (cc ChainClient) SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*pb.TxResponse, error) {
 	txId := GetRandTxId()
 
