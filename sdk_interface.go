@@ -115,14 +115,14 @@ type SDKInterface interface {
 	// 以下ChainConfigCreateXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
 	// 更新Core模块待签名payload生成
 	//   - 若无需修改，请置为-1
-	//参数说明：
+	// 参数说明：
 	//   - tx_scheduler_timeout：uint，交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]
 	//   - tx_scheduler_validate_timeout：uint，交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60]
 	ChainConfigCreateCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int) ([]byte, error)
 
 	// 更新Core模块待签名payload生成
 	//   - 若无需修改，请置为-1
-	//其参数有：
+	// 参数说明：
 	//   - txTimestampVerify：bool，是否需要开启交易时间戳校验
 	//   - txTimeout：uint，交易时间戳的过期时间(秒)，其值范围为[600, +∞)
 	//   - blockTxCapacity：uint，区块中最大交易数，其值范围为(0, +∞]
@@ -131,31 +131,21 @@ type SDKInterface interface {
 	ChainConfigCreateBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize, blockInterval int) ([]byte, error)
 
 	// 添加信任组织根证书待签名payload生成
-	//其参数有：
+	// 参数说明：
 	//   - trustRootOrgId：string，组织Id
 	//   - trustRootCrt：string，根证书
 	ChainConfigCreateTrustRootAddPayload(trustRootOrgId, trustRootCrt string) ([]byte, error)
 
 	// 更新信任组织根证书待签名payload生成
-	//其参数有：
+	// 参数说明：
 	//   - trustRootOrgId：string，组织Id
 	//   - trustRootCrt：string，根证书
 	ChainConfigCreateTrustRootUpdatePayload(trustRootOrgId, trustRootCrt string) ([]byte, error)
 
 	// 删除信任组织根证书待签名payload生成
-	//其参数有：
+	// 参数说明：
 	//   - trustRootOrgId：string，组织Id
 	ChainConfigCreateTrustRootDeletePayload(trustRootOrgId string) ([]byte, error)
-
-	// ======================== [链配置接口] ========================
-	// ============================================================
-
-	// TODO: [待分类接口]
-	SendTransaction(tx *pb.Transaction) (*pb.TxResponse, error)
-
-	GetChainConfigBeforeBlockHeight(blockHeight int) (*pb.ChainConfig, error)
-	// TODO:
-	// 证书索引相关接口
 	// ======================== [(3/5)链配置接口] ========================
 	// =============================== END =============================
 
