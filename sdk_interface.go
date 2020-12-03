@@ -163,6 +163,57 @@ type SDKInterface interface {
 	// 参数说明：
 	//   - permissionResourceName：string，权限名
 	ChainConfigCreatePermissionDeletePayload(permissionResourceName string) ([]byte, error)
+
+	// 添加共识节点地址待签名payload生成
+	// 参数说明：
+	//   - nodeOrgId：string，节点组织Id
+	//   - nodeAddresses：[]string，节点地址
+	ChainConfigCreateConsensusNodeAddrAddPayload(nodeOrgId, nodeAddresses []string) ([]byte, error)
+
+	// 更新共识节点地址待签名payload生成
+	// 参数说明：
+	//   - nodeOrgId：string，节点组织Id
+	//   - nodeOldAddress：string，节点原地址
+	//   - nodeNewAddress：string，节点新地址
+	ChainConfigCreateConsensusNodeAddrUpdatePayload(nodeOrgId, nodeOldAddress, nodeNewAddress string) ([]byte, error)
+
+	// 删除共识节点地址待签名payload生成
+	// 参数说明：
+	//   - nodeOrgId：string，节点组织Id
+	//   - nodeAddresses：[]string，节点地址
+	ChainConfigCreateConsensusNodeAddrDeletePayload(nodeOrgId, nodeAddress []string) ([]byte, error)
+
+	// 添加共识节点待签名payload生成
+	// 参数说明：
+	//   - nodeOrgId：string，节点组织Id
+	//   - nodeAddresses：[]string，节点地址
+	ChainConfigCreateConsensusNodeOrgAddPayload(nodeOrgId, nodeAddresses []string) ([]byte, error)
+
+	// 更新共识节点待签名payload生成
+	// 参数说明：
+	//   - nodeOrgId：string，节点组织Id
+	//   - nodeAddresses：[]string，节点地址
+	ChainConfigCreateConsensusNodeOrgUpdatePayload(nodeOrgId, nodeAddresses []string) ([]byte, error)
+
+	// 删除共识节点待签名payload生成
+	// 参数说明：
+	//   - nodeOrgId：string，节点组织Id
+	ChainConfigCreateConsensusNodeOrgDeletePayload(nodeOrgId string) ([]byte, error)
+
+	// 添加共识扩展字段待签名payload生成
+	// 参数说明：
+	//   - kvs：*[]pb.KeyValuePair，字段key、value对
+	ChainConfigCreateConsensusExtAddPayload(kvs *[]pb.KeyValuePair) ([]byte, error)
+
+	// 添加共识扩展字段待签名payload生成
+	// 参数说明：
+	//   - kvs：*[]pb.KeyValuePair，字段key、value对
+	ChainConfigCreateConsensusExtUpdatePayload(kvs *[]pb.KeyValuePair) ([]byte, error)
+
+	// 添加共识扩展字段待签名payload生成
+	// 参数说明：
+	//   - keys：[]string，待删除字段
+	ChainConfigCreateConsensusExtDeletePayload(keys []string) ([]byte, error)
 	// ======================== [(3/5)链配置接口] ========================
 	// =============================== END =============================
 
