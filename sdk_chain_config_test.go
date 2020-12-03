@@ -134,33 +134,105 @@ func TestChainConfig(t *testing.T) {
 	require.Equal(t, 4, len(chainConfig.Permissions))
 
 	// 9) [ConsensusNodeAddrAdd]
-	nodeAddrOrgId := "wx-org4.chainmaker.org"
+	nodeOrgId := "wx-org4.chainmaker.org"
 	nodeAddresses := []string{"/ip4/127.0.0.1/tcp/1111/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"}
-	testChainConfigConsensusNodeAddrAdd(t, client, admin1, admin2, admin3, admin4, nodeAddrOrgId, nodeAddresses)
+	testChainConfigConsensusNodeAddrAdd(t, client, admin1, admin2, admin3, admin4, nodeOrgId, nodeAddresses)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, nodeAddrOrgId, chainConfig.Consensus.Nodes[3].OrgId)
+	require.Equal(t, nodeOrgId, chainConfig.Consensus.Nodes[3].OrgId)
 	require.Equal(t, 2, len(chainConfig.Consensus.Nodes[3].Address))
 	require.Equal(t, nodeAddresses[0], chainConfig.Consensus.Nodes[3].Address[1])
 
 	// 10) [ConsensusNodeAddrUpdate]
-	nodeAddrOrgId = "wx-org4.chainmaker.org"
+	nodeOrgId = "wx-org4.chainmaker.org"
 	nodeOldAddress := "/ip4/127.0.0.1/tcp/1111/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
 	nodeNewAddress := "/ip4/127.0.0.1/tcp/2222/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
-	testChainConfigConsensusNodeAddrUpdate(t, client, admin1, admin2, admin3, admin4, nodeAddrOrgId, nodeOldAddress, nodeNewAddress)
+	testChainConfigConsensusNodeAddrUpdate(t, client, admin1, admin2, admin3, admin4, nodeOrgId, nodeOldAddress, nodeNewAddress)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, nodeAddrOrgId, chainConfig.Consensus.Nodes[3].OrgId)
+	require.Equal(t, nodeOrgId, chainConfig.Consensus.Nodes[3].OrgId)
 	require.Equal(t, 2, len(chainConfig.Consensus.Nodes[3].Address))
 	require.Equal(t, nodeNewAddress, chainConfig.Consensus.Nodes[3].Address[1])
 
-	// 9) [ConsensusNodeAddrDelete]
-	nodeAddrOrgId = "wx-org4.chainmaker.org"
-	testChainConfigConsensusNodeAddrDelete(t, client, admin1, admin2, admin3, admin4, nodeAddrOrgId, nodeNewAddress)
+	// 11) [ConsensusNodeAddrDelete]
+	nodeOrgId = "wx-org4.chainmaker.org"
+	testChainConfigConsensusNodeAddrDelete(t, client, admin1, admin2, admin3, admin4, nodeOrgId, nodeNewAddress)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, nodeAddrOrgId, chainConfig.Consensus.Nodes[3].OrgId)
+	require.Equal(t, nodeOrgId, chainConfig.Consensus.Nodes[3].OrgId)
 	require.Equal(t, 1, len(chainConfig.Consensus.Nodes[3].Address))
+
+	// 12) [ConsensusNodeOrgAdd]
+	raw, err = ioutil.ReadFile("testdata/crypto-config/wx-org5.chainmaker.org/ca/ca.crt")
+	require.Nil(t, err)
+	trustRootOrgId = "wx-org5.chainmaker.org"
+	trustRootCrt = string(raw)
+	testChainConfigTrustRootAdd(t, client, admin1, admin2, admin3, admin4, trustRootOrgId, trustRootCrt)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, 5, len(chainConfig.TrustRoots))
+	require.Equal(t, trustRootOrgId, chainConfig.TrustRoots[4].OrgId)
+	require.Equal(t, trustRootCrt, chainConfig.TrustRoots[4].Root)
+	nodeOrgId = "wx-org5.chainmaker.org"
+	nodeAddresses = []string{"/ip4/127.0.0.1/tcp/1111/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"}
+	testChainConfigConsensusNodeOrgAdd(t, client, admin1, admin2, admin3, admin4, nodeOrgId, nodeAddresses)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, 5, len(chainConfig.Consensus.Nodes))
+	require.Equal(t, nodeOrgId, chainConfig.Consensus.Nodes[4].OrgId)
+	require.Equal(t, 1, len(chainConfig.Consensus.Nodes[4].Address))
+	require.Equal(t, nodeAddresses[0], chainConfig.Consensus.Nodes[4].Address[0])
+
+	// 13) [ConsensusNodeOrgUpdate]
+	nodeOrgId = "wx-org5.chainmaker.org"
+	nodeAddresses = []string{"/ip4/127.0.0.1/tcp/2222/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"}
+	testChainConfigConsensusNodeOrgUpdate(t, client, admin1, admin2, admin3, admin4, nodeOrgId, nodeAddresses)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, 5, len(chainConfig.Consensus.Nodes))
+	require.Equal(t, nodeOrgId, chainConfig.Consensus.Nodes[4].OrgId)
+	require.Equal(t, 1, len(chainConfig.Consensus.Nodes[4].Address))
+	require.Equal(t, nodeAddresses[0], chainConfig.Consensus.Nodes[4].Address[0])
+
+	// 14) [ConsensusNodeOrgDelete]
+	nodeOrgId = "wx-org5.chainmaker.org"
+	testChainConfigConsensusNodeOrgDelete(t, client, admin1, admin2, admin3, admin4, nodeOrgId)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, 4, len(chainConfig.Consensus.Nodes))
+
+	// 15) [ConsensusExtAdd]
+	kvs := []*pb.KeyValuePair{
+		{
+			Key:   "test_key",
+			Value: "test_value",
+		},
+	}
+	testChainConfigConsensusExtAdd(t, client, admin1, admin2, admin3, admin4, kvs)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, 2, len(chainConfig.Consensus.ExtConfig))
+	require.Equal(t, true, proto.Equal(kvs[0], chainConfig.Consensus.ExtConfig[1]))
+
+	// 16) [ConsensusExtUpdate]
+	kvs = []*pb.KeyValuePair{
+		{
+			Key:   "test_key",
+			Value: "updated_value",
+		},
+	}
+	testChainConfigConsensusExtUpdate(t, client, admin1, admin2, admin3, admin4, kvs)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, 2, len(chainConfig.Consensus.ExtConfig))
+	require.Equal(t, true, proto.Equal(kvs[0], chainConfig.Consensus.ExtConfig[1]))
+
+	// 16) [ConsensusExtDelete]
+	keys := []string{"test_key"}
+	testChainConfigConsensusExtDelete(t, client, admin1, admin2, admin3, admin4, keys)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, 1, len(chainConfig.Consensus.ExtConfig))
 }
 
 func testGetChainConfig(t *testing.T, client *ChainClient) *pb.ChainConfig {
@@ -301,6 +373,72 @@ func testChainConfigConsensusNodeAddrDelete(t *testing.T, client,
 
 	// 配置块更新payload生成
 	payloadBytes, err := client.ChainConfigCreateConsensusNodeAddrDeletePayload(nodeAddrOrgId, nodeAddresses)
+	require.Nil(t, err)
+
+	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
+}
+
+func testChainConfigConsensusNodeOrgAdd(t *testing.T, client,
+	admin1, admin2, admin3, admin4 *ChainClient,
+	nodeAddrOrgId string, nodeAddresses []string) {
+
+	// 配置块更新payload生成
+	payloadBytes, err := client.ChainConfigCreateConsensusNodeOrgAddPayload(nodeAddrOrgId, nodeAddresses)
+	require.Nil(t, err)
+
+	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
+}
+
+func testChainConfigConsensusNodeOrgUpdate(t *testing.T, client,
+	admin1, admin2, admin3, admin4 *ChainClient,
+	nodeAddrOrgId string, nodeAddresses []string) {
+
+	// 配置块更新payload生成
+	payloadBytes, err := client.ChainConfigCreateConsensusNodeOrgUpdatePayload(nodeAddrOrgId, nodeAddresses)
+	require.Nil(t, err)
+
+	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
+}
+
+func testChainConfigConsensusNodeOrgDelete(t *testing.T, client,
+	admin1, admin2, admin3, admin4 *ChainClient,
+	nodeAddrOrgId string) {
+
+	// 配置块更新payload生成
+	payloadBytes, err := client.ChainConfigCreateConsensusNodeOrgDeletePayload(nodeAddrOrgId)
+	require.Nil(t, err)
+
+	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
+}
+
+func testChainConfigConsensusExtAdd(t *testing.T, client,
+	admin1, admin2, admin3, admin4 *ChainClient,
+	kvs []*pb.KeyValuePair) {
+
+	// 配置块更新payload生成
+	payloadBytes, err := client.ChainConfigCreateConsensusExtAddPayload(kvs)
+	require.Nil(t, err)
+
+	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
+}
+
+func testChainConfigConsensusExtUpdate(t *testing.T, client,
+	admin1, admin2, admin3, admin4 *ChainClient,
+	kvs []*pb.KeyValuePair) {
+
+	// 配置块更新payload生成
+	payloadBytes, err := client.ChainConfigCreateConsensusExtUpdatePayload(kvs)
+	require.Nil(t, err)
+
+	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
+}
+
+func testChainConfigConsensusExtDelete(t *testing.T, client,
+	admin1, admin2, admin3, admin4 *ChainClient,
+	keys []string) {
+
+	// 配置块更新payload生成
+	payloadBytes, err := client.ChainConfigCreateConsensusExtDeletePayload(keys)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)

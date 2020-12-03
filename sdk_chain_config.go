@@ -483,27 +483,141 @@ func (cc ChainClient) ChainConfigCreateConsensusNodeAddrDeletePayload(nodeOrgId,
 }
 
 func (cc ChainClient) ChainConfigCreateConsensusNodeOrgAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
-	return nil, nil
+	cc.logger.Debug("[SDK] begin to create [ConsensusNodeOrgAdd] to be signed payload")
+
+	seq, err := cc.ChainConfigGetSeq()
+	if err != nil {
+		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
+	}
+
+	pairs := []*pb.KeyValuePair{
+		{
+			Key:   "org_id",
+			Value: nodeOrgId,
+		},
+		{
+			Key:   "addresses",
+			Value: strings.Join(nodeAddresses, ","),
+		},
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		pb.ConfigFunction_NODE_ORG_ADD.String(), pairs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf("construct config update payload failed, %s", err)
+	}
+
+	return payload, nil
 }
 
 func (cc ChainClient) ChainConfigCreateConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
-	return nil, nil
+	cc.logger.Debug("[SDK] begin to create [ConsensusNodeOrgUpdate] to be signed payload")
+
+	seq, err := cc.ChainConfigGetSeq()
+	if err != nil {
+		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
+	}
+
+	pairs := []*pb.KeyValuePair{
+		{
+			Key:   "org_id",
+			Value: nodeOrgId,
+		},
+		{
+			Key:   "addresses",
+			Value: strings.Join(nodeAddresses, ","),
+		},
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		pb.ConfigFunction_NODE_ORG_UPDATE.String(), pairs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf("construct config update payload failed, %s", err)
+	}
+
+	return payload, nil
 }
 
 func (cc ChainClient) ChainConfigCreateConsensusNodeOrgDeletePayload(nodeOrgId string) ([]byte, error) {
-	return nil, nil
+	cc.logger.Debug("[SDK] begin to create [ConsensusNodeOrgAdd] to be signed payload")
+
+	seq, err := cc.ChainConfigGetSeq()
+	if err != nil {
+		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
+	}
+
+	pairs := []*pb.KeyValuePair{
+		{
+			Key:   "org_id",
+			Value: nodeOrgId,
+		},
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		pb.ConfigFunction_NODE_ORG_DELETE.String(), pairs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf("construct config update payload failed, %s", err)
+	}
+
+	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateConsensusExtAddPayload(kvs *[]pb.KeyValuePair) ([]byte, error) {
-	return nil, nil
+func (cc ChainClient) ChainConfigCreateConsensusExtAddPayload(kvs []*pb.KeyValuePair) ([]byte, error) {
+	cc.logger.Debug("[SDK] begin to create [ConsensusExtAdd] to be signed payload")
+
+	seq, err := cc.ChainConfigGetSeq()
+	if err != nil {
+		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		pb.ConfigFunction_CONSENSUS_EXT_ADD.String(), kvs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf("construct config update payload failed, %s", err)
+	}
+
+	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateConsensusExtUpdatePayload(kvs *[]pb.KeyValuePair) ([]byte, error) {
-	return nil, nil
+func (cc ChainClient) ChainConfigCreateConsensusExtUpdatePayload(kvs []*pb.KeyValuePair) ([]byte, error) {
+	cc.logger.Debug("[SDK] begin to create [ConsensusExtUpdate] to be signed payload")
+
+	seq, err := cc.ChainConfigGetSeq()
+	if err != nil {
+		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		pb.ConfigFunction_CONSENSUS_EXT_UPDATE.String(), kvs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf("construct config update payload failed, %s", err)
+	}
+
+	return payload, nil
 }
 
 func (cc ChainClient) ChainConfigCreateConsensusExtDeletePayload(keys []string) ([]byte, error) {
-	return nil, nil
+	cc.logger.Debug("[SDK] begin to create [ConsensusExtDelete] to be signed payload")
+
+	seq, err := cc.ChainConfigGetSeq()
+	if err != nil {
+		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
+	}
+
+	pairs := []*pb.KeyValuePair{}
+	for _, key := range keys {
+		pairs = append(pairs, &pb.KeyValuePair{
+			Key: key,
+		})
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		pb.ConfigFunction_CONSENSUS_EXT_DELETE.String(), pairs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf("construct config update payload failed, %s", err)
+	}
+
+	return payload, nil
 }
 
 func (cc ChainClient) SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*pb.TxResponse, error) {

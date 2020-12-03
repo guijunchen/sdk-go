@@ -202,13 +202,13 @@ type SDKInterface interface {
 
 	// 添加共识扩展字段待签名payload生成
 	// 参数说明：
-	//   - kvs：*[]pb.KeyValuePair，字段key、value对
-	ChainConfigCreateConsensusExtAddPayload(kvs *[]pb.KeyValuePair) ([]byte, error)
+	//   - kvs：[]*pb.KeyValuePair，字段key、value对
+	ChainConfigCreateConsensusExtAddPayload(kvs []*pb.KeyValuePair) ([]byte, error)
 
 	// 添加共识扩展字段待签名payload生成
 	// 参数说明：
-	//   - kvs：*[]pb.KeyValuePair，字段key、value对
-	ChainConfigCreateConsensusExtUpdatePayload(kvs *[]pb.KeyValuePair) ([]byte, error)
+	//   - kvs：[]*pb.KeyValuePair，字段key、value对
+	ChainConfigCreateConsensusExtUpdatePayload(kvs []*pb.KeyValuePair) ([]byte, error)
 
 	// 添加共识扩展字段待签名payload生成
 	// 参数说明：
