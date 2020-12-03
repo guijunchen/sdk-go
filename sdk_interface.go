@@ -146,18 +146,17 @@ type SDKInterface interface {
 
 	// > 以下ChainConfigCreateXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
 	// ### 3.7 更新Core模块待签名payload生成
-	//   - 若无需修改，请置为-1
 	// **参数说明**
-	//   - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]
-	//   - txSchedulerValidateTimeout: 交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60]
+	//   - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]，若无需修改，请置为-1
+	//   - txSchedulerValidateTimeout: 交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60]，若无需修改，请置为-1
 	// ```go
 	ChainConfigCreateCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int) ([]byte, error)
 	// ```
 
 	// ### 3.8 更新Core模块待签名payload生成
-	//   - 若无需修改，请置为-1
 	// **参数说明**
 	//   - txTimestampVerify: 是否需要开启交易时间戳校验
+	//   - (以下参数，若无需修改，请置为-1)
 	//   - txTimeout: 交易时间戳的过期时间(秒)，其值范围为[600, +∞)
 	//   - blockTxCapacity: 区块中最大交易数，其值范围为(0, +∞]
 	//   - blockSize: 区块最大限制，单位MB，其值范围为(0, +∞]
