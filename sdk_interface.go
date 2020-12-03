@@ -293,7 +293,7 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - certHashes: 证书Hash列表，多个使用逗号分割
 	// ```go
-	CertDelete(certHashes string) (*pb.TxResponse, error)
+	CertDelete(certHashes []string) (*pb.TxResponse, error)
 	// ```
 
 	// ### 4.3 用户证书查询
@@ -302,7 +302,7 @@ type SDKInterface interface {
 	// 返回值说明：
 	//   - *pb.CertInfos: 包含证书Hash和证书内容的列表
 	// ```go
-	CertQuery(certHashes string) (*pb.CertInfos, error)
+	CertQuery(certHashes []string) (*pb.CertInfos, error)
 	// ```
 
 	// ## 5 消息订阅接口

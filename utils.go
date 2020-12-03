@@ -6,13 +6,16 @@ package chainmaker_sdk_go
 
 import (
 	"bytes"
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
-	"chainmaker.org/chainmaker-go/common/crypto"
-	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
-	"chainmaker.org/chainmaker-go/common/random/uuid"
+	"encoding/hex"
 	"encoding/pem"
 	"errors"
 	"fmt"
+
+	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
+	"chainmaker.org/chainmaker-go/common/crypto"
+	"chainmaker.org/chainmaker-go/common/crypto/hash"
+	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
+	"chainmaker.org/chainmaker-go/common/random/uuid"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -82,7 +85,7 @@ func signPayload(privateKey crypto.PrivateKey, cert *bcx509.Certificate, msg []b
 func paramsMap2KVPairs(params map[string]string) (kvPairs []*pb.KeyValuePair) {
 	for key, val := range params {
 		kvPair := &pb.KeyValuePair{
-			Key: key,
+			Key:   key,
 			Value: val,
 		}
 
@@ -143,7 +146,7 @@ func constructSubscribeBlockPayload(startBlock, endBlock int64, withRwSet bool) 
 	payload := &pb.SubscribeBlockPayload{
 		StartBlock: startBlock,
 		EndBlock:   endBlock,
-		WithRwSet: withRwSet,
+		WithRwSet:  withRwSet,
 	}
 
 	payloadBytes, err := proto.Marshal(payload)
@@ -246,4 +249,36 @@ func checkPayloads(a, b proto.Message) bool {
 	}
 
 	return bytes.Equal(aBytes, bBytes)
+}
+
+// on input a certificate in PEM format, a hash algorithm (should be the one in chain configuration), output the identity of the certificate in the form of a string (under hexadecimal encoding)
+func getCertificateIdHex(certPEM []byte, hashType string) (string, error) {
+	id, err := getCertificateId(certPEM, hashType)
+	if err != nil {
+		return "", err
+	}
+	idHex := hex.EncodeToString(id)
+	return idHex, nil
+}
+
+func getCertificateId(certPEM []byte, hashType string) ([]byte, error) {
+	if certPEM == nil {
+		return nil, fmt.Errorf("get cert certPEM == nil")
+	}
+	certDer, _ := pem.Decode(certPEM)
+	if certDer == nil {
+		return nil, fmt.Errorf("invalid certificate")
+	}
+	return getCertificateIdFromDER(certDer.Bytes, hashType)
+}
+
+func getCertificateIdFromDER(certDER []byte, hashType string) ([]byte, error) {
+	if certDER == nil {
+		return nil, fmt.Errorf("get cert from der certDER == nil")
+	}
+	id, err := hash.GetByStrType(hashType, certDER)
+	if err != nil {
+		return nil, err
+	}
+	return id, nil
 }

@@ -4,16 +4,121 @@
  **/
 package chainmaker_sdk_go
 
-import "chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
+import (
+	"fmt"
+	"strings"
+
+	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
+	"github.com/golang/protobuf/proto"
+)
 
 func (cc ChainClient) CertAdd() (*pb.TxResponse, error) {
-	panic("implement me")
+	cc.logger.Infof("[SDK] begin to INVOKE system contract, [contract:%s]/[method:%s]",
+		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERT_ADD.String())
+
+	chainConfig, err := cc.ChainConfigGet()
+	if err != nil {
+		return nil, fmt.Errorf("get chain config failed, %s", err.Error())
+	}
+	member := &pb.SerializedMember{
+		OrgId:      cc.orgId,
+		MemberInfo: cc.userCrtPEM,
+		IsFullCert: true,
+	}
+	certHash, err := getCertificateIdHex(member.GetMemberInfo(), chainConfig.Crypto.Hash)
+	if err != nil {
+		return nil, fmt.Errorf("calc cert hash failed, %s", err.Error())
+	}
+
+	payloadBytes, err := constructTransactPayload(pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERT_ADD.String(), []*pb.KeyValuePair{})
+	if err != nil {
+		return nil, fmt.Errorf("construct transact payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequest(pb.TxType_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if err = checkProposalRequestResp(resp, false); err != nil {
+		return nil, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	resp.ContractResult = &pb.ContractResult{
+		Code:    pb.ContractResultCode_OK,
+		Message: pb.ContractResultCode_OK.String(),
+		Result:  []byte(certHash),
+	}
+
+	return resp, nil
 }
 
-func (cc ChainClient) CertDelete(certHashes string) (*pb.TxResponse, error) {
-	panic("implement me")
+func (cc ChainClient) CertDelete(certHashes []string) (*pb.TxResponse, error) {
+	cc.logger.Infof("[SDK] begin to INVOKE system contract, [contract:%s]/[method:%s]",
+		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERTS_DELETE.String())
+
+	payloadBytes, err := constructTransactPayload(
+		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(),
+		pb.CertManageFunction_CERTS_DELETE.String(),
+		[]*pb.KeyValuePair{
+			{
+				Key:   "cert_hashes",
+				Value: strings.Join(certHashes, ","),
+			},
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("marshal transact payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequest(pb.TxType_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if err = checkProposalRequestResp(resp, false); err != nil {
+		return nil, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	resp.ContractResult = &pb.ContractResult{
+		Code:    pb.ContractResultCode_OK,
+		Message: pb.ContractResultCode_OK.String(),
+	}
+
+	return resp, nil
 }
 
-func (cc ChainClient) CertQuery(certHashes string) (*pb.CertInfos, error) {
-	panic("implement me")
+func (cc ChainClient) CertQuery(certHashes []string) (*pb.CertInfos, error) {
+	cc.logger.Infof("[SDK] begin to INVOKE system contract, [contract:%s]/[method:%s]",
+		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERTS_QUERY.String())
+
+	payloadBytes, err := constructQueryPayload(
+		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(),
+		pb.CertManageFunction_CERTS_QUERY.String(),
+		[]*pb.KeyValuePair{
+			{
+				Key:   "cert_hashes",
+				Value: strings.Join(certHashes, ","),
+			},
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequest(pb.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	certInfos := &pb.CertInfos{}
+	if err = proto.Unmarshal(resp.ContractResult.Result, certInfos); err != nil {
+		return nil, fmt.Errorf("unmarshal cert infos payload failed, %s", err.Error())
+	}
+
+	return certInfos, nil
 }
