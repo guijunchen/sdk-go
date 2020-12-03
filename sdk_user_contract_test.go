@@ -55,7 +55,7 @@ func testUserContractCounterGoInvoke(t *testing.T, client *ChainClient) {
 }
 
 func testUserContractCounterGoQuery(t *testing.T, client *ChainClient) {
-	resp, err := client.ContractQuery(contractName, "query", "", nil)
+	resp, err := client.ContractQuery(contractName, "query", nil)
 	require.Nil(t, err)
 	fmt.Printf("QUERY counter-go contract resp: %+v\n", resp)
 }
