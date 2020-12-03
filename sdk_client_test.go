@@ -17,6 +17,7 @@ const (
 	orgId2         = "wx-org2.chainmaker.org"
 	orgId3         = "wx-org3.chainmaker.org"
 	orgId4         = "wx-org4.chainmaker.org"
+	orgId5         = "wx-org5.chainmaker.org"
 	contractName   = "counter-go-1"
 	certPathPrefix = "./testdata"
 	tlsHostName    = "chainmaker.org"
