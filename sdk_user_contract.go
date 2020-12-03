@@ -83,10 +83,8 @@ func (cc ChainClient) ContractInvoke(contractName, method, txId string, params m
 	return resp, nil
 }
 
-func (cc ChainClient) ContractQuery(contractName, method, txId string, params map[string]string) (*pb.TxResponse, error) {
-	if txId == "" {
-		txId = GetRandTxId()
-	}
+func (cc ChainClient) ContractQuery(contractName, method string, params map[string]string) (*pb.TxResponse, error) {
+	txId := GetRandTxId()
 
 	cc.logger.Debugf("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, params)

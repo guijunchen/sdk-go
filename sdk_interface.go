@@ -12,16 +12,37 @@ type SDKInterface interface {
 	// ==============================================================
 	// ======================== [用户合约接口] ========================
 	// 合约创建
-	ContractCreate(txId string, multiSignPayload []byte) (*pb.TxResponse, error)
+	// 参数说明：
+	//   - txId: 交易ID
+	//           格式要求：长度为64bit，字符在a-z0-9
+	//           可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
+	//   - multiSignedPayload: 经多签后的payload数据
+	ContractCreate(txId string, multiSignedPayload []byte) (*pb.TxResponse, error)
 
 	// 合约升级
-	ContractUpgrade(txId string, multiSignPayload []byte) (*pb.TxResponse, error)
+	// 参数说明：
+	//   - txId: 交易ID
+	//           格式要求：长度为64bit，字符在a-z0-9
+	//           可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
+	//   - multiSignedPayload: 经多签后的payload数据
+	ContractUpgrade(txId string, multiSignedPayload []byte) (*pb.TxResponse, error)
 
 	// 合约调用
+	// 参数说明：
+	//   - contractName: 合约名称
+	//   - method: 合约方法
+	//   - txId: 交易ID
+	//           格式要求：长度为64bit，字符在a-z0-9
+	//           可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
+	//   - params: 合约参数
 	ContractInvoke(contractName, method, txId string, params map[string]string) (*pb.TxResponse, error)
 
-	// 合约查询
-	ContractQuery(contractName, method, txId string, params map[string]string) (*pb.TxResponse, error)
+	// 合约查询接口调用
+	// 参数说明：
+	//   - contractName: 合约名称
+	//   - method: 合约方法
+	//   - params: 合约参数
+	ContractQuery(contractName, method string, params map[string]string) (*pb.TxResponse, error)
 
 	// ======================== [用户合约接口] ========================
 	// ==============================================================
@@ -29,27 +50,40 @@ type SDKInterface interface {
 	// ==============================================================
 	// ======================== [系统合约接口] ========================
 	// 根据交易Id查询交易
+	// 参数说明：
+	//   - txId: 交易ID
 	GetTxByTxId(txId string) (*pb.TransactionInfo, error)
 
 	// 根据区块高度查询区块
+	// 参数说明：
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
+	//   - withRWSet: 是否返回读写集
 	GetBlockByHeight(blockHeight int64, withRWSet bool) (*pb.BlockInfo, error)
 
 	// 根据区块哈希查询区块
+	// 参数说明：
+	//   - blockHash: 指定区块Hash
+	//   - withRWSet: 是否返回读写集
 	GetBlockByHash(blockHash string, withRWSet bool) (*pb.BlockInfo, error)
 
 	// 根据交易Id查询区块
+	// 参数说明：
+	//   - txId: 交易ID
+	//   - withRWSet: 是否返回读写集
 	GetBlockByTxId(txId string, withRWSet bool) (*pb.BlockInfo, error)
 
 	// 查询最新的配置块
+	// 参数说明：
+	//   - withRWSet: 是否返回读写集
 	GetLastConfigBlock(withRWSet bool) (*pb.BlockInfo, error)
 
-	// 查询合约信息
+	// 查询节点已部署的所有合约信息，包括：合约名、合约版本、运行环境、交易ID
 	GetContractInfo() (*pb.ContractInfo, error)
 
-	// 查询节点加入的链信息
+	// 查询节点加入的链信息，返回ChainId清单
 	GetNodeChainList() (*pb.ChainList, error)
 
-	// 查询链信息
+	// 查询链信息，包括：当前链最新高度，链节点信息
 	GetChainInfo() (*pb.ChainInfo, error)
 	// ======================== [系统合约接口] ========================
 	// ==============================================================
@@ -77,7 +111,7 @@ type SDKInterface interface {
 	// 以下ChainConfigCreateXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
 	// 更新Core模块待签名payload生成
 	//   - 若无需修改，请置为-1
-	//其参数有：
+	//参数说明：
 	//   - tx_scheduler_timeout：uint，交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]
 	//   - tx_scheduler_validate_timeout：uint，交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60]
 	ChainConfigCreateCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int) ([]byte, error)
