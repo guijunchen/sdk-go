@@ -9,7 +9,7 @@ import "chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 type SDKInterface interface {
 	Stop() error
 
-	// ==============================================================
+	// ============================ BEGIN ===========================
 	// ======================== [用户合约接口] ========================
 	// 合约创建
 	// 参数说明：
@@ -45,9 +45,9 @@ type SDKInterface interface {
 	ContractQuery(contractName, method string, params map[string]string) (*pb.TxResponse, error)
 
 	// ======================== [用户合约接口] ========================
-	// ==============================================================
+	// ============================= END ============================
 
-	// ==============================================================
+	// ============================ BEGIN ===========================
 	// ======================== [系统合约接口] ========================
 	// 根据交易Id查询交易
 	// 参数说明：
@@ -86,9 +86,9 @@ type SDKInterface interface {
 	// 查询链信息，包括：当前链最新高度，链节点信息
 	GetChainInfo() (*pb.ChainInfo, error)
 	// ======================== [系统合约接口] ========================
-	// ==============================================================
+	// ============================ END =============================
 
-	// ============================================================
+	// =========================== BEGIN ==========================
 	// ======================== [链配置接口] ========================
 	// 查询最新链配置
 	ChainConfigGet() (*pb.ChainConfig, error)
@@ -115,14 +115,27 @@ type SDKInterface interface {
 	//   - tx_scheduler_timeout：uint，交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]
 	//   - tx_scheduler_validate_timeout：uint，交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60]
 	ChainConfigCreateCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int) ([]byte, error)
-
 	// ======================== [链配置接口] ========================
-	// ============================================================
+	// ============================ END ===========================
 
-	// TODO: [待分类接口]
-	SendTransaction(tx *pb.Transaction) (*pb.TxResponse, error)
+	// ========================== BEGIN ===========================
+	// ======================== [证书管理] =========================
+	// 用户证书添加
+	// 参数说明：
+	//   - 在pb.TxResponse.ContractResult.Result字段中返回成功添加的certHash
+	CertAdd() (*pb.TxResponse, error)
 
-	GetChainConfigBeforeBlockHeight(blockHeight int) (*pb.ChainConfig, error)
-	// TODO:
-	// 证书索引相关接口
+	// 用户证书删除
+	// 参数说明：
+	//   - certHashes: 证书Hash列表，多个使用逗号分割
+	CertDelete(certHashes string) (*pb.TxResponse, error)
+
+	// 用户证书查询
+	// 参数说明：
+	//   - certHashes: 证书Hash列表，多个使用逗号分割
+	// 返回值说明：
+	//   - *pb.CertInfos: 包含证书Hash和证书内容的列表
+	CertQuery(certHashes string) (*pb.CertInfos, error)
+	// ======================== [证书管理] =========================
+	// =========================== END ============================
 }
