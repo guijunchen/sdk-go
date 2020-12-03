@@ -141,137 +141,136 @@ SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*pb.TxResponse, er
 
 > 以下ChainConfigCreateXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
 #### 3.7 更新Core模块待签名payload生成
-  - 若无需修改，请置为-1
 **参数说明**
-  - tx_scheduler_timeout：uint，交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]
-  - tx_scheduler_validate_timeout：uint，交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60]
+  - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]，若无需修改，请置为-1
+  - txSchedulerValidateTimeout: 交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60]，若无需修改，请置为-1
 ```go
 ChainConfigCreateCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int) ([]byte, error)
 ```
 
 #### 3.8 更新Core模块待签名payload生成
-  - 若无需修改，请置为-1
 **参数说明**
-  - txTimestampVerify：bool，是否需要开启交易时间戳校验
-  - txTimeout：uint，交易时间戳的过期时间(秒)，其值范围为[600, +∞)
-  - blockTxCapacity：uint，区块中最大交易数，其值范围为(0, +∞]
-  - blockSize：uint，区块最大限制，单位MB，其值范围为(0, +∞]
-  - blockInterval：uint，出块间隔，单位:ms，其值范围为[10, +∞]
+  - txTimestampVerify: 是否需要开启交易时间戳校验
+  - (以下参数，若无需修改，请置为-1)
+  - txTimeout: 交易时间戳的过期时间(秒)，其值范围为[600, +∞)
+  - blockTxCapacity: 区块中最大交易数，其值范围为(0, +∞]
+  - blockSize: 区块最大限制，单位MB，其值范围为(0, +∞]
+  - blockInterval: 出块间隔，单位:ms，其值范围为[10, +∞]
 ```go
 ChainConfigCreateBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize, blockInterval int) ([]byte, error)
 ```
 
 #### 3.9 添加信任组织根证书待签名payload生成
 **参数说明**
-  - trustRootOrgId：string，组织Id
-  - trustRootCrt：string，根证书
+  - trustRootOrgId: 组织Id
+  - trustRootCrt: 根证书
 ```go
 ChainConfigCreateTrustRootAddPayload(trustRootOrgId, trustRootCrt string) ([]byte, error)
 ```
 
 #### 3.10 更新信任组织根证书待签名payload生成
 **参数说明**
-  - trustRootOrgId：string，组织Id
-  - trustRootCrt：string，根证书
+  - trustRootOrgId: 组织Id
+  - trustRootCrt: 根证书
 ```go
 ChainConfigCreateTrustRootUpdatePayload(trustRootOrgId, trustRootCrt string) ([]byte, error)
 ```
 
 #### 3.11 删除信任组织根证书待签名payload生成
 **参数说明**
-  - trustRootOrgId：string，组织Id
+  - trustRootOrgId: 组织Id
 ```go
 ChainConfigCreateTrustRootDeletePayload(trustRootOrgId string) ([]byte, error)
 ```
 
 #### 3.12 添加权限配置待签名payload生成
 **参数说明**
-  - permissionResourceName：string，权限名
-  - principle：*pb.Principle，权限规则
+  - permissionResourceName: 权限名
+  - principle: 权限规则
 ```go
 ChainConfigCreatePermissionAddPayload(permissionResourceName string, principle *pb.Principle) ([]byte, error)
 ```
 
 #### 3.13 更新权限配置待签名payload生成
 **参数说明**
-  - permissionResourceName：string，权限名
-  - principle：*pb.Principle，权限规则
+  - permissionResourceName: 权限名
+  - principle: 权限规则
 ```go
 ChainConfigCreatePermissionUpdatePayload(permissionResourceName string, principle *pb.Principle) ([]byte, error)
 ```
 
 #### 3.14 删除权限配置待签名payload生成
 **参数说明**
-  - permissionResourceName：string，权限名
+  - permissionResourceName: 权限名
 ```go
 ChainConfigCreatePermissionDeletePayload(permissionResourceName string) ([]byte, error)
 ```
 
 #### 3.15 添加共识节点地址待签名payload生成
 **参数说明**
-  - nodeOrgId：string，节点组织Id
-  - nodeAddresses：[]string，节点地址
+  - nodeOrgId: 节点组织Id
+  - nodeAddresses: 节点地址
 ```go
 ChainConfigCreateConsensusNodeAddrAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
 ```
 
 #### 3.16 更新共识节点地址待签名payload生成
 **参数说明**
-  - nodeOrgId：string，节点组织Id
-  - nodeOldAddress：string，节点原地址
-  - nodeNewAddress：string，节点新地址
+  - nodeOrgId: 节点组织Id
+  - nodeOldAddress: 节点原地址
+  - nodeNewAddress: 节点新地址
 ```go
 ChainConfigCreateConsensusNodeAddrUpdatePayload(nodeOrgId, nodeOldAddress, nodeNewAddress string) ([]byte, error)
 ```
 
 #### 3.17 删除共识节点地址待签名payload生成
 **参数说明**
-  - nodeOrgId：string，节点组织Id
-  - nodeAddress：string，节点地址
+  - nodeOrgId: 节点组织Id
+  - nodeAddress: 节点地址
 ```go
 ChainConfigCreateConsensusNodeAddrDeletePayload(nodeOrgId, nodeAddress string) ([]byte, error)
 ```
 
 #### 3.18 添加共识节点待签名payload生成
 **参数说明**
-  - nodeOrgId：string，节点组织Id
-  - nodeAddresses：[]string，节点地址
+  - nodeOrgId: 节点组织Id
+  - nodeAddresses: 节点地址
 ```go
 ChainConfigCreateConsensusNodeOrgAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
 ```
 
 #### 3.19 更新共识节点待签名payload生成
 **参数说明**
-  - nodeOrgId：string，节点组织Id
-  - nodeAddresses：[]string，节点地址
+  - nodeOrgId: 节点组织Id
+  - nodeAddresses: 节点地址
 ```go
 ChainConfigCreateConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
 ```
 
 #### 3.20 删除共识节点待签名payload生成
 **参数说明**
-  - nodeOrgId：string，节点组织Id
+  - nodeOrgId: 节点组织Id
 ```go
 ChainConfigCreateConsensusNodeOrgDeletePayload(nodeOrgId string) ([]byte, error)
 ```
 
 #### 3.21 添加共识扩展字段待签名payload生成
 **参数说明**
-  - kvs：*[]pb.KeyValuePair，字段key、value对
+  - kvs: 字段key、value对
 ```go
-ChainConfigCreateConsensusExtAddPayload(kvs *[]pb.KeyValuePair) ([]byte, error)
+ChainConfigCreateConsensusExtAddPayload(kvs []*pb.KeyValuePair) ([]byte, error)
 ```
 
 #### 3.22 添加共识扩展字段待签名payload生成
 **参数说明**
-  - kvs：*[]pb.KeyValuePair，字段key、value对
+  - kvs: 字段key、value对
 ```go
-ChainConfigCreateConsensusExtUpdatePayload(kvs *[]pb.KeyValuePair) ([]byte, error)
+ChainConfigCreateConsensusExtUpdatePayload(kvs []*pb.KeyValuePair) ([]byte, error)
 ```
 
 #### 3.23 添加共识扩展字段待签名payload生成
 **参数说明**
-  - keys：[]string，待删除字段
+  - keys: 待删除字段
 ```go
 ChainConfigCreateConsensusExtDeletePayload(keys []string) ([]byte, error)
 ```
@@ -333,7 +332,6 @@ Subscribe(ctx context.Context, txType pb.TxType, payloadBytes []byte) (<-chan in
 ```go
 Stop() error
 ```
-
 
 
 
