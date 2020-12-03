@@ -168,7 +168,7 @@ type SDKInterface interface {
 	// 参数说明：
 	//   - nodeOrgId：string，节点组织Id
 	//   - nodeAddresses：[]string，节点地址
-	ChainConfigCreateConsensusNodeAddrAddPayload(nodeOrgId, nodeAddresses []string) ([]byte, error)
+	ChainConfigCreateConsensusNodeAddrAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
 
 	// 更新共识节点地址待签名payload生成
 	// 参数说明：
@@ -181,19 +181,19 @@ type SDKInterface interface {
 	// 参数说明：
 	//   - nodeOrgId：string，节点组织Id
 	//   - nodeAddresses：[]string，节点地址
-	ChainConfigCreateConsensusNodeAddrDeletePayload(nodeOrgId, nodeAddress []string) ([]byte, error)
+	ChainConfigCreateConsensusNodeAddrDeletePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
 
 	// 添加共识节点待签名payload生成
 	// 参数说明：
 	//   - nodeOrgId：string，节点组织Id
 	//   - nodeAddresses：[]string，节点地址
-	ChainConfigCreateConsensusNodeOrgAddPayload(nodeOrgId, nodeAddresses []string) ([]byte, error)
+	ChainConfigCreateConsensusNodeOrgAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
 
 	// 更新共识节点待签名payload生成
 	// 参数说明：
 	//   - nodeOrgId：string，节点组织Id
 	//   - nodeAddresses：[]string，节点地址
-	ChainConfigCreateConsensusNodeOrgUpdatePayload(nodeOrgId, nodeAddresses []string) ([]byte, error)
+	ChainConfigCreateConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
 
 	// 删除共识节点待签名payload生成
 	// 参数说明：

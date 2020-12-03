@@ -7,6 +7,7 @@ package chainmaker_sdk_go
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"github.com/golang/protobuf/proto"
@@ -391,6 +392,118 @@ func (cc ChainClient) ChainConfigCreatePermissionDeletePayload(permissionResourc
 	}
 
 	return payload, nil
+}
+
+func (cc ChainClient) ChainConfigCreateConsensusNodeAddrAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
+	cc.logger.Debug("[SDK] begin to create [ConsensusNodeAddrAdd] to be signed payload")
+
+	seq, err := cc.ChainConfigGetSeq()
+	if err != nil {
+		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
+	}
+
+	pairs := []*pb.KeyValuePair{
+		{
+			Key:   "org_id",
+			Value: nodeOrgId,
+		},
+		{
+			Key:   "addresses",
+			Value: strings.Join(nodeAddresses, ","),
+		},
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		pb.ConfigFunction_NODE_ADDR_ADD.String(), pairs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf("construct config update payload failed, %s", err)
+	}
+
+	return payload, nil
+}
+
+func (cc ChainClient) ChainConfigCreateConsensusNodeAddrUpdatePayload(nodeOrgId, nodeOldAddress, nodeNewAddress string) ([]byte, error) {
+	cc.logger.Debug("[SDK] begin to create [ConsensusNodeAddrUpdate] to be signed payload")
+
+	seq, err := cc.ChainConfigGetSeq()
+	if err != nil {
+		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
+	}
+
+	pairs := []*pb.KeyValuePair{
+		{
+			Key:   "org_id",
+			Value: nodeOrgId,
+		},
+		{
+			Key:   "address",
+			Value: nodeOldAddress,
+		},
+		{
+			Key:   "new_address",
+			Value: nodeNewAddress,
+		},
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		pb.ConfigFunction_NODE_ADDR_UPDATE.String(), pairs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf("construct config update payload failed, %s", err)
+	}
+
+	return payload, nil
+}
+
+func (cc ChainClient) ChainConfigCreateConsensusNodeAddrDeletePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
+	cc.logger.Debug("[SDK] begin to create [ConsensusNodeAddrDelete] to be signed payload")
+
+	seq, err := cc.ChainConfigGetSeq()
+	if err != nil {
+		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
+	}
+
+	pairs := []*pb.KeyValuePair{
+		{
+			Key:   "org_id",
+			Value: nodeOrgId,
+		},
+		{
+			Key:   "addresses",
+			Value: strings.Join(nodeAddresses, ","),
+		},
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		pb.ConfigFunction_NODE_ADDR_DELETE.String(), pairs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf("construct config update payload failed, %s", err)
+	}
+
+	return payload, nil
+}
+
+func (cc ChainClient) ChainConfigCreateConsensusNodeOrgAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
+	return nil, nil
+}
+
+func (cc ChainClient) ChainConfigCreateConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
+	return nil, nil
+}
+
+func (cc ChainClient) ChainConfigCreateConsensusNodeOrgDeletePayload(nodeOrgId string) ([]byte, error) {
+	return nil, nil
+}
+
+func (cc ChainClient) ChainConfigCreateConsensusExtAddPayload(kvs *[]pb.KeyValuePair) ([]byte, error) {
+	return nil, nil
+}
+
+func (cc ChainClient) ChainConfigCreateConsensusExtUpdatePayload(kvs *[]pb.KeyValuePair) ([]byte, error) {
+	return nil, nil
+}
+
+func (cc ChainClient) ChainConfigCreateConsensusExtDeletePayload(keys []string) ([]byte, error) {
+	return nil, nil
 }
 
 func (cc ChainClient) SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*pb.TxResponse, error) {

@@ -121,6 +121,36 @@ func TestChainConfig(t *testing.T) {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
 	require.Equal(t, 3, len(chainConfig.Permissions))
+
+	// 9) [ConsensusNodeAddrAdd]
+	nodeAddrOrgId := "wx-org4.chainmaker.org"
+	nodeAddresses := []string{"/ip4/127.0.0.1/tcp/1111/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"}
+	testChainConfigConsensusNodeAddrAdd(t, client, admin1, admin2, admin3, admin4, nodeAddrOrgId, nodeAddresses)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, nodeAddrOrgId, chainConfig.Consensus.Nodes[3].OrgId)
+	require.Equal(t, 2, len(chainConfig.Consensus.Nodes[3].Address))
+	require.Equal(t, nodeAddresses[0], chainConfig.Consensus.Nodes[3].Address[1])
+
+	// 10) [ConsensusNodeAddrUpdate]
+	nodeAddrOrgId = "wx-org4.chainmaker.org"
+	nodeOldAddress := "/ip4/127.0.0.1/tcp/1111/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
+	nodeNewAddress := "/ip4/127.0.0.1/tcp/2222/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
+	testChainConfigConsensusNodeAddrUpdate(t, client, admin1, admin2, admin3, admin4, nodeAddrOrgId, nodeOldAddress, nodeNewAddress)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, nodeAddrOrgId, chainConfig.Consensus.Nodes[3].OrgId)
+	require.Equal(t, 2, len(chainConfig.Consensus.Nodes[3].Address))
+	require.Equal(t, nodeNewAddress, chainConfig.Consensus.Nodes[3].Address[1])
+
+	// 9) [ConsensusNodeAddrDelete]
+	nodeAddrOrgId = "wx-org4.chainmaker.org"
+	nodeAddresses = []string{"/ip4/127.0.0.1/tcp/1111/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"}
+	testChainConfigConsensusNodeAddrDelete(t, client, admin1, admin2, admin3, admin4, nodeAddrOrgId, nodeAddresses)
+	time.Sleep(2 * time.Second)
+	chainConfig = testGetChainConfig(t, client)
+	require.Equal(t, nodeAddrOrgId, chainConfig.Consensus.Nodes[3].OrgId)
+	require.Equal(t, 1, len(chainConfig.Consensus.Nodes[3].Address))
 }
 
 func testGetChainConfig(t *testing.T, client *ChainClient) *pb.ChainConfig {
@@ -228,6 +258,39 @@ func testChainConfigPermissionDelete(t *testing.T, client,
 
 	// 配置块更新payload生成
 	payloadBytes, err := client.ChainConfigCreatePermissionDeletePayload(permissionResourceName)
+	require.Nil(t, err)
+
+	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
+}
+
+func testChainConfigConsensusNodeAddrAdd(t *testing.T, client,
+	admin1, admin2, admin3, admin4 *ChainClient,
+	nodeAddrOrgId string, nodeAddresses []string) {
+
+	// 配置块更新payload生成
+	payloadBytes, err := client.ChainConfigCreateConsensusNodeAddrAddPayload(nodeAddrOrgId, nodeAddresses)
+	require.Nil(t, err)
+
+	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
+}
+
+func testChainConfigConsensusNodeAddrUpdate(t *testing.T, client,
+	admin1, admin2, admin3, admin4 *ChainClient,
+	nodeAddrOrgId, nodeOldAddress, nodeNewAddress string) {
+
+	// 配置块更新payload生成
+	payloadBytes, err := client.ChainConfigCreateConsensusNodeAddrUpdatePayload(nodeAddrOrgId, nodeOldAddress, nodeNewAddress)
+	require.Nil(t, err)
+
+	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
+}
+
+func testChainConfigConsensusNodeAddrDelete(t *testing.T, client,
+	admin1, admin2, admin3, admin4 *ChainClient,
+	nodeAddrOrgId string, nodeAddresses []string) {
+
+	// 配置块更新payload生成
+	payloadBytes, err := client.ChainConfigCreateConsensusNodeAddrDeletePayload(nodeAddrOrgId, nodeAddresses)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
