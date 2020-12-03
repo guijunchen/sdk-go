@@ -239,15 +239,27 @@ type SDKInterface interface {
 	// ============================== END ==============================
 
 	// ============================= BEGIN =============================
-	// ======================== [(5/5)订阅接口] =========================
+	// ====================== [(5/5)消息订阅接口] ========================
 	// 区块订阅
-	SubscribeBlock(ctx context.Context, payloadBytes []byte) (<-chan interface{}, error)
+	// 参数说明：
+	//   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
+	//   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
+	//   - withRwSet: 是否返回读写集
+	SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRwSet bool) (<-chan interface{}, error)
 
 	// 交易订阅
-	SubscribeTx(ctx context.Context, payloadBytes []byte) (<-chan interface{}, error)
+	// 参数说明：
+	//   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
+	//   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
+	//   - txType: 订阅交易类型,若为pb.TxType(-1)，表示订阅所有交易类型
+	//   - txIds: 订阅txId列表，若为空，表示订阅所有txId
+	SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType pb.TxType, txIds []string) (<-chan interface{}, error)
 
 	// 多合一订阅
+	// 参数说明：
+	//   - txType: 订阅交易类型，目前已支持：区块消息订阅(pb.TxType_SUBSCRIBE_BLOCK_INFO)、交易消息订阅(pb.TxType_SUBSCRIBE_TX_INFO)
+	//   - payloadBytes: 消息订阅参数payload
 	Subscribe(ctx context.Context, txType pb.TxType, payloadBytes []byte) (<-chan interface{}, error)
-	// ======================== [(5/5)订阅接口] =========================
+	// ====================== [(5/5)消息订阅接口] ========================
 	// ============================== END ==============================
 }

@@ -139,6 +139,37 @@ func constructConfigUpdatePayload(chainId, contractName, method string, pairs []
 	return payloadBytes, nil
 }
 
+func constructSubscribeBlockPayload(startBlock, endBlock int64, withRwSet bool) ([]byte, error) {
+	payload := &pb.SubscribeBlockPayload{
+		StartBlock: startBlock,
+		EndBlock:   endBlock,
+		WithRwSet: withRwSet,
+	}
+
+	payloadBytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return payloadBytes, nil
+}
+
+func constructSubscribeTxPayload(startBlock, endBlock int64, txType pb.TxType, txIds []string) ([]byte, error) {
+	payload := &pb.SubscribeTxPayload{
+		StartBlock: startBlock,
+		EndBlock:   endBlock,
+		TxType:     txType,
+		TxIds:      txIds,
+	}
+
+	payloadBytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return payloadBytes, nil
+}
+
 func checkProposalRequestResp(resp *pb.TxResponse, needContractResult bool) error {
 	if resp.Code != pb.TxStatusCode_SUCCESS {
 		return errors.New(resp.Message)

@@ -19,12 +19,12 @@ func TestUserContractCounterGo(t *testing.T) {
 	testUserContractCounterGoCreate(t, client)
 	time.Sleep(5 * time.Second)
 
-	testUserContractCounterGoInvoke(t, client)
-	time.Sleep(5 * time.Second)
+	//testUserContractCounterGoInvoke(t, client)
+	//time.Sleep(5 * time.Second)
 
-	testUserContractCounterGoQuery(t, client)
-
-	testUserContractCounterGoUpgrade(t, client)
+	//testUserContractCounterGoQuery(t, client)
+	//
+	//testUserContractCounterGoUpgrade(t, client)
 }
 
 // [用户合约]
