@@ -63,24 +63,7 @@ func (cc ChainClient) Stop() error {
 	return cc.pool.Close()
 }
 
-func (cc ChainClient) proposalRequest(txType pb.TxType, txId string, payloadBytes []byte) (*pb.TxResponse, error) {
-	if txId == "" {
-		txId = GetRandTxId()
-	}
-
-	timeout := SendTxTimeout
-	if strings.HasPrefix(txType.String(), "QUERY") {
-		timeout = GetTxTimeout
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	client, err := cc.pool.getClient()
-	if err != nil {
-		return nil, err
-	}
-
+func (cc ChainClient) generateTxRequest(txId string, txType pb.TxType, payloadBytes []byte) (*pb.TxRequest, error) {
 	// 构造Sender
 	sender := &pb.SerializedMember{
 		OrgId:      cc.orgId,
@@ -116,6 +99,32 @@ func (cc ChainClient) proposalRequest(txType pb.TxType, txId string, payloadByte
 	}
 
 	req.Signature = signBytes
+
+	return req, nil
+}
+
+func (cc ChainClient) proposalRequest(txType pb.TxType, txId string, payloadBytes []byte) (*pb.TxResponse, error) {
+	if txId == "" {
+		txId = GetRandTxId()
+	}
+
+	timeout := SendTxTimeout
+	if strings.HasPrefix(txType.String(), "QUERY") {
+		timeout = GetTxTimeout
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	client, err := cc.pool.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := cc.generateTxRequest(txId, txType, payloadBytes)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, err := client.rpcNode.SendRequest(ctx, req)
 	if err != nil {
