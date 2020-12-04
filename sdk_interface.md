@@ -1,26 +1,54 @@
 # ChainMaker Go SDK 接口说明
 ## 1 用户合约接口
-### 1.1 合约创建
+### 1.1 创建合约待签名payload生成
 **参数说明**
-  - txId: 交易ID
-          格式要求：长度为64bit，字符在a-z0-9
-          可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
-  - multiSignedPayload: 经多签后的payload数据
+  - contractName: 合约名
+  - version: 版本号
+  - byteCodePath: 合约路径
+  - runtime: 合约运行环境
+  - kvs: 合约初始化参数
 ```go
-CreateContract(txId string, multiSignedPayload []byte) (*pb.TxResponse, error)
+CreateContractCreatePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
 ```
 
-### 1.2 合约升级
+### 1.2 升级合约待签名payload生成
 **参数说明**
-  - txId: 交易ID
-          格式要求：长度为64bit，字符在a-z0-9
-          可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
-  - multiSignedPayload: 经多签后的payload数据
+  - contractName: 合约名
+  - version: 版本号
+  - byteCodePath: 合约路径
+  - runtime: 合约运行环境
+  - kvs: 合约升级参数
 ```go
-UpgradeContract(txId string, multiSignedPayload []byte) (*pb.TxResponse, error)
+CreateContractUpgradePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
 ```
 
-### 1.3 合约调用
+### 1.3 合约管理获取Payload签名
+```go
+SignContractManagePayload(payloadBytes []byte) ([]byte, error)
+```
+
+### 1.4 合约管理Payload签名收集&合并
+```go
+MergeContractManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
+```
+
+### 1.5 发送创建合约请求
+**参数说明**
+  - multiSignedPayload: 多签结果
+  - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+```go
+SendContractCreateRequest(mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error)
+```
+
+### 1.6 发送升级合约请求
+**参数说明**
+  - multiSignedPayload: 多签结果
+  - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+```go
+SendContractUpgradeRequest(mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error)
+```
+
+### 1.7 合约调用
 **参数说明**
   - contractName: 合约名称
   - method: 合约方法
@@ -28,17 +56,19 @@ UpgradeContract(txId string, multiSignedPayload []byte) (*pb.TxResponse, error)
           格式要求：长度为64bit，字符在a-z0-9
           可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
   - params: 合约参数
+  - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 ```go
-InvokeContract(contractName, method, txId string, params map[string]string) (*pb.TxResponse, error)
+InvokeContract(contractName, method, txId string, params map[string]string, timeout int64) (*pb.TxResponse, error)
 ```
 
-### 1.4 合约查询接口调用
+### 1.8 合约查询接口调用
 **参数说明**
   - contractName: 合约名称
   - method: 合约方法
   - params: 合约参数
+  - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 ```go
-QueryContract(contractName, method string, params map[string]string) (*pb.TxResponse, error)
+QueryContract(contractName, method string, params map[string]string, timeout int64) (*pb.TxResponse, error)
 ```
 
 ## 2 系统合约接口
@@ -132,6 +162,7 @@ SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*pb.TxResponse, er
 ```
 
 > 以下CreateChainConfigXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
+
 ### 3.7 更新Core模块待签名payload生成
 **参数说明**
   - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]，若无需修改，请置为-1
@@ -277,18 +308,18 @@ AddCert() (*pb.TxResponse, error)
 
 ### 4.2 用户证书删除
 **参数说明**
-  - certHashes: 证书Hash列表，多个使用逗号分割
+  - certHashes: 证书Hash列表
 ```go
-DeleteCert(certHashes string) (*pb.TxResponse, error)
+DeleteCert(certHashes []string) (*pb.TxResponse, error)
 ```
 
 ### 4.3 用户证书查询
 **参数说明**
-  - certHashes: 证书Hash列表，多个使用逗号分割
+  - certHashes: 证书Hash列表
 返回值说明：
   - *pb.CertInfos: 包含证书Hash和证书内容的列表
 ```go
-QueryCert(certHashes string) (*pb.CertInfos, error)
+QueryCert(certHashes []string) (*pb.CertInfos, error)
 ```
 
 ## 5 消息订阅接口

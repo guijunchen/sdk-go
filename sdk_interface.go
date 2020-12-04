@@ -22,6 +22,7 @@ type SDKInterface interface {
 	//   - kvs: 合约初始化参数
 	// ```go
 	CreateContractCreatePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
+	// ```
 
 	// ### 1.2 升级合约待签名payload生成
 	// **参数说明**
@@ -32,6 +33,7 @@ type SDKInterface interface {
 	//   - kvs: 合约升级参数
 	// ```go
 	CreateContractUpgradePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
+	// ```
 
 	// ### 1.3 合约管理获取Payload签名
 	// ```go
