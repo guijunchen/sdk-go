@@ -38,9 +38,9 @@ func TestUserContractCounterGo(t *testing.T) {
 	time.Sleep(5 * time.Second)
 
 	params := map[string]string{
-		"key":   "jasonruan",
-		"name":  "jasonruan",
-		"value": "jasonruan",
+		"key":   "key",
+		"name":  "name",
+		"value": "value",
 	}
 	testUserContractCounterGoInvoke(t, client, "upgrade_set_store", params)
 	time.Sleep(5 * time.Second)
@@ -51,7 +51,7 @@ func TestUserContractCounterGo(t *testing.T) {
 // [用户合约]
 func testUserContractCounterGoCreate(t *testing.T, client *ChainClient,
 	admin1, admin2, admin3, admin4 *ChainClient) {
-	payloadBytes, err := client.CreateContractManagePayload(TYPE_CREATE, contractName, version, byteCodePath, pb.RuntimeType_GASM_CPP, []*pb.KeyValuePair{})
+	payloadBytes, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, pb.RuntimeType_GASM_CPP, []*pb.KeyValuePair{})
 	require.Nil(t, err)
 
 	// 各组织Admin权限用户签名
@@ -73,7 +73,7 @@ func testUserContractCounterGoCreate(t *testing.T, client *ChainClient,
 	require.Nil(t, err)
 
 	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(TYPE_CREATE, mergeSignedPayloadBytes, -1)
+	resp, err := client.SendContractCreateRequest(mergeSignedPayloadBytes, -1)
 	require.Nil(t, err)
 
 	err = checkProposalRequestResp(resp, true)
@@ -84,7 +84,7 @@ func testUserContractCounterGoCreate(t *testing.T, client *ChainClient,
 
 func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient,
 	admin1, admin2, admin3, admin4 *ChainClient) {
-	payloadBytes, err := client.CreateContractManagePayload(TYPE_UPGRADE, contractName, upgradeVersion, upgradeByteCodePath, pb.RuntimeType_GASM_CPP, []*pb.KeyValuePair{})
+	payloadBytes, err := client.CreateContractUpgradePayload(contractName, upgradeVersion, upgradeByteCodePath, pb.RuntimeType_GASM_CPP, []*pb.KeyValuePair{})
 	require.Nil(t, err)
 
 	// 各组织Admin权限用户签名
@@ -106,13 +106,13 @@ func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient,
 	require.Nil(t, err)
 
 	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(TYPE_UPGRADE, mergeSignedPayloadBytes, -1)
+	resp, err := client.SendContractUpgradeRequest(mergeSignedPayloadBytes, -1)
 	require.Nil(t, err)
 
 	err = checkProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
-	fmt.Printf("CREATE counter-go upgrade resp: %+v\n", resp)
+	fmt.Printf("UPGRADE counter-go upgrade resp: %+v\n", resp)
 }
 
 func testUserContractCounterGoInvoke(t *testing.T, client *ChainClient,

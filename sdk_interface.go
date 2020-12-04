@@ -13,37 +13,53 @@ import (
 // # ChainMaker Go SDK 接口说明
 type SDKInterface interface {
 	// ## 1 用户合约接口
-	// ### 1.1 创建合约管理待签名payload生成
+	// ### 1.1 创建合约待签名payload生成
 	// **参数说明**
-	//   - manageType: 管理类型，创建合约为TYPE_CREATE，升级合约为TYPE_UPGRADE
 	//   - contractName: 合约名
 	//   - version: 版本号
+	//   - byteCodePath: 合约路径
 	//   - runtime: 合约运行环境
-	//   - kvs: 合约参数
+	//   - kvs: 合约初始化参数
 	// ```go
-	CreateContractManagePayload(manageType ContractManageType, contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
-	// ```
+	CreateContractCreatePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
 
-	// ### 1.2 合约管理获取Payload签名
+	// ### 1.2 升级合约待签名payload生成
+	// **参数说明**
+	//   - contractName: 合约名
+	//   - version: 版本号
+	//   - byteCodePath: 合约路径
+	//   - runtime: 合约运行环境
+	//   - kvs: 合约升级参数
+	// ```go
+	CreateContractUpgradePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
+
+	// ### 1.3 合约管理获取Payload签名
 	// ```go
 	SignContractManagePayload(payloadBytes []byte) ([]byte, error)
 	// ```
 
-	// ### 1.3 合约管理Payload签名收集&合并
+	// ### 1.4 合约管理Payload签名收集&合并
 	// ```go
 	MergeContractManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
 	// ```
 
-	// ### 1.4 发送合约管理请求
+	// ### 1.5 发送创建合约请求
 	// **参数说明**
-	//   - manageType: 管理类型，创建合约为TYPE_CREATE，升级合约为TYPE_UPGRADE
 	//   - multiSignedPayload: 多签结果
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
-	SendContractManageRequest(manageType ContractManageType, mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error)
+	SendContractCreateRequest(mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error)
 	// ```
 
-	// ### 1.5 合约调用
+	// ### 1.6 发送升级合约请求
+	// **参数说明**
+	//   - multiSignedPayload: 多签结果
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	// ```go
+	SendContractUpgradeRequest(mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error)
+	// ```
+
+	// ### 1.7 合约调用
 	// **参数说明**
 	//   - contractName: 合约名称
 	//   - method: 合约方法
@@ -56,7 +72,7 @@ type SDKInterface interface {
 	InvokeContract(contractName, method, txId string, params map[string]string, timeout int64) (*pb.TxResponse, error)
 	// ```
 
-	// ### 1.6 合约查询接口调用
+	// ### 1.8 合约查询接口调用
 	// **参数说明**
 	//   - contractName: 合约名称
 	//   - method: 合约方法

@@ -12,21 +12,31 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-type ContractManageType int
+type contractManageType int
 
 const (
-	TYPE_CREATE  ContractManageType = 0
-	TYPE_UPGRADE ContractManageType = 1
+	type_create  contractManageType = 0
+	type_upgrade contractManageType = 1
 )
 
 var (
-	mamageType = map[ContractManageType]string{
-		TYPE_CREATE:  "init",
-		TYPE_UPGRADE: "upgrade",
+	mamageType = map[contractManageType]string{
+		type_create:  "init",
+		type_upgrade: "upgrade",
 	}
 )
 
-func (cc ChainClient) CreateContractManagePayload(manageType ContractManageType, contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
+func (cc ChainClient) CreateContractCreatePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
+	cc.logger.Debugf("[SDK] create [ContractCreate] to be signed payload")
+	return cc.createContractManagePayload(type_create, contractName, version, byteCodePath, runtime, kvs)
+}
+
+func (cc ChainClient) CreateContractUpgradePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
+	cc.logger.Debugf("[SDK] create [ContractUpgrade] to be signed payload")
+	return cc.createContractManagePayload(type_upgrade, contractName, version, byteCodePath, runtime, kvs)
+}
+
+func (cc ChainClient) createContractManagePayload(manageType contractManageType, contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [ContractManage] to be signed payload")
 
 	codeBytes, err := ioutil.ReadFile(byteCodePath)
@@ -93,11 +103,19 @@ func (cc ChainClient) MergeContractManageSignedPayload(signedPayloadBytes [][]by
 	return mergeContractManageSignedPayload(signedPayloadBytes)
 }
 
-func (cc ChainClient) SendContractManageRequest(manageType ContractManageType, mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error) {
+func (cc ChainClient) SendContractCreateRequest(mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error) {
+	return cc.sendContractManageRequest(type_create, mergeSignedPayloadBytes, timeout)
+}
+
+func (cc ChainClient) SendContractUpgradeRequest(mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error) {
+	return cc.sendContractManageRequest(type_upgrade, mergeSignedPayloadBytes, timeout)
+}
+
+func (cc ChainClient) sendContractManageRequest(manageType contractManageType, mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error) {
 	txId := GetRandTxId()
 
 	txType := pb.TxType_CREATE_USER_CONTRACT
-	if manageType == TYPE_UPGRADE {
+	if manageType == type_upgrade {
 		txType = pb.TxType_UPGRADE_USER_CONTRACT
 	}
 	resp, err := cc.proposalRequestWithTimeout(txType, txId, mergeSignedPayloadBytes, timeout)
