@@ -5,12 +5,13 @@
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"context"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -28,8 +29,8 @@ func TestSubscribeBlock(t *testing.T) {
 	require.Nil(t, err)
 
 	go func() {
-		for i:=0; i<sendTxCount; i++ {
-			testUserContractCounterGoInvoke(t, client)
+		for i := 0; i < sendTxCount; i++ {
+			testUserContractCounterGoInvoke(t, client, "increase", nil)
 			time.Sleep(2 * time.Second)
 		}
 	}()
@@ -72,8 +73,8 @@ func TestSubscribeTx(t *testing.T) {
 	require.Nil(t, err)
 
 	go func() {
-		for i:=0; i<sendTxCount; i++ {
-			testUserContractCounterGoInvoke(t, client)
+		for i := 0; i < sendTxCount; i++ {
+			testUserContractCounterGoInvoke(t, client, "increase", nil)
 			time.Sleep(2 * time.Second)
 		}
 	}()

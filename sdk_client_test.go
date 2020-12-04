@@ -21,12 +21,17 @@ const (
 	contractName   = "counter-go-1"
 	certPathPrefix = "./testdata"
 	tlsHostName    = "chainmaker.org"
+	version        = "1.0.0"
+	upgradeVersion = "2.0.0"
 
 	nodeAddr = "127.0.0.1:12301"
 	connCnt  = 5
 
 	multiSignedPayloadFile        = "./testdata/counter-go-demo/collect-signed-all.pb"
 	upgradeMultiSignedPayloadFile = "./testdata/counter-go-demo/upgrade-collect-signed-all.pb"
+
+	byteCodePath        = "./testdata/counter-go-demo/counter-go.wasm"
+	upgradeByteCodePath = "./testdata/counter-go-demo/counter-go-upgrade.wasm"
 )
 
 var (

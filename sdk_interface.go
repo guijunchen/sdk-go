@@ -13,27 +13,36 @@ import (
 // # ChainMaker Go SDK 接口说明
 type SDKInterface interface {
 	// ## 1 用户合约接口
-	// ### 1.1 合约创建
+	// ### 1.1 创建合约管理待签名payload生成
 	// **参数说明**
-	//   - txId: 交易ID
-	//           格式要求：长度为64bit，字符在a-z0-9
-	//           可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
-	//   - multiSignedPayload: 经多签后的payload数据
+	//   - manageType: 管理类型，创建合约为TYPE_CREATE，升级合约为TYPE_UPGRADE
+	//   - contractName: 合约名
+	//   - version: 版本号
+	//   - runtime: 合约运行环境
+	//   - kvs: 合约参数
 	// ```go
-	CreateContract(txId string, multiSignedPayload []byte) (*pb.TxResponse, error)
+	CreateContractManagePayload(manageType ContractManageType, contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
 	// ```
 
-	// ### 1.2 合约升级
-	// **参数说明**
-	//   - txId: 交易ID
-	//           格式要求：长度为64bit，字符在a-z0-9
-	//           可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
-	//   - multiSignedPayload: 经多签后的payload数据
+	// ### 1.2 合约管理获取Payload签名
 	// ```go
-	UpgradeContract(txId string, multiSignedPayload []byte) (*pb.TxResponse, error)
+	SignContractManagePayload(payloadBytes []byte) ([]byte, error)
 	// ```
 
-	// ### 1.3 合约调用
+	// ### 1.3 合约管理Payload签名收集&合并
+	// ```go
+	MergeContractManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
+	// ```
+
+	// ### 1.4 发送合约管理请求
+	// **参数说明**
+	//   - manageType: 管理类型，创建合约为TYPE_CREATE，升级合约为TYPE_UPGRADE
+	//   - multiSignedPayload: 多签结果
+	// ```go
+	SendContractManageRequest(manageType ContractManageType, mergeSignedPayloadBytes []byte) (*pb.TxResponse, error)
+	// ```
+
+	// ### 1.5 合约调用
 	// **参数说明**
 	//   - contractName: 合约名称
 	//   - method: 合约方法
@@ -45,7 +54,7 @@ type SDKInterface interface {
 	InvokeContract(contractName, method, txId string, params map[string]string) (*pb.TxResponse, error)
 	// ```
 
-	// ### 1.4 合约查询接口调用
+	// ### 1.6 合约查询接口调用
 	// **参数说明**
 	//   - contractName: 合约名称
 	//   - method: 合约方法
