@@ -32,7 +32,7 @@ func testUserContractCounterGoCreate(t *testing.T, client *ChainClient) {
 	file, err := ioutil.ReadFile(multiSignedPayloadFile)
 	require.Nil(t, err)
 
-	resp, err := client.CreateContract("", file)
+	resp, err := client.CreateContract("", file, -1)
 	require.Nil(t, err)
 
 	fmt.Printf("CREATE counter-go contract resp: %+v\n", resp)
@@ -42,20 +42,20 @@ func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient) {
 	file, err := ioutil.ReadFile(upgradeMultiSignedPayloadFile)
 	require.Nil(t, err)
 
-	resp, err := client.UpgradeContract("", file)
+	resp, err := client.UpgradeContract("", file, -1)
 	require.Nil(t, err)
 
 	fmt.Printf("UPGRADE counter-go contract resp: %+v\n", resp)
 }
 
 func testUserContractCounterGoInvoke(t *testing.T, client *ChainClient) {
-	resp, err := client.InvokeContract(contractName, "increase", "", nil)
+	resp, err := client.InvokeContract(contractName, "increase", "", nil, -1)
 	require.Nil(t, err)
 	fmt.Printf("INVOKE counter-go contract resp: %+v\n", resp)
 }
 
 func testUserContractCounterGoQuery(t *testing.T, client *ChainClient) {
-	resp, err := client.QueryContract(contractName, "query", nil)
+	resp, err := client.QueryContract(contractName, "query", nil, -1)
 	require.Nil(t, err)
 	fmt.Printf("QUERY counter-go contract resp: %+v\n", resp)
 }

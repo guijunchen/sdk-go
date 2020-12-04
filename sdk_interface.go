@@ -19,8 +19,9 @@ type SDKInterface interface {
 	//           格式要求：长度为64bit，字符在a-z0-9
 	//           可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
 	//   - multiSignedPayload: 经多签后的payload数据
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
-	CreateContract(txId string, multiSignedPayload []byte) (*pb.TxResponse, error)
+	CreateContract(txId string, multiSignedPayload []byte, timeout int64) (*pb.TxResponse, error)
 	// ```
 
 	// ### 1.2 合约升级
@@ -29,8 +30,9 @@ type SDKInterface interface {
 	//           格式要求：长度为64bit，字符在a-z0-9
 	//           可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
 	//   - multiSignedPayload: 经多签后的payload数据
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
-	UpgradeContract(txId string, multiSignedPayload []byte) (*pb.TxResponse, error)
+	UpgradeContract(txId string, multiSignedPayload []byte, timeout int64) (*pb.TxResponse, error)
 	// ```
 
 	// ### 1.3 合约调用
@@ -41,8 +43,9 @@ type SDKInterface interface {
 	//           格式要求：长度为64bit，字符在a-z0-9
 	//           可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
 	//   - params: 合约参数
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
-	InvokeContract(contractName, method, txId string, params map[string]string) (*pb.TxResponse, error)
+	InvokeContract(contractName, method, txId string, params map[string]string, timeout int64) (*pb.TxResponse, error)
 	// ```
 
 	// ### 1.4 合约查询接口调用
@@ -50,8 +53,9 @@ type SDKInterface interface {
 	//   - contractName: 合约名称
 	//   - method: 合约方法
 	//   - params: 合约参数
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
-	QueryContract(contractName, method string, params map[string]string) (*pb.TxResponse, error)
+	QueryContract(contractName, method string, params map[string]string, timeout int64) (*pb.TxResponse, error)
 	// ```
 
 	// ## 2 系统合约接口
