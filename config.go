@@ -12,16 +12,15 @@ import (
 	"fmt"
 	"go.uber.org/zap"
 	"io/ioutil"
-	"time"
 )
 
 const (
 	// 单ChainMaker节点最大连接数
 	MaxConnCnt      = 5
 	// 查询交易超时时间
-	GetTxTimeout    = 10 * time.Second
+	GetTxTimeout    = 10
 	// 发送交易超时时间
-	SendTxTimeout   = 10 * time.Second
+	SendTxTimeout   = 10
 )
 
 type Config struct {

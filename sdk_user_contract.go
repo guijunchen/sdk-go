@@ -93,14 +93,14 @@ func (cc ChainClient) MergeContractManageSignedPayload(signedPayloadBytes [][]by
 	return mergeContractManageSignedPayload(signedPayloadBytes)
 }
 
-func (cc ChainClient) SendContractManageRequest(manageType ContractManageType, mergeSignedPayloadBytes []byte) (*pb.TxResponse, error) {
+func (cc ChainClient) SendContractManageRequest(manageType ContractManageType, mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error) {
 	txId := GetRandTxId()
 
 	txType := pb.TxType_CREATE_USER_CONTRACT
 	if manageType == TYPE_UPGRADE {
 		txType = pb.TxType_UPGRADE_USER_CONTRACT
 	}
-	resp, err := cc.proposalRequest(txType, txId, mergeSignedPayloadBytes)
+	resp, err := cc.proposalRequestWithTimeout(txType, txId, mergeSignedPayloadBytes, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("send %s failed, %s", txType.String(), err.Error())
 	}
@@ -114,7 +114,7 @@ func (cc ChainClient) SendContractManageRequest(manageType ContractManageType, m
 	return resp, nil
 }
 
-func (cc ChainClient) InvokeContract(contractName, method, txId string, params map[string]string) (*pb.TxResponse, error) {
+func (cc ChainClient) InvokeContract(contractName, method, txId string, params map[string]string, timeout int64) (*pb.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -129,7 +129,7 @@ func (cc ChainClient) InvokeContract(contractName, method, txId string, params m
 		return nil, fmt.Errorf("construct transact payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(pb.TxType_INVOKE_USER_CONTRACT, txId, payloadBytes)
+	resp, err := cc.proposalRequestWithTimeout(pb.TxType_INVOKE_USER_CONTRACT, txId, payloadBytes, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_INVOKE_USER_CONTRACT.String(), err.Error())
 	}
@@ -143,7 +143,7 @@ func (cc ChainClient) InvokeContract(contractName, method, txId string, params m
 	return resp, nil
 }
 
-func (cc ChainClient) QueryContract(contractName, method string, params map[string]string) (*pb.TxResponse, error) {
+func (cc ChainClient) QueryContract(contractName, method string, params map[string]string, timeout int64) (*pb.TxResponse, error) {
 	txId := GetRandTxId()
 
 	cc.logger.Debugf("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
@@ -156,7 +156,7 @@ func (cc ChainClient) QueryContract(contractName, method string, params map[stri
 		return nil, fmt.Errorf("construct query payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(pb.TxType_QUERY_USER_CONTRACT, txId, payloadBytes)
+	resp, err := cc.proposalRequestWithTimeout(pb.TxType_QUERY_USER_CONTRACT, txId, payloadBytes, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("send %s failed, %s", pb.TxType_QUERY_USER_CONTRACT.String(), err.Error())
 	}

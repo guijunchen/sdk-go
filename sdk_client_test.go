@@ -6,9 +6,6 @@ package chainmaker_sdk_go
 
 import (
 	"fmt"
-	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -85,11 +82,3 @@ func createAdmin(orgId string) (*ChainClient, error) {
 	return admin, nil
 }
 
-func TestMy(t *testing.T) {
-	client, err := createClient()
-	require.Nil(t, err)
-
-	txId := "c0044d5082394e498168d401e3af464396f8e73e47e847e391906f19355b01ce"
-	tx := testSystemContractGetTxByTxId(t, client, txId)
-	fmt.Printf("tx: %+v\n", tx)
-}

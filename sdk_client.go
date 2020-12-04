@@ -104,16 +104,22 @@ func (cc ChainClient) generateTxRequest(txId string, txType pb.TxType, payloadBy
 }
 
 func (cc ChainClient) proposalRequest(txType pb.TxType, txId string, payloadBytes []byte) (*pb.TxResponse, error) {
+	return cc.proposalRequestWithTimeout(txType, txId, payloadBytes, -1)
+}
+
+func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, payloadBytes []byte, timeout int64) (*pb.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
 	}
 
-	timeout := SendTxTimeout
-	if strings.HasPrefix(txType.String(), "QUERY") {
-		timeout = GetTxTimeout
+	if timeout < 0 {
+		timeout = SendTxTimeout
+		if strings.HasPrefix(txType.String(), "QUERY") {
+			timeout = GetTxTimeout
+		}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout) * time.Second)
 	defer cancel()
 
 	client, err := cc.pool.getClient()

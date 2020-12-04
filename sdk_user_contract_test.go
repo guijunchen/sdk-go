@@ -73,7 +73,7 @@ func testUserContractCounterGoCreate(t *testing.T, client *ChainClient,
 	require.Nil(t, err)
 
 	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(TYPE_CREATE, mergeSignedPayloadBytes)
+	resp, err := client.SendContractManageRequest(TYPE_CREATE, mergeSignedPayloadBytes, -1)
 	require.Nil(t, err)
 
 	err = checkProposalRequestResp(resp, true)
@@ -106,7 +106,7 @@ func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient,
 	require.Nil(t, err)
 
 	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(TYPE_UPGRADE, mergeSignedPayloadBytes)
+	resp, err := client.SendContractManageRequest(TYPE_UPGRADE, mergeSignedPayloadBytes, -1)
 	require.Nil(t, err)
 
 	err = checkProposalRequestResp(resp, true)
@@ -117,14 +117,14 @@ func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient,
 
 func testUserContractCounterGoInvoke(t *testing.T, client *ChainClient,
 	method string, params map[string]string) {
-	resp, err := client.InvokeContract(contractName, method, "", params)
+	resp, err := client.InvokeContract(contractName, method, "", params, -1)
 	require.Nil(t, err)
 	fmt.Printf("INVOKE counter-go contract resp: %+v\n", resp)
 }
 
 func testUserContractCounterGoQuery(t *testing.T, client *ChainClient,
 	method string, params map[string]string) {
-	resp, err := client.QueryContract(contractName, method, params)
+	resp, err := client.QueryContract(contractName, method, params, -1)
 	require.Nil(t, err)
 	fmt.Printf("QUERY counter-go contract resp: %+v\n", resp)
 }
