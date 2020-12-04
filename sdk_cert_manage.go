@@ -12,11 +12,11 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func (cc ChainClient) CertAdd() (*pb.TxResponse, error) {
+func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to INVOKE system contract, [contract:%s]/[method:%s]",
 		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERT_ADD.String())
 
-	chainConfig, err := cc.ChainConfigGet()
+	chainConfig, err := cc.GetChainConfig()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config failed, %s", err.Error())
 	}
@@ -53,7 +53,7 @@ func (cc ChainClient) CertAdd() (*pb.TxResponse, error) {
 	return resp, nil
 }
 
-func (cc ChainClient) CertDelete(certHashes []string) (*pb.TxResponse, error) {
+func (cc ChainClient) DeleteCert(certHashes []string) (*pb.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to INVOKE system contract, [contract:%s]/[method:%s]",
 		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERTS_DELETE.String())
 
@@ -88,7 +88,7 @@ func (cc ChainClient) CertDelete(certHashes []string) (*pb.TxResponse, error) {
 	return resp, nil
 }
 
-func (cc ChainClient) CertQuery(certHashes []string) (*pb.CertInfos, error) {
+func (cc ChainClient) QueryCert(certHashes []string) (*pb.CertInfos, error) {
 	cc.logger.Infof("[SDK] begin to INVOKE system contract, [contract:%s]/[method:%s]",
 		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERTS_QUERY.String())
 

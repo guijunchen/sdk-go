@@ -236,20 +236,20 @@ func TestChainConfig(t *testing.T) {
 }
 
 func testGetChainConfig(t *testing.T, client *ChainClient) *pb.ChainConfig {
-	resp, err := client.ChainConfigGet()
+	resp, err := client.GetChainConfig()
 	require.Nil(t, err)
 	fmt.Printf("GetChainConfig resp: %+v\n", resp)
 	return resp
 }
 
 func testGetChainConfigByBlockHeight(t *testing.T, client *ChainClient) {
-	resp, err := client.ChainConfigGetByBlockHeight(1)
+	resp, err := client.GetChainConfigByBlockHeight(1)
 	require.Nil(t, err)
 	fmt.Printf("GetChainConfig resp: %+v\n", resp)
 }
 
 func testGetChainConfigSeq(t *testing.T, client *ChainClient) {
-	seq, err := client.ChainConfigGetSeq()
+	seq, err := client.GetChainConfigSequence()
 	require.Nil(t, err)
 	fmt.Printf("chainconfig seq: %d\n", seq)
 }
@@ -259,7 +259,7 @@ func testChainConfigCoreUpdate(t *testing.T, client,
 	txSchedulerTimeout, txSchedulerValidateTimeout int) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateCoreUpdatePayload(
+	payloadBytes, err := client.CreateChainConfigCoreUpdatePayload(
 		txSchedulerTimeout, txSchedulerValidateTimeout)
 	require.Nil(t, err)
 
@@ -272,7 +272,7 @@ func testChainConfigBlockUpdate(t *testing.T, client,
 	txTimeout, blockTxCapacity, blockSize, blockInterval int) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateBlockUpdatePayload(
+	payloadBytes, err := client.CreateChainConfigBlockUpdatePayload(
 		txTimestampVerify, txTimeout, blockTxCapacity, blockSize, blockInterval)
 	require.Nil(t, err)
 
@@ -284,7 +284,7 @@ func testChainConfigTrustRootAdd(t *testing.T, client,
 	trustRootOrgId, trustRootCrt string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateTrustRootAddPayload(trustRootOrgId, trustRootCrt)
+	payloadBytes, err := client.CreateChainConfigTrustRootAddPayload(trustRootOrgId, trustRootCrt)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -295,7 +295,7 @@ func testChainConfigTrustRootUpdate(t *testing.T, client,
 	trustRootOrgId, trustRootCrt string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateTrustRootUpdatePayload(trustRootOrgId, trustRootCrt)
+	payloadBytes, err := client.CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -306,7 +306,7 @@ func testChainConfigTrustRootDelete(t *testing.T, client,
 	trustRootOrgId string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateTrustRootDeletePayload(trustRootOrgId)
+	payloadBytes, err := client.CreateChainConfigTrustRootDeletePayload(trustRootOrgId)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -317,7 +317,7 @@ func testChainConfigPermissionAdd(t *testing.T, client,
 	permissionResourceName string, principle *pb.Principle) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreatePermissionAddPayload(permissionResourceName, principle)
+	payloadBytes, err := client.CreateChainConfigPermissionAddPayload(permissionResourceName, principle)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -328,7 +328,7 @@ func testChainConfigPermissionUpdate(t *testing.T, client,
 	permissionResourceName string, principle *pb.Principle) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreatePermissionUpdatePayload(permissionResourceName, principle)
+	payloadBytes, err := client.CreateChainConfigPermissionUpdatePayload(permissionResourceName, principle)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -339,7 +339,7 @@ func testChainConfigPermissionDelete(t *testing.T, client,
 	permissionResourceName string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreatePermissionDeletePayload(permissionResourceName)
+	payloadBytes, err := client.CreateChainConfigPermissionDeletePayload(permissionResourceName)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -350,7 +350,7 @@ func testChainConfigConsensusNodeAddrAdd(t *testing.T, client,
 	nodeAddrOrgId string, nodeAddresses []string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateConsensusNodeAddrAddPayload(nodeAddrOrgId, nodeAddresses)
+	payloadBytes, err := client.CreateChainConfigConsensusNodeAddrAddPayload(nodeAddrOrgId, nodeAddresses)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -361,7 +361,7 @@ func testChainConfigConsensusNodeAddrUpdate(t *testing.T, client,
 	nodeAddrOrgId, nodeOldAddress, nodeNewAddress string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateConsensusNodeAddrUpdatePayload(nodeAddrOrgId, nodeOldAddress, nodeNewAddress)
+	payloadBytes, err := client.CreateChainConfigConsensusNodeAddrUpdatePayload(nodeAddrOrgId, nodeOldAddress, nodeNewAddress)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -372,7 +372,7 @@ func testChainConfigConsensusNodeAddrDelete(t *testing.T, client,
 	nodeAddrOrgId, nodeAddresses string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateConsensusNodeAddrDeletePayload(nodeAddrOrgId, nodeAddresses)
+	payloadBytes, err := client.CreateChainConfigConsensusNodeAddrDeletePayload(nodeAddrOrgId, nodeAddresses)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -383,7 +383,7 @@ func testChainConfigConsensusNodeOrgAdd(t *testing.T, client,
 	nodeAddrOrgId string, nodeAddresses []string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateConsensusNodeOrgAddPayload(nodeAddrOrgId, nodeAddresses)
+	payloadBytes, err := client.CreateChainConfigConsensusNodeOrgAddPayload(nodeAddrOrgId, nodeAddresses)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -394,7 +394,7 @@ func testChainConfigConsensusNodeOrgUpdate(t *testing.T, client,
 	nodeAddrOrgId string, nodeAddresses []string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateConsensusNodeOrgUpdatePayload(nodeAddrOrgId, nodeAddresses)
+	payloadBytes, err := client.CreateChainConfigConsensusNodeOrgUpdatePayload(nodeAddrOrgId, nodeAddresses)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -405,7 +405,7 @@ func testChainConfigConsensusNodeOrgDelete(t *testing.T, client,
 	nodeAddrOrgId string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateConsensusNodeOrgDeletePayload(nodeAddrOrgId)
+	payloadBytes, err := client.CreateChainConfigConsensusNodeOrgDeletePayload(nodeAddrOrgId)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -416,7 +416,7 @@ func testChainConfigConsensusExtAdd(t *testing.T, client,
 	kvs []*pb.KeyValuePair) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateConsensusExtAddPayload(kvs)
+	payloadBytes, err := client.CreateChainConfigConsensusExtAddPayload(kvs)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -427,7 +427,7 @@ func testChainConfigConsensusExtUpdate(t *testing.T, client,
 	kvs []*pb.KeyValuePair) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateConsensusExtUpdatePayload(kvs)
+	payloadBytes, err := client.CreateChainConfigConsensusExtUpdatePayload(kvs)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -438,7 +438,7 @@ func testChainConfigConsensusExtDelete(t *testing.T, client,
 	keys []string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.ChainConfigCreateConsensusExtDeletePayload(keys)
+	payloadBytes, err := client.CreateChainConfigConsensusExtDeletePayload(keys)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -448,20 +448,20 @@ func signAndSendRequest(t *testing.T, client,
 	admin1, admin2, admin3, admin4 *ChainClient,
 	payloadBytes []byte) {
 	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.ChainConfigPayloadCollectSign(payloadBytes)
+	signedPayloadBytes1, err := admin1.SignChainConfigPayload(payloadBytes)
 	require.Nil(t, err)
 
-	signedPayloadBytes2, err := admin2.ChainConfigPayloadCollectSign(payloadBytes)
+	signedPayloadBytes2, err := admin2.SignChainConfigPayload(payloadBytes)
 	require.Nil(t, err)
 
-	signedPayloadBytes3, err := admin3.ChainConfigPayloadCollectSign(payloadBytes)
+	signedPayloadBytes3, err := admin3.SignChainConfigPayload(payloadBytes)
 	require.Nil(t, err)
 
-	signedPayloadBytes4, err := admin4.ChainConfigPayloadCollectSign(payloadBytes)
+	signedPayloadBytes4, err := admin4.SignChainConfigPayload(payloadBytes)
 	require.Nil(t, err)
 
 	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.ChainConfigPayloadMergeSign([][]byte{signedPayloadBytes1,
+	mergeSignedPayloadBytes, err := client.MergeChainConfigSignedPayload([][]byte{signedPayloadBytes1,
 		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
 	require.Nil(t, err)
 

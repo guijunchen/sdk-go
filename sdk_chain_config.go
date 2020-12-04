@@ -13,7 +13,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func (cc ChainClient) ChainConfigGet() (*pb.ChainConfig, error) {
+func (cc ChainClient) GetChainConfig() (*pb.ChainConfig, error) {
 	cc.logger.Debug("[SDK] begin to get chain config")
 
 	pairs := make([]*pb.KeyValuePair, 0)
@@ -41,7 +41,7 @@ func (cc ChainClient) ChainConfigGet() (*pb.ChainConfig, error) {
 	return chainConfig, nil
 }
 
-func (cc ChainClient) ChainConfigGetByBlockHeight(blockHeight int) (*pb.ChainConfig, error) {
+func (cc ChainClient) GetChainConfigByBlockHeight(blockHeight int) (*pb.ChainConfig, error) {
 	cc.logger.Debugf("[SDK] begin to get chain config by block height [%d]", blockHeight)
 
 	pairs := make([]*pb.KeyValuePair, 0)
@@ -74,10 +74,10 @@ func (cc ChainClient) ChainConfigGetByBlockHeight(blockHeight int) (*pb.ChainCon
 	return chainConfig, nil
 }
 
-func (cc ChainClient) ChainConfigGetSeq() (int, error) {
+func (cc ChainClient) GetChainConfigSequence() (int, error) {
 	cc.logger.Debug("[SDK] begin to get chain config sequence")
 
-	chainConfig, err := cc.ChainConfigGet()
+	chainConfig, err := cc.GetChainConfig()
 	if err != nil {
 		return -1, err
 	}
@@ -85,7 +85,7 @@ func (cc ChainClient) ChainConfigGetSeq() (int, error) {
 	return int(chainConfig.Sequence), nil
 }
 
-func (cc ChainClient) ChainConfigPayloadCollectSign(payloadBytes []byte) ([]byte, error) {
+func (cc ChainClient) SignChainConfigPayload(payloadBytes []byte) ([]byte, error) {
 	payload := &pb.ConfigUpdatePayload{}
 	if err := proto.Unmarshal(payloadBytes, payload); err != nil {
 		return nil, fmt.Errorf("unmarshal config update payload failed, %s", err)
@@ -120,14 +120,14 @@ func (cc ChainClient) ChainConfigPayloadCollectSign(payloadBytes []byte) ([]byte
 	return signedPayloadBytes, nil
 }
 
-func (cc ChainClient) ChainConfigPayloadMergeSign(signedPayloadBytes [][]byte) ([]byte, error) {
+func (cc ChainClient) MergeChainConfigSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
 	return mergeConfigUpdateSignedPayload(signedPayloadBytes)
 }
 
-func (cc ChainClient) ChainConfigCreateCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [CoreUpdate] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -168,10 +168,10 @@ func (cc ChainClient) ChainConfigCreateCoreUpdatePayload(txSchedulerTimeout, txS
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize, blockInterval int) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize, blockInterval int) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [BlockUpdate] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -233,10 +233,10 @@ func (cc ChainClient) ChainConfigCreateBlockUpdatePayload(txTimestampVerify bool
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateTrustRootAddPayload(trustRootOrgId, trustRootCrt string) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId, trustRootCrt string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [TrustRootAdd] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -261,10 +261,10 @@ func (cc ChainClient) ChainConfigCreateTrustRootAddPayload(trustRootOrgId, trust
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateTrustRootUpdatePayload(trustRootOrgId, trustRootCrt string) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [TrustRootUpdate] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -289,10 +289,10 @@ func (cc ChainClient) ChainConfigCreateTrustRootUpdatePayload(trustRootOrgId, tr
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateTrustRootDeletePayload(trustRootOrgId string) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigTrustRootDeletePayload(trustRootOrgId string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [TrustRootDelete] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -313,10 +313,10 @@ func (cc ChainClient) ChainConfigCreateTrustRootDeletePayload(trustRootOrgId str
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreatePermissionAddPayload(permissionResourceName string, principle *pb.Principle) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigPermissionAddPayload(permissionResourceName string, principle *pb.Principle) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [PermissionAdd] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -342,10 +342,10 @@ func (cc ChainClient) ChainConfigCreatePermissionAddPayload(permissionResourceNa
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreatePermissionUpdatePayload(permissionResourceName string, principle *pb.Principle) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigPermissionUpdatePayload(permissionResourceName string, principle *pb.Principle) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [PermissionUpdate] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -371,10 +371,10 @@ func (cc ChainClient) ChainConfigCreatePermissionUpdatePayload(permissionResourc
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreatePermissionDeletePayload(permissionResourceName string) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigPermissionDeletePayload(permissionResourceName string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [PermissionDelete] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -394,10 +394,10 @@ func (cc ChainClient) ChainConfigCreatePermissionDeletePayload(permissionResourc
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateConsensusNodeAddrAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigConsensusNodeAddrAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeAddrAdd] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -422,10 +422,10 @@ func (cc ChainClient) ChainConfigCreateConsensusNodeAddrAddPayload(nodeOrgId str
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateConsensusNodeAddrUpdatePayload(nodeOrgId, nodeOldAddress, nodeNewAddress string) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigConsensusNodeAddrUpdatePayload(nodeOrgId, nodeOldAddress, nodeNewAddress string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeAddrUpdate] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -454,10 +454,10 @@ func (cc ChainClient) ChainConfigCreateConsensusNodeAddrUpdatePayload(nodeOrgId,
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateConsensusNodeAddrDeletePayload(nodeOrgId, nodeAddress string) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigConsensusNodeAddrDeletePayload(nodeOrgId, nodeAddress string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeAddrDelete] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -482,10 +482,10 @@ func (cc ChainClient) ChainConfigCreateConsensusNodeAddrDeletePayload(nodeOrgId,
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateConsensusNodeOrgAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeOrgAdd] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -510,10 +510,10 @@ func (cc ChainClient) ChainConfigCreateConsensusNodeOrgAddPayload(nodeOrgId stri
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeOrgUpdate] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -538,10 +538,10 @@ func (cc ChainClient) ChainConfigCreateConsensusNodeOrgUpdatePayload(nodeOrgId s
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateConsensusNodeOrgDeletePayload(nodeOrgId string) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigConsensusNodeOrgDeletePayload(nodeOrgId string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeOrgAdd] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -562,10 +562,10 @@ func (cc ChainClient) ChainConfigCreateConsensusNodeOrgDeletePayload(nodeOrgId s
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateConsensusExtAddPayload(kvs []*pb.KeyValuePair) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigConsensusExtAddPayload(kvs []*pb.KeyValuePair) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusExtAdd] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -579,10 +579,10 @@ func (cc ChainClient) ChainConfigCreateConsensusExtAddPayload(kvs []*pb.KeyValue
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateConsensusExtUpdatePayload(kvs []*pb.KeyValuePair) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigConsensusExtUpdatePayload(kvs []*pb.KeyValuePair) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusExtUpdate] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}
@@ -596,10 +596,10 @@ func (cc ChainClient) ChainConfigCreateConsensusExtUpdatePayload(kvs []*pb.KeyVa
 	return payload, nil
 }
 
-func (cc ChainClient) ChainConfigCreateConsensusExtDeletePayload(keys []string) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigConsensusExtDeletePayload(keys []string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusExtDelete] to be signed payload")
 
-	seq, err := cc.ChainConfigGetSeq()
+	seq, err := cc.GetChainConfigSequence()
 	if err != nil {
 		return nil, fmt.Errorf("get chain config sequence failed, %s", err)
 	}

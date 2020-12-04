@@ -20,7 +20,7 @@ type SDKInterface interface {
 	//           可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
 	//   - multiSignedPayload: 经多签后的payload数据
 	// ```go
-	ContractCreate(txId string, multiSignedPayload []byte) (*pb.TxResponse, error)
+	CreateContract(txId string, multiSignedPayload []byte) (*pb.TxResponse, error)
 	// ```
 
 	// ### 1.2 合约升级
@@ -30,7 +30,7 @@ type SDKInterface interface {
 	//           可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
 	//   - multiSignedPayload: 经多签后的payload数据
 	// ```go
-	ContractUpgrade(txId string, multiSignedPayload []byte) (*pb.TxResponse, error)
+	UpgradeContract(txId string, multiSignedPayload []byte) (*pb.TxResponse, error)
 	// ```
 
 	// ### 1.3 合约调用
@@ -42,7 +42,7 @@ type SDKInterface interface {
 	//           可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
 	//   - params: 合约参数
 	// ```go
-	ContractInvoke(contractName, method, txId string, params map[string]string) (*pb.TxResponse, error)
+	InvokeContract(contractName, method, txId string, params map[string]string) (*pb.TxResponse, error)
 	// ```
 
 	// ### 1.4 合约查询接口调用
@@ -51,7 +51,7 @@ type SDKInterface interface {
 	//   - method: 合约方法
 	//   - params: 合约参数
 	// ```go
-	ContractQuery(contractName, method string, params map[string]string) (*pb.TxResponse, error)
+	QueryContract(contractName, method string, params map[string]string) (*pb.TxResponse, error)
 	// ```
 
 	// ## 2 系统合约接口
@@ -114,29 +114,29 @@ type SDKInterface interface {
 	// ## 3 链配置接口
 	// ### 3.1 查询最新链配置
 	// ```go
-	ChainConfigGet() (*pb.ChainConfig, error)
+	GetChainConfig() (*pb.ChainConfig, error)
 	// ```
 
 	// ### 3.2 根据指定区块高度查询最近链配置
 	//   - 如果当前区块就是配置块，直接返回当前区块的链配置
 	// ```go
-	ChainConfigGetByBlockHeight(blockHeight int) (*pb.ChainConfig, error)
+	GetChainConfigByBlockHeight(blockHeight int) (*pb.ChainConfig, error)
 	// ```
 
 	// ### 3.3 查询最新链配置序号Sequence
 	//   - 用于链配置更新
 	// ```go
-	ChainConfigGetSeq() (int, error)
+	GetChainConfigSequence() (int, error)
 	// ```
 
 	// ### 3.4 链配置更新获取Payload签名
 	// ```go
-	ChainConfigPayloadCollectSign(payloadBytes []byte) ([]byte, error)
+	SignChainConfigPayload(payloadBytes []byte) ([]byte, error)
 	// ```
 
 	// ### 3.5 链配置更新Payload签名收集&合并
 	// ```go
-	ChainConfigPayloadMergeSign(signedPayloadBytes [][]byte) ([]byte, error)
+	MergeChainConfigSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
 	// ```
 
 	// ### 3.6 发送链配置更新请求
@@ -144,13 +144,13 @@ type SDKInterface interface {
 	SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*pb.TxResponse, error)
 	// ```
 
-	// > 以下ChainConfigCreateXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
+	// > 以下CreateChainConfigXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
 	// ### 3.7 更新Core模块待签名payload生成
 	// **参数说明**
 	//   - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]，若无需修改，请置为-1
 	//   - txSchedulerValidateTimeout: 交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60]，若无需修改，请置为-1
 	// ```go
-	ChainConfigCreateCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int) ([]byte, error)
+	CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int) ([]byte, error)
 	// ```
 
 	// ### 3.8 更新Core模块待签名payload生成
@@ -162,7 +162,7 @@ type SDKInterface interface {
 	//   - blockSize: 区块最大限制，单位MB，其值范围为(0, +∞]
 	//   - blockInterval: 出块间隔，单位:ms，其值范围为[10, +∞]
 	// ```go
-	ChainConfigCreateBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize, blockInterval int) ([]byte, error)
+	CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize, blockInterval int) ([]byte, error)
 	// ```
 
 	// ### 3.9 添加信任组织根证书待签名payload生成
@@ -170,7 +170,7 @@ type SDKInterface interface {
 	//   - trustRootOrgId: 组织Id
 	//   - trustRootCrt: 根证书
 	// ```go
-	ChainConfigCreateTrustRootAddPayload(trustRootOrgId, trustRootCrt string) ([]byte, error)
+	CreateChainConfigTrustRootAddPayload(trustRootOrgId, trustRootCrt string) ([]byte, error)
 	// ```
 
 	// ### 3.10 更新信任组织根证书待签名payload生成
@@ -178,14 +178,14 @@ type SDKInterface interface {
 	//   - trustRootOrgId: 组织Id
 	//   - trustRootCrt: 根证书
 	// ```go
-	ChainConfigCreateTrustRootUpdatePayload(trustRootOrgId, trustRootCrt string) ([]byte, error)
+	CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt string) ([]byte, error)
 	// ```
 
 	// ### 3.11 删除信任组织根证书待签名payload生成
 	// **参数说明**
 	//   - trustRootOrgId: 组织Id
 	// ```go
-	ChainConfigCreateTrustRootDeletePayload(trustRootOrgId string) ([]byte, error)
+	CreateChainConfigTrustRootDeletePayload(trustRootOrgId string) ([]byte, error)
 	// ```
 
 	// ### 3.12 添加权限配置待签名payload生成
@@ -193,7 +193,7 @@ type SDKInterface interface {
 	//   - permissionResourceName: 权限名
 	//   - principle: 权限规则
 	// ```go
-	ChainConfigCreatePermissionAddPayload(permissionResourceName string, principle *pb.Principle) ([]byte, error)
+	CreateChainConfigPermissionAddPayload(permissionResourceName string, principle *pb.Principle) ([]byte, error)
 	// ```
 
 	// ### 3.13 更新权限配置待签名payload生成
@@ -201,14 +201,14 @@ type SDKInterface interface {
 	//   - permissionResourceName: 权限名
 	//   - principle: 权限规则
 	// ```go
-	ChainConfigCreatePermissionUpdatePayload(permissionResourceName string, principle *pb.Principle) ([]byte, error)
+	CreateChainConfigPermissionUpdatePayload(permissionResourceName string, principle *pb.Principle) ([]byte, error)
 	// ```
 
 	// ### 3.14 删除权限配置待签名payload生成
 	// **参数说明**
 	//   - permissionResourceName: 权限名
 	// ```go
-	ChainConfigCreatePermissionDeletePayload(permissionResourceName string) ([]byte, error)
+	CreateChainConfigPermissionDeletePayload(permissionResourceName string) ([]byte, error)
 	// ```
 
 	// ### 3.15 添加共识节点地址待签名payload生成
@@ -216,7 +216,7 @@ type SDKInterface interface {
 	//   - nodeOrgId: 节点组织Id
 	//   - nodeAddresses: 节点地址
 	// ```go
-	ChainConfigCreateConsensusNodeAddrAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
+	CreateChainConfigConsensusNodeAddrAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
 	// ```
 
 	// ### 3.16 更新共识节点地址待签名payload生成
@@ -225,7 +225,7 @@ type SDKInterface interface {
 	//   - nodeOldAddress: 节点原地址
 	//   - nodeNewAddress: 节点新地址
 	// ```go
-	ChainConfigCreateConsensusNodeAddrUpdatePayload(nodeOrgId, nodeOldAddress, nodeNewAddress string) ([]byte, error)
+	CreateChainConfigConsensusNodeAddrUpdatePayload(nodeOrgId, nodeOldAddress, nodeNewAddress string) ([]byte, error)
 	// ```
 
 	// ### 3.17 删除共识节点地址待签名payload生成
@@ -233,7 +233,7 @@ type SDKInterface interface {
 	//   - nodeOrgId: 节点组织Id
 	//   - nodeAddress: 节点地址
 	// ```go
-	ChainConfigCreateConsensusNodeAddrDeletePayload(nodeOrgId, nodeAddress string) ([]byte, error)
+	CreateChainConfigConsensusNodeAddrDeletePayload(nodeOrgId, nodeAddress string) ([]byte, error)
 	// ```
 
 	// ### 3.18 添加共识节点待签名payload生成
@@ -241,7 +241,7 @@ type SDKInterface interface {
 	//   - nodeOrgId: 节点组织Id
 	//   - nodeAddresses: 节点地址
 	// ```go
-	ChainConfigCreateConsensusNodeOrgAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
+	CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
 	// ```
 
 	// ### 3.19 更新共识节点待签名payload生成
@@ -249,35 +249,35 @@ type SDKInterface interface {
 	//   - nodeOrgId: 节点组织Id
 	//   - nodeAddresses: 节点地址
 	// ```go
-	ChainConfigCreateConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
+	CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
 	// ```
 
 	// ### 3.20 删除共识节点待签名payload生成
 	// **参数说明**
 	//   - nodeOrgId: 节点组织Id
 	// ```go
-	ChainConfigCreateConsensusNodeOrgDeletePayload(nodeOrgId string) ([]byte, error)
+	CreateChainConfigConsensusNodeOrgDeletePayload(nodeOrgId string) ([]byte, error)
 	// ```
 
 	// ### 3.21 添加共识扩展字段待签名payload生成
 	// **参数说明**
 	//   - kvs: 字段key、value对
 	// ```go
-	ChainConfigCreateConsensusExtAddPayload(kvs []*pb.KeyValuePair) ([]byte, error)
+	CreateChainConfigConsensusExtAddPayload(kvs []*pb.KeyValuePair) ([]byte, error)
 	// ```
 
 	// ### 3.22 添加共识扩展字段待签名payload生成
 	// **参数说明**
 	//   - kvs: 字段key、value对
 	// ```go
-	ChainConfigCreateConsensusExtUpdatePayload(kvs []*pb.KeyValuePair) ([]byte, error)
+	CreateChainConfigConsensusExtUpdatePayload(kvs []*pb.KeyValuePair) ([]byte, error)
 	// ```
 
 	// ### 3.23 添加共识扩展字段待签名payload生成
 	// **参数说明**
 	//   - keys: 待删除字段
 	// ```go
-	ChainConfigCreateConsensusExtDeletePayload(keys []string) ([]byte, error)
+	CreateChainConfigConsensusExtDeletePayload(keys []string) ([]byte, error)
 	// ```
 
 	// ## 4 证书管理接口
@@ -285,23 +285,23 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - 在pb.TxResponse.ContractResult.Result字段中返回成功添加的certHash
 	// ```go
-	CertAdd() (*pb.TxResponse, error)
+	AddCert() (*pb.TxResponse, error)
 	// ```
 
 	// ### 4.2 用户证书删除
 	// **参数说明**
-	//   - certHashes: 证书Hash列表，多个使用逗号分割
+	//   - certHashes: 证书Hash列表
 	// ```go
-	CertDelete(certHashes []string) (*pb.TxResponse, error)
+	DeleteCert(certHashes []string) (*pb.TxResponse, error)
 	// ```
 
 	// ### 4.3 用户证书查询
 	// **参数说明**
-	//   - certHashes: 证书Hash列表，多个使用逗号分割
+	//   - certHashes: 证书Hash列表
 	// 返回值说明：
 	//   - *pb.CertInfos: 包含证书Hash和证书内容的列表
 	// ```go
-	CertQuery(certHashes []string) (*pb.CertInfos, error)
+	QueryCert(certHashes []string) (*pb.CertInfos, error)
 	// ```
 
 	// ## 5 消息订阅接口

@@ -19,32 +19,32 @@ func TestCertManageGo(t *testing.T) {
 	certHash := testCertAdd(t, client)
 	time.Sleep(3 * time.Second)
 
-	certInfos := testCertQuery(t, client, []string{certHash})
+	certInfos := testQueryCert(t, client, []string{certHash})
 	require.Equal(t, 1, len(certInfos.CertInfos))
 
-	testCertDelete(t, client, []string{certHash})
+	testDeleteCert(t, client, []string{certHash})
 	time.Sleep(3 * time.Second)
 
 	var bytesNil []byte
 	bytesNil = nil
-	certInfos = testCertQuery(t, client, []string{certHash})
+	certInfos = testQueryCert(t, client, []string{certHash})
 	require.Equal(t, 1, len(certInfos.CertInfos))
 	require.Equal(t, bytesNil, certInfos.CertInfos[0].Cert)
 }
 
 func testCertAdd(t *testing.T, client *ChainClient) string {
-	resp, err := client.CertAdd()
+	resp, err := client.AddCert()
 	require.Nil(t, err)
 	return string(resp.ContractResult.Result)
 }
 
-func testCertQuery(t *testing.T, client *ChainClient, certHashes []string) *pb.CertInfos {
-	certInfos, err := client.CertQuery(certHashes)
+func testQueryCert(t *testing.T, client *ChainClient, certHashes []string) *pb.CertInfos {
+	certInfos, err := client.QueryCert(certHashes)
 	require.Nil(t, err)
 	return certInfos
 }
 
-func testCertDelete(t *testing.T, client *ChainClient, certHashes []string) {
-	_, err := client.CertDelete(certHashes)
+func testDeleteCert(t *testing.T, client *ChainClient, certHashes []string) {
+	_, err := client.DeleteCert(certHashes)
 	require.Nil(t, err)
 }
