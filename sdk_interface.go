@@ -145,6 +145,7 @@ type SDKInterface interface {
 	// ```
 
 	// > 以下CreateChainConfigXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
+
 	// ### 3.7 更新Core模块待签名payload生成
 	// **参数说明**
 	//   - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]，若无需修改，请置为-1
