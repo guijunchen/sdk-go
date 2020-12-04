@@ -112,7 +112,7 @@ func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient,
 	err = checkProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
-	fmt.Printf("UPGRADE counter-go upgrade resp: %+v\n", resp)
+	fmt.Printf("UPGRADE counter-go contract resp: %+v\n", resp)
 }
 
 func testUserContractCounterGoInvoke(t *testing.T, client *ChainClient,
