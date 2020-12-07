@@ -49,16 +49,22 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - multiSignedPayload: 多签结果
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
+	//            当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendContractCreateRequest(mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error)
+	SendContractCreateRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
 	// ```
 
 	// ### 1.6 发送升级合约请求
 	// **参数说明**
 	//   - multiSignedPayload: 多签结果
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
+	//            当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendContractUpgradeRequest(mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error)
+	SendContractUpgradeRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
 	// ```
 
 	// ### 1.7 合约调用
@@ -67,11 +73,14 @@ type SDKInterface interface {
 	//   - method: 合约方法
 	//   - txId: 交易ID
 	//           格式要求：长度为64bit，字符在a-z0-9
-	//           可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
+	//           可为空，若为空字符串，将自动生成txId
 	//   - params: 合约参数
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
+	//            当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
 	// ```go
-	InvokeContract(contractName, method, txId string, params map[string]string, timeout int64) (*pb.TxResponse, error)
+	InvokeContract(contractName, method, txId string, params map[string]string, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
 	// ```
 
 	// ### 1.8 合约查询接口调用

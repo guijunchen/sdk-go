@@ -5,7 +5,9 @@
 package chainmaker_sdk_go
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	"testing"
 	"time"
 
@@ -26,23 +28,31 @@ func TestUserContractCounterGo(t *testing.T) {
 	admin4, err := createAdmin(orgId4)
 	require.Nil(t, err)
 
+	fmt.Println("====================== 创建合约（异步）======================")
 	testUserContractCounterGoCreate(t, client, admin1, admin2, admin3, admin4)
 	time.Sleep(5 * time.Second)
 
-	testUserContractCounterGoInvoke(t, client, "increase", nil)
+	fmt.Println("====================== 调用合约（异步）======================")
+	testUserContractCounterGoInvoke(t, client, "increase", nil, false)
 	time.Sleep(5 * time.Second)
 
+	fmt.Println("====================== 执行合约查询接口 ======================")
 	testUserContractCounterGoQuery(t, client, "query", nil)
 
+	fmt.Println("====================== 调用合约（同步）======================")
+	testUserContractCounterGoInvoke(t, client, "increase", nil, true)
+	time.Sleep(5 * time.Second)
+
+	fmt.Println("====================== 升级合约（异步）======================")
 	testUserContractCounterGoUpgrade(t, client, admin1, admin2, admin3, admin4)
 	time.Sleep(5 * time.Second)
 
 	params := map[string]string{
-		"key":   "key",
-		"name":  "name",
-		"value": "value",
+		"key":   "key001",
+		"name":  "name001",
+		"value": "value001",
 	}
-	testUserContractCounterGoInvoke(t, client, "upgrade_set_store", params)
+	testUserContractCounterGoInvoke(t, client, "upgrade_set_store", params, false)
 	time.Sleep(5 * time.Second)
 
 	testUserContractCounterGoQuery(t, client, "upgrade_get_store", params)
@@ -73,7 +83,7 @@ func testUserContractCounterGoCreate(t *testing.T, client *ChainClient,
 	require.Nil(t, err)
 
 	// 发送创建合约请求
-	resp, err := client.SendContractCreateRequest(mergeSignedPayloadBytes, -1)
+	resp, err := client.SendContractCreateRequest(mergeSignedPayloadBytes, -1, false)
 	require.Nil(t, err)
 
 	err = checkProposalRequestResp(resp, true)
@@ -106,7 +116,7 @@ func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient,
 	require.Nil(t, err)
 
 	// 发送创建合约请求
-	resp, err := client.SendContractUpgradeRequest(mergeSignedPayloadBytes, -1)
+	resp, err := client.SendContractUpgradeRequest(mergeSignedPayloadBytes, -1, false)
 	require.Nil(t, err)
 
 	err = checkProposalRequestResp(resp, true)
@@ -116,10 +126,24 @@ func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient,
 }
 
 func testUserContractCounterGoInvoke(t *testing.T, client *ChainClient,
-	method string, params map[string]string) {
-	resp, err := client.InvokeContract(contractName, method, "", params, -1)
+	method string, params map[string]string, withSyncResult bool) {
+	resp, err := client.InvokeContract(contractName, method, "", params, -1, withSyncResult)
 	require.Nil(t, err)
-	fmt.Printf("INVOKE counter-go contract resp: %+v\n", resp)
+
+	if resp.Code != pb.TxStatusCode_SUCCESS {
+		fmt.Printf("INVOKE counter-go contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
+	}
+
+	if !withSyncResult {
+		fmt.Printf("INVOKE counter-go contract resp, [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
+	} else {
+		txInfo := new(pb.TransactionInfo)
+		err := proto.Unmarshal(resp.ContractResult.Result, txInfo)
+		require.Nil(t, err)
+
+		bytes, err := json.Marshal(txInfo)
+		fmt.Printf("INVOKE counter-go contract resp, [code:%d]/[msg:%s]/[txInfo:%s]\n", resp.Code, resp.Message, string(bytes))
+	}
 }
 
 func testUserContractCounterGoQuery(t *testing.T, client *ChainClient,

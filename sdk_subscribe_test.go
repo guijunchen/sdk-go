@@ -30,7 +30,7 @@ func TestSubscribeBlock(t *testing.T) {
 
 	go func() {
 		for i := 0; i < sendTxCount; i++ {
-			testUserContractCounterGoInvoke(t, client, "increase", nil)
+			testUserContractCounterGoInvoke(t, client, "increase", nil, false)
 			time.Sleep(2 * time.Second)
 		}
 	}()
@@ -74,7 +74,7 @@ func TestSubscribeTx(t *testing.T) {
 
 	go func() {
 		for i := 0; i < sendTxCount; i++ {
-			testUserContractCounterGoInvoke(t, client, "increase", nil)
+			testUserContractCounterGoInvoke(t, client, "increase", nil, false)
 			time.Sleep(2 * time.Second)
 		}
 	}()

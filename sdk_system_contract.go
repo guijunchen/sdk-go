@@ -17,7 +17,7 @@ const (
 )
 
 func (cc ChainClient) GetTxByTxId(txId string) (*pb.TransactionInfo, error) {
-	cc.logger.Infof("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
 		pb.QueryFunction_GET_TX_BY_TX_ID.String(), txId)
 
 	payloadBytes, err := constructQueryPayload(
@@ -52,7 +52,7 @@ func (cc ChainClient) GetTxByTxId(txId string) (*pb.TransactionInfo, error) {
 }
 
 func (cc ChainClient) GetBlockByHeight(blockHeight int64, withRWSet bool) (*pb.BlockInfo, error) {
-	cc.logger.Infof("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%s]",
 		pb.QueryFunction_GET_BLOCK_BY_HEIGHT.String(), blockHeight, strconv.FormatBool(withRWSet))
 
 	payloadBytes, err := constructQueryPayload(
@@ -92,7 +92,7 @@ func (cc ChainClient) GetBlockByHeight(blockHeight int64, withRWSet bool) (*pb.B
 }
 
 func (cc ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*pb.BlockInfo, error) {
-	cc.logger.Infof("[SDK] begin to QUERY system contract, [method:%s]/[blockHash:%s]/[withRWSet:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHash:%s]/[withRWSet:%s]",
 		pb.QueryFunction_GET_BLOCK_BY_HASH.String(), blockHash, strconv.FormatBool(withRWSet))
 
 	payloadBytes, err := constructQueryPayload(
@@ -132,7 +132,7 @@ func (cc ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*pb.Bloc
 }
 
 func (cc ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*pb.BlockInfo, error) {
-	cc.logger.Infof("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]/[withRWSet:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]/[withRWSet:%s]",
 		pb.QueryFunction_GET_BLOCK_BY_TX_ID.String(), txId, strconv.FormatBool(withRWSet))
 
 	payloadBytes, err := constructQueryPayload(
@@ -171,7 +171,7 @@ func (cc ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*pb.BlockInfo
 }
 
 func (cc ChainClient) GetLastConfigBlock(withRWSet bool) (*pb.BlockInfo, error) {
-	cc.logger.Infof("[SDK] begin to QUERY system contract, [method:%s]/[withRWSet:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[withRWSet:%s]",
 		pb.QueryFunction_GET_LAST_CONFIG_BLOCK.String(), strconv.FormatBool(withRWSet))
 
 	payloadBytes, err := constructQueryPayload(
@@ -206,7 +206,7 @@ func (cc ChainClient) GetLastConfigBlock(withRWSet bool) (*pb.BlockInfo, error) 
 }
 
 func (cc ChainClient) GetChainInfo() (*pb.ChainInfo, error) {
-	cc.logger.Infof("[SDK] begin to QUERY system contract, [method:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		pb.QueryFunction_GET_CHAIN_INFO.String())
 
 	payloadBytes, err := constructQueryPayload(
@@ -236,7 +236,7 @@ func (cc ChainClient) GetChainInfo() (*pb.ChainInfo, error) {
 }
 
 func (cc ChainClient) GetContractInfo() (*pb.ContractInfo, error) {
-	cc.logger.Infof("[SDK] begin to QUERY system contract, [method:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		pb.QueryFunction_GET_CONTRACT_INFO.String())
 
 	payloadBytes, err := constructQueryPayload(
@@ -266,7 +266,7 @@ func (cc ChainClient) GetContractInfo() (*pb.ContractInfo, error) {
 }
 
 func (cc ChainClient) GetNodeChainList() (*pb.ChainList, error) {
-	cc.logger.Infof("[SDK] begin to QUERY system contract, [method:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		pb.QueryFunction_GET_NODE_CHAIN_LIST.String())
 
 	payloadBytes, err := constructQueryPayload(
