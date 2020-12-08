@@ -21,21 +21,17 @@ func TestSystemContract(t *testing.T) {
 	testSystemContractGetChainInfo(t, client)
 	testSystemContractGetContractInfo(t, client)
 
-	client, err = New(
-		// 必填字段
-		AddNodeAddrWithConnCnt(nodeAddr, connCnt),
-		WithLogger(getDefaultLogger()),
-		WithUserKeyFilePath(userKeyPath),
-		WithUserCrtFilePath(userCrtPath),
-		WithOrgId(orgId1),
-		WithChainId(SYSTEM_CHAIN),
-		// 选填字段
-		WithUseTLS(true),
-		WithCAPaths(caPaths),
-		WithTLSHostName(tlsHostName),
-	)
+	systemChainClient, err := NewChainClient(
+		WithChainClientOrgId(orgId1),
+		WithChainClientChainId(chainId),
+		WithChainClientLogger(getDefaultLogger()),
+		WithChainClientUserConfig(user),
+		AddChainClientNodeConfig(node1),
+		AddChainClientNodeConfig(node2),
+		)
 	require.Nil(t, err)
-	testSystemContractGetNodeChainList(t, client)
+
+	testSystemContractGetNodeChainList(t, systemChainClient)
 }
 
 func testSystemContractGetTxByTxId(t *testing.T, client *ChainClient, txId string) *pb.TransactionInfo {

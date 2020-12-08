@@ -28,7 +28,25 @@ type ChainClient struct {
 	privateKey  crypto.PrivateKey
 }
 
-func New(opts ...Option) (*ChainClient, error) {
+func NewNodeConfig(opts ...NodeOption) *NodeConfig {
+	config := &NodeConfig{}
+	for _, opt := range opts {
+		opt(config)
+	}
+
+	return config
+}
+
+func NewUserConfig(opts ...UserOption) *UserConfig {
+	config := &UserConfig{}
+	for _, opt := range opts {
+		opt(config)
+	}
+
+	return config
+}
+
+func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	config, err := generateConfig(opts...)
 	if err != nil {
 		return nil, err
@@ -44,20 +62,11 @@ func New(opts ...Option) (*ChainClient, error) {
 		logger:         config.logger,
 		chainId:        config.chainId,
 		orgId:          config.orgId,
-		userCrtPEM:     config.userCrtPEM,
-		userCrt:        config.userCrt,
-		privateKey:     config.privateKey,
+		userCrtPEM:     config.userConfig.userCrtPEM,
+		userCrt:        config.userConfig.userCrt,
+		privateKey:     config.userConfig.privateKey,
 	}, nil
 }
-
-func (cc ChainClient) GetChainConfigBeforeBlockHeight(blockHeight int) (*pb.ChainConfig, error) {
-	panic("implement me")
-}
-
-func (cc ChainClient) SendTransaction(tx *pb.Transaction) (*pb.TxResponse, error) {
-	panic("implement me")
-}
-
 
 func (cc ChainClient) Stop() error {
 	return cc.pool.Close()

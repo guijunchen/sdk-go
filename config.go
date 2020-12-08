@@ -23,99 +23,132 @@ const (
 	SendTxTimeout   = 10
 )
 
-type Config struct {
-	// 1)以下字段为SDK初始化参数
-	// 1.1)必填项
-	addrsWithConnCnt    map[string](int)
-	userKeyFilePath     string
-	userCrtFilePath     string
-	orgId               string
-	chainId             string
-
-	// 1.2)选填项
-	// logger若不设置，将采用默认日志文件输出日志，建议设置，以便采用集成系统的统一日志输出
-	logger              Logger
+// 节点配置
+type NodeConfig struct {
+	// 必填项
+	// 节点地址
+	addr                string
+	// 节点连接数
+	connCnt             int
+	// 选填项
+	// 是否启用TLS认证
 	useTLS              bool
+	// CA ROOT证书路径
 	caPaths             []string
+	// TLS hostname
 	tlsHostName         string
-
-	// 2)以下字段为经过处理后的参数
-	privateKey          crypto.PrivateKey
-	userCrtPEM          []byte
-	userCrt             *bcx509.Certificate
 }
 
-type Option func(*Config)
+type NodeOption func(config *NodeConfig)
 
-// 添加ChainMaker节点地址及连接数配置
-func AddNodeAddrWithConnCnt(nodeAddr string, connCnt int) Option {
-	return func(config *Config) {
-		if config.addrsWithConnCnt == nil {
-			config.addrsWithConnCnt = make(map[string](int))
-		}
-		config.addrsWithConnCnt[nodeAddr] = connCnt
+// 设置节点地址
+func WithNodeAddr(addr string) NodeOption {
+	return func(config *NodeConfig) {
+		config.addr = addr
 	}
 }
 
-// 设置Logger对象，便于日志打印
-func WithLogger(logger Logger) Option {
-	return func(config *Config) {
-		config.logger = logger
+// 设置节点连接数
+func WithNodeConnCnt(connCnt int) NodeOption {
+	return func(config *NodeConfig) {
+		config.connCnt = connCnt
 	}
 }
 
 // 设置是否启动TLS开关
-func WithUseTLS(useTLS bool) Option {
-	return func(config *Config) {
+func WithNodeUseTLS(useTLS bool) NodeOption {
+	return func(config *NodeConfig) {
 		config.useTLS = useTLS
 	}
 }
 
 // 添加CA证书路径
-func WithCAPaths(caPaths []string) Option {
-	return func(config *Config) {
+func WithNodeCAPaths(caPaths []string) NodeOption {
+	return func(config *NodeConfig) {
 		config.caPaths = caPaths
 	}
 }
 
+func WithNodeTLSHostName(tlsHostName string) NodeOption {
+	return func(config *NodeConfig) {
+		config.tlsHostName = tlsHostName
+	}
+}
+
+type UserConfig struct {
+	userKeyFilePath     string
+	userCrtFilePath     string
+	// 以下字段为经过处理后的参数
+	privateKey          crypto.PrivateKey
+	userCrtPEM          []byte
+	userCrt             *bcx509.Certificate
+}
+
+type UserOption func(config *UserConfig)
+
 // 添加用户私钥文件路径配置
-func WithUserKeyFilePath(userKeyFilePath string) Option {
-	return func(config *Config) {
+func WithUserKeyFilePath(userKeyFilePath string) UserOption {
+	return func(config *UserConfig) {
 		config.userKeyFilePath = userKeyFilePath
 	}
 }
 
 // 添加用户证书文件路径配置
-func WithUserCrtFilePath(userCrtFilePath string) Option {
-	return func(config *Config) {
+func WithUserCrtFilePath(userCrtFilePath string) UserOption {
+	return func(config *UserConfig) {
 		config.userCrtFilePath = userCrtFilePath
 	}
 }
 
-// 添加TLS HostName
-func WithTLSHostName(tlsHostName string) Option {
-	return func(config *Config) {
-		config.tlsHostName = tlsHostName
+type ChainClientConfig struct {
+	orgId               string
+	chainId             string
+	nodeList            []*NodeConfig
+	userConfig          *UserConfig
+	// logger若不设置，将采用默认日志文件输出日志，建议设置，以便采用集成系统的统一日志输出
+	logger              Logger
+}
+
+type ChainClientOption func(*ChainClientConfig)
+
+// 添加ChainMaker节点地址及连接数配置
+func AddChainClientNodeConfig(nodeConfig *NodeConfig) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.nodeList = append(config.nodeList, nodeConfig)
+	}
+}
+
+// 添加User配置
+func WithChainClientUserConfig(userConfig *UserConfig) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.userConfig = userConfig
 	}
 }
 
 // 添加OrgId
-func WithOrgId(orgId string) Option {
-	return func(config *Config) {
+func WithChainClientOrgId(orgId string) ChainClientOption {
+	return func(config *ChainClientConfig) {
 		config.orgId = orgId
 	}
 }
 
 // 添加ChainId
-func WithChainId(chainId string) Option {
-	return func(config *Config) {
+func WithChainClientChainId(chainId string) ChainClientOption {
+	return func(config *ChainClientConfig) {
 		config.chainId = chainId
 	}
 }
 
+// 设置Logger对象，便于日志打印
+func WithChainClientLogger(logger Logger) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.logger = logger
+	}
+}
+
 // 生成SDK配置并校验合法性
-func generateConfig(opts ...Option) (*Config, error) {
-	config := &Config{}
+func generateConfig(opts ...ChainClientOption) (*ChainClientConfig, error) {
+	config := &ChainClientConfig{}
 	for _, opt := range opts {
 		opt(config)
 	}
@@ -134,7 +167,7 @@ func generateConfig(opts ...Option) (*Config, error) {
 }
 
 // SDK配置校验
-func checkConfig(config *Config) error {
+func checkConfig(config *ChainClientConfig) error {
 
 	// 如果logger未指定，使用默认zap logger
 	if config.logger == nil {
@@ -142,37 +175,38 @@ func checkConfig(config *Config) error {
 	}
 
 	// 连接的节点地址不可为空
-	if config.addrsWithConnCnt == nil {
+	if len(config.nodeList) == 0 {
 		return fmt.Errorf("connect chianmaker node address is empty")
 	}
 
 	// 已配置的节点地址连接数，需要在合理区间
-	for _, cnt := range config.addrsWithConnCnt {
-		if cnt <= 0 || cnt > MaxConnCnt {
+	for _, node := range config.nodeList {
+		if node.connCnt <= 0 || node.connCnt > MaxConnCnt {
 			return fmt.Errorf("node connection count should >0 && <=%d",
 				MaxConnCnt)
 		}
+
+		if node.useTLS {
+			// 如果开启了TLS认证，CA路径必填
+			if len(node.caPaths) == 0 {
+				return fmt.Errorf("if node useTLS is open, should set caPath")
+			}
+
+			// 如果开启了TLS认证，需配置TLS HostName
+			if node.tlsHostName == "" {
+				return fmt.Errorf("if node useTLS is open, should set tls hostname")
+			}
+		}
 	}
 
-	if config.useTLS {
-		// 如果开启了TLS认证，CA路径必填
-		if len(config.caPaths) == 0 {
-			return fmt.Errorf("useTLS is open, should set caPath")
-		}
-
-		// 如果开启了TLS认证，需配置TLS HostName
-		if config.tlsHostName == "" {
-			return fmt.Errorf("useTLS is open, should set tls hostname")
-		}
-	}
 
 	// 用户私钥不可为空
-	if config.userKeyFilePath == "" {
+	if config.userConfig.userKeyFilePath == "" {
 		return fmt.Errorf("user key file path cannot be empty")
 	}
 
 	// 用户证书不可为空
-	if config.userCrtFilePath == "" {
+	if config.userConfig.userCrtFilePath == "" {
 		return fmt.Errorf("user crt file path cannot be empty")
 	}
 
@@ -189,27 +223,27 @@ func checkConfig(config *Config) error {
 	return nil
 }
 
-func dealConfig(config *Config) error {
+func dealConfig(config *ChainClientConfig) error {
 	var err error
 
 	// 读取用户证书
-	config.userCrtPEM, err = ioutil.ReadFile(config.userCrtFilePath)
+	config.userConfig.userCrtPEM, err = ioutil.ReadFile(config.userConfig.userCrtFilePath)
 	if err != nil {
 		return fmt.Errorf("read user crt file failed, %s", err.Error())
 	}
 
 	// 从私钥文件读取用户私钥，转换为privateKey对象
-	skBytes, err := ioutil.ReadFile(config.userKeyFilePath)
+	skBytes, err := ioutil.ReadFile(config.userConfig.userKeyFilePath)
 	if err != nil {
 		return fmt.Errorf("read user key file failed, %s", err)
 	}
-	config.privateKey, err = asym.PrivateKeyFromPEM(skBytes, nil)
+	config.userConfig.privateKey, err = asym.PrivateKeyFromPEM(skBytes, nil)
 	if err != nil {
 		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
 	}
 
 	// 将证书转换为证书对象
-	if config.userCrt, err = ParseCert(config.userCrtPEM); err != nil {
+	if config.userConfig.userCrt, err = ParseCert(config.userConfig.userCrtPEM); err != nil {
 		return fmt.Errorf("ParseCert failed, %s", err.Error())
 	}
 

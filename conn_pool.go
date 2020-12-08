@@ -26,36 +26,36 @@ type networkClient struct {
 	rpcNode     pb.RpcNodeClient
 	conn        *grpc.ClientConn
 	nodeAddr    string
+	useTLS      bool
+	caPaths     []string
+	tlsHostName string
 }
 
 // 客户端连接池结构定义
 type ConnectionPool struct {
 	connections         []*networkClient
 	logger              Logger
-	useTLS              bool
-	caPaths             []string
 	userKeyFilePath     string
 	userCrtFilePath     string
-	tlsHostName         string
 }
 
 // 创建连接池
-func NewConnPool(config *Config) (*ConnectionPool, error) {
+func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 	pool := &ConnectionPool{
 		logger: config.logger,
-		useTLS: config.useTLS,
-		caPaths: config.caPaths,
-		userKeyFilePath: config.userKeyFilePath,
-		userCrtFilePath: config.userCrtFilePath,
-		tlsHostName: config.tlsHostName,
+		userKeyFilePath: config.userConfig.userKeyFilePath,
+		userCrtFilePath: config.userConfig.userCrtFilePath,
 	}
 
-	for nodeAddr, cnt := range config.addrsWithConnCnt {
+	for _, node := range config.nodeList {
 		cli := &networkClient {
-			nodeAddr: nodeAddr,
+			nodeAddr: node.addr,
+			useTLS: node.useTLS,
+			caPaths: node.caPaths,
+			tlsHostName: node.tlsHostName,
 		}
 
-		for i:=0; i<cnt; i++ {
+		for i:=0; i<node.connCnt; i++ {
 			pool.connections = append(pool.connections, cli)
 		}
 	}
@@ -67,11 +67,11 @@ func NewConnPool(config *Config) (*ConnectionPool, error) {
 }
 
 // 初始化GPRC客户端连接
-func (pool *ConnectionPool) initGRPCConnect(nodeAddr string) (*grpc.ClientConn, error) {
-	if pool.useTLS {
+func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths []string, tlsHostName string) (*grpc.ClientConn, error) {
+	if useTLS {
 		tlsClient := ca.CAClient{
-			ServerName: pool.tlsHostName,
-			CaPaths:    pool.caPaths,
+			ServerName: tlsHostName,
+			CaPaths:    caPaths,
 			CertFile:   pool.userCrtFilePath,
 			KeyFile:    pool.userKeyFilePath,
 		}
@@ -94,7 +94,7 @@ func (pool *ConnectionPool) getClient() (*networkClient, error) {
 		for _, cli := range pool.connections {
 			if cli.conn == nil || cli.conn.GetState() == connectivity.Shutdown {
 
-				conn, err := pool.initGRPCConnect(cli.nodeAddr)
+				conn, err := pool.initGRPCConnect(cli.nodeAddr, cli.useTLS, cli.caPaths, cli.tlsHostName)
 				if err != nil {
 					pool.logger.Errorf("init grpc connection [nodeAddr:%s] failed, %s", cli.nodeAddr, err.Error())
 					continue

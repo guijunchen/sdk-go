@@ -35,7 +35,7 @@ func TestChainConfig(t *testing.T) {
 	txSchedulerTimeout := rand.Intn(61)
 	txSchedulerValidateTimeout := rand.Intn(61)
 	testChainConfigCoreUpdate(t, client, admin1, admin2, admin3, admin4, txSchedulerTimeout, txSchedulerValidateTimeout)
-	time.Sleep(2 * time.Second)
+	time.Sleep(5 * time.Second)
 	chainConfig := testGetChainConfig(t, client)
 	fmt.Printf("txSchedulerTimeout: %d, txSchedulerValidateTimeout: %d\n", txSchedulerTimeout, txSchedulerValidateTimeout)
 	fmt.Printf("chainConfig txSchedulerTimeout: %d, txSchedulerValidateTimeout: %d\n",
