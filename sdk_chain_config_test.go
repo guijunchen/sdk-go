@@ -62,6 +62,7 @@ func TestChainConfig(t *testing.T) {
 	require.Equal(t, blockInterval, int(chainConfig.Block.BlockInterval))
 
 	// 3) [TrustRootAdd]
+	trustCount := len(testGetChainConfig(t, client).TrustRoots)
 	raw, err := ioutil.ReadFile("testdata/crypto-config/wx-org5.chainmaker.org/ca/ca.crt")
 	require.Nil(t, err)
 	trustRootOrgId := "wx-org5.chainmaker.org"
@@ -69,9 +70,9 @@ func TestChainConfig(t *testing.T) {
 	testChainConfigTrustRootAdd(t, client, admin1, admin2, admin3, admin4, trustRootOrgId, trustRootCrt)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, 5, len(chainConfig.TrustRoots))
-	require.Equal(t, trustRootOrgId, chainConfig.TrustRoots[4].OrgId)
-	require.Equal(t, trustRootCrt, chainConfig.TrustRoots[4].Root)
+	require.Equal(t, trustCount+1, len(chainConfig.TrustRoots))
+	require.Equal(t, trustRootOrgId, chainConfig.TrustRoots[trustCount].OrgId)
+	require.Equal(t, trustRootCrt, chainConfig.TrustRoots[trustCount].Root)
 
 	// 4) [TrustRootUpdate]
 	admin5, err := createAdmin(orgId5)
@@ -83,9 +84,9 @@ func TestChainConfig(t *testing.T) {
 	testChainConfigTrustRootUpdate(t, client, admin1, admin2, admin3, admin5, trustRootOrgId, trustRootCrt)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, 5, len(chainConfig.TrustRoots))
-	require.Equal(t, trustRootOrgId, chainConfig.TrustRoots[4].OrgId)
-	require.Equal(t, trustRootCrt, chainConfig.TrustRoots[4].Root)
+	require.Equal(t, trustCount+1, len(chainConfig.TrustRoots))
+	require.Equal(t, trustRootOrgId, chainConfig.TrustRoots[trustCount].OrgId)
+	require.Equal(t, trustRootCrt, chainConfig.TrustRoots[trustCount].Root)
 
 	// 5) [TrustRootDelete]
 	trustRootOrgId = "wx-org5.chainmaker.org"
@@ -93,9 +94,10 @@ func TestChainConfig(t *testing.T) {
 	testChainConfigTrustRootDelete(t, client, admin1, admin2, admin3, admin5, trustRootOrgId)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, 4, len(chainConfig.TrustRoots))
+	require.Equal(t, trustCount, len(chainConfig.TrustRoots))
 
 	// 6) [PermissionAdd]
+	permissionCount := len(testGetChainConfig(t, client).Permissions)
 	permissionResourceName := "TEST_PREMISSION"
 	principle := &pb.Principle{
 		Rule: "ANY",
@@ -103,18 +105,8 @@ func TestChainConfig(t *testing.T) {
 	testChainConfigPermissionAdd(t, client, admin1, admin2, admin3, admin4, permissionResourceName, principle)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, 4, len(chainConfig.Permissions))
-	require.Equal(t, true, proto.Equal(principle, chainConfig.Permissions[3].Principle))
-	permissionResourceName = "NODE_ADDR_DELETE"
-	principle = &pb.Principle{
-		Rule:     "ANY",
-		RoleList: []string{"admin"},
-	}
-	testChainConfigPermissionAdd(t, client, admin1, admin2, admin3, admin4, permissionResourceName, principle)
-	time.Sleep(2 * time.Second)
-	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, 5, len(chainConfig.Permissions))
-	require.Equal(t, true, proto.Equal(principle, chainConfig.Permissions[4].Principle))
+	require.Equal(t, permissionCount+1, len(chainConfig.Permissions))
+	require.Equal(t, true, proto.Equal(principle, chainConfig.Permissions[permissionCount].Principle))
 
 	// 7) [PermissionUpdate]
 	permissionResourceName = "TEST_PREMISSION"
@@ -124,14 +116,14 @@ func TestChainConfig(t *testing.T) {
 	testChainConfigPermissionUpdate(t, client, admin1, admin2, admin3, admin4, permissionResourceName, principle)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, 5, len(chainConfig.Permissions))
-	require.Equal(t, true, proto.Equal(principle, chainConfig.Permissions[3].Principle))
+	require.Equal(t, permissionCount+1, len(chainConfig.Permissions))
+	require.Equal(t, true, proto.Equal(principle, chainConfig.Permissions[permissionCount].Principle))
 
 	// 8) [PermissionDelete]
 	testChainConfigPermissionDelete(t, client, admin1, admin2, admin3, admin4, permissionResourceName)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, 4, len(chainConfig.Permissions))
+	require.Equal(t, permissionCount, len(chainConfig.Permissions))
 
 	// 9) [ConsensusNodeAddrAdd]
 	nodeOrgId := "wx-org4.chainmaker.org"
