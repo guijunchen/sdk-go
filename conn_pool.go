@@ -43,8 +43,8 @@ type ConnectionPool struct {
 func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 	pool := &ConnectionPool{
 		logger: config.logger,
-		userKeyFilePath: config.userConfig.userKeyFilePath,
-		userCrtFilePath: config.userConfig.userCrtFilePath,
+		userKeyFilePath: config.userKeyFilePath,
+		userCrtFilePath: config.userCrtFilePath,
 	}
 
 	for _, node := range config.nodeList {

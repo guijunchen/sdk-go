@@ -46,7 +46,6 @@ var (
 var (
 	node1 *NodeConfig
 	node2 *NodeConfig
-	user  *UserConfig
 )
 
 func createNode(nodeAddr string, connCnt int) *NodeConfig {
@@ -61,15 +60,6 @@ func createNode(nodeAddr string, connCnt int) *NodeConfig {
 	return node
 }
 
-func createUser(userKeyPath, userCrtPath string) *UserConfig {
-	user := NewUserConfig(
-		WithUserKeyFilePath(userKeyPath),
-		WithUserCrtFilePath(userCrtPath),
-	)
-
-	return user
-}
-
 func createClient() (*ChainClient, error) {
 	if node1 == nil {
 		node1 = createNode(nodeAddr1, connCnt1)
@@ -79,15 +69,12 @@ func createClient() (*ChainClient, error) {
 		node2 = createNode(nodeAddr2, connCnt2)
 	}
 
-	if user == nil {
-		user = createUser(userKeyPath, userCrtPath)
-	}
-
 	chainClient, err := NewChainClient(
 		WithChainClientOrgId(orgId1),
 		WithChainClientChainId(chainId),
 		WithChainClientLogger(getDefaultLogger()),
-		WithChainClientUserConfig(user),
+		WithUserKeyFilePath(userKeyPath),
+		WithUserCrtFilePath(userCrtPath),
 		AddChainClientNodeConfig(node1),
 		AddChainClientNodeConfig(node2),
 		)
@@ -108,15 +95,12 @@ func createAdmin(orgId string) (*ChainClient, error) {
 		node2 = createNode(nodeAddr2, connCnt2)
 	}
 
-	if user == nil {
-		user = createUser(userKeyPath, userCrtPath)
-	}
-
 	adminClient, err := NewChainClient(
 		WithChainClientOrgId(orgId1),
 		WithChainClientChainId(chainId),
 		WithChainClientLogger(getDefaultLogger()),
-		WithChainClientUserConfig(user),
+		WithUserKeyFilePath(fmt.Sprintf(adminKeyPath, orgId)),
+		WithUserCrtFilePath(fmt.Sprintf(adminCrtPath, orgId)),
 		AddChainClientNodeConfig(node1),
 		AddChainClientNodeConfig(node2),
 	)

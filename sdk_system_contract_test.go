@@ -25,7 +25,8 @@ func TestSystemContract(t *testing.T) {
 		WithChainClientOrgId(orgId1),
 		WithChainClientChainId(chainId),
 		WithChainClientLogger(getDefaultLogger()),
-		WithChainClientUserConfig(user),
+		WithUserKeyFilePath(userKeyPath),
+		WithUserCrtFilePath(userCrtPath),
 		AddChainClientNodeConfig(node1),
 		AddChainClientNodeConfig(node2),
 		)

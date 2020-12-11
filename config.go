@@ -75,38 +75,20 @@ func WithNodeTLSHostName(tlsHostName string) NodeOption {
 	}
 }
 
-type UserConfig struct {
-	userKeyFilePath     string
-	userCrtFilePath     string
-	// 以下字段为经过处理后的参数
-	privateKey          crypto.PrivateKey
-	userCrtPEM          []byte
-	userCrt             *bcx509.Certificate
-}
-
-type UserOption func(config *UserConfig)
-
-// 添加用户私钥文件路径配置
-func WithUserKeyFilePath(userKeyFilePath string) UserOption {
-	return func(config *UserConfig) {
-		config.userKeyFilePath = userKeyFilePath
-	}
-}
-
-// 添加用户证书文件路径配置
-func WithUserCrtFilePath(userCrtFilePath string) UserOption {
-	return func(config *UserConfig) {
-		config.userCrtFilePath = userCrtFilePath
-	}
-}
-
 type ChainClientConfig struct {
 	orgId               string
 	chainId             string
 	nodeList            []*NodeConfig
-	userConfig          *UserConfig
+	userKeyFilePath     string
+	userCrtFilePath     string
+
 	// logger若不设置，将采用默认日志文件输出日志，建议设置，以便采用集成系统的统一日志输出
 	logger              Logger
+
+	// 以下字段为经过处理后的参数
+	privateKey          crypto.PrivateKey
+	userCrtPEM          []byte
+	userCrt             *bcx509.Certificate
 }
 
 type ChainClientOption func(*ChainClientConfig)
@@ -118,10 +100,17 @@ func AddChainClientNodeConfig(nodeConfig *NodeConfig) ChainClientOption {
 	}
 }
 
-// 添加User配置
-func WithChainClientUserConfig(userConfig *UserConfig) ChainClientOption {
+// 添加用户私钥文件路径配置
+func WithUserKeyFilePath(userKeyFilePath string) ChainClientOption {
 	return func(config *ChainClientConfig) {
-		config.userConfig = userConfig
+		config.userKeyFilePath = userKeyFilePath
+	}
+}
+
+// 添加用户证书文件路径配置
+func WithUserCrtFilePath(userCrtFilePath string) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.userCrtFilePath = userCrtFilePath
 	}
 }
 
@@ -199,14 +188,13 @@ func checkConfig(config *ChainClientConfig) error {
 		}
 	}
 
-
 	// 用户私钥不可为空
-	if config.userConfig.userKeyFilePath == "" {
+	if config.userKeyFilePath == "" {
 		return fmt.Errorf("user key file path cannot be empty")
 	}
 
 	// 用户证书不可为空
-	if config.userConfig.userCrtFilePath == "" {
+	if config.userCrtFilePath == "" {
 		return fmt.Errorf("user crt file path cannot be empty")
 	}
 
@@ -227,23 +215,23 @@ func dealConfig(config *ChainClientConfig) error {
 	var err error
 
 	// 读取用户证书
-	config.userConfig.userCrtPEM, err = ioutil.ReadFile(config.userConfig.userCrtFilePath)
+	config.userCrtPEM, err = ioutil.ReadFile(config.userCrtFilePath)
 	if err != nil {
 		return fmt.Errorf("read user crt file failed, %s", err.Error())
 	}
 
 	// 从私钥文件读取用户私钥，转换为privateKey对象
-	skBytes, err := ioutil.ReadFile(config.userConfig.userKeyFilePath)
+	skBytes, err := ioutil.ReadFile(config.userKeyFilePath)
 	if err != nil {
 		return fmt.Errorf("read user key file failed, %s", err)
 	}
-	config.userConfig.privateKey, err = asym.PrivateKeyFromPEM(skBytes, nil)
+	config.privateKey, err = asym.PrivateKeyFromPEM(skBytes, nil)
 	if err != nil {
 		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
 	}
 
 	// 将证书转换为证书对象
-	if config.userConfig.userCrt, err = ParseCert(config.userConfig.userCrtPEM); err != nil {
+	if config.userCrt, err = ParseCert(config.userCrtPEM); err != nil {
 		return fmt.Errorf("ParseCert failed, %s", err.Error())
 	}
 
