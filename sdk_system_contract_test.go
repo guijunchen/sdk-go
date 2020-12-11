@@ -29,7 +29,7 @@ func TestSystemContract(t *testing.T) {
 		WithUserCrtFilePath(userCrtPath),
 		AddChainClientNodeConfig(node1),
 		AddChainClientNodeConfig(node2),
-		)
+	)
 	require.Nil(t, err)
 
 	testSystemContractGetNodeChainList(t, systemChainClient)
@@ -66,8 +66,13 @@ func testSystemContractGetLastConfigBlock(t *testing.T, client *ChainClient) *pb
 }
 
 func testSystemContractGetChainInfo(t *testing.T, client *ChainClient) *pb.ChainInfo {
-	chainInfo, err := client.GetChainInfo()
-	require.Nil(t, err)
+	chainConfig := testGetChainConfig(t, client)
+	chainInfo := &pb.ChainInfo{}
+	if chainConfig.Consensus.Type != pb.ConsensusType_SOLO {
+		var err error
+		chainInfo, err = client.GetChainInfo()
+		require.Nil(t, err)
+	}
 	return chainInfo
 }
 
