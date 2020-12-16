@@ -108,6 +108,10 @@ func (cc ChainClient) proposalRequest(txType pb.TxType, txId string, payloadByte
 }
 
 func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, payloadBytes []byte, timeout int64) (*pb.TxResponse, error) {
+	var (
+		errMsg string
+	)
+
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -137,11 +141,15 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 		statusErr, ok := status.FromError(err)
 		if ok {
 			if statusErr.Code() == codes.DeadlineExceeded {
-				return nil, fmt.Errorf("client.call failed, deadline: %+v", err)
+				errMsg = fmt.Sprintf("client.call failed, deadline: %+v", err)
+				cc.logger.Errorf("[SDK] %s", err)
+				return nil, fmt.Errorf(errMsg)
 			}
 		}
 
-		return nil, fmt.Errorf("client.call failed, %+v", err)
+		errMsg = fmt.Sprintf("client.call failed, %+v", err)
+		cc.logger.Errorf("[SDK] %s", err)
+		return nil, fmt.Errorf(errMsg)
 	}
 
 	cc.logger.Debugf("[SDK] proposalRequest resp: %+v", resp)
