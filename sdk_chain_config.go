@@ -625,7 +625,7 @@ func (cc ChainClient) SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byt
 
 	resp, err := cc.proposalRequest(pb.TxType_UPDATE_CHAIN_CONFIG, txId, mergeSignedPayloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf("send %s failed, %s", pb.TxType_UPDATE_CHAIN_CONFIG.String(), err.Error())
+		return resp, fmt.Errorf("send %s failed, %s", pb.TxType_UPDATE_CHAIN_CONFIG.String(), err.Error())
 	}
 
 	resp.ContractResult = &pb.ContractResult{

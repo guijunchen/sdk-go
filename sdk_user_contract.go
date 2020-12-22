@@ -130,7 +130,7 @@ func (cc ChainClient) sendContractManageRequest(manageType contractManageType, m
 
 	resp, err := cc.proposalRequestWithTimeout(txType, txId, mergeSignedPayloadBytes, timeout)
 	if err != nil {
-		return nil, fmt.Errorf("send %s failed, %s", txType.String(), err.Error())
+		return resp, fmt.Errorf("send %s failed, %s", txType.String(), err.Error())
 	}
 
 	if resp.Code == pb.TxStatusCode_SUCCESS {
@@ -171,7 +171,7 @@ func (cc ChainClient) InvokeContract(contractName, method, txId string, params m
 
 	resp, err := cc.proposalRequestWithTimeout(pb.TxType_INVOKE_USER_CONTRACT, txId, payloadBytes, timeout)
 	if err != nil {
-		return nil, fmt.Errorf("%s failed, %s", pb.TxType_INVOKE_USER_CONTRACT.String(), err.Error())
+		return resp, fmt.Errorf("%s failed, %s", pb.TxType_INVOKE_USER_CONTRACT.String(), err.Error())
 	}
 
 	if resp.Code == pb.TxStatusCode_SUCCESS {

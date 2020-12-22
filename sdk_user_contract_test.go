@@ -15,6 +15,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	createContractTimeout = 5
+)
+
 func TestUserContractCounterGo(t *testing.T) {
 	client, err := createClient()
 	require.Nil(t, err)
@@ -83,7 +87,8 @@ func testUserContractCounterGoCreate(t *testing.T, client *ChainClient,
 	require.Nil(t, err)
 
 	// 发送创建合约请求
-	resp, err := client.SendContractCreateRequest(mergeSignedPayloadBytes, -1, false)
+	resp, err := client.SendContractCreateRequest(mergeSignedPayloadBytes, createContractTimeout, false)
+	fmt.Printf("resp: %+v\n", resp)
 	require.Nil(t, err)
 
 	err = checkProposalRequestResp(resp, true)

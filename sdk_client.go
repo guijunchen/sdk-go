@@ -138,18 +138,29 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 
 	resp, err := client.rpcNode.SendRequest(ctx, req)
 	if err != nil {
+		resp := &pb.TxResponse{
+			Message: err.Error(),
+			ContractResult: &pb.ContractResult{
+				Code:    pb.ContractResultCode_FAIL,
+				Result:  []byte(txId),
+				Message: pb.ContractResultCode_FAIL.String(),
+			},
+		}
+
 		statusErr, ok := status.FromError(err)
 		if ok {
 			if statusErr.Code() == codes.DeadlineExceeded {
+				resp.Code = pb.TxStatusCode_TIMEOUT
 				errMsg = fmt.Sprintf("client.call failed, deadline: %+v", err)
 				cc.logger.Errorf("[SDK] %s", err)
-				return nil, fmt.Errorf(errMsg)
+				return resp, fmt.Errorf(errMsg)
 			}
 		}
 
+		resp.Code = pb.TxStatusCode_INTERNAL_ERROR
 		errMsg = fmt.Sprintf("client.call failed, %+v", err)
 		cc.logger.Errorf("[SDK] %s", err)
-		return nil, fmt.Errorf(errMsg)
+		return resp, fmt.Errorf(errMsg)
 	}
 
 	cc.logger.Debugf("[SDK] proposalRequest resp: %+v", resp)

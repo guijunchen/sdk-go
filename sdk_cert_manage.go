@@ -37,7 +37,7 @@ func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
 
 	resp, err := cc.proposalRequest(pb.TxType_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
+		return resp, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err = checkProposalRequestResp(resp, false); err != nil {
@@ -73,7 +73,7 @@ func (cc ChainClient) DeleteCert(certHashes []string) (*pb.TxResponse, error) {
 
 	resp, err := cc.proposalRequest(pb.TxType_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
+		return resp, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err = checkProposalRequestResp(resp, false); err != nil {
