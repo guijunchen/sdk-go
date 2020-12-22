@@ -20,6 +20,7 @@ type RpcNodeClient interface {
 	SendRequest(ctx context.Context, in *TxRequest, opts ...grpc.CallOption) (*TxResponse, error)
 	Subscribe(ctx context.Context, in *TxRequest, opts ...grpc.CallOption) (RpcNode_SubscribeClient, error)
 	UpdateDebugConfig(ctx context.Context, in *DebugConfigRequest, opts ...grpc.CallOption) (*DebugConfigResponse, error)
+	RefreshLogLevelsConfig(ctx context.Context, in *LogLevelsRequest, opts ...grpc.CallOption) (*LogLevelsResponse, error)
 }
 
 type rpcNodeClient struct {
@@ -80,6 +81,15 @@ func (c *rpcNodeClient) UpdateDebugConfig(ctx context.Context, in *DebugConfigRe
 	return out, nil
 }
 
+func (c *rpcNodeClient) RefreshLogLevelsConfig(ctx context.Context, in *LogLevelsRequest, opts ...grpc.CallOption) (*LogLevelsResponse, error) {
+	out := new(LogLevelsResponse)
+	err := c.cc.Invoke(ctx, "/pb.RpcNode/RefreshLogLevelsConfig", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RpcNodeServer is the server API for RpcNode service.
 // All implementations must embed UnimplementedRpcNodeServer
 // for forward compatibility
@@ -87,6 +97,7 @@ type RpcNodeServer interface {
 	SendRequest(context.Context, *TxRequest) (*TxResponse, error)
 	Subscribe(*TxRequest, RpcNode_SubscribeServer) error
 	UpdateDebugConfig(context.Context, *DebugConfigRequest) (*DebugConfigResponse, error)
+	RefreshLogLevelsConfig(context.Context, *LogLevelsRequest) (*LogLevelsResponse, error)
 	mustEmbedUnimplementedRpcNodeServer()
 }
 
@@ -102,6 +113,9 @@ func (*UnimplementedRpcNodeServer) Subscribe(*TxRequest, RpcNode_SubscribeServer
 }
 func (*UnimplementedRpcNodeServer) UpdateDebugConfig(context.Context, *DebugConfigRequest) (*DebugConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateDebugConfig not implemented")
+}
+func (*UnimplementedRpcNodeServer) RefreshLogLevelsConfig(context.Context, *LogLevelsRequest) (*LogLevelsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RefreshLogLevelsConfig not implemented")
 }
 func (*UnimplementedRpcNodeServer) mustEmbedUnimplementedRpcNodeServer() {}
 
@@ -166,6 +180,24 @@ func _RpcNode_UpdateDebugConfig_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RpcNode_RefreshLogLevelsConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LogLevelsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RpcNodeServer).RefreshLogLevelsConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.RpcNode/RefreshLogLevelsConfig",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RpcNodeServer).RefreshLogLevelsConfig(ctx, req.(*LogLevelsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _RpcNode_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.RpcNode",
 	HandlerType: (*RpcNodeServer)(nil),
@@ -177,6 +209,10 @@ var _RpcNode_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateDebugConfig",
 			Handler:    _RpcNode_UpdateDebugConfig_Handler,
+		},
+		{
+			MethodName: "RefreshLogLevelsConfig",
+			Handler:    _RpcNode_RefreshLogLevelsConfig_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

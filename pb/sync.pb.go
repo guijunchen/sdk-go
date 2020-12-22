@@ -183,6 +183,7 @@ type BlockSyncReq struct {
 
 	BlockHeight int64 `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 	BatchSize   int64 `protobuf:"varint,2,opt,name=batchSize,proto3" json:"batchSize,omitempty"`
+	ReturnRwset bool  `protobuf:"varint,3,opt,name=return_rwset,json=returnRwset,proto3" json:"return_rwset,omitempty"`
 }
 
 func (x *BlockSyncReq) Reset() {
@@ -231,18 +232,122 @@ func (x *BlockSyncReq) GetBatchSize() int64 {
 	return 0
 }
 
+func (x *BlockSyncReq) GetReturnRwset() bool {
+	if x != nil {
+		return x.ReturnRwset
+	}
+	return false
+}
+
+type BlockBatch struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Batchs []*Block `protobuf:"bytes,1,rep,name=batchs,proto3" json:"batchs,omitempty"`
+}
+
+func (x *BlockBatch) Reset() {
+	*x = BlockBatch{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_sync_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockBatch) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockBatch) ProtoMessage() {}
+
+func (x *BlockBatch) ProtoReflect() protoreflect.Message {
+	mi := &file_sync_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockBatch.ProtoReflect.Descriptor instead.
+func (*BlockBatch) Descriptor() ([]byte, []int) {
+	return file_sync_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *BlockBatch) GetBatchs() []*Block {
+	if x != nil {
+		return x.Batchs
+	}
+	return nil
+}
+
+type BlockInfoBatch struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Batchs []*BlockInfo `protobuf:"bytes,1,rep,name=batchs,proto3" json:"batchs,omitempty"`
+}
+
+func (x *BlockInfoBatch) Reset() {
+	*x = BlockInfoBatch{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_sync_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockInfoBatch) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockInfoBatch) ProtoMessage() {}
+
+func (x *BlockInfoBatch) ProtoReflect() protoreflect.Message {
+	mi := &file_sync_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockInfoBatch.ProtoReflect.Descriptor instead.
+func (*BlockInfoBatch) Descriptor() ([]byte, []int) {
+	return file_sync_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *BlockInfoBatch) GetBatchs() []*BlockInfo {
+	if x != nil {
+		return x.Batchs
+	}
+	return nil
+}
+
 type SyncBlockBatch struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Batch []*Block `protobuf:"bytes,1,rep,name=batch,proto3" json:"batch,omitempty"`
+	// Types that are assignable to Data:
+	//	*SyncBlockBatch_BlockBatch
+	//	*SyncBlockBatch_BlockinfoBatch
+	Data isSyncBlockBatch_Data `protobuf_oneof:"Data"`
 }
 
 func (x *SyncBlockBatch) Reset() {
 	*x = SyncBlockBatch{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_sync_proto_msgTypes[3]
+		mi := &file_sync_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -255,7 +360,7 @@ func (x *SyncBlockBatch) String() string {
 func (*SyncBlockBatch) ProtoMessage() {}
 
 func (x *SyncBlockBatch) ProtoReflect() protoreflect.Message {
-	mi := &file_sync_proto_msgTypes[3]
+	mi := &file_sync_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -268,15 +373,45 @@ func (x *SyncBlockBatch) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SyncBlockBatch.ProtoReflect.Descriptor instead.
 func (*SyncBlockBatch) Descriptor() ([]byte, []int) {
-	return file_sync_proto_rawDescGZIP(), []int{3}
+	return file_sync_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *SyncBlockBatch) GetBatch() []*Block {
-	if x != nil {
-		return x.Batch
+func (m *SyncBlockBatch) GetData() isSyncBlockBatch_Data {
+	if m != nil {
+		return m.Data
 	}
 	return nil
 }
+
+func (x *SyncBlockBatch) GetBlockBatch() *BlockBatch {
+	if x, ok := x.GetData().(*SyncBlockBatch_BlockBatch); ok {
+		return x.BlockBatch
+	}
+	return nil
+}
+
+func (x *SyncBlockBatch) GetBlockinfoBatch() *BlockInfoBatch {
+	if x, ok := x.GetData().(*SyncBlockBatch_BlockinfoBatch); ok {
+		return x.BlockinfoBatch
+	}
+	return nil
+}
+
+type isSyncBlockBatch_Data interface {
+	isSyncBlockBatch_Data()
+}
+
+type SyncBlockBatch_BlockBatch struct {
+	BlockBatch *BlockBatch `protobuf:"bytes,1,opt,name=block_batch,json=blockBatch,proto3,oneof"`
+}
+
+type SyncBlockBatch_BlockinfoBatch struct {
+	BlockinfoBatch *BlockInfoBatch `protobuf:"bytes,2,opt,name=blockinfo_batch,json=blockinfoBatch,proto3,oneof"`
+}
+
+func (*SyncBlockBatch_BlockBatch) isSyncBlockBatch_Data() {}
+
+func (*SyncBlockBatch_BlockinfoBatch) isSyncBlockBatch_Data() {}
 
 var File_sync_proto protoreflect.FileDescriptor
 
@@ -296,17 +431,32 @@ var file_sync_proto_rawDesc = []byte{
 	0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x42, 0x43, 0x4d, 0x12, 0x21,
 	0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68,
-	0x74, 0x22, 0x4f, 0x0a, 0x0c, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x79, 0x6e, 0x63, 0x52, 0x65,
+	0x74, 0x22, 0x72, 0x0a, 0x0c, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x79, 0x6e, 0x63, 0x52, 0x65,
 	0x71, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68,
 	0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65,
 	0x69, 0x67, 0x68, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x62, 0x61, 0x74, 0x63, 0x68, 0x53, 0x69, 0x7a,
 	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x62, 0x61, 0x74, 0x63, 0x68, 0x53, 0x69,
-	0x7a, 0x65, 0x22, 0x31, 0x0a, 0x0e, 0x53, 0x79, 0x6e, 0x63, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x42,
-	0x61, 0x74, 0x63, 0x68, 0x12, 0x1f, 0x0a, 0x05, 0x62, 0x61, 0x74, 0x63, 0x68, 0x18, 0x01, 0x20,
-	0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x70, 0x62, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x52, 0x05,
-	0x62, 0x61, 0x74, 0x63, 0x68, 0x42, 0x21, 0x5a, 0x1f, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x6d, 0x61,
-	0x6b, 0x65, 0x72, 0x2e, 0x6f, 0x72, 0x67, 0x2f, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x6d, 0x61, 0x6b,
-	0x65, 0x72, 0x2d, 0x67, 0x6f, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x7a, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x72, 0x65, 0x74, 0x75, 0x72, 0x6e, 0x5f, 0x72, 0x77, 0x73,
+	0x65, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0b, 0x72, 0x65, 0x74, 0x75, 0x72, 0x6e,
+	0x52, 0x77, 0x73, 0x65, 0x74, 0x22, 0x2f, 0x0a, 0x0a, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x42, 0x61,
+	0x74, 0x63, 0x68, 0x12, 0x21, 0x0a, 0x06, 0x62, 0x61, 0x74, 0x63, 0x68, 0x73, 0x18, 0x01, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x70, 0x62, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x52, 0x06,
+	0x62, 0x61, 0x74, 0x63, 0x68, 0x73, 0x22, 0x37, 0x0a, 0x0e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x49,
+	0x6e, 0x66, 0x6f, 0x42, 0x61, 0x74, 0x63, 0x68, 0x12, 0x25, 0x0a, 0x06, 0x62, 0x61, 0x74, 0x63,
+	0x68, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x70, 0x62, 0x2e, 0x42, 0x6c,
+	0x6f, 0x63, 0x6b, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x06, 0x62, 0x61, 0x74, 0x63, 0x68, 0x73, 0x22,
+	0x8a, 0x01, 0x0a, 0x0e, 0x53, 0x79, 0x6e, 0x63, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x42, 0x61, 0x74,
+	0x63, 0x68, 0x12, 0x31, 0x0a, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x62, 0x61, 0x74, 0x63,
+	0x68, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x70, 0x62, 0x2e, 0x42, 0x6c, 0x6f,
+	0x63, 0x6b, 0x42, 0x61, 0x74, 0x63, 0x68, 0x48, 0x00, 0x52, 0x0a, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
+	0x42, 0x61, 0x74, 0x63, 0x68, 0x12, 0x3d, 0x0a, 0x0f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x69, 0x6e,
+	0x66, 0x6f, 0x5f, 0x62, 0x61, 0x74, 0x63, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12,
+	0x2e, 0x70, 0x62, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x49, 0x6e, 0x66, 0x6f, 0x42, 0x61, 0x74,
+	0x63, 0x68, 0x48, 0x00, 0x52, 0x0e, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x69, 0x6e, 0x66, 0x6f, 0x42,
+	0x61, 0x74, 0x63, 0x68, 0x42, 0x06, 0x0a, 0x04, 0x44, 0x61, 0x74, 0x61, 0x42, 0x21, 0x5a, 0x1f,
+	0x63, 0x68, 0x61, 0x69, 0x6e, 0x6d, 0x61, 0x6b, 0x65, 0x72, 0x2e, 0x6f, 0x72, 0x67, 0x2f, 0x63,
+	0x68, 0x61, 0x69, 0x6e, 0x6d, 0x61, 0x6b, 0x65, 0x72, 0x2d, 0x67, 0x6f, 0x2f, 0x70, 0x62, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -322,23 +472,29 @@ func file_sync_proto_rawDescGZIP() []byte {
 }
 
 var file_sync_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_sync_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_sync_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_sync_proto_goTypes = []interface{}{
 	(SyncBlockMsg_MsgType)(0), // 0: pb.SyncBlockMsg.MsgType
 	(*SyncBlockMsg)(nil),      // 1: pb.SyncBlockMsg
 	(*BlockHeightBCM)(nil),    // 2: pb.BlockHeightBCM
 	(*BlockSyncReq)(nil),      // 3: pb.BlockSyncReq
-	(*SyncBlockBatch)(nil),    // 4: pb.SyncBlockBatch
-	(*Block)(nil),             // 5: pb.Block
+	(*BlockBatch)(nil),        // 4: pb.BlockBatch
+	(*BlockInfoBatch)(nil),    // 5: pb.BlockInfoBatch
+	(*SyncBlockBatch)(nil),    // 6: pb.SyncBlockBatch
+	(*Block)(nil),             // 7: pb.Block
+	(*BlockInfo)(nil),         // 8: pb.BlockInfo
 }
 var file_sync_proto_depIdxs = []int32{
 	0, // 0: pb.SyncBlockMsg.type:type_name -> pb.SyncBlockMsg.MsgType
-	5, // 1: pb.SyncBlockBatch.batch:type_name -> pb.Block
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	7, // 1: pb.BlockBatch.batchs:type_name -> pb.Block
+	8, // 2: pb.BlockInfoBatch.batchs:type_name -> pb.BlockInfo
+	4, // 3: pb.SyncBlockBatch.block_batch:type_name -> pb.BlockBatch
+	5, // 4: pb.SyncBlockBatch.blockinfo_batch:type_name -> pb.BlockInfoBatch
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_sync_proto_init() }
@@ -385,6 +541,30 @@ func file_sync_proto_init() {
 			}
 		}
 		file_sync_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BlockBatch); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_sync_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BlockInfoBatch); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_sync_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SyncBlockBatch); i {
 			case 0:
 				return &v.state
@@ -397,13 +577,17 @@ func file_sync_proto_init() {
 			}
 		}
 	}
+	file_sync_proto_msgTypes[5].OneofWrappers = []interface{}{
+		(*SyncBlockBatch_BlockBatch)(nil),
+		(*SyncBlockBatch_BlockinfoBatch)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_sync_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
