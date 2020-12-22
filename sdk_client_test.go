@@ -35,13 +35,25 @@ const (
 )
 
 var (
-	caPaths     = []string{certPathPrefix + fmt.Sprintf("/crypto-config/%s/ca", orgId1)}
-	userKeyPath = certPathPrefix + fmt.Sprintf("/crypto-config/%s/user/client1/client1.tls.key", orgId1)
-	userCrtPath = certPathPrefix + fmt.Sprintf("/crypto-config/%s/user/client1/client1.tls.crt", orgId1)
+	chainOrgId  = orgId1
+	caPaths     = []string{certPathPrefix + fmt.Sprintf("/crypto-config/%s/ca", chainOrgId)}
+	userKeyPath = certPathPrefix + fmt.Sprintf("/crypto-config/%s/user/client1/client1.tls.key", chainOrgId)
+	userCrtPath = certPathPrefix + fmt.Sprintf("/crypto-config/%s/user/client1/client1.tls.crt", chainOrgId)
 
 	adminKeyPath = certPathPrefix + "/crypto-config/%s/user/admin1/admin1.tls.key"
 	adminCrtPath = certPathPrefix + "/crypto-config/%s/user/admin1/admin1.tls.crt"
 )
+
+// 中间证书测试
+//var (
+//	chainOrgId  = orgId4
+//	caPaths     = []string{certPathPrefix + fmt.Sprintf("/crypto-config-middle-cert/%s/ca", chainOrgId)}
+//	userKeyPath = certPathPrefix + fmt.Sprintf("/crypto-config-middle-cert/%s/user/client1/client1.tls.key", chainOrgId)
+//	userCrtPath = certPathPrefix + fmt.Sprintf("/crypto-config-middle-cert/%s/user/client1/client1.tls.crt", chainOrgId)
+//
+//	adminKeyPath = certPathPrefix + "/crypto-config-middle-cert/%s/user/admin1/admin1.tls.key"
+//	adminCrtPath = certPathPrefix + "/crypto-config-middle-cert/%s/user/admin1/admin1.tls.crt"
+//)
 
 var (
 	node1 *NodeConfig
@@ -53,6 +65,7 @@ func createNode(nodeAddr string, connCnt int) *NodeConfig {
 		WithNodeAddr(nodeAddr),
 		WithNodeConnCnt(connCnt),
 		WithNodeUseTLS(true),
+		//WithNodeUseTLS(false),
 		WithNodeCAPaths(caPaths),
 		WithNodeTLSHostName(tlsHostName),
 	)
@@ -70,7 +83,7 @@ func createClient() (*ChainClient, error) {
 	}
 
 	chainClient, err := NewChainClient(
-		WithChainClientOrgId(orgId1),
+		WithChainClientOrgId(chainOrgId),
 		WithChainClientChainId(chainId),
 		WithChainClientLogger(getDefaultLogger()),
 		WithUserKeyFilePath(userKeyPath),
@@ -96,7 +109,7 @@ func createAdmin(orgId string) (*ChainClient, error) {
 	}
 
 	adminClient, err := NewChainClient(
-		WithChainClientOrgId(orgId1),
+		WithChainClientOrgId(chainOrgId),
 		WithChainClientChainId(chainId),
 		WithChainClientLogger(getDefaultLogger()),
 		WithUserKeyFilePath(fmt.Sprintf(adminKeyPath, orgId)),
