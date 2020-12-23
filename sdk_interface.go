@@ -12,6 +12,17 @@ import (
 
 // # ChainMaker Go SDK 接口说明
 type SDKInterface interface {
+	// ## 0 证书压缩
+	// ## 0.1 启用压缩证书功能
+	// ```go
+	EnableCertHash() error
+	// ```
+
+	// ## 0.2 停用压缩证书功能
+	// ```go
+	DisableCertHash() error
+	// ```
+
 	// ## 1 用户合约接口
 	// ### 1.1 创建合约待签名payload生成
 	// **参数说明**

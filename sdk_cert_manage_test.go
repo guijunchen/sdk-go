@@ -5,6 +5,7 @@
 package chainmaker_sdk_go
 
 import (
+	"encoding/hex"
 	"testing"
 	"time"
 
@@ -35,7 +36,7 @@ func TestCertManageGo(t *testing.T) {
 func testCertAdd(t *testing.T, client *ChainClient) string {
 	resp, err := client.AddCert()
 	require.Nil(t, err)
-	return string(resp.ContractResult.Result)
+	return hex.EncodeToString(resp.ContractResult.Result)
 }
 
 func testQueryCert(t *testing.T, client *ChainClient, certHashes []string) *pb.CertInfos {

@@ -6,6 +6,7 @@ package chainmaker_sdk_go
 
 import (
 	"fmt"
+	"log"
 )
 
 const (
@@ -96,6 +97,12 @@ func createClient() (*ChainClient, error) {
 		return nil, err
 	}
 
+	//启用证书压缩
+	err = chainClient.EnableCertHash()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return chainClient, nil
 }
 
@@ -109,7 +116,7 @@ func createAdmin(orgId string) (*ChainClient, error) {
 	}
 
 	adminClient, err := NewChainClient(
-		WithChainClientOrgId(chainOrgId),
+		WithChainClientOrgId(orgId),
 		WithChainClientChainId(chainId),
 		WithChainClientLogger(getDefaultLogger()),
 		WithUserKeyFilePath(fmt.Sprintf(adminKeyPath, orgId)),
@@ -117,7 +124,6 @@ func createAdmin(orgId string) (*ChainClient, error) {
 		AddChainClientNodeConfig(node1),
 		AddChainClientNodeConfig(node2),
 	)
-
 	if err != nil {
 		return nil, err
 	}

@@ -25,7 +25,9 @@ func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
 		MemberInfo: cc.userCrtPEM,
 		IsFullCert: true,
 	}
-	certHash, err := getCertificateIdHex(member.GetMemberInfo(), chainConfig.Crypto.Hash)
+
+	//certHash, err := getCertificateIdHex(member.GetMemberInfo(), chainConfig.Crypto.Hash)
+	certHash, err := getCertificateId(member.GetMemberInfo(), chainConfig.Crypto.Hash)
 	if err != nil {
 		return nil, fmt.Errorf("calc cert hash failed, %s", err.Error())
 	}

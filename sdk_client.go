@@ -9,7 +9,11 @@ import (
 	"chainmaker.org/chainmaker-go/common/crypto"
 	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
 	"context"
+	"encoding/hex"
+	"errors"
 	"fmt"
+	"github.com/Rican7/retry"
+	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"strings"
@@ -26,6 +30,9 @@ type ChainClient struct {
 	userCrtPEM  []byte
 	userCrt     *bcx509.Certificate
 	privateKey  crypto.PrivateKey
+	// 用户压缩证书
+	enabledCrtHash bool
+	userCrtHash []byte
 }
 
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
@@ -63,12 +70,134 @@ func (cc ChainClient) Stop() error {
 	return cc.pool.Close()
 }
 
+func (cc *ChainClient) EnableCertHash() error {
+	if len(cc.userCrtHash) > 0 {
+		ok, err := cc.getCheckCertHash(cc.userCrtHash)
+		if err != nil {
+			errMsg := fmt.Sprintf("enable cert hash, get and check cert hash failed, %s", err.Error())
+			cc.logger.Errorf("[SDK] %s", errMsg)
+			return errors.New(errMsg)
+		}
+
+		if !ok {
+			// 如果链上证书Hash为空，说明还没有在链上添加证书，执行后续方法添加之
+			cc.logger.Warnf("[SDK] %s", "havenot get user cert on chain [%s], begin add cert", cc.chainId)
+		}
+	}
+
+	resp, err := cc.AddCert()
+	if err != nil {
+		errMsg := fmt.Sprintf("enable cert hash AddCert failed, %s", err.Error())
+		cc.logger.Errorf("[SDK] %s", errMsg)
+		return errors.New(errMsg)
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		errMsg := fmt.Sprintf("enable cert hash AddCert got invalid resp, %s", err.Error())
+		cc.logger.Errorf("[SDK] %s", errMsg)
+		return errors.New(errMsg)
+	}
+
+	cc.userCrtHash = resp.ContractResult.Result
+	cc.enabledCrtHash = true
+
+	err = cc.checkUserCertOnChain(cc.userCrtHash)
+	if err != nil {
+		errMsg := fmt.Sprintf("check user cert on chain failed, %s", err.Error())
+		cc.logger.Errorf("[SDK] %s", errMsg)
+		return errors.New(errMsg)
+	}
+
+	return nil
+}
+
+// 检查证书是否成功上链
+func (cc ChainClient) checkUserCertOnChain(userCrtHash []byte) error {
+	if err := retry.Retry(func(attempt uint) error {
+		ok, err := cc.getCheckCertHash(cc.userCrtHash)
+		if err != nil {
+			errMsg := fmt.Sprintf("check user cert on chain, get and check cert hash failed, %s", err.Error())
+			cc.logger.Errorf("[SDK] %s", errMsg)
+			return errors.New(errMsg)
+		}
+
+		if !ok {
+			errMsg := fmt.Sprintf("user cert havenot on chain yet, and try again")
+			cc.logger.Debugf("[SDK] %s", errMsg)
+			return errors.New(errMsg)
+		}
+
+		return nil
+	}, strategy.Limit(10), strategy.Wait(time.Second),
+	); err != nil {
+		errMsg := fmt.Sprintf("check user upload cert on chain failed, try again later, %s", err.Error())
+		cc.logger.Errorf("[SDK] %s", errMsg)
+		return errors.New(errMsg)
+	}
+
+	return nil
+}
+
+func (cc ChainClient) getCheckCertHash(userCrtHash []byte) (bool, error) {
+	// 根据已缓存证书Hash，查链上是否存在
+	certInfo, err := cc.QueryCert([]string{hex.EncodeToString(userCrtHash)})
+	if err != nil {
+		errMsg := fmt.Sprintf("QueryCert failed, %s", err.Error())
+		cc.logger.Errorf("[SDK] %s", errMsg)
+		return false, errors.New(errMsg)
+	}
+
+	if len(certInfo.CertInfos) == 0 {
+		return false, nil
+	}
+
+	// 返回链上证书列表长度不为1，即报错
+	if len(certInfo.CertInfos) > 1 {
+		errMsg := fmt.Sprintf("CertInfos != 1")
+		cc.logger.Errorf("[SDK] %s", errMsg)
+		return false, errors.New(errMsg)
+	}
+
+	// 如果链上证书Hash不为空
+	if certInfo.CertInfos[0].Hash != "" {
+		// 如果和缓存的证书Hash不一致则报错
+		if hex.EncodeToString(cc.userCrtHash) != certInfo.CertInfos[0].Hash {
+			errMsg := fmt.Sprintf("not equal certHash, [expected:%s]/[actual:%s]",
+				cc.userCrtHash, certInfo.CertInfos[0].Hash)
+			cc.logger.Errorf("[SDK] %s", errMsg)
+			return false, errors.New(errMsg)
+		}
+
+		// 如果和缓存的证书Hash一致，则说明已经上传好了证书，具备提交压缩证书交易的能力
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (cc ChainClient) DisableCertHash() error {
+	cc.enabledCrtHash = false
+	return nil
+}
+
 func (cc ChainClient) generateTxRequest(txId string, txType pb.TxType, payloadBytes []byte) (*pb.TxRequest, error) {
+	var (
+		sender *pb.SerializedMember
+	)
+
 	// 构造Sender
-	sender := &pb.SerializedMember{
-		OrgId:      cc.orgId,
-		MemberInfo: cc.userCrtPEM,
-		IsFullCert: true,
+	if cc.enabledCrtHash && len(cc.userCrtHash) > 0 {
+		sender = &pb.SerializedMember{
+			OrgId:      cc.orgId,
+			MemberInfo: cc.userCrtHash,
+			IsFullCert: false,
+		}
+	} else {
+		sender = &pb.SerializedMember{
+			OrgId:      cc.orgId,
+			MemberInfo: cc.userCrtPEM,
+			IsFullCert: true,
+		}
 	}
 
 	// 构造Header
@@ -152,14 +281,14 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 			if statusErr.Code() == codes.DeadlineExceeded {
 				resp.Code = pb.TxStatusCode_TIMEOUT
 				errMsg = fmt.Sprintf("client.call failed, deadline: %+v", err)
-				cc.logger.Errorf("[SDK] %s", err)
+				cc.logger.Errorf("[SDK] %s", errMsg)
 				return resp, fmt.Errorf(errMsg)
 			}
 		}
 
 		resp.Code = pb.TxStatusCode_INTERNAL_ERROR
 		errMsg = fmt.Sprintf("client.call failed, %+v", err)
-		cc.logger.Errorf("[SDK] %s", err)
+		cc.logger.Errorf("[SDK] %s", errMsg)
 		return resp, fmt.Errorf(errMsg)
 	}
 
