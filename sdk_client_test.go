@@ -61,35 +61,50 @@ var (
 	node2 *NodeConfig
 )
 
+// 创建节点
 func createNode(nodeAddr string, connCnt int) *NodeConfig {
 	node := NewNodeConfig(
+		// 节点地址，格式：127.0.0.1:12301
 		WithNodeAddr(nodeAddr),
+		// 节点连接数
 		WithNodeConnCnt(connCnt),
+		// 节点是否启用TLS认证
 		WithNodeUseTLS(true),
-		//WithNodeUseTLS(false),
+		// 根证书路径，支持多个
 		WithNodeCAPaths(caPaths),
+		// TLS Hostname
 		WithNodeTLSHostName(tlsHostName),
 	)
 
 	return node
 }
 
+// 创建ChainClient
 func createClient() (*ChainClient, error) {
 	if node1 == nil {
+		// 创建节点1
 		node1 = createNode(nodeAddr1, connCnt1)
 	}
 
 	if node2 == nil {
+		// 创建节点2
 		node2 = createNode(nodeAddr2, connCnt2)
 	}
 
 	chainClient, err := NewChainClient(
+		// 设置归属组织
 		WithChainClientOrgId(chainOrgId),
+		// 设置链ID
 		WithChainClientChainId(chainId),
+		// 设置logger句柄，若不设置，将采用默认日志文件输出日志
 		WithChainClientLogger(getDefaultLogger()),
+		// 设置客户端用户私钥路径
 		WithUserKeyFilePath(userKeyPath),
+		// 设置客户端用户证书
 		WithUserCrtFilePath(userCrtPath),
+		// 添加节点1
 		AddChainClientNodeConfig(node1),
+		// 添加节点2
 		AddChainClientNodeConfig(node2),
 		)
 
@@ -97,7 +112,7 @@ func createClient() (*ChainClient, error) {
 		return nil, err
 	}
 
-	//启用证书压缩
+	//启用证书压缩（开启证书压缩可以减小交易包大小，提升处理性能）
 	err = chainClient.EnableCertHash()
 	if err != nil {
 		log.Fatal(err)
