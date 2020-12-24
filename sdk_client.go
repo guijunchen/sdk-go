@@ -71,20 +71,41 @@ func (cc ChainClient) Stop() error {
 }
 
 func (cc *ChainClient) EnableCertHash() error {
-	if len(cc.userCrtHash) > 0 {
-		ok, err := cc.getCheckCertHash(cc.userCrtHash)
+	var (
+		err error
+	)
+
+	// 0.已经启用压缩证书
+	if cc.enabledCrtHash {
+		return nil
+	}
+
+	// 1.如尚未获取证书Hash，便进行获取
+	if len(cc.userCrtHash) == 0 {
+		// 获取证书Hash
+		cc.userCrtHash, err = cc.GetCertHash()
 		if err != nil {
-			errMsg := fmt.Sprintf("enable cert hash, get and check cert hash failed, %s", err.Error())
+			errMsg := fmt.Sprintf("get cert hash failed, %s", err.Error())
 			cc.logger.Errorf("[SDK] %s", errMsg)
 			return errors.New(errMsg)
 		}
-
-		if !ok {
-			// 如果链上证书Hash为空，说明还没有在链上添加证书，执行后续方法添加之
-			cc.logger.Warnf("[SDK] %s", "havenot get user cert on chain [%s], begin add cert", cc.chainId)
-		}
 	}
 
+	// 2.链上查询证书是否存在
+	ok, err := cc.getCheckCertHash()
+	if err != nil {
+		errMsg := fmt.Sprintf("enable cert hash, get and check cert hash failed, %s", err.Error())
+		cc.logger.Errorf("[SDK] %s", errMsg)
+		return errors.New(errMsg)
+	}
+
+	// 3.1 若证书已经上链，直接返回
+	if ok {
+		cc.enabledCrtHash = true
+		return nil
+	}
+
+	// 3.2 若证书未上链，添加证书
 	resp, err := cc.AddCert()
 	if err != nil {
 		errMsg := fmt.Sprintf("enable cert hash AddCert failed, %s", err.Error())
@@ -98,23 +119,28 @@ func (cc *ChainClient) EnableCertHash() error {
 		return errors.New(errMsg)
 	}
 
-	cc.userCrtHash = resp.ContractResult.Result
-	cc.enabledCrtHash = true
-
-	err = cc.checkUserCertOnChain(cc.userCrtHash)
+	// 循环检查证书是否成功上链
+	err = cc.checkUserCertOnChain()
 	if err != nil {
 		errMsg := fmt.Sprintf("check user cert on chain failed, %s", err.Error())
 		cc.logger.Errorf("[SDK] %s", errMsg)
 		return errors.New(errMsg)
 	}
 
+	cc.enabledCrtHash = true
+
+	return nil
+}
+
+func (cc ChainClient) DisableCertHash() error {
+	cc.enabledCrtHash = false
 	return nil
 }
 
 // 检查证书是否成功上链
-func (cc ChainClient) checkUserCertOnChain(userCrtHash []byte) error {
+func (cc ChainClient) checkUserCertOnChain() error {
 	if err := retry.Retry(func(attempt uint) error {
-		ok, err := cc.getCheckCertHash(cc.userCrtHash)
+		ok, err := cc.getCheckCertHash()
 		if err != nil {
 			errMsg := fmt.Sprintf("check user cert on chain, get and check cert hash failed, %s", err.Error())
 			cc.logger.Errorf("[SDK] %s", errMsg)
@@ -138,9 +164,9 @@ func (cc ChainClient) checkUserCertOnChain(userCrtHash []byte) error {
 	return nil
 }
 
-func (cc ChainClient) getCheckCertHash(userCrtHash []byte) (bool, error) {
+func (cc ChainClient) getCheckCertHash() (bool, error) {
 	// 根据已缓存证书Hash，查链上是否存在
-	certInfo, err := cc.QueryCert([]string{hex.EncodeToString(userCrtHash)})
+	certInfo, err := cc.QueryCert([]string{hex.EncodeToString(cc.userCrtHash)})
 	if err != nil {
 		errMsg := fmt.Sprintf("QueryCert failed, %s", err.Error())
 		cc.logger.Errorf("[SDK] %s", errMsg)
@@ -159,7 +185,7 @@ func (cc ChainClient) getCheckCertHash(userCrtHash []byte) (bool, error) {
 	}
 
 	// 如果链上证书Hash不为空
-	if certInfo.CertInfos[0].Hash != "" {
+	if len(certInfo.CertInfos[0].Cert) > 0 {
 		// 如果和缓存的证书Hash不一致则报错
 		if hex.EncodeToString(cc.userCrtHash) != certInfo.CertInfos[0].Hash {
 			errMsg := fmt.Sprintf("not equal certHash, [expected:%s]/[actual:%s]",
@@ -173,11 +199,6 @@ func (cc ChainClient) getCheckCertHash(userCrtHash []byte) (bool, error) {
 	}
 
 	return false, nil
-}
-
-func (cc ChainClient) DisableCertHash() error {
-	cc.enabledCrtHash = false
-	return nil
 }
 
 func (cc ChainClient) generateTxRequest(txId string, txType pb.TxType, payloadBytes []byte) (*pb.TxRequest, error) {

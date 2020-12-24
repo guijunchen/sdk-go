@@ -16,20 +16,9 @@ func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to INVOKE system contract, [contract:%s]/[method:%s]",
 		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERT_ADD.String())
 
-	chainConfig, err := cc.GetChainConfig()
+	certHash, err := cc.GetCertHash()
 	if err != nil {
-		return nil, fmt.Errorf("get chain config failed, %s", err.Error())
-	}
-	member := &pb.SerializedMember{
-		OrgId:      cc.orgId,
-		MemberInfo: cc.userCrtPEM,
-		IsFullCert: true,
-	}
-
-	//certHash, err := getCertificateIdHex(member.GetMemberInfo(), chainConfig.Crypto.Hash)
-	certHash, err := getCertificateId(member.GetMemberInfo(), chainConfig.Crypto.Hash)
-	if err != nil {
-		return nil, fmt.Errorf("calc cert hash failed, %s", err.Error())
+		return nil, fmt.Errorf("get cert hash in hex failed, %s", err.Error())
 	}
 
 	payloadBytes, err := constructTransactPayload(pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERT_ADD.String(), []*pb.KeyValuePair{})
@@ -49,7 +38,7 @@ func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
 	resp.ContractResult = &pb.ContractResult{
 		Code:    pb.ContractResultCode_OK,
 		Message: pb.ContractResultCode_OK.String(),
-		Result:  []byte(certHash),
+		Result:  certHash,
 	}
 
 	return resp, nil
@@ -123,4 +112,23 @@ func (cc ChainClient) QueryCert(certHashes []string) (*pb.CertInfos, error) {
 	}
 
 	return certInfos, nil
+}
+
+func (cc ChainClient) GetCertHash() ([]byte, error) {
+	chainConfig, err := cc.GetChainConfig()
+	if err != nil {
+		return nil, fmt.Errorf("get cert hash failed, %s", err.Error())
+	}
+	member := &pb.SerializedMember{
+		OrgId:      cc.orgId,
+		MemberInfo: cc.userCrtPEM,
+		IsFullCert: true,
+	}
+
+	certHash, err := getCertificateId(member.GetMemberInfo(), chainConfig.Crypto.Hash)
+	if err != nil {
+		return nil, fmt.Errorf("calc cert hash failed, %s", err.Error())
+	}
+
+	return certHash, nil
 }

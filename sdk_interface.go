@@ -12,7 +12,7 @@ import (
 
 // # ChainMaker Go SDK 接口说明
 type SDKInterface interface {
-	// ## 0 证书压缩
+	// ## 0 证书压缩（开启证书压缩可以减小交易包大小，提升处理性能）
 	// ## 0.1 启用压缩证书功能
 	// ```go
 	EnableCertHash() error
@@ -353,6 +353,11 @@ type SDKInterface interface {
 	//   - *pb.CertInfos: 包含证书Hash和证书内容的列表
 	// ```go
 	QueryCert(certHashes []string) (*pb.CertInfos, error)
+	// ```
+
+	// ### 4.4 获取用户证书哈希
+	// ```go
+	GetCertHash() ([]byte, error)
 	// ```
 
 	// ## 5 消息订阅接口
