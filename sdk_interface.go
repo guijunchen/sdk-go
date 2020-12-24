@@ -12,17 +12,6 @@ import (
 
 // # ChainMaker Go SDK 接口说明
 type SDKInterface interface {
-	// ## 0 证书压缩（开启证书压缩可以减小交易包大小，提升处理性能）
-	// ## 0.1 启用压缩证书功能
-	// ```go
-	EnableCertHash() error
-	// ```
-
-	// ## 0.2 停用压缩证书功能
-	// ```go
-	DisableCertHash() error
-	// ```
-
 	// ## 1 用户合约接口
 	// ### 1.1 创建合约待签名payload生成
 	// **参数说明**
@@ -388,8 +377,20 @@ type SDKInterface interface {
 	Subscribe(ctx context.Context, txType pb.TxType, payloadBytes []byte) (<-chan interface{}, error)
 	// ```
 
-	// ## 6 管理类接口
-	// ### 6.1 SDK停止接口：关闭连接池连接，释放资源
+	// ## 6 证书压缩
+	// *开启证书压缩可以减小交易包大小，提升处理性能*
+	// ### 6.1 启用压缩证书功能
+	// ```go
+	EnableCertHash() error
+	// ```
+
+	// ### 6.2 停用压缩证书功能
+	// ```go
+	DisableCertHash() error
+	// ```
+
+	// ## 7 管理类接口
+	// ### 7.1 SDK停止接口：关闭连接池连接，释放资源
 	// ```go
 	Stop() error
 	// ```

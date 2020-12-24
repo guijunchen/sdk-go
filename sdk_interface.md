@@ -1,4 +1,5 @@
 # ChainMaker Go SDK 接口说明
+
 ## 1 用户合约接口
 ### 1.1 创建合约待签名payload生成
 **参数说明**
@@ -36,16 +37,22 @@ MergeContractManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
 **参数说明**
   - multiSignedPayload: 多签结果
   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+  - withSyncResult: 是否同步获取交易执行结果
+           当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
+           当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
 ```go
-SendContractCreateRequest(mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error)
+SendContractCreateRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
 ```
 
 ### 1.6 发送升级合约请求
 **参数说明**
   - multiSignedPayload: 多签结果
   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+  - withSyncResult: 是否同步获取交易执行结果
+           当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
+           当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
 ```go
-SendContractUpgradeRequest(mergeSignedPayloadBytes []byte, timeout int64) (*pb.TxResponse, error)
+SendContractUpgradeRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
 ```
 
 ### 1.7 合约调用
@@ -54,11 +61,14 @@ SendContractUpgradeRequest(mergeSignedPayloadBytes []byte, timeout int64) (*pb.T
   - method: 合约方法
   - txId: 交易ID
           格式要求：长度为64bit，字符在a-z0-9
-          可为空，若为空字符串，将自动生成，在pb.TxResponse.ContractResult.Result字段中返回该自动生成的txId
+          可为空，若为空字符串，将自动生成txId
   - params: 合约参数
   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+  - withSyncResult: 是否同步获取交易执行结果
+           当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
+           当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
 ```go
-InvokeContract(contractName, method, txId string, params map[string]string, timeout int64) (*pb.TxResponse, error)
+InvokeContract(contractName, method, txId string, params map[string]string, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
 ```
 
 ### 1.8 合约查询接口调用
@@ -322,6 +332,11 @@ DeleteCert(certHashes []string) (*pb.TxResponse, error)
 QueryCert(certHashes []string) (*pb.CertInfos, error)
 ```
 
+### 4.4 获取用户证书哈希
+```go
+GetCertHash() ([]byte, error)
+```
+
 ## 5 消息订阅接口
 ### 5.1 区块订阅
 **参数说明**
@@ -350,8 +365,20 @@ SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType pb.TxType, t
 Subscribe(ctx context.Context, txType pb.TxType, payloadBytes []byte) (<-chan interface{}, error)
 ```
 
-## 6 管理类接口
-### 6.1 SDK停止接口：关闭连接池连接，释放资源
+## 6 证书压缩
+*开启证书压缩可以减小交易包大小，提升处理性能*
+### 6.1 启用压缩证书功能
+```go
+EnableCertHash() error
+```
+
+### 6.2 停用压缩证书功能
+```go
+DisableCertHash() error
+```
+
+## 7 管理类接口
+### 7.1 SDK停止接口：关闭连接池连接，释放资源
 ```go
 Stop() error
 ```
