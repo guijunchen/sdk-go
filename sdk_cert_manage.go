@@ -21,7 +21,8 @@ func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
 		return nil, fmt.Errorf("get cert hash in hex failed, %s", err.Error())
 	}
 
-	payloadBytes, err := constructTransactPayload(pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERT_ADD.String(), []*pb.KeyValuePair{})
+	payloadBytes, err := constructSystemContractPayload(pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(),
+		pb.CertManageFunction_CERT_ADD.String(), []*pb.KeyValuePair{})
 	if err != nil {
 		return nil, fmt.Errorf("construct transact payload failed, %s", err.Error())
 	}
@@ -48,7 +49,7 @@ func (cc ChainClient) DeleteCert(certHashes []string) (*pb.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to INVOKE system contract, [contract:%s]/[method:%s]",
 		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERTS_DELETE.String())
 
-	payloadBytes, err := constructTransactPayload(
+	payloadBytes, err := constructSystemContractPayload(
 		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(),
 		pb.CertManageFunction_CERTS_DELETE.String(),
 		[]*pb.KeyValuePair{

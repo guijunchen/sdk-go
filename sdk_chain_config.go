@@ -86,7 +86,7 @@ func (cc ChainClient) GetChainConfigSequence() (int, error) {
 }
 
 func (cc ChainClient) SignChainConfigPayload(payloadBytes []byte) ([]byte, error) {
-	payload := &pb.ConfigUpdatePayload{}
+	payload := &pb.SystemContractPayload{}
 	if err := proto.Unmarshal(payloadBytes, payload); err != nil {
 		return nil, fmt.Errorf("unmarshal config update payload failed, %s", err)
 	}

@@ -125,8 +125,23 @@ func constructTransactPayload(contractName, method string, pairs []*pb.KeyValueP
 	return payloadBytes, nil
 }
 
+func constructSystemContractPayload(contractName, method string, pairs []*pb.KeyValuePair) ([]byte, error) {
+	payload := &pb.SystemContractPayload{
+		ContractName: contractName,
+		Method:       method,
+		Parameters:   pairs,
+	}
+
+	payloadBytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return payloadBytes, nil
+}
+
 func constructConfigUpdatePayload(chainId, contractName, method string, pairs []*pb.KeyValuePair, sequence int) ([]byte, error) {
-	payload := &pb.ConfigUpdatePayload{
+	payload := &pb.SystemContractPayload{
 		ChainId:      chainId,
 		ContractName: contractName,
 		Method:       method,
@@ -196,7 +211,7 @@ func mergeConfigUpdateSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
 		return nil, fmt.Errorf("input params is empty")
 	}
 
-	allPayload := &pb.ConfigUpdatePayload{}
+	allPayload := &pb.SystemContractPayload{}
 	if err := proto.Unmarshal(signedPayloadBytes[0], allPayload); err != nil {
 		return nil, fmt.Errorf("unmarshal No.0 signed payload failed, %s", err)
 	}
@@ -206,11 +221,11 @@ func mergeConfigUpdateSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
 	}
 
 	allPayloadCopy := proto.Clone(allPayload)
-	allPayloadCopy.(*pb.ConfigUpdatePayload).Endorsement = nil
+	allPayloadCopy.(*pb.SystemContractPayload).Endorsement = nil
 
 	for i := 1; i < len(signedPayloadBytes); i++ {
 
-		payload := &pb.ConfigUpdatePayload{}
+		payload := &pb.SystemContractPayload{}
 		if err := proto.Unmarshal(signedPayloadBytes[i], payload); err != nil {
 			return nil, fmt.Errorf("unmarshal No.%d signed payload failed, %s", i, err)
 		}
@@ -220,7 +235,7 @@ func mergeConfigUpdateSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
 		}
 
 		payloadCopy := proto.Clone(payload)
-		payloadCopy.(*pb.ConfigUpdatePayload).Endorsement = nil
+		payloadCopy.(*pb.SystemContractPayload).Endorsement = nil
 
 		if !checkPayloads(allPayloadCopy, payloadCopy) {
 			return nil, fmt.Errorf("No.%d signed payload not all the same", i)
