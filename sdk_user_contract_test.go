@@ -5,14 +5,13 @@
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"encoding/json"
 	"fmt"
 	"github.com/golang/protobuf/proto"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
-
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
-	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -20,7 +19,11 @@ const (
 )
 
 func TestUserContractCounterGo(t *testing.T) {
-	client, err := createClient()
+	var (
+		err error
+	)
+
+	client, err := createClientWithConfig()
 	require.Nil(t, err)
 
 	admin1, err := createAdmin(orgId1)
@@ -31,7 +34,7 @@ func TestUserContractCounterGo(t *testing.T) {
 	require.Nil(t, err)
 	admin4, err := createAdmin(orgId4)
 	require.Nil(t, err)
-
+	//
 	fmt.Println("====================== 创建合约（异步）======================")
 	testUserContractCounterGoCreate(t, client, admin1, admin2, admin3, admin4)
 	time.Sleep(5 * time.Second)

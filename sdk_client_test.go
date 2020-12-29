@@ -121,6 +121,26 @@ func createClient() (*ChainClient, error) {
 	return chainClient, nil
 }
 
+// 创建ChainClient（使用配置文件）
+func createClientWithConfig() (*ChainClient, error) {
+
+	chainClient, err := NewChainClient(
+		WithConfPath("./testdata/sdk_config.yml"),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	//启用证书压缩（开启证书压缩可以减小交易包大小，提升处理性能）
+	err = chainClient.EnableCertHash()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return chainClient, nil
+}
+
 func createAdmin(orgId string) (*ChainClient, error) {
 	if node1 == nil {
 		node1 = createNode(nodeAddr1, connCnt1)

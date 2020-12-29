@@ -1,254 +1,70 @@
 /**
  * @Author: jasonruan
- * @Date:   2020-11-30 14:41:07
- */
+ * @Date:   2020-12-29 11:05:48
+ **/
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/common/crypto"
-	"chainmaker.org/chainmaker-go/common/crypto/asym"
-	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
-	"chainmaker.org/chainmaker-go/common/log"
 	"fmt"
-	"go.uber.org/zap"
-	"io/ioutil"
+	"github.com/spf13/viper"
 )
 
-const (
-	// 单ChainMaker节点最大连接数
-	MaxConnCnt      = 5
-	// 查询交易超时时间
-	GetTxTimeout    = 10
-	// 发送交易超时时间
-	SendTxTimeout   = 10
-)
+var Config *ChainClientConfigModel
 
-// 节点配置
-type NodeConfig struct {
-	// 必填项
+type nodesConfigModel struct {
 	// 节点地址
-	addr                string
+	NodeAddr                string              `mapstructure:"node_addr"`
 	// 节点连接数
-	connCnt             int
-	// 选填项
-	// 是否启用TLS认证
-	useTLS              bool
-	// CA ROOT证书路径
-	caPaths             []string
+	ConnCnt                 int                 `mapstructure:"conn_cnt"`
+	// RPC连接是否启用双向TLS认证
+	EnableTLS               bool                `mapstructure:"enable_tls"`
+	// 信任证书池路径
+	TrustRootPaths          []string            `mapstructure:"trust_root_paths"`
 	// TLS hostname
-	tlsHostName         string
+	TLSHostName             string              `mapstructure:"tls_host_name"`
 }
 
-type NodeOption func(config *NodeConfig)
-
-// 设置节点地址
-func WithNodeAddr(addr string) NodeOption {
-	return func(config *NodeConfig) {
-		config.addr = addr
-	}
+type chainClientConfigModel struct {
+	// 链ID
+	ChainId                 string              `mapstructure:"chain_id"`
+	// 组织ID
+	OrgId                   string              `mapstructure:"org_id"`
+	// 客户端用户私钥路径
+	UserKeyFilePath         string              `mapstructure:"user_key_file_path"`
+	// 客户端用户证书路径
+	UserCrtFilePath         string              `mapstructure:"user_crt_file_path"`
+	// 节点配置
+	NodesConfig             []nodesConfigModel  `mapstructure:"nodes"`
 }
 
-// 设置节点连接数
-func WithNodeConnCnt(connCnt int) NodeOption {
-	return func(config *NodeConfig) {
-		config.connCnt = connCnt
-	}
+type ChainClientConfigModel struct {
+	ChainClientConfig       chainClientConfigModel           `mapstructure:"chain_client"`
 }
 
-// 设置是否启动TLS开关
-func WithNodeUseTLS(useTLS bool) NodeOption {
-	return func(config *NodeConfig) {
-		config.useTLS = useTLS
-	}
-}
+func InitConfig(confPath string) error {
+	var (
+		err error
+		confViper *viper.Viper
+	)
 
-// 添加CA证书路径
-func WithNodeCAPaths(caPaths []string) NodeOption {
-	return func(config *NodeConfig) {
-		config.caPaths = caPaths
-	}
-}
-
-func WithNodeTLSHostName(tlsHostName string) NodeOption {
-	return func(config *NodeConfig) {
-		config.tlsHostName = tlsHostName
-	}
-}
-
-type ChainClientConfig struct {
-	orgId               string
-	chainId             string
-	nodeList            []*NodeConfig
-	userKeyFilePath     string
-	userCrtFilePath     string
-
-	// logger若不设置，将采用默认日志文件输出日志，建议设置，以便采用集成系统的统一日志输出
-	logger              Logger
-
-	// 以下字段为经过处理后的参数
-	privateKey          crypto.PrivateKey
-	userCrtPEM          []byte
-	userCrt             *bcx509.Certificate
-}
-
-type ChainClientOption func(*ChainClientConfig)
-
-// 添加ChainMaker节点地址及连接数配置
-func AddChainClientNodeConfig(nodeConfig *NodeConfig) ChainClientOption {
-	return func(config *ChainClientConfig) {
-		config.nodeList = append(config.nodeList, nodeConfig)
-	}
-}
-
-// 添加用户私钥文件路径配置
-func WithUserKeyFilePath(userKeyFilePath string) ChainClientOption {
-	return func(config *ChainClientConfig) {
-		config.userKeyFilePath = userKeyFilePath
-	}
-}
-
-// 添加用户证书文件路径配置
-func WithUserCrtFilePath(userCrtFilePath string) ChainClientOption {
-	return func(config *ChainClientConfig) {
-		config.userCrtFilePath = userCrtFilePath
-	}
-}
-
-// 添加OrgId
-func WithChainClientOrgId(orgId string) ChainClientOption {
-	return func(config *ChainClientConfig) {
-		config.orgId = orgId
-	}
-}
-
-// 添加ChainId
-func WithChainClientChainId(chainId string) ChainClientOption {
-	return func(config *ChainClientConfig) {
-		config.chainId = chainId
-	}
-}
-
-// 设置Logger对象，便于日志打印
-func WithChainClientLogger(logger Logger) ChainClientOption {
-	return func(config *ChainClientConfig) {
-		config.logger = logger
-	}
-}
-
-// 生成SDK配置并校验合法性
-func generateConfig(opts ...ChainClientOption) (*ChainClientConfig, error) {
-	config := &ChainClientConfig{}
-	for _, opt := range opts {
-		opt(config)
+	if confViper, err = initViper(confPath); err != nil {
+		return fmt.Errorf("Load sdk config failed, %s", err)
 	}
 
-	// 校验config参数合法性
-	if err := checkConfig(config); err != nil {
-		return nil, err
-	}
-
-	// 进一步处理config参数
-	if err := dealConfig(config); err != nil {
-		return nil, err
-	}
-
-	return config, nil
-}
-
-// SDK配置校验
-func checkConfig(config *ChainClientConfig) error {
-
-	// 如果logger未指定，使用默认zap logger
-	if config.logger == nil {
-		config.logger = getDefaultLogger()
-	}
-
-	// 连接的节点地址不可为空
-	if len(config.nodeList) == 0 {
-		return fmt.Errorf("connect chianmaker node address is empty")
-	}
-
-	// 已配置的节点地址连接数，需要在合理区间
-	for _, node := range config.nodeList {
-		if node.connCnt <= 0 || node.connCnt > MaxConnCnt {
-			return fmt.Errorf("node connection count should >0 && <=%d",
-				MaxConnCnt)
-		}
-
-		if node.useTLS {
-			// 如果开启了TLS认证，CA路径必填
-			if len(node.caPaths) == 0 {
-				return fmt.Errorf("if node useTLS is open, should set caPath")
-			}
-
-			// 如果开启了TLS认证，需配置TLS HostName
-			if node.tlsHostName == "" {
-				return fmt.Errorf("if node useTLS is open, should set tls hostname")
-			}
-		}
-	}
-
-	// 用户私钥不可为空
-	if config.userKeyFilePath == "" {
-		return fmt.Errorf("user key file path cannot be empty")
-	}
-
-	// 用户证书不可为空
-	if config.userCrtFilePath == "" {
-		return fmt.Errorf("user crt file path cannot be empty")
-	}
-
-	// OrgId不可为空
-	if config.orgId == "" {
-		return fmt.Errorf("orgId cannot be empty")
-	}
-
-	// ChainId不可为空
-	if config.chainId == "" {
-		return fmt.Errorf("chainId cannot be empty")
+	Config = &ChainClientConfigModel{}
+	if err = confViper.Unmarshal(&Config); err != nil {
+		return fmt.Errorf("Unmarshal config file failed, %s", err)
 	}
 
 	return nil
 }
 
-func dealConfig(config *ChainClientConfig) error {
-	var err error
-
-	// 读取用户证书
-	config.userCrtPEM, err = ioutil.ReadFile(config.userCrtFilePath)
-	if err != nil {
-		return fmt.Errorf("read user crt file failed, %s", err.Error())
+func initViper(confPath string) (*viper.Viper, error) {
+	cmViper := viper.New()
+	cmViper.SetConfigFile(confPath)
+	if err := cmViper.ReadInConfig(); err != nil {
+		return nil, err
 	}
 
-	// 从私钥文件读取用户私钥，转换为privateKey对象
-	skBytes, err := ioutil.ReadFile(config.userKeyFilePath)
-	if err != nil {
-		return fmt.Errorf("read user key file failed, %s", err)
-	}
-	config.privateKey, err = asym.PrivateKeyFromPEM(skBytes, nil)
-	if err != nil {
-		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
-	}
-
-	// 将证书转换为证书对象
-	if config.userCrt, err = ParseCert(config.userCrtPEM); err != nil {
-		return fmt.Errorf("ParseCert failed, %s", err.Error())
-	}
-
-	return nil
-}
-
-func getDefaultLogger() *zap.SugaredLogger {
-	config := log.LogConfig{
-		Module:   "[SDK]",
-		LogPath:  "./sdk.log",
-		LogLevel: log.LEVEL_DEBUG,
-		MaxAge: 30,
-		JsonFormat:   false,
-		ShowLine:     true,
-		LogInConsole: true,
-	}
-
-	logger, _ := log.InitSugarLogger(&config)
-	return logger
+	return cmViper, nil
 }
