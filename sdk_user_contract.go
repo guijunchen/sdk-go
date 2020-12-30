@@ -73,6 +73,22 @@ func (cc ChainClient) createContractManagePayload(manageType contractManageType,
 	return bytes, nil
 }
 
+func (cc ChainClient) CreateContractOpPayload(contractName string) ([]byte, error) {
+	payload := &pb.ContractMgmtPayload{
+		ChainId: cc.chainId,
+		ContractId: &pb.ContractId{
+			ContractName:    contractName,
+		},
+	}
+
+	bytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("construct contract manage payload failed, %s", err)
+	}
+
+	return bytes, nil
+}
+
 func (cc ChainClient) SignContractManagePayload(payloadBytes []byte) ([]byte, error) {
 	payload := &pb.ContractMgmtPayload{}
 	if err := proto.Unmarshal(payloadBytes, payload); err != nil {
@@ -84,7 +100,6 @@ func (cc ChainClient) SignContractManagePayload(payloadBytes []byte) ([]byte, er
 		return nil, fmt.Errorf("SignPayload failed, %s", err)
 	}
 
-	// TODO: 后续支持证书索引，减小交易大小
 	sender := &pb.SerializedMember{
 		OrgId:      cc.orgId,
 		MemberInfo: cc.userCrtPEM,
@@ -113,20 +128,27 @@ func (cc ChainClient) MergeContractManageSignedPayload(signedPayloadBytes [][]by
 }
 
 func (cc ChainClient) SendContractCreateRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error) {
-	return cc.sendContractManageRequest(typeCreate, mergeSignedPayloadBytes, timeout, withSyncResult)
+	return cc.sendContractManageRequest(pb.TxType_CREATE_USER_CONTRACT, mergeSignedPayloadBytes, timeout, withSyncResult)
 }
 
 func (cc ChainClient) SendContractUpgradeRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error) {
-	return cc.sendContractManageRequest(typeUpgrade, mergeSignedPayloadBytes, timeout, withSyncResult)
+	return cc.sendContractManageRequest(pb.TxType_UPGRADE_USER_CONTRACT, mergeSignedPayloadBytes, timeout, withSyncResult)
 }
 
-func (cc ChainClient) sendContractManageRequest(manageType contractManageType, mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error) {
-	txId := GetRandTxId()
+func (cc ChainClient) SendContractFreezeRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error) {
+	return cc.sendContractManageRequest(pb.TxType_FREEZE_USER_CONTRACT, mergeSignedPayloadBytes, timeout, withSyncResult)
+}
 
-	txType := pb.TxType_CREATE_USER_CONTRACT
-	if manageType == typeUpgrade {
-		txType = pb.TxType_UPGRADE_USER_CONTRACT
-	}
+func (cc ChainClient) SendContractUnfreezeRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error) {
+	return cc.sendContractManageRequest(pb.TxType_UNFREEZE_USER_CONTRACT, mergeSignedPayloadBytes, timeout, withSyncResult)
+}
+
+func (cc ChainClient) SendContractRevokeRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error) {
+	return cc.sendContractManageRequest(pb.TxType_REVOKE_USER_CONTRACT, mergeSignedPayloadBytes, timeout, withSyncResult)
+}
+
+func (cc ChainClient) sendContractManageRequest(txType pb.TxType, mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error) {
+	txId := GetRandTxId()
 
 	resp, err := cc.proposalRequestWithTimeout(txType, txId, mergeSignedPayloadBytes, timeout)
 	if err != nil {
