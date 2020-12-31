@@ -21,8 +21,8 @@ func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
 		return nil, fmt.Errorf("get cert hash in hex failed, %s", err.Error())
 	}
 
-	payloadBytes, err := constructSystemContractPayload(pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(),
-		pb.CertManageFunction_CERT_ADD.String(), []*pb.KeyValuePair{})
+	payloadBytes, err := constructSystemContractPayload("", pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(),
+		pb.CertManageFunction_CERT_ADD.String(), []*pb.KeyValuePair{}, 0)
 	if err != nil {
 		return nil, fmt.Errorf("construct transact payload failed, %s", err.Error())
 	}
@@ -50,6 +50,7 @@ func (cc ChainClient) DeleteCert(certHashes []string) (*pb.TxResponse, error) {
 		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERTS_DELETE.String())
 
 	payloadBytes, err := constructSystemContractPayload(
+		"",
 		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(),
 		pb.CertManageFunction_CERTS_DELETE.String(),
 		[]*pb.KeyValuePair{
@@ -58,6 +59,7 @@ func (cc ChainClient) DeleteCert(certHashes []string) (*pb.TxResponse, error) {
 				Value: strings.Join(certHashes, ","),
 			},
 		},
+		0,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("marshal transact payload failed, %s", err.Error())

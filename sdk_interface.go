@@ -43,11 +43,15 @@ type SDKInterface interface {
 	// ```
 
 	// ### 1.4 合约管理获取Payload签名
+	// **参数说明**
+	//   - payloadBytes: 待签名payload
 	// ```go
 	SignContractManagePayload(payloadBytes []byte) ([]byte, error)
 	// ```
 
 	// ### 1.5 合约管理Payload签名收集&合并
+	// **参数说明**
+	//   - signedPayloadBytes: 已签名payload列表
 	// ```go
 	MergeContractManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
 	// ```
@@ -389,8 +393,54 @@ type SDKInterface interface {
 	GetCertHash() ([]byte, error)
 	// ```
 
-	// ## 5 消息订阅接口
-	// ### 5.1 区块订阅
+	// ## 5 在线多签接口
+	// ### 5.1 待签payload签名
+	//  *一般需要使用具有管理员权限账号进行签名*
+	// **参数说明**
+	//   - payloadBytes: 待签名payload
+	// ```go
+	SignMultiSignPayload(payloadBytes []byte) (*pb.EndorsementEntry, error)
+	// ```
+
+	// ### 5.2 多签请求
+	// **参数说明**
+	//   - txType: 多签payload交易类型
+	//   - payloadBytes: 待签名payload
+	//   - endorsementEntry: 签名收集信息
+	//   - deadlineBlockHeight: 过期的区块高度，若设置为0，表示永不过期
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	// **返回值**
+	//   若成功调用，pb.TxResponse.ContractResult.Result为txId
+	// ```go
+	SendMultiSignReq(txType pb.TxType, payloadBytes []byte, endorsementEntry *pb.EndorsementEntry, deadlineBlockHeight int,
+		timeout int64) (*pb.TxResponse, error)
+	// ```
+
+	// ### 5.3 多签投票
+	// **参数说明**
+	//   - voteStatus: 投票状态（赞成、反对）
+	//   - multiSignReqTxId: 多签请求交易ID(txId或payloadHash至少填其一，txId优先)
+	//   - payloadHash: 待多签payload hash(txId或payloadHash至少填其一，txId优先)
+	//   - payloadBytes: 待签名payload
+	//   - endorsementEntry: 签名收集信息
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	// **返回值**
+	//   若成功调用，pb.TxResponse.ContractResult.Result为txId
+	// ```go
+	SendMultiSignVote(voteStatus pb.VoteStatus, multiSignReqTxId, payloadHash string,
+		endorsementEntry *pb.EndorsementEntry, timeout int64) (*pb.TxResponse, error)
+	// ```
+
+	// ### 5.4 投票查询
+	// **参数说明**
+	//   - multiSignReqTxId: 多签请求交易ID(txId或payloadHash至少填其一，txId优先)
+	//   - payloadHash: 待多签payload hash(txId或payloadHash至少填其一，txId优先)
+	// ```go
+	QueryMultiSignResult(multiSignReqTxId, payloadHash string) (*pb.TxResponse, error)
+	// ```
+
+	// ## 6 消息订阅接口
+	// ### 6.1 区块订阅
 	// **参数说明**
 	//   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
 	//   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
@@ -399,7 +449,7 @@ type SDKInterface interface {
 	SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRwSet bool) (<-chan interface{}, error)
 	// ```
 
-	// ### 5.2 交易订阅
+	// ### 6.2 交易订阅
 	// **参数说明**
 	//   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
 	//   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
@@ -409,7 +459,7 @@ type SDKInterface interface {
 	SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType pb.TxType, txIds []string) (<-chan interface{}, error)
 	// ```
 
-	// ### 5.3 多合一订阅
+	// ### 6.3 多合一订阅
 	// **参数说明**
 	//   - txType: 订阅交易类型，目前已支持：区块消息订阅(pb.TxType_SUBSCRIBE_BLOCK_INFO)、交易消息订阅(pb.TxType_SUBSCRIBE_TX_INFO)
 	//   - payloadBytes: 消息订阅参数payload
@@ -417,20 +467,21 @@ type SDKInterface interface {
 	Subscribe(ctx context.Context, txType pb.TxType, payloadBytes []byte) (<-chan interface{}, error)
 	// ```
 
-	// ## 6 证书压缩
+	// ## 7 证书压缩
 	// *开启证书压缩可以减小交易包大小，提升处理性能*
-	// ### 6.1 启用压缩证书功能
+	// ### 7.1 启用压缩证书功能
 	// ```go
 	EnableCertHash() error
 	// ```
 
-	// ### 6.2 停用压缩证书功能
+	// ### 7.2 停用压缩证书功能
 	// ```go
 	DisableCertHash() error
 	// ```
 
-	// ## 7 管理类接口
-	// ### 7.1 SDK停止接口：关闭连接池连接，释放资源
+	// ## 8 管理类接口
+	// ### 8.1 SDK停止接口
+	// *关闭连接池连接，释放资源*
 	// ```go
 	Stop() error
 	// ```

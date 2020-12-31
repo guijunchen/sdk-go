@@ -19,6 +19,10 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+const (
+	defaultSequence = 0
+)
+
 func GetRandTxId() string {
 	return uuid.GetUUID() + uuid.GetUUID()
 }
@@ -125,11 +129,13 @@ func constructTransactPayload(contractName, method string, pairs []*pb.KeyValueP
 	return payloadBytes, nil
 }
 
-func constructSystemContractPayload(contractName, method string, pairs []*pb.KeyValuePair) ([]byte, error) {
+func constructSystemContractPayload(chainId, contractName, method string, pairs []*pb.KeyValuePair, sequence uint64) ([]byte, error) {
 	payload := &pb.SystemContractPayload{
+		ChainId:      chainId,
 		ContractName: contractName,
 		Method:       method,
 		Parameters:   pairs,
+		Sequence:     sequence,
 	}
 
 	payloadBytes, err := proto.Marshal(payload)
