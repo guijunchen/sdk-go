@@ -23,24 +23,24 @@ const (
 
 func (cc ChainClient) CreateContractCreatePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [ContractCreate] to be signed payload")
-	return cc.createContractManagePayload(contractName, pb.UserContractManagerFunction_INIT_CONTRACT.String(), version, byteCodePath, runtime, kvs)
+	return cc.createContractManagePayload(contractName, pb.ManageUserContractFunction_INIT_CONTRACT.String(), version, byteCodePath, runtime, kvs)
 }
 
 func (cc ChainClient) CreateContractUpgradePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [ContractUpgrade] to be signed payload")
-	return cc.createContractManagePayload(contractName, pb.UserContractManagerFunction_UPGRADE_CONTRACT.String(), version, byteCodePath, runtime, kvs)
+	return cc.createContractManagePayload(contractName, pb.ManageUserContractFunction_UPGRADE_CONTRACT.String(), version, byteCodePath, runtime, kvs)
 }
 
 func (cc ChainClient) CreateContractFreezePayload(contractName string) ([]byte, error) {
-	return cc.createContractOpPayload(contractName, pb.UserContractManagerFunction_FREEZE_CONTRACT.String())
+	return cc.createContractOpPayload(contractName, pb.ManageUserContractFunction_FREEZE_CONTRACT.String())
 }
 
 func (cc ChainClient) CreateContractUnfreezePayload(contractName string) ([]byte, error) {
-	return cc.createContractOpPayload(contractName, pb.UserContractManagerFunction_UNFREEZE_CONTRACT.String())
+	return cc.createContractOpPayload(contractName, pb.ManageUserContractFunction_UNFREEZE_CONTRACT.String())
 }
 
 func (cc ChainClient) CreateContractRevokePayload(contractName string) ([]byte, error) {
-	return cc.createContractOpPayload(contractName, pb.UserContractManagerFunction_REVOKE_CONTRACT.String())
+	return cc.createContractOpPayload(contractName, pb.ManageUserContractFunction_REVOKE_CONTRACT.String())
 }
 
 func (cc ChainClient) createContractManagePayload(contractName, method, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
@@ -127,7 +127,7 @@ func (cc ChainClient) MergeContractManageSignedPayload(signedPayloadBytes [][]by
 }
 
 func (cc ChainClient) SendContractManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error) {
-	return cc.sendContractRequest(pb.TxType_MANAGER_USER_CONTRACT, mergeSignedPayloadBytes, timeout, withSyncResult)
+	return cc.sendContractRequest(pb.TxType_MANAGE_USER_CONTRACT, mergeSignedPayloadBytes, timeout, withSyncResult)
 }
 
 func (cc ChainClient) sendContractRequest(txType pb.TxType, mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error) {
