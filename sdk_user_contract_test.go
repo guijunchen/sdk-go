@@ -19,10 +19,6 @@ const (
 )
 
 func TestUserContractCounterGo(t *testing.T) {
-	var (
-		err error
-	)
-
 	client, err := createClientWithConfig()
 	require.Nil(t, err)
 
@@ -46,10 +42,21 @@ func TestUserContractCounterGo(t *testing.T) {
 	fmt.Println("====================== 执行合约查询接口 ======================")
 	testUserContractCounterGoQuery(t, client, "query", nil)
 
-	//fmt.Println("====================== 冻结合约 ======================")
-	//testUserContractCounterGoFreeze(t, client, admin1, admin2, admin3, admin4, false)
+	fmt.Println("====================== 冻结合约 ======================")
+	testUserContractCounterGoFreeze(t, client, admin1, admin2, admin3, admin4, false)
+	time.Sleep(5 * time.Second)
+	fmt.Println("====================== 执行合约查询接口 ======================")
+	testUserContractCounterGoQuery(t, client, "query", nil)
+
+	fmt.Println("====================== 解冻合约 ======================")
+	testUserContractCounterGoUnfreeze(t, client, admin1, admin2, admin3, admin4, false)
+	time.Sleep(5 * time.Second)
+	fmt.Println("====================== 执行合约查询接口 ======================")
+	testUserContractCounterGoQuery(t, client, "query", nil)
+
+	//fmt.Println("====================== 吊销合约 ======================")
+	//testUserContractCounterGoRevoke(t, client, admin1, admin2, admin3, admin4, false)
 	//time.Sleep(5 * time.Second)
-	//
 	//fmt.Println("====================== 执行合约查询接口 ======================")
 	//testUserContractCounterGoQuery(t, client, "query", nil)
 
@@ -99,7 +106,7 @@ func testUserContractCounterGoCreate(t *testing.T, client *ChainClient,
 	require.Nil(t, err)
 
 	// 发送创建合约请求
-	resp, err := client.SendContractCreateRequest(mergeSignedPayloadBytes, createContractTimeout, false)
+	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, false)
 	fmt.Printf("resp: %+v\n", resp)
 	require.Nil(t, err)
 
@@ -134,7 +141,7 @@ func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient,
 	require.Nil(t, err)
 
 	// 发送创建合约请求
-	resp, err := client.SendContractUpgradeRequest(mergeSignedPayloadBytes, -1, false)
+	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, -1, false)
 	require.Nil(t, err)
 
 	err = checkProposalRequestResp(resp, true)
@@ -146,7 +153,7 @@ func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient,
 // 冻结合约
 func testUserContractCounterGoFreeze(t *testing.T, client *ChainClient,
 	admin1, admin2, admin3, admin4 *ChainClient, withSyncResult bool) {
-	payloadBytes, err := client.CreateContractOpPayload(contractName)
+	payloadBytes, err := client.CreateContractFreezePayload(contractName)
 	require.Nil(t, err)
 
 	// 各组织Admin权限用户签名
@@ -168,14 +175,84 @@ func testUserContractCounterGoFreeze(t *testing.T, client *ChainClient,
 	require.Nil(t, err)
 
 	// 发送创建合约请求
-	resp, err := client.SendContractFreezeRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
 	fmt.Printf("resp: %+v\n", resp)
 	require.Nil(t, err)
 
 	err = checkProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
-	fmt.Printf("CREATE counter-go contract resp: %+v\n", resp)
+	fmt.Printf("Freeze counter-go contract resp: %+v\n", resp)
+}
+
+// 解冻合约
+func testUserContractCounterGoUnfreeze(t *testing.T, client *ChainClient,
+	admin1, admin2, admin3, admin4 *ChainClient, withSyncResult bool) {
+	payloadBytes, err := client.CreateContractUnfreezePayload(contractName)
+	require.Nil(t, err)
+
+	// 各组织Admin权限用户签名
+	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
+	require.Nil(t, err)
+
+	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
+	require.Nil(t, err)
+
+	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
+	require.Nil(t, err)
+
+	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
+	require.Nil(t, err)
+
+	// 收集并合并签名
+	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
+		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
+	require.Nil(t, err)
+
+	// 发送创建合约请求
+	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
+	fmt.Printf("resp: %+v\n", resp)
+	require.Nil(t, err)
+
+	err = checkProposalRequestResp(resp, true)
+	require.Nil(t, err)
+
+	fmt.Printf("Unfreeze counter-go contract resp: %+v\n", resp)
+}
+
+// 吊销合约
+func testUserContractCounterGoRevoke(t *testing.T, client *ChainClient,
+	admin1, admin2, admin3, admin4 *ChainClient, withSyncResult bool) {
+	payloadBytes, err := client.CreateContractRevokePayload(contractName)
+	require.Nil(t, err)
+
+	// 各组织Admin权限用户签名
+	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
+	require.Nil(t, err)
+
+	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
+	require.Nil(t, err)
+
+	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
+	require.Nil(t, err)
+
+	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
+	require.Nil(t, err)
+
+	// 收集并合并签名
+	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
+		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
+	require.Nil(t, err)
+
+	// 发送创建合约请求
+	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
+	fmt.Printf("resp: %+v\n", resp)
+	require.Nil(t, err)
+
+	err = checkProposalRequestResp(resp, true)
+	require.Nil(t, err)
+
+	fmt.Printf("Unfreeze counter-go contract resp: %+v\n", resp)
 }
 
 func testUserContractCounterGoInvoke(t *testing.T, client *ChainClient,

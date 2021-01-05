@@ -5,7 +5,6 @@
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -33,15 +32,15 @@ func TestMultiSignUserContract(t *testing.T) {
 // [用户合约]
 func testMultiSignUserContractCreate(t *testing.T, client *ChainClient,
 	admin1, admin2, admin3, admin4 *ChainClient) {
-	payloadBytes, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, pb.RuntimeType_WASMER, []*pb.KeyValuePair{})
-	require.Nil(t, err)
+	//payloadBytes, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, pb.RuntimeType_WASMER, []*pb.KeyValuePair{})
+	//require.Nil(t, err)
+	//
+	//entry1, err := admin1.SignMultiSignPayload(payloadBytes)
+	//require.Nil(t, err)
 
-	entry1, err := admin1.SignMultiSignPayload(payloadBytes)
-	require.Nil(t, err)
-
-	resp, err := admin1.SendMultiSignReq(pb.TxType_CREATE_USER_CONTRACT, payloadBytes, entry1, 0, -1)
-	require.Nil(t, err)
-	fmt.Printf("send multi sign req resp: code:%d, msg:%s, payload:%+v\n", resp.Code, resp.Message, resp.ContractResult)
+	//resp, err := admin1.SendMultiSignReq(pb.TxType_CREATE_USER_CONTRACT, payloadBytes, entry1, 100000, -1)
+	//require.Nil(t, err)
+	//fmt.Printf("send multi sign req resp: code:%d, msg:%s, payload:%+v\n", resp.Code, resp.Message, resp.ContractResult)
 
 
 	//// 各组织Admin权限用户签名

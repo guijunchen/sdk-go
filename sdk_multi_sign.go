@@ -48,7 +48,7 @@ func (cc ChainClient) SendMultiSignReq(txType pb.TxType, payloadBytes []byte, en
 		return &resp, nil
 	}
 
-	return cc.sendContractManageRequest(pb.TxType_SYSTEM_CONTRACT, multiSignReqPayload, timeout, false)
+	return cc.sendContractRequest(pb.TxType_SYSTEM_CONTRACT, multiSignReqPayload, timeout, false)
 }
 
 func (cc ChainClient) SendMultiSignVote(voteStatus pb.VoteStatus, multiSignReqTxId, payloadHash string,
@@ -68,7 +68,7 @@ func (cc ChainClient) SendMultiSignVote(voteStatus pb.VoteStatus, multiSignReqTx
 		return &resp, nil
 	}
 
-	return cc.sendContractManageRequest(pb.TxType_SYSTEM_CONTRACT, multiSignVotePayload, timeout, false)
+	return cc.sendContractRequest(pb.TxType_SYSTEM_CONTRACT, multiSignVotePayload, timeout, false)
 }
 
 func (cc ChainClient) QueryMultiSignResult(multiSignReqTxId, payloadHash string) (*pb.TxResponse, error) {
@@ -86,7 +86,7 @@ func (cc ChainClient) QueryMultiSignResult(multiSignReqTxId, payloadHash string)
 		return &resp, nil
 	}
 
-	return cc.sendContractManageRequest(pb.TxType_SYSTEM_CONTRACT, multiSignVotePayload, -1, false)
+	return cc.sendContractRequest(pb.TxType_SYSTEM_CONTRACT, multiSignVotePayload, -1, false)
 }
 
 func (cc ChainClient) createMultiSignReqPayload(txType pb.TxType, payloadBytes []byte,

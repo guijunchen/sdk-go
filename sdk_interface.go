@@ -35,28 +35,42 @@ type SDKInterface interface {
 	CreateContractUpgradePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
 	// ```
 
-	// ### 1.3 合约操作(冻结、解冻、吊销)payload生成
+	// ### 1.3 冻结合约payload生成
 	// **参数说明**
 	//   - contractName: 合约名
 	// ```go
-	CreateContractOpPayload(contractName string) ([]byte, error)
+	CreateContractFreezePayload(contractName string) ([]byte, error)
 	// ```
 
-	// ### 1.4 合约管理获取Payload签名
+	// ### 1.4 解冻合约payload生成
+	// **参数说明**
+	//   - contractName: 合约名
+	// ```go
+	CreateContractUnfreezePayload(contractName string) ([]byte, error)
+	// ```
+
+	// ### 1.5 吊销合约payload生成
+	// **参数说明**
+	//   - contractName: 合约名
+	// ```go
+	CreateContractRevokePayload(contractName string) ([]byte, error)
+	// ```
+
+	// ### 1.6 合约管理获取Payload签名
 	// **参数说明**
 	//   - payloadBytes: 待签名payload
 	// ```go
 	SignContractManagePayload(payloadBytes []byte) ([]byte, error)
 	// ```
 
-	// ### 1.5 合约管理Payload签名收集&合并
+	// ### 1.7 合约管理Payload签名收集&合并
 	// **参数说明**
 	//   - signedPayloadBytes: 已签名payload列表
 	// ```go
 	MergeContractManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
 	// ```
 
-	// ### 1.6 发送创建合约请求
+	// ### 1.8 发送合约管理请求（创建、更新、冻结、解冻、吊销）
 	// **参数说明**
 	//   - multiSignedPayload: 多签结果
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
@@ -64,54 +78,10 @@ type SDKInterface interface {
 	//            当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
 	//            当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendContractCreateRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
+	SendContractManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
 	// ```
 
-	// ### 1.7 发送升级合约请求
-	// **参数说明**
-	//   - multiSignedPayload: 多签结果
-	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	//   - withSyncResult: 是否同步获取交易执行结果
-	//            当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
-	//            当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
-	// ```go
-	SendContractUpgradeRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
-	// ```
-
-	// ### 1.8 发送冻结合约请求
-	// **参数说明**
-	//   - multiSignedPayload: 多签结果
-	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	//   - withSyncResult: 是否同步获取交易执行结果
-	//            当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
-	//            当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
-	// ```go
-	SendContractFreezeRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
-	// ```
-
-	// ### 1.9 发送解冻合约请求
-	// **参数说明**
-	//   - multiSignedPayload: 多签结果
-	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	//   - withSyncResult: 是否同步获取交易执行结果
-	//            当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
-	//            当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
-	// ```go
-	SendContractUnfreezeRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
-	// ```
-
-	// ### 1.10 发送吊销合约请求
-	// **参数说明**
-	//   - multiSignedPayload: 多签结果
-	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	//   - withSyncResult: 是否同步获取交易执行结果
-	//            当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
-	//            当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
-	// ```go
-	SendContractRevokeRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
-	// ```
-
-	// ### 1.11 合约调用
+	// ### 1.9 合约调用
 	// **参数说明**
 	//   - contractName: 合约名称
 	//   - method: 合约方法
@@ -127,7 +97,7 @@ type SDKInterface interface {
 	InvokeContract(contractName, method, txId string, params map[string]string, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
 	// ```
 
-	// ### 1.12 合约查询接口调用
+	// ### 1.10 合约查询接口调用
 	// **参数说明**
 	//   - contractName: 合约名称
 	//   - method: 合约方法
