@@ -110,7 +110,7 @@ func testUserContractCounterGoCreate(t *testing.T, client *ChainClient,
 	fmt.Printf("resp: %+v\n", resp)
 	require.Nil(t, err)
 
-	err = checkProposalRequestResp(resp, true)
+	err = CheckProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
 	fmt.Printf("CREATE counter-go contract resp: %+v\n", resp)
@@ -144,7 +144,7 @@ func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient,
 	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, -1, false)
 	require.Nil(t, err)
 
-	err = checkProposalRequestResp(resp, true)
+	err = CheckProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
 	fmt.Printf("UPGRADE counter-go contract resp: %+v\n", resp)
@@ -179,7 +179,7 @@ func testUserContractCounterGoFreeze(t *testing.T, client *ChainClient,
 	fmt.Printf("resp: %+v\n", resp)
 	require.Nil(t, err)
 
-	err = checkProposalRequestResp(resp, true)
+	err = CheckProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
 	fmt.Printf("Freeze counter-go contract resp: %+v\n", resp)
@@ -214,7 +214,7 @@ func testUserContractCounterGoUnfreeze(t *testing.T, client *ChainClient,
 	fmt.Printf("resp: %+v\n", resp)
 	require.Nil(t, err)
 
-	err = checkProposalRequestResp(resp, true)
+	err = CheckProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
 	fmt.Printf("Unfreeze counter-go contract resp: %+v\n", resp)
@@ -249,7 +249,7 @@ func testUserContractCounterGoRevoke(t *testing.T, client *ChainClient,
 	fmt.Printf("resp: %+v\n", resp)
 	require.Nil(t, err)
 
-	err = checkProposalRequestResp(resp, true)
+	err = CheckProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
 	fmt.Printf("Unfreeze counter-go contract resp: %+v\n", resp)

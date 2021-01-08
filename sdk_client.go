@@ -113,7 +113,7 @@ func (cc *ChainClient) EnableCertHash() error {
 		return errors.New(errMsg)
 	}
 
-	if err = checkProposalRequestResp(resp, true); err != nil {
+	if err = CheckProposalRequestResp(resp, true); err != nil {
 		errMsg := fmt.Sprintf("enable cert hash AddCert got invalid resp, %s", err.Error())
 		cc.logger.Errorf("[SDK] %s", errMsg)
 		return errors.New(errMsg)

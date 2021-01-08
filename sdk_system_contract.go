@@ -39,7 +39,7 @@ func (cc ChainClient) GetTxByTxId(txId string) (*pb.TransactionInfo, error) {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = checkProposalRequestResp(resp, true); err != nil {
+	if err = CheckProposalRequestResp(resp, true); err != nil {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -78,7 +78,7 @@ func (cc ChainClient) GetBlockByHeight(blockHeight int64, withRWSet bool) (*pb.B
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = checkProposalRequestResp(resp, true); err != nil {
+	if err = CheckProposalRequestResp(resp, true); err != nil {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -118,7 +118,7 @@ func (cc ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*pb.Bloc
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = checkProposalRequestResp(resp, true); err != nil {
+	if err = CheckProposalRequestResp(resp, true); err != nil {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -158,7 +158,7 @@ func (cc ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*pb.BlockInfo
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = checkProposalRequestResp(resp, true); err != nil {
+	if err = CheckProposalRequestResp(resp, true); err != nil {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -193,7 +193,7 @@ func (cc ChainClient) GetLastConfigBlock(withRWSet bool) (*pb.BlockInfo, error) 
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = checkProposalRequestResp(resp, true); err != nil {
+	if err = CheckProposalRequestResp(resp, true); err != nil {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -223,7 +223,7 @@ func (cc ChainClient) GetChainInfo() (*pb.ChainInfo, error) {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = checkProposalRequestResp(resp, true); err != nil {
+	if err = CheckProposalRequestResp(resp, true); err != nil {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -253,7 +253,7 @@ func (cc ChainClient) GetContractInfo() (*pb.ContractInfo, error) {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = checkProposalRequestResp(resp, true); err != nil {
+	if err = CheckProposalRequestResp(resp, true); err != nil {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -283,7 +283,7 @@ func (cc ChainClient) GetNodeChainList() (*pb.ChainList, error) {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = checkProposalRequestResp(resp, true); err != nil {
+	if err = CheckProposalRequestResp(resp, true); err != nil {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 

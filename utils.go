@@ -194,7 +194,7 @@ func constructSubscribeTxPayload(startBlock, endBlock int64, txType pb.TxType, t
 	return payloadBytes, nil
 }
 
-func checkProposalRequestResp(resp *pb.TxResponse, needContractResult bool) error {
+func CheckProposalRequestResp(resp *pb.TxResponse, needContractResult bool) error {
 	if resp.Code != pb.TxStatusCode_SUCCESS {
 		return errors.New(resp.Message)
 	}

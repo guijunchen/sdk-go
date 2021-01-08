@@ -169,5 +169,6 @@ func createAdmin(orgId string) (*ChainClient, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return adminClient, nil
 }
