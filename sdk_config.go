@@ -16,7 +16,7 @@ import (
 
 const (
 	// 单ChainMaker节点最大连接数
-	MaxConnCnt      = 5
+	MaxConnCnt      = 1024
 	// 查询交易超时时间
 	GetTxTimeout    = 10
 	// 发送交易超时时间
