@@ -228,7 +228,7 @@ func checkConfig(config *ChainClientConfig) error {
 
 	// 连接的节点地址不可为空
 	if len(config.nodeList) == 0 {
-		return fmt.Errorf("connect chianmaker node address is empty")
+		return fmt.Errorf("connect chainmaker node address is empty")
 	}
 
 	// 已配置的节点地址连接数，需要在合理区间
