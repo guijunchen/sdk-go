@@ -31,8 +31,7 @@ const (
 	multiSignedPayloadFile        = "./testdata/counter-go-demo/collect-signed-all.pb"
 	upgradeMultiSignedPayloadFile = "./testdata/counter-go-demo/upgrade-collect-signed-all.pb"
 
-	//byteCodePath        = "./testdata/counter-go-demo/counter-go.wasm"
-	byteCodePath        = "./testdata/counter-go-demo/counter-rust-0.7.1.wasm"
+	byteCodePath        = "./testdata/counter-go-demo/counter-rust-0.7.2.wasm"
 	upgradeByteCodePath = "./testdata/counter-go-demo/counter-go-upgrade.wasm"
 )
 
