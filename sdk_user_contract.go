@@ -139,20 +139,18 @@ func (cc ChainClient) sendContractRequest(txType pb.TxType, mergeSignedPayloadBy
 	}
 
 	if resp.Code == pb.TxStatusCode_SUCCESS {
-		var result []byte
 		if !withSyncResult {
-			result = []byte(txId)
+			resp.ContractResult = &pb.ContractResult{
+				Code:    pb.ContractResultCode_OK,
+				Message: pb.ContractResultCode_OK.String(),
+				Result:  []byte(txId),
+			}
 		} else {
-			result, err = cc.getSyncResult(txId)
+			contractResult, err := cc.getSyncResult(txId)
 			if err != nil {
 				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
 			}
-		}
-
-		resp.ContractResult = &pb.ContractResult{
-			Code:    pb.ContractResultCode_OK,
-			Message: pb.ContractResultCode_OK.String(),
-			Result:  result,
+			resp.ContractResult = contractResult;
 		}
 	}
 
@@ -180,20 +178,18 @@ func (cc ChainClient) InvokeContract(contractName, method, txId string, params m
 	}
 
 	if resp.Code == pb.TxStatusCode_SUCCESS {
-		var result []byte
 		if !withSyncResult {
-			result = []byte(txId)
+			resp.ContractResult = &pb.ContractResult{
+				Code:    pb.ContractResultCode_OK,
+				Message: pb.ContractResultCode_OK.String(),
+				Result:  []byte(txId),
+			}
 		} else {
-			result, err = cc.getSyncResult(txId)
+			contractResult, err := cc.getSyncResult(txId)
 			if err != nil {
 				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
 			}
-		}
-
-		resp.ContractResult = &pb.ContractResult{
-			Code:    pb.ContractResultCode_OK,
-			Message: pb.ContractResultCode_OK.String(),
-			Result:  result,
+			resp.ContractResult = contractResult;
 		}
 	}
 
@@ -221,7 +217,7 @@ func (cc ChainClient) QueryContract(contractName, method string, params map[stri
 	return resp, nil
 }
 
-func (cc ChainClient) getSyncResult(txId string) ([]byte, error) {
+func (cc ChainClient) getSyncResult(txId string) (*pb.ContractResult, error) {
 	var (
 		txInfo *pb.TransactionInfo
 		err error
@@ -242,11 +238,8 @@ func (cc ChainClient) getSyncResult(txId string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("get tx by txId [%s] failed, %s", txId, err.Error())
 	}
-
-	result, err := proto.Marshal(txInfo)
-	if err != nil {
-		return nil, fmt.Errorf("marshal txInfo failed, %s", err.Error())
+	if (txInfo == nil || txInfo.Transaction == nil || txInfo.Transaction.Result == nil) {
+		return nil, fmt.Errorf("get result by txId [%s] failed, %+v", txId, txInfo)
 	}
-
-	return result, nil
+	return txInfo.Transaction.Result.ContractResult, nil;
 }
