@@ -262,6 +262,7 @@ func testUserContractCounterGoInvoke(t *testing.T, client *ChainClient,
 
 	if resp.Code != pb.TxStatusCode_SUCCESS {
 		fmt.Printf("INVOKE counter-go contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
+		return
 	}
 
 	if !withSyncResult {
