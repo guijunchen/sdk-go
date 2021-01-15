@@ -32,7 +32,7 @@ func TestUserContractClaim(t *testing.T) {
 	require.Nil(t, err)
 
 	fmt.Println("====================== 创建合约 ======================")
-	testUserContractClaimCreate(t, client, admin1, admin2, admin3, admin4, true)
+	testUserContractClaimCreate(t, client, admin1, admin2, admin3, admin4, true, true)
 
 	fmt.Println("====================== 调用合约 ======================")
 	fileHash, err := testUserContractClaimInvoke(t, client, "save", true)
@@ -46,12 +46,14 @@ func TestUserContractClaim(t *testing.T) {
 }
 
 func testUserContractClaimCreate(t *testing.T, client *ChainClient,
-	admin1, admin2, admin3, admin4 *ChainClient, withSyncResult bool) {
+	admin1, admin2, admin3, admin4 *ChainClient, withSyncResult bool, isIgnoreSameContract bool) {
 
 
 	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
 		claimContractName, claimVersion, claimByteCodePath, pb.RuntimeType_WASMER, []*pb.KeyValuePair{}, withSyncResult)
-	require.Nil(t, err)
+	if !isIgnoreSameContract {
+		require.Nil(t, err)
+	}
 
 	fmt.Printf("CREATE claim contract resp: %+v\n", resp)
 }
