@@ -32,7 +32,7 @@ func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
 		return resp, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = CheckProposalRequestResp(resp, false); err != nil {
+	if err = checkProposalRequestResp(resp, false); err != nil {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -70,7 +70,7 @@ func (cc ChainClient) DeleteCert(certHashes []string) (*pb.TxResponse, error) {
 		return resp, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = CheckProposalRequestResp(resp, false); err != nil {
+	if err = checkProposalRequestResp(resp, false); err != nil {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -105,7 +105,7 @@ func (cc ChainClient) QueryCert(certHashes []string) (*pb.CertInfos, error) {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = CheckProposalRequestResp(resp, true); err != nil {
+	if err = checkProposalRequestResp(resp, true); err != nil {
 		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -119,9 +119,11 @@ func (cc ChainClient) QueryCert(certHashes []string) (*pb.CertInfos, error) {
 
 func (cc ChainClient) GetCertHash() ([]byte, error) {
 	chainConfig, err := cc.GetChainConfig()
+
 	if err != nil {
 		return nil, fmt.Errorf("get cert hash failed, %s", err.Error())
 	}
+
 	member := &pb.SerializedMember{
 		OrgId:      cc.orgId,
 		MemberInfo: cc.userCrtPEM,

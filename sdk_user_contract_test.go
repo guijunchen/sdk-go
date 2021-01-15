@@ -32,7 +32,7 @@ func TestUserContractCounterGo(t *testing.T) {
 	require.Nil(t, err)
 
 	fmt.Println("====================== 创建合约（异步）======================")
-	testUserContractCounterGoCreate(t, client, admin1, admin2, admin3, admin4)
+	testUserContractCounterGoCreate(t, client, admin1, admin2, admin3, admin4, false)
 	time.Sleep(5 * time.Second)
 
 	fmt.Println("====================== 调用合约（异步）======================")
@@ -83,34 +83,10 @@ func TestUserContractCounterGo(t *testing.T) {
 
 // [用户合约]
 func testUserContractCounterGoCreate(t *testing.T, client *ChainClient,
-	admin1, admin2, admin3, admin4 *ChainClient) {
-	payloadBytes, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, pb.RuntimeType_WASMER, []*pb.KeyValuePair{})
-	require.Nil(t, err)
+	admin1, admin2, admin3, admin4 *ChainClient, withSyncResult bool) {
 
-	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
-	require.Nil(t, err)
-
-	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
-	require.Nil(t, err)
-
-	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
-	require.Nil(t, err)
-
-	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
-	require.Nil(t, err)
-
-	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
-		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
-	require.Nil(t, err)
-
-	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, false)
-	fmt.Printf("resp: %+v\n", resp)
-	require.Nil(t, err)
-
-	err = CheckProposalRequestResp(resp, true)
+	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
+		contractName, version, byteCodePath, pb.RuntimeType_WASMER, []*pb.KeyValuePair{}, withSyncResult)
 	require.Nil(t, err)
 
 	fmt.Printf("CREATE counter-go contract resp: %+v\n", resp)
@@ -144,7 +120,7 @@ func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient,
 	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, -1, false)
 	require.Nil(t, err)
 
-	err = CheckProposalRequestResp(resp, true)
+	err = checkProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
 	fmt.Printf("UPGRADE counter-go contract resp: %+v\n", resp)
@@ -179,7 +155,7 @@ func testUserContractCounterGoFreeze(t *testing.T, client *ChainClient,
 	fmt.Printf("resp: %+v\n", resp)
 	require.Nil(t, err)
 
-	err = CheckProposalRequestResp(resp, true)
+	err = checkProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
 	fmt.Printf("Freeze counter-go contract resp: %+v\n", resp)
@@ -214,7 +190,7 @@ func testUserContractCounterGoUnfreeze(t *testing.T, client *ChainClient,
 	fmt.Printf("resp: %+v\n", resp)
 	require.Nil(t, err)
 
-	err = CheckProposalRequestResp(resp, true)
+	err = checkProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
 	fmt.Printf("Unfreeze counter-go contract resp: %+v\n", resp)
@@ -249,7 +225,7 @@ func testUserContractCounterGoRevoke(t *testing.T, client *ChainClient,
 	fmt.Printf("resp: %+v\n", resp)
 	require.Nil(t, err)
 
-	err = CheckProposalRequestResp(resp, true)
+	err = checkProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
 	fmt.Printf("Unfreeze counter-go contract resp: %+v\n", resp)
@@ -257,24 +233,8 @@ func testUserContractCounterGoRevoke(t *testing.T, client *ChainClient,
 
 func testUserContractCounterGoInvoke(t *testing.T, client *ChainClient,
 	method string, params map[string]string, withSyncResult bool) {
-	resp, err := client.InvokeContract(contractName, method, "", params, -1, withSyncResult)
-	require.Nil(t, err)
 
-	if resp.Code != pb.TxStatusCode_SUCCESS {
-		fmt.Printf("INVOKE counter-go contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
-		return
-	}
-
-	if !withSyncResult {
-		fmt.Printf("INVOKE counter-go contract resp, [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
-	} else {
-		txInfo := new(pb.TransactionInfo)
-		err := proto.Unmarshal(resp.ContractResult.Result, txInfo)
-		require.Nil(t, err)
-
-		bytes, err := json.Marshal(txInfo)
-		fmt.Printf("INVOKE counter-go contract resp, [code:%d]/[msg:%s]/[txInfo:%s]\n", resp.Code, resp.Message, string(bytes))
-	}
+	invokeUserContract(client, contractName, method, "", params, withSyncResult)
 }
 
 func testUserContractCounterGoQuery(t *testing.T, client *ChainClient,
@@ -282,4 +242,81 @@ func testUserContractCounterGoQuery(t *testing.T, client *ChainClient,
 	resp, err := client.QueryContract(contractName, method, params, -1)
 	require.Nil(t, err)
 	fmt.Printf("QUERY counter-go contract resp: %+v\n", resp)
+}
+
+func createUserContract( client *ChainClient, admin1, admin2, admin3, admin4 *ChainClient,
+	contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair, withSyncResult bool) (*pb.TxResponse, error) {
+
+	payloadBytes, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
+	if err != nil {
+		return nil, err
+	}
+
+	// 各组织Admin权限用户签名
+	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	// 收集并合并签名
+	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
+		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
+	if err != nil {
+		return nil, err
+	}
+
+	// 发送创建合约请求
+	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
+	if err != nil {
+		return nil, err
+	}
+
+	err = checkProposalRequestResp(resp, true)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func invokeUserContract(client *ChainClient, contractName, method, txId string, params map[string]string, withSyncResult bool) error {
+
+	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
+	if err != nil {
+		return err
+	}
+
+	if resp.Code != pb.TxStatusCode_SUCCESS {
+		return fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
+	}
+
+	if !withSyncResult {
+		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
+	} else {
+		txInfo := new(pb.TransactionInfo)
+		err := proto.Unmarshal(resp.ContractResult.Result, txInfo)
+		if err != nil {
+			return err
+		}
+
+		bytes, err := json.Marshal(txInfo)
+		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txInfo:%s]\n", resp.Code, resp.Message, string(bytes))
+	}
+
+	return nil
 }

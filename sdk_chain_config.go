@@ -28,7 +28,7 @@ func (cc ChainClient) GetChainConfig() (*pb.ChainConfig, error) {
 		return nil, fmt.Errorf("send %s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err := CheckProposalRequestResp(resp, true); err != nil {
+	if err := checkProposalRequestResp(resp, true); err != nil {
 		return nil, err
 	}
 
@@ -61,7 +61,7 @@ func (cc ChainClient) GetChainConfigByBlockHeight(blockHeight int) (*pb.ChainCon
 		return nil, fmt.Errorf("send %s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err := CheckProposalRequestResp(resp, true); err != nil {
+	if err := checkProposalRequestResp(resp, true); err != nil {
 		return nil, err
 	}
 

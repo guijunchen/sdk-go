@@ -10,6 +10,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"time"
 
 	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"chainmaker.org/chainmaker-go/common/crypto"
@@ -194,7 +195,7 @@ func constructSubscribeTxPayload(startBlock, endBlock int64, txType pb.TxType, t
 	return payloadBytes, nil
 }
 
-func CheckProposalRequestResp(resp *pb.TxResponse, needContractResult bool) error {
+func checkProposalRequestResp(resp *pb.TxResponse, needContractResult bool) error {
 	if resp.Code != pb.TxStatusCode_SUCCESS {
 		return errors.New(resp.Message)
 	}
@@ -348,4 +349,13 @@ func getCertificateIdFromDER(certDER []byte, hashType string) ([]byte, error) {
 		return nil, err
 	}
 	return id, nil
+}
+
+// return current unix timestamp in seconds
+func CurrentTimeSeconds() int64 {
+	return time.Now().Unix()
+}
+
+func CurrentTimeMillisSeconds() int64 {
+	return time.Now().UnixNano() / 1e6
 }
