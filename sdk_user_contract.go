@@ -18,7 +18,7 @@ import (
 
 const (
 	// 轮训交易结果最大次数
-	retryCnt = 5
+	retryCnt = 10
 )
 
 func (cc ChainClient) CreateContractCreatePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
