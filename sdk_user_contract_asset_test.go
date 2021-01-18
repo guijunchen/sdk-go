@@ -18,6 +18,16 @@ var (
 	assetByteCodePath = "./testdata/asset-wasm-demo/asset-rust-0.7.2.wasm"
 )
 
+func TestUserContractAssetBalanceOf(t *testing.T) {
+	client, err := createClientWithConfig()
+	require.Nil(t, err)
+
+	addr := "35de41926ed8fc30e9466c1d6f78f764ed2cfeb75ae7e614765ef4295026cbe1"
+	getBalance(t, client, addr)
+	addr = "8ea7bd636587a7e582fc67ca96fc2e9a6837c6f28f8bd85b0e36b441514a6bf1"
+	getBalance(t, client, addr)
+}
+
 func TestUserContractAsset(t *testing.T) {
 	client, err := createClientWithConfig()
 	require.Nil(t, err)
@@ -62,42 +72,16 @@ func TestUserContractAsset(t *testing.T) {
 	testUserContractAssetInvoke(t, client, "issue_amount", amount, addr2, true)
 
 	fmt.Println("====================== 5)分别查看余额 ======================")
-	params := map[string]string {
-		"owner": addr1,
-	}
-	balance1 := testUserContractAssetQuery(t, client, "balance_of", params)
-	val1, err := BytesToInt([]byte(balance1), binary.LittleEndian)
-	require.Nil(t, err)
-	fmt.Printf("client1 balance: %d\n", val1)
-
-	params = map[string]string {
-		"owner": addr2,
-	}
-	balance2 := testUserContractAssetQuery(t, client, "balance_of", params)
-	val2, err := BytesToInt([]byte(balance2), binary.LittleEndian)
-	require.Nil(t, err)
-	fmt.Printf("client2 balance: %d\n", val2)
+	getBalance(t, client, addr1)
+	getBalance(t, client, addr2)
 
 	fmt.Println("====================== 6)A给B转账100 ======================")
 	amount = "100"
 	testUserContractAssetInvoke(t, client, "transfer", amount, addr2, true)
 
 	fmt.Println("====================== 7)再次分别查看余额 ======================")
-	params = map[string]string {
-		"owner": addr1,
-	}
-	balance1 = testUserContractAssetQuery(t, client, "balance_of", params)
-	val1, err = BytesToInt([]byte(balance1), binary.LittleEndian)
-	require.Nil(t, err)
-	fmt.Printf("client1 balance: %d\n", val1)
-
-	params = map[string]string {
-		"owner": addr2,
-	}
-	balance2 = testUserContractAssetQuery(t, client, "balance_of", params)
-	val2, err = BytesToInt([]byte(balance2), binary.LittleEndian)
-	require.Nil(t, err)
-	fmt.Printf("client2 balance: %d\n", val2)
+	getBalance(t, client, addr1)
+	getBalance(t, client, addr2)
 }
 
 func testUserContractAssetCreate(t *testing.T, client *ChainClient,
@@ -137,3 +121,12 @@ func testUserContractAssetInvoke(t *testing.T, client *ChainClient, method strin
 	require.Nil(t, err)
 }
 
+func getBalance(t *testing.T, client *ChainClient, addr string) {
+	params := map[string]string {
+		"owner": addr,
+	}
+	balance := testUserContractAssetQuery(t, client, "balance_of", params)
+	val, err := BytesToInt([]byte(balance), binary.LittleEndian)
+	require.Nil(t, err)
+	fmt.Printf("client [%s] balance: %d\n", addr, val)
+}
