@@ -39,6 +39,8 @@ func TestUserContractClaim(t *testing.T) {
 	require.Nil(t, err)
 
 	fmt.Println("====================== 执行合约查询接口 ======================")
+	//txId := "1cbdbe6106cc4132b464185ea8275d0a53c0261b7b1a470fb0c3f10bd4a57ba6"
+	//fileHash = txId[len(txId)/2:]
 	params := map[string]string {
 		"file_hash": fileHash,
 	}
