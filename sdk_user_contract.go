@@ -189,6 +189,12 @@ func (cc ChainClient) InvokeContract(contractName, method, txId string, params m
 			if err != nil {
 				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
 			}
+
+			if contractResult.Code != pb.ContractResultCode_OK {
+				resp.Code = pb.TxStatusCode_CONTRACT_FAIL
+				resp.Message = contractResult.Message
+			}
+
 			resp.ContractResult = contractResult;
 		}
 	}

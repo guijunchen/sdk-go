@@ -6,9 +6,7 @@ package chainmaker_sdk_go
 
 import (
 	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
-	"encoding/json"
 	"fmt"
-	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -308,14 +306,7 @@ func invokeUserContract(client *ChainClient, contractName, method, txId string, 
 	if !withSyncResult {
 		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
 	} else {
-		txInfo := new(pb.TransactionInfo)
-		err := proto.Unmarshal(resp.ContractResult.Result, txInfo)
-		if err != nil {
-			return err
-		}
-
-		bytes, err := json.Marshal(txInfo)
-		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txInfo:%s]\n", resp.Code, resp.Message, string(bytes))
+		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%s]\n", resp.Code, resp.Message, resp.ContractResult)
 	}
 
 	return nil
