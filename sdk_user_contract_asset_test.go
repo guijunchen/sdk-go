@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"testing"
-	"time"
 )
 
 var (
@@ -81,10 +80,7 @@ func TestUserContractAsset(t *testing.T) {
 
 	fmt.Println("====================== 6)A给B转账100 ======================")
 	amount = "100"
-	// FIXME：同步接口会报错，待确认
-	//testUserContractAssetInvoke(t, client, "transfer", amount, addr2, true)
-	testUserContractAssetInvoke(t, client, "transfer", amount, addr2, false)
-	time.Sleep(5 * time.Second)
+	testUserContractAssetInvoke(t, client, "transfer", amount, addr2, true)
 
 	fmt.Println("====================== 7)再次分别查看余额 ======================")
 	params = map[string]string {
