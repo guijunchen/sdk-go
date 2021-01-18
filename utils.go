@@ -6,6 +6,7 @@ package chainmaker_sdk_go
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
@@ -358,4 +359,14 @@ func CurrentTimeSeconds() int64 {
 
 func CurrentTimeMillisSeconds() int64 {
 	return time.Now().UnixNano() / 1e6
+}
+
+func BytesToInt(bys []byte, order binary.ByteOrder) (int32, error) {
+	bytebuff := bytes.NewBuffer(bys)
+	var data int32
+	if err := binary.Read(bytebuff, order, &data); err != nil {
+		return -1, err
+	}
+
+	return data, nil
 }

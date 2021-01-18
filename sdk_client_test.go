@@ -36,10 +36,15 @@ const (
 )
 
 var (
-	chainOrgId  = orgId1
-	caPaths     = []string{certPathPrefix + fmt.Sprintf("/crypto-config/%s/ca", chainOrgId)}
-	userKeyPath = certPathPrefix + fmt.Sprintf("/crypto-config/%s/user/client1/client1.tls.key", chainOrgId)
-	userCrtPath = certPathPrefix + fmt.Sprintf("/crypto-config/%s/user/client1/client1.tls.crt", chainOrgId)
+	caPaths     = []string{
+		certPathPrefix + fmt.Sprintf("/crypto-config/%s/ca", orgId1),
+		certPathPrefix + fmt.Sprintf("/crypto-config/%s/ca", orgId2),
+		certPathPrefix + fmt.Sprintf("/crypto-config/%s/ca", orgId3),
+		certPathPrefix + fmt.Sprintf("/crypto-config/%s/ca", orgId4),
+	}
+
+	userKeyPath = certPathPrefix + "/crypto-config/%s/user/client1/client1.tls.key"
+	userCrtPath = certPathPrefix + "/crypto-config/%s/user/client1/client1.tls.crt"
 
 	adminKeyPath = certPathPrefix + "/crypto-config/%s/user/admin1/admin1.tls.key"
 	adminCrtPath = certPathPrefix + "/crypto-config/%s/user/admin1/admin1.tls.crt"
@@ -79,8 +84,12 @@ func createNode(nodeAddr string, connCnt int) *NodeConfig {
 	return node
 }
 
-// 创建ChainClient
 func createClient() (*ChainClient, error) {
+	return createClientWithOrgId(orgId1)
+}
+
+// 创建ChainClient
+func createClientWithOrgId(orgId string) (*ChainClient, error) {
 	if node1 == nil {
 		// 创建节点1
 		node1 = createNode(nodeAddr1, connCnt1)
@@ -93,15 +102,15 @@ func createClient() (*ChainClient, error) {
 
 	chainClient, err := NewChainClient(
 		// 设置归属组织
-		WithChainClientOrgId(chainOrgId),
+		WithChainClientOrgId(orgId),
 		// 设置链ID
 		WithChainClientChainId(chainId),
 		// 设置logger句柄，若不设置，将采用默认日志文件输出日志
 		WithChainClientLogger(getDefaultLogger()),
 		// 设置客户端用户私钥路径
-		WithUserKeyFilePath(userKeyPath),
+		WithUserKeyFilePath(fmt.Sprintf(userKeyPath, orgId)),
 		// 设置客户端用户证书
-		WithUserCrtFilePath(userCrtPath),
+		WithUserCrtFilePath(fmt.Sprintf(userCrtPath, orgId)),
 		// 添加节点1
 		AddChainClientNodeConfig(node1),
 		// 添加节点2
