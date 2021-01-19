@@ -22,10 +22,18 @@ func TestUserContractAssetBalanceOf(t *testing.T) {
 	client, err := createClientWithConfig()
 	require.Nil(t, err)
 
-	addr := "35de41926ed8fc30e9466c1d6f78f764ed2cfeb75ae7e614765ef4295026cbe1"
-	getBalance(t, client, addr)
-	addr = "8ea7bd636587a7e582fc67ca96fc2e9a6837c6f28f8bd85b0e36b441514a6bf1"
-	getBalance(t, client, addr)
+	client2, err := createClientWithOrgId(orgId2)
+	require.Nil(t, err)
+
+	fmt.Println("====================== 1)查询钱包地址 ======================")
+	addr1 := testUserContractAssetQuery(t, client, "query_address", nil)
+	fmt.Printf("client1 address: %s\n", addr1)
+	addr2 := testUserContractAssetQuery(t, client2, "query_address", nil)
+	fmt.Printf("client2 address: %s\n", addr2)
+
+	fmt.Println("====================== 2)查询钱包余额 ======================")
+	getBalance(t, client, addr1)
+	getBalance(t, client, addr2)
 }
 
 func TestUserContractAsset(t *testing.T) {
