@@ -455,4 +455,6 @@ type SDKInterface interface {
 	// ```go
 	Stop() error
 	// ```
+
+	GetChainMakerServerVersion() (string, error)
 }
