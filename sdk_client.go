@@ -276,45 +276,53 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout) * time.Second)
 	defer cancel()
 
-	client, err := cc.pool.getClient()
-	if err != nil {
-		return nil, err
-	}
-
 	req, err := cc.generateTxRequest(txId, txType, payloadBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := client.rpcNode.SendRequest(ctx, req)
-	if err != nil {
-		resp := &pb.TxResponse{
-			Message: err.Error(),
-			ContractResult: &pb.ContractResult{
-				Code:    pb.ContractResultCode_FAIL,
-				Result:  []byte(txId),
-				Message: pb.ContractResultCode_FAIL.String(),
-			},
+	ignoreAddrs := make(map[string]struct{})
+	for {
+		client, err := cc.pool.getClientWithIgnoreAddrs(ignoreAddrs)
+		if err != nil {
+			return nil, err
 		}
 
-		statusErr, ok := status.FromError(err)
-		if ok {
-			if statusErr.Code() == codes.DeadlineExceeded {
-				resp.Code = pb.TxStatusCode_TIMEOUT
-				errMsg = fmt.Sprintf("client.call failed, deadline: %+v", err)
-				cc.logger.Errorf("[SDK] %s", errMsg)
-				return resp, fmt.Errorf(errMsg)
+		resp, err := client.rpcNode.SendRequest(ctx, req)
+		if err != nil {
+			resp := &pb.TxResponse{
+				Message: err.Error(),
+				ContractResult: &pb.ContractResult{
+					Code:    pb.ContractResultCode_FAIL,
+					Result:  []byte(txId),
+					Message: pb.ContractResultCode_FAIL.String(),
+				},
 			}
+
+			statusErr, ok := status.FromError(err)
+			if ok {
+				if statusErr.Code() == codes.DeadlineExceeded ||
+						// desc = "transport: Error while dialing dial tcp 127.0.0.1:12301: connect: connection refused"
+						statusErr.Code() == codes.Unavailable {
+
+					resp.Code = pb.TxStatusCode_TIMEOUT
+					errMsg = fmt.Sprintf("client.call failed, deadline: %+v", err)
+					cc.logger.Errorf("[SDK] %s", errMsg)
+					ignoreAddrs[client.nodeAddr]= struct{}{}
+					continue
+				}
+			}
+
+			cc.logger.Errorf("statusErr.Code() : %s", statusErr.Code())
+
+			resp.Code = pb.TxStatusCode_INTERNAL_ERROR
+			errMsg = fmt.Sprintf("client.call failed, %+v", err)
+			cc.logger.Errorf("[SDK] %s", errMsg)
+			return resp, fmt.Errorf(errMsg)
 		}
 
-		resp.Code = pb.TxStatusCode_INTERNAL_ERROR
-		errMsg = fmt.Sprintf("client.call failed, %+v", err)
-		cc.logger.Errorf("[SDK] %s", errMsg)
-		return resp, fmt.Errorf(errMsg)
+		cc.logger.Debugf("[SDK] proposalRequest resp: %+v", resp)
+		return resp, nil
 	}
-
-	cc.logger.Debugf("[SDK] proposalRequest resp: %+v", resp)
-
-	return resp, nil
 }
 

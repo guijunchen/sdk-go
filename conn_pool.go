@@ -88,10 +88,21 @@ func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPath
 
 // 获取空闲的可用客户端连接对象
 func (pool *ConnectionPool) getClient() (*networkClient, error) {
+	return pool.getClientWithIgnoreAddrs(nil)
+}
+
+func (pool *ConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]struct{}) (*networkClient, error) {
 	var nc *networkClient
 
 	if err := retry.Retry(func(attempt uint) error {
 		for _, cli := range pool.connections {
+
+			if ignoreAddrs != nil {
+				if _, ok := ignoreAddrs[cli.nodeAddr]; ok {
+					continue
+				}
+			}
+
 			if cli.conn == nil || cli.conn.GetState() == connectivity.Shutdown {
 
 				conn, err := pool.initGRPCConnect(cli.nodeAddr, cli.useTLS, cli.caPaths, cli.tlsHostName)
