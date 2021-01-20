@@ -288,6 +288,10 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 			return nil, err
 		}
 
+		if len(ignoreAddrs) > 0 {
+			cc.logger.Debugf("[SDK] begin try to connect node [%s]", client.nodeAddr)
+		}
+
 		resp, err := client.rpcNode.SendRequest(ctx, req)
 		if err != nil {
 			resp := &pb.TxResponse{
@@ -306,7 +310,9 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 						statusErr.Code() == codes.Unavailable {
 
 					resp.Code = pb.TxStatusCode_TIMEOUT
-					errMsg = fmt.Sprintf("client.call failed, deadline: %+v", err)
+					errMsg = fmt.Sprintf("call [%s] meet network error, try to connect another node if has, %s",
+						client.nodeAddr, err.Error())
+
 					cc.logger.Errorf("[SDK] %s", errMsg)
 					ignoreAddrs[client.nodeAddr]= struct{}{}
 					continue
