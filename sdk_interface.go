@@ -363,6 +363,61 @@ type SDKInterface interface {
 	GetCertHash() ([]byte, error)
 	// ```
 
+	// ### 4.5 生成证书管理操作Payload（三合一接口）
+	// **参数说明**
+	//   - method: CERTS_FROZEN(证书冻结)/CERTS_UNFROZEN(证书解冻)/CERTS_REVOCATION(证书吊销)
+	//   - kvs: 证书管理操作参数
+	// ```go
+	CreateCertManagePayload(method string, kvs []*pb.KeyValuePair) ([]byte, error)
+	// ```
+
+	// ### 4.6 生成证书冻结操作Payload
+	// **参数说明**
+	//   - certs: X509证书列表
+	// ```go
+	CreateCertManageFrozenPayload(certs []string) ([]byte, error)
+	// ```
+
+	// ### 4.7 生成证书解冻操作Payload
+	// **参数说明**
+	//   - certs: X509证书列表
+	// ```go
+	CreateCertManageUnfrozenPayload(certs []string) ([]byte, error)
+	// ```
+
+	// ### 4.8 生成证书吊销操作Payload
+	// **参数说明**
+	//   - certs: X509证书列表
+	// ```go
+	CreateCertManageRevocationPayload(certCrl string) ([]byte, error)
+	// ```
+
+	// ### 4.9 待签payload签名
+	//  *一般需要使用具有管理员权限账号进行签名*
+	// **参数说明**
+	//   - payloadBytes: 待签名payload
+	// ```go
+	SignCertManagePayload(payloadBytes []byte) ([]byte, error)
+	// ```
+
+	// ### 4.10 证书管理Payload签名收集&合并
+	// **参数说明**
+	//   - signedPayloadBytes: 已签名payload列表
+	// ```go
+	MergeCertManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
+	// ```
+
+	// ### 4.11 发送证书管理请求（证书冻结、解冻、吊销）
+	// **参数说明**
+	//   - multiSignedPayload: 多签结果
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
+	//            当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
+	// ```go
+	SendCertManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
+	// ```
+
 	// ## 5 在线多签接口
 	// ### 5.1 待签payload签名
 	//  *一般需要使用具有管理员权限账号进行签名*

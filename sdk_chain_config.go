@@ -121,7 +121,7 @@ func (cc ChainClient) SignChainConfigPayload(payloadBytes []byte) ([]byte, error
 }
 
 func (cc ChainClient) MergeChainConfigSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
-	return mergeConfigUpdateSignedPayload(signedPayloadBytes)
+	return mergeSystemContractSignedPayload(signedPayloadBytes)
 }
 
 func (cc ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int) ([]byte, error) {

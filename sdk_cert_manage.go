@@ -137,3 +137,96 @@ func (cc ChainClient) GetCertHash() ([]byte, error) {
 
 	return certHash, nil
 }
+
+func (cc ChainClient) CreateCertManagePayload(method string, kvs []*pb.KeyValuePair) ([]byte, error) {
+	cc.logger.Debugf("[SDK] create [CertManage] to be signed payload")
+
+	payload := &pb.SystemContractPayload{
+		ChainId:      cc.chainId,
+		ContractName: pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(),
+		Method:       method,
+		Parameters:   kvs,
+	}
+
+	bytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("construct cert manage payload failed, %s", err)
+	}
+
+	return bytes, nil
+}
+
+func (cc ChainClient) CreateCertManageFrozenPayload(certs []string) ([]byte, error) {
+	pairs := []*pb.KeyValuePair{
+		{
+			Key:   "certs",
+			Value: strings.Join(certs, ","),
+		},
+	}
+
+	return cc.CreateCertManagePayload(pb.CertManageFunction_CERTS_FROZEN.String(), pairs)
+}
+
+func (cc ChainClient) CreateCertManageUnfrozenPayload(certs []string) ([]byte, error) {
+	pairs := []*pb.KeyValuePair{
+		{
+			Key:   "certs",
+			Value: strings.Join(certs, ","),
+		},
+	}
+
+	return cc.CreateCertManagePayload(pb.CertManageFunction_CERTS_UNFROZEN.String(), pairs)
+}
+
+func (cc ChainClient) CreateCertManageRevocationPayload(certCrl string) ([]byte, error) {
+	pairs := []*pb.KeyValuePair{
+		{
+			Key:   "cert_crl",
+			Value: certCrl,
+		},
+	}
+
+	return cc.CreateCertManagePayload(pb.CertManageFunction_CERTS_REVOCATION.String(), pairs)
+}
+
+func (cc ChainClient) SignCertManagePayload(payloadBytes []byte) ([]byte, error) {
+	payload := &pb.SystemContractPayload{}
+	if err := proto.Unmarshal(payloadBytes, payload); err != nil {
+		return nil, fmt.Errorf("unmarshal contract manage payload failed, %s", err)
+	}
+
+	signBytes, err := signPayload(cc.privateKey, cc.userCrt, payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf("SignPayload failed, %s", err)
+	}
+
+	sender := &pb.SerializedMember{
+		OrgId:      cc.orgId,
+		MemberInfo: cc.userCrtPEM,
+		IsFullCert: true,
+	}
+
+	entry := &pb.EndorsementEntry{
+		Signer:    sender,
+		Signature: signBytes,
+	}
+
+	payload.Endorsement = []*pb.EndorsementEntry{
+		entry,
+	}
+
+	signedPayloadBytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("marshal contract manage sigend payload failed, %s", err)
+	}
+
+	return signedPayloadBytes, nil
+}
+
+func (cc ChainClient) MergeCertManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
+	return mergeSystemContractSignedPayload(signedPayloadBytes)
+}
+
+func (cc ChainClient) SendCertManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error) {
+	return cc.sendContractRequest(pb.TxType_SYSTEM_CONTRACT, mergeSignedPayloadBytes, timeout, withSyncResult)
+}

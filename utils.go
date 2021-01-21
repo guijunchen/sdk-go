@@ -214,7 +214,7 @@ func checkProposalRequestResp(resp *pb.TxResponse, needContractResult bool) erro
 	return nil
 }
 
-func mergeConfigUpdateSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
+func mergeSystemContractSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
 	if len(signedPayloadBytes) == 0 {
 		return nil, fmt.Errorf("input params is empty")
 	}
