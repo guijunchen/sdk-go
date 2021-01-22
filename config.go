@@ -13,41 +13,56 @@ var Config *ChainClientConfigModel
 
 type nodesConfigModel struct {
 	// 节点地址
-	NodeAddr                string              `mapstructure:"node_addr"`
+	NodeAddr string `mapstructure:"node_addr"`
 	// 节点连接数
-	ConnCnt                 int                 `mapstructure:"conn_cnt"`
+	ConnCnt int `mapstructure:"conn_cnt"`
 	// RPC连接是否启用双向TLS认证
-	EnableTLS               bool                `mapstructure:"enable_tls"`
+	EnableTLS bool `mapstructure:"enable_tls"`
 	// 信任证书池路径
-	TrustRootPaths          []string            `mapstructure:"trust_root_paths"`
+	TrustRootPaths []string `mapstructure:"trust_root_paths"`
 	// TLS hostname
-	TLSHostName             string              `mapstructure:"tls_host_name"`
+	TLSHostName string `mapstructure:"tls_host_name"`
+}
+
+type kmsConfigModel struct {
+	// Enable kms
+	Enable bool `mapstructure:"enable"`
+	// SecretId for kms
+	SecretId string `mapstructure:"secret_id"`
+	// SecretKey for kms
+	SecretKey string `mapstructure:"secret_key"`
+	// ServerAddress of kms server
+	ServerAddress string `mapstructure:"server_address"`
+	// ServerRegion of kms server
+	ServerRegion string `mapstructure:"server_region"`
 }
 
 type chainClientConfigModel struct {
 	// 链ID
-	ChainId                 string              `mapstructure:"chain_id"`
+	ChainId string `mapstructure:"chain_id"`
 	// 组织ID
-	OrgId                   string              `mapstructure:"org_id"`
+	OrgId string `mapstructure:"org_id"`
 	// 客户端用户私钥路径
-	UserKeyFilePath         string              `mapstructure:"user_key_file_path"`
+	UserKeyFilePath string `mapstructure:"user_key_file_path"`
 	// 客户端用户证书路径
-	UserCrtFilePath         string              `mapstructure:"user_crt_file_path"`
+	UserCrtFilePath string `mapstructure:"user_crt_file_path"`
 	// 客户端用户交易签名私钥路径(若未设置，将使用user_key_file_path)
-	UserSignKeyFilePath     string              `mapstructure:"user_sign_key_file_path"`
+	UserSignKeyFilePath string `mapstructure:"user_sign_key_file_path"`
 	// 客户端用户交易签名证书路径(若未设置，将使用user_crt_file_path)
-	UserSignCrtFilePath     string              `mapstructure:"user_sign_crt_file_path"`
+	UserSignCrtFilePath string `mapstructure:"user_sign_crt_file_path"`
+	// kms config
+	KmsConfig kmsConfigModel `mapstructure:"kms"`
 	// 节点配置
-	NodesConfig             []nodesConfigModel  `mapstructure:"nodes"`
+	NodesConfig []nodesConfigModel `mapstructure:"nodes"`
 }
 
 type ChainClientConfigModel struct {
-	ChainClientConfig       chainClientConfigModel           `mapstructure:"chain_client"`
+	ChainClientConfig chainClientConfigModel `mapstructure:"chain_client"`
 }
 
 func InitConfig(confPath string) error {
 	var (
-		err error
+		err       error
 		confViper *viper.Viper
 	)
 
