@@ -33,10 +33,10 @@ type chainClientConfigModel struct {
 	UserKeyFilePath         string              `mapstructure:"user_key_file_path"`
 	// 客户端用户证书路径
 	UserCrtFilePath         string              `mapstructure:"user_crt_file_path"`
-	// 客户端管理员私钥路径
-	AdminKeyFilePath        string              `mapstructure:"admin_key_file_path"`
-	// 客户端管理员证书路径
-	AdminCrtFilePath        string              `mapstructure:"admin_crt_file_path"`
+	// 客户端用户交易签名私钥路径(若未设置，将使用user_key_file_path)
+	UserSignKeyFilePath     string              `mapstructure:"user_sign_key_file_path"`
+	// 客户端用户交易签名证书路径(若未设置，将使用user_crt_file_path)
+	UserSignCrtFilePath     string              `mapstructure:"user_sign_crt_file_path"`
 	// 节点配置
 	NodesConfig             []nodesConfigModel  `mapstructure:"nodes"`
 }
