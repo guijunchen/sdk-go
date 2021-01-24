@@ -109,7 +109,7 @@ func WithServerRegion(secretRegion string) KmsOption {
 }
 
 func NewKmsConfig(enable bool, options ...KmsOption) *KmsConfig {
-	kc := &KmsConfig{enable: enable}
+	kc := &KmsConfig{enable: enable, conf: &kms.KMSConfig{}}
 	for i := range options {
 		options[i](kc)
 	}
