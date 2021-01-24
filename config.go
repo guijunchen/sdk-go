@@ -26,7 +26,7 @@ type nodesConfigModel struct {
 
 type kmsConfigModel struct {
 	// Enable kms
-	Enable bool `mapstructure:"enable"`
+	Enable bool `mapstructure:"enabled"`
 	// SecretId for kms
 	SecretId string `mapstructure:"secret_id"`
 	// SecretKey for kms

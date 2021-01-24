@@ -424,6 +424,7 @@ func dealConfig(config *ChainClientConfig) error {
 			if err != nil {
 				return fmt.Errorf("kms load private key failed, %s", err.Error())
 			}
+			config.logger.Infof("[SDK] load private key from KMS success.")
 		} else {
 			config.privateKey, err = asym.PrivateKeyFromPEM(config.userSignKeyBytes, nil)
 			if err != nil {
