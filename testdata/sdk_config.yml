@@ -14,8 +14,10 @@ chain_client:
   kms:
     # 如果开启该开关，需要配置：user_sign_key_file_path(kms json格式私钥)、user_sign_crt_file_path
     enabled: true
-    # TODO: kms配置
-    # 。。。
+    secret_id: ""
+    secret_key: ""
+    server_address: ""
+    server_region: ""
   nodes:
     - # 节点地址，格式为：IP:端口:连接数
       node_addr: "127.0.0.1:12301"
