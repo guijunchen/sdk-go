@@ -23,16 +23,16 @@ import (
 var _ SDKInterface = (*ChainClient)(nil)
 
 type ChainClient struct {
-	logger      Logger
-	pool        *ConnectionPool
-	chainId     string
-	orgId       string
-	userCrtPEM  []byte
-	userCrt     *bcx509.Certificate
-	privateKey  crypto.PrivateKey
+	logger     Logger
+	pool       *ConnectionPool
+	chainId    string
+	orgId      string
+	userCrtPEM []byte
+	userCrt    *bcx509.Certificate
+	privateKey crypto.PrivateKey
 	// 用户压缩证书
 	enabledCrtHash bool
-	userCrtHash []byte
+	userCrtHash    []byte
 }
 
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
@@ -56,13 +56,13 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	}
 
 	return &ChainClient{
-		pool:           pool,
-		logger:         config.logger,
-		chainId:        config.chainId,
-		orgId:          config.orgId,
-		userCrtPEM:     config.userCrtPEM,
-		userCrt:        config.userCrt,
-		privateKey:     config.privateKey,
+		pool:       pool,
+		logger:     config.logger,
+		chainId:    config.chainId,
+		orgId:      config.orgId,
+		userCrtPEM: config.userCrtPEM,
+		userCrt:    config.userCrt,
+		privateKey: config.privateKey,
 	}, nil
 }
 
@@ -273,7 +273,7 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 		}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout) * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
 
 	req, err := cc.generateTxRequest(txId, txType, payloadBytes)
@@ -306,15 +306,15 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 			statusErr, ok := status.FromError(err)
 			if ok {
 				if statusErr.Code() == codes.DeadlineExceeded ||
-						// desc = "transport: Error while dialing dial tcp 127.0.0.1:12301: connect: connection refused"
-						statusErr.Code() == codes.Unavailable {
+					// desc = "transport: Error while dialing dial tcp 127.0.0.1:12301: connect: connection refused"
+					statusErr.Code() == codes.Unavailable {
 
 					resp.Code = pb.TxStatusCode_TIMEOUT
 					errMsg = fmt.Sprintf("call [%s] meet network error, try to connect another node if has, %s",
 						client.nodeAddr, err.Error())
 
 					cc.logger.Errorf("[SDK] %s", errMsg)
-					ignoreAddrs[client.nodeAddr]= struct{}{}
+					ignoreAddrs[client.nodeAddr] = struct{}{}
 					continue
 				}
 			}
@@ -331,4 +331,3 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 		return resp, nil
 	}
 }
-

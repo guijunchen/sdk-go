@@ -11,7 +11,8 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+// Requires gRPC-Go v1.32.0 or later.
+const _ = grpc.SupportPackageIsVersion7
 
 // RpcNodeClient is the client API for RpcNode service.
 //
@@ -22,6 +23,7 @@ type RpcNodeClient interface {
 	UpdateDebugConfig(ctx context.Context, in *DebugConfigRequest, opts ...grpc.CallOption) (*DebugConfigResponse, error)
 	RefreshLogLevelsConfig(ctx context.Context, in *LogLevelsRequest, opts ...grpc.CallOption) (*LogLevelsResponse, error)
 	GetChainMakerVersion(ctx context.Context, in *ChainMakerVersionRequest, opts ...grpc.CallOption) (*ChainMakerVersionResponse, error)
+	CheckNewBlockChainConfig(ctx context.Context, in *CheckNewBlockChainConfigRequest, opts ...grpc.CallOption) (*CheckNewBlockChainConfigResponse, error)
 }
 
 type rpcNodeClient struct {
@@ -42,7 +44,7 @@ func (c *rpcNodeClient) SendRequest(ctx context.Context, in *TxRequest, opts ...
 }
 
 func (c *rpcNodeClient) Subscribe(ctx context.Context, in *TxRequest, opts ...grpc.CallOption) (RpcNode_SubscribeClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_RpcNode_serviceDesc.Streams[0], "/pb.RpcNode/Subscribe", opts...)
+	stream, err := c.cc.NewStream(ctx, &RpcNode_ServiceDesc.Streams[0], "/pb.RpcNode/Subscribe", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -100,6 +102,15 @@ func (c *rpcNodeClient) GetChainMakerVersion(ctx context.Context, in *ChainMaker
 	return out, nil
 }
 
+func (c *rpcNodeClient) CheckNewBlockChainConfig(ctx context.Context, in *CheckNewBlockChainConfigRequest, opts ...grpc.CallOption) (*CheckNewBlockChainConfigResponse, error) {
+	out := new(CheckNewBlockChainConfigResponse)
+	err := c.cc.Invoke(ctx, "/pb.RpcNode/CheckNewBlockChainConfig", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RpcNodeServer is the server API for RpcNode service.
 // All implementations must embed UnimplementedRpcNodeServer
 // for forward compatibility
@@ -109,6 +120,7 @@ type RpcNodeServer interface {
 	UpdateDebugConfig(context.Context, *DebugConfigRequest) (*DebugConfigResponse, error)
 	RefreshLogLevelsConfig(context.Context, *LogLevelsRequest) (*LogLevelsResponse, error)
 	GetChainMakerVersion(context.Context, *ChainMakerVersionRequest) (*ChainMakerVersionResponse, error)
+	CheckNewBlockChainConfig(context.Context, *CheckNewBlockChainConfigRequest) (*CheckNewBlockChainConfigResponse, error)
 	mustEmbedUnimplementedRpcNodeServer()
 }
 
@@ -116,25 +128,35 @@ type RpcNodeServer interface {
 type UnimplementedRpcNodeServer struct {
 }
 
-func (*UnimplementedRpcNodeServer) SendRequest(context.Context, *TxRequest) (*TxResponse, error) {
+func (UnimplementedRpcNodeServer) SendRequest(context.Context, *TxRequest) (*TxResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendRequest not implemented")
 }
-func (*UnimplementedRpcNodeServer) Subscribe(*TxRequest, RpcNode_SubscribeServer) error {
+func (UnimplementedRpcNodeServer) Subscribe(*TxRequest, RpcNode_SubscribeServer) error {
 	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
 }
-func (*UnimplementedRpcNodeServer) UpdateDebugConfig(context.Context, *DebugConfigRequest) (*DebugConfigResponse, error) {
+func (UnimplementedRpcNodeServer) UpdateDebugConfig(context.Context, *DebugConfigRequest) (*DebugConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateDebugConfig not implemented")
 }
-func (*UnimplementedRpcNodeServer) RefreshLogLevelsConfig(context.Context, *LogLevelsRequest) (*LogLevelsResponse, error) {
+func (UnimplementedRpcNodeServer) RefreshLogLevelsConfig(context.Context, *LogLevelsRequest) (*LogLevelsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RefreshLogLevelsConfig not implemented")
 }
-func (*UnimplementedRpcNodeServer) GetChainMakerVersion(context.Context, *ChainMakerVersionRequest) (*ChainMakerVersionResponse, error) {
+func (UnimplementedRpcNodeServer) GetChainMakerVersion(context.Context, *ChainMakerVersionRequest) (*ChainMakerVersionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChainMakerVersion not implemented")
 }
-func (*UnimplementedRpcNodeServer) mustEmbedUnimplementedRpcNodeServer() {}
+func (UnimplementedRpcNodeServer) CheckNewBlockChainConfig(context.Context, *CheckNewBlockChainConfigRequest) (*CheckNewBlockChainConfigResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckNewBlockChainConfig not implemented")
+}
+func (UnimplementedRpcNodeServer) mustEmbedUnimplementedRpcNodeServer() {}
 
-func RegisterRpcNodeServer(s *grpc.Server, srv RpcNodeServer) {
-	s.RegisterService(&_RpcNode_serviceDesc, srv)
+// UnsafeRpcNodeServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to RpcNodeServer will
+// result in compilation errors.
+type UnsafeRpcNodeServer interface {
+	mustEmbedUnimplementedRpcNodeServer()
+}
+
+func RegisterRpcNodeServer(s grpc.ServiceRegistrar, srv RpcNodeServer) {
+	s.RegisterService(&RpcNode_ServiceDesc, srv)
 }
 
 func _RpcNode_SendRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -230,7 +252,28 @@ func _RpcNode_GetChainMakerVersion_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-var _RpcNode_serviceDesc = grpc.ServiceDesc{
+func _RpcNode_CheckNewBlockChainConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckNewBlockChainConfigRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RpcNodeServer).CheckNewBlockChainConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.RpcNode/CheckNewBlockChainConfig",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RpcNodeServer).CheckNewBlockChainConfig(ctx, req.(*CheckNewBlockChainConfigRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// RpcNode_ServiceDesc is the grpc.ServiceDesc for RpcNode service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var RpcNode_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.RpcNode",
 	HandlerType: (*RpcNodeServer)(nil),
 	Methods: []grpc.MethodDesc{
@@ -249,6 +292,10 @@ var _RpcNode_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetChainMakerVersion",
 			Handler:    _RpcNode_GetChainMakerVersion_Handler,
+		},
+		{
+			MethodName: "CheckNewBlockChainConfig",
+			Handler:    _RpcNode_CheckNewBlockChainConfig_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
