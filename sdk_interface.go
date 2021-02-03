@@ -146,19 +146,13 @@ type SDKInterface interface {
 	GetLastConfigBlock(withRWSet bool) (*pb.BlockInfo, error)
 	// ```
 
-	// ### 2.6 查询节点已部署的所有合约信息
-	//    - 包括：合约名、合约版本、运行环境、交易ID
-	// ```go
-	GetContractInfo() (*pb.ContractInfo, error)
-	// ```
-
-	// ### 2.7 查询节点加入的链信息
+	// ### 2.6 查询节点加入的链信息
 	//    - 返回ChainId清单
 	// ```go
 	GetNodeChainList() (*pb.ChainList, error)
 	// ```
 
-	// ### 2.8 查询链信息
+	// ### 2.7 查询链信息
 	//   - 包括：当前链最新高度，链节点信息
 	// ```go
 	GetChainInfo() (*pb.ChainInfo, error)
@@ -511,5 +505,8 @@ type SDKInterface interface {
 	Stop() error
 	// ```
 
+	// ### 8.2 获取链版本
+	// ```go
 	GetChainMakerServerVersion() (string, error)
+	// ```
 }

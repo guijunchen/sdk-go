@@ -19,7 +19,6 @@ func TestSystemContract(t *testing.T) {
 	testSystemContractGetBlockByTxId(t, client, blockInfo.Block.Txs[0].Header.TxId)
 	testSystemContractGetLastConfigBlock(t, client)
 	testSystemContractGetChainInfo(t, client)
-	testSystemContractGetContractInfo(t, client)
 
 	systemChainClient, err := NewChainClient(
 		WithChainClientOrgId(orgId1),
@@ -74,12 +73,6 @@ func testSystemContractGetChainInfo(t *testing.T, client *ChainClient) *pb.Chain
 		require.Nil(t, err)
 	}
 	return chainInfo
-}
-
-func testSystemContractGetContractInfo(t *testing.T, client *ChainClient) *pb.ContractInfo {
-	contractInfo, err := client.GetContractInfo()
-	require.Nil(t, err)
-	return contractInfo
 }
 
 func testSystemContractGetNodeChainList(t *testing.T, client *ChainClient) *pb.ChainList {

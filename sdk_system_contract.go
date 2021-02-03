@@ -235,36 +235,6 @@ func (cc ChainClient) GetChainInfo() (*pb.ChainInfo, error) {
 	return chainInfo, nil
 }
 
-func (cc ChainClient) GetContractInfo() (*pb.ContractInfo, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		pb.QueryFunction_GET_CONTRACT_INFO.String())
-
-	payloadBytes, err := constructQueryPayload(
-		pb.ContractName_SYSTEM_CONTRACT_QUERY.String(),
-		pb.QueryFunction_GET_CONTRACT_INFO.String(),
-		[]*pb.KeyValuePair{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(pb.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	contractInfo := &pb.ContractInfo{}
-	if err = proto.Unmarshal(resp.ContractResult.Result, contractInfo); err != nil {
-		return nil, fmt.Errorf("unmarshal contract info payload failed, %s", err.Error())
-	}
-
-	return contractInfo, nil
-}
-
 func (cc ChainClient) GetNodeChainList() (*pb.ChainList, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		pb.QueryFunction_GET_NODE_CHAIN_LIST.String())
