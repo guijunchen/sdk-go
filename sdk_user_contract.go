@@ -32,14 +32,17 @@ func (cc ChainClient) CreateContractUpgradePayload(contractName, version, byteCo
 }
 
 func (cc ChainClient) CreateContractFreezePayload(contractName string) ([]byte, error) {
+	cc.logger.Debugf("[SDK] create [ContractFreeze] to be signed payload")
 	return cc.createContractOpPayload(contractName, pb.ManageUserContractFunction_FREEZE_CONTRACT.String())
 }
 
 func (cc ChainClient) CreateContractUnfreezePayload(contractName string) ([]byte, error) {
+	cc.logger.Debugf("[SDK] create [ContractUnfreeze] to be signed payload")
 	return cc.createContractOpPayload(contractName, pb.ManageUserContractFunction_UNFREEZE_CONTRACT.String())
 }
 
 func (cc ChainClient) CreateContractRevokePayload(contractName string) ([]byte, error) {
+	cc.logger.Debugf("[SDK] create [ContractRevoke] to be signed payload")
 	return cc.createContractOpPayload(contractName, pb.ManageUserContractFunction_REVOKE_CONTRACT.String())
 }
 
