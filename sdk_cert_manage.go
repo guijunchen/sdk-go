@@ -12,6 +12,10 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+const (
+	defaultSequence = 0
+)
+
 func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to INVOKE system contract, [contract:%s]/[method:%s]",
 		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERT_ADD.String())
@@ -22,7 +26,7 @@ func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
 	}
 
 	payloadBytes, err := constructSystemContractPayload("", pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(),
-		pb.CertManageFunction_CERT_ADD.String(), []*pb.KeyValuePair{}, 0)
+		pb.CertManageFunction_CERT_ADD.String(), []*pb.KeyValuePair{}, defaultSequence)
 	if err != nil {
 		return nil, fmt.Errorf("construct transact payload failed, %s", err.Error())
 	}
@@ -59,7 +63,7 @@ func (cc ChainClient) DeleteCert(certHashes []string) (*pb.TxResponse, error) {
 				Value: strings.Join(certHashes, ","),
 			},
 		},
-		0,
+		defaultSequence,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("marshal transact payload failed, %s", err.Error())
