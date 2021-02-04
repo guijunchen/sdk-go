@@ -12,7 +12,7 @@ import (
 )
 
 func TestInitConfig(t *testing.T) {
-	err := InitConfig("/home/jason/Work/ChainMaker/chainmaker-sdk-go/config_demo.yml")
+	err := InitConfig("./testdata/sdk_config.yml")
 	require.Nil(t, err)
 
 	json, err := prettyjson.Marshal(Config)
