@@ -12,10 +12,6 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-const (
-	defaultSequence = 0
-)
-
 func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to INVOKE system contract, [contract:%s]/[method:%s]",
 		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERT_ADD.String())
