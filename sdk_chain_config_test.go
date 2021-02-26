@@ -6,6 +6,7 @@ package chainmaker_sdk_go
 
 import (
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	"io/ioutil"
 	"math/rand"
 	"strconv"
@@ -14,10 +15,19 @@ import (
 
 	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/proto"
+)
+
+const (
+	testKey = "key001"
+	nodePeerId1 = "/ip4/127.0.0.1/tcp/1111/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
+	nodePeerId2 = "/ip4/127.0.0.1/tcp/2222/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
 )
 
 func TestChainConfig(t *testing.T) {
+	var (
+		chainConfig *pb.ChainConfig
+	)
+
 	client, err := createClient()
 	require.Nil(t, err)
 
@@ -36,7 +46,7 @@ func TestChainConfig(t *testing.T) {
 	txSchedulerValidateTimeout := rand.Intn(61)
 	testChainConfigCoreUpdate(t, client, admin1, admin2, admin3, admin4, txSchedulerTimeout, txSchedulerValidateTimeout)
 	time.Sleep(5 * time.Second)
-	chainConfig := testGetChainConfig(t, client)
+	chainConfig = testGetChainConfig(t, client)
 	fmt.Printf("txSchedulerTimeout: %d, txSchedulerValidateTimeout: %d\n", txSchedulerTimeout, txSchedulerValidateTimeout)
 	fmt.Printf("chainConfig txSchedulerTimeout: %d, txSchedulerValidateTimeout: %d\n",
 		chainConfig.Core.TxSchedulerTimeout, chainConfig.Core.TxSchedulerValidateTimeout)
@@ -65,7 +75,7 @@ func TestChainConfig(t *testing.T) {
 	trustCount := len(testGetChainConfig(t, client).TrustRoots)
 	raw, err := ioutil.ReadFile("testdata/crypto-config/wx-org5.chainmaker.org/ca/ca.crt")
 	require.Nil(t, err)
-	trustRootOrgId := "wx-org5.chainmaker.org"
+	trustRootOrgId := orgId5
 	trustRootCrt := string(raw)
 	testChainConfigTrustRootAdd(t, client, admin1, admin2, admin3, admin4, trustRootOrgId, trustRootCrt)
 	time.Sleep(2 * time.Second)
@@ -79,7 +89,7 @@ func TestChainConfig(t *testing.T) {
 	require.Nil(t, err)
 	raw, err = ioutil.ReadFile("testdata/crypto-config/wx-org6.chainmaker.org/ca/ca.crt")
 	require.Nil(t, err)
-	trustRootOrgId = "wx-org5.chainmaker.org"
+	trustRootOrgId = orgId5
 	trustRootCrt = string(raw)
 	testChainConfigTrustRootUpdate(t, client, admin1, admin2, admin3, admin5, trustRootOrgId, trustRootCrt)
 	time.Sleep(2 * time.Second)
@@ -89,7 +99,7 @@ func TestChainConfig(t *testing.T) {
 	require.Equal(t, trustRootCrt, chainConfig.TrustRoots[trustCount].Root)
 
 	// 5) [TrustRootDelete]
-	trustRootOrgId = "wx-org5.chainmaker.org"
+	trustRootOrgId = orgId5
 	trustRootCrt = string(raw)
 	testChainConfigTrustRootDelete(t, client, admin1, admin2, admin3, admin5, trustRootOrgId)
 	time.Sleep(2 * time.Second)
@@ -97,7 +107,7 @@ func TestChainConfig(t *testing.T) {
 	require.Equal(t, trustCount, len(chainConfig.TrustRoots))
 
 	// 6) [PermissionAdd]
-	permissionCount := len(testGetChainConfig(t, client).Permissions)
+	permissionCount := len(testGetChainConfig(t, client).ResourcePolicies)
 	permissionResourceName := "TEST_PREMISSION"
 	principle := &pb.Principle{
 		Rule: "ANY",
@@ -105,8 +115,8 @@ func TestChainConfig(t *testing.T) {
 	testChainConfigPermissionAdd(t, client, admin1, admin2, admin3, admin4, permissionResourceName, principle)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, permissionCount+1, len(chainConfig.Permissions))
-	require.Equal(t, true, proto.Equal(principle, chainConfig.Permissions[permissionCount].Principle))
+	require.Equal(t, permissionCount+1, len(chainConfig.ResourcePolicies))
+	require.Equal(t, true, proto.Equal(principle, chainConfig.ResourcePolicies[permissionCount].Policy))
 
 	// 7) [PermissionUpdate]
 	permissionResourceName = "TEST_PREMISSION"
@@ -116,18 +126,18 @@ func TestChainConfig(t *testing.T) {
 	testChainConfigPermissionUpdate(t, client, admin1, admin2, admin3, admin4, permissionResourceName, principle)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, permissionCount+1, len(chainConfig.Permissions))
-	require.Equal(t, true, proto.Equal(principle, chainConfig.Permissions[permissionCount].Principle))
+	require.Equal(t, permissionCount+1, len(chainConfig.ResourcePolicies))
+	require.Equal(t, true, proto.Equal(principle, chainConfig.ResourcePolicies[permissionCount].Policy))
 
 	// 8) [PermissionDelete]
 	testChainConfigPermissionDelete(t, client, admin1, admin2, admin3, admin4, permissionResourceName)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
-	require.Equal(t, permissionCount, len(chainConfig.Permissions))
+	require.Equal(t, permissionCount, len(chainConfig.ResourcePolicies))
 
 	// 9) [ConsensusNodeAddrAdd]
-	nodeOrgId := "wx-org4.chainmaker.org"
-	nodeAddresses := []string{"/ip4/127.0.0.1/tcp/1111/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"}
+	nodeOrgId := orgId4
+	nodeAddresses := []string{nodePeerId1}
 	testChainConfigConsensusNodeAddrAdd(t, client, admin1, admin2, admin3, admin4, nodeOrgId, nodeAddresses)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
@@ -136,9 +146,9 @@ func TestChainConfig(t *testing.T) {
 	require.Equal(t, nodeAddresses[0], chainConfig.Consensus.Nodes[3].Address[1])
 
 	// 10) [ConsensusNodeAddrUpdate]
-	nodeOrgId = "wx-org4.chainmaker.org"
-	nodeOldAddress := "/ip4/127.0.0.1/tcp/1111/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
-	nodeNewAddress := "/ip4/127.0.0.1/tcp/2222/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
+	nodeOrgId = orgId4
+	nodeOldAddress := nodePeerId1
+	nodeNewAddress := nodePeerId2
 	testChainConfigConsensusNodeAddrUpdate(t, client, admin1, admin2, admin3, admin4, nodeOrgId, nodeOldAddress, nodeNewAddress)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
@@ -147,7 +157,7 @@ func TestChainConfig(t *testing.T) {
 	require.Equal(t, nodeNewAddress, chainConfig.Consensus.Nodes[3].Address[1])
 
 	// 11) [ConsensusNodeAddrDelete]
-	nodeOrgId = "wx-org4.chainmaker.org"
+	nodeOrgId = orgId4
 	testChainConfigConsensusNodeAddrDelete(t, client, admin1, admin2, admin3, admin4, nodeOrgId, nodeNewAddress)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
@@ -157,7 +167,7 @@ func TestChainConfig(t *testing.T) {
 	// 12) [ConsensusNodeOrgAdd]
 	raw, err = ioutil.ReadFile("testdata/crypto-config/wx-org5.chainmaker.org/ca/ca.crt")
 	require.Nil(t, err)
-	trustRootOrgId = "wx-org5.chainmaker.org"
+	trustRootOrgId = orgId5
 	trustRootCrt = string(raw)
 	testChainConfigTrustRootAdd(t, client, admin1, admin2, admin3, admin4, trustRootOrgId, trustRootCrt)
 	time.Sleep(2 * time.Second)
@@ -165,8 +175,8 @@ func TestChainConfig(t *testing.T) {
 	require.Equal(t, 5, len(chainConfig.TrustRoots))
 	require.Equal(t, trustRootOrgId, chainConfig.TrustRoots[4].OrgId)
 	require.Equal(t, trustRootCrt, chainConfig.TrustRoots[4].Root)
-	nodeOrgId = "wx-org5.chainmaker.org"
-	nodeAddresses = []string{"/ip4/127.0.0.1/tcp/1111/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"}
+	nodeOrgId = orgId5
+	nodeAddresses = []string{nodePeerId1}
 	testChainConfigConsensusNodeOrgAdd(t, client, admin1, admin2, admin3, admin4, nodeOrgId, nodeAddresses)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
@@ -176,8 +186,8 @@ func TestChainConfig(t *testing.T) {
 	require.Equal(t, nodeAddresses[0], chainConfig.Consensus.Nodes[4].Address[0])
 
 	// 13) [ConsensusNodeOrgUpdate]
-	nodeOrgId = "wx-org5.chainmaker.org"
-	nodeAddresses = []string{"/ip4/127.0.0.1/tcp/2222/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"}
+	nodeOrgId = orgId5
+	nodeAddresses = []string{nodePeerId2}
 	testChainConfigConsensusNodeOrgUpdate(t, client, admin1, admin2, admin3, admin4, nodeOrgId, nodeAddresses)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
@@ -187,7 +197,7 @@ func TestChainConfig(t *testing.T) {
 	require.Equal(t, nodeAddresses[0], chainConfig.Consensus.Nodes[4].Address[0])
 
 	// 14) [ConsensusNodeOrgDelete]
-	nodeOrgId = "wx-org5.chainmaker.org"
+	nodeOrgId = orgId5
 	testChainConfigConsensusNodeOrgDelete(t, client, admin1, admin2, admin3, admin4, nodeOrgId)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
@@ -196,7 +206,7 @@ func TestChainConfig(t *testing.T) {
 	// 15) [ConsensusExtAdd]
 	kvs := []*pb.KeyValuePair{
 		{
-			Key:   "test_key",
+			Key:   testKey,
 			Value: "test_value",
 		},
 	}
@@ -209,7 +219,7 @@ func TestChainConfig(t *testing.T) {
 	// 16) [ConsensusExtUpdate]
 	kvs = []*pb.KeyValuePair{
 		{
-			Key:   "test_key",
+			Key:   testKey,
 			Value: "updated_value",
 		},
 	}
@@ -220,7 +230,7 @@ func TestChainConfig(t *testing.T) {
 	require.Equal(t, true, proto.Equal(kvs[0], chainConfig.Consensus.ExtConfig[1]))
 
 	// 16) [ConsensusExtDelete]
-	keys := []string{"test_key"}
+	keys := []string{testKey}
 	testChainConfigConsensusExtDelete(t, client, admin1, admin2, admin3, admin4, keys)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)

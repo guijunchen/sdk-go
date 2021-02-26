@@ -20,6 +20,11 @@ import (
 	"time"
 )
 
+const (
+	errStringFormat = "%s failed, %s"
+	sdkErrStringFormat = "[SDK] %s"
+)
+
 var _ SDKInterface = (*ChainClient)(nil)
 
 type ChainClient struct {
@@ -86,7 +91,7 @@ func (cc *ChainClient) EnableCertHash() error {
 		cc.userCrtHash, err = cc.GetCertHash()
 		if err != nil {
 			errMsg := fmt.Sprintf("get cert hash failed, %s", err.Error())
-			cc.logger.Errorf("[SDK] %s", errMsg)
+			cc.logger.Errorf(sdkErrStringFormat, errMsg)
 			return errors.New(errMsg)
 		}
 	}
@@ -95,7 +100,7 @@ func (cc *ChainClient) EnableCertHash() error {
 	ok, err := cc.getCheckCertHash()
 	if err != nil {
 		errMsg := fmt.Sprintf("enable cert hash, get and check cert hash failed, %s", err.Error())
-		cc.logger.Errorf("[SDK] %s", errMsg)
+		cc.logger.Errorf(sdkErrStringFormat, errMsg)
 		return errors.New(errMsg)
 	}
 
@@ -109,13 +114,13 @@ func (cc *ChainClient) EnableCertHash() error {
 	resp, err := cc.AddCert()
 	if err != nil {
 		errMsg := fmt.Sprintf("enable cert hash AddCert failed, %s", err.Error())
-		cc.logger.Errorf("[SDK] %s", errMsg)
+		cc.logger.Errorf(sdkErrStringFormat, errMsg)
 		return errors.New(errMsg)
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
 		errMsg := fmt.Sprintf("enable cert hash AddCert got invalid resp, %s", err.Error())
-		cc.logger.Errorf("[SDK] %s", errMsg)
+		cc.logger.Errorf(sdkErrStringFormat, errMsg)
 		return errors.New(errMsg)
 	}
 
@@ -123,7 +128,7 @@ func (cc *ChainClient) EnableCertHash() error {
 	err = cc.checkUserCertOnChain()
 	if err != nil {
 		errMsg := fmt.Sprintf("check user cert on chain failed, %s", err.Error())
-		cc.logger.Errorf("[SDK] %s", errMsg)
+		cc.logger.Errorf(sdkErrStringFormat, errMsg)
 		return errors.New(errMsg)
 	}
 
@@ -143,13 +148,13 @@ func (cc ChainClient) checkUserCertOnChain() error {
 		ok, err := cc.getCheckCertHash()
 		if err != nil {
 			errMsg := fmt.Sprintf("check user cert on chain, get and check cert hash failed, %s", err.Error())
-			cc.logger.Errorf("[SDK] %s", errMsg)
+			cc.logger.Errorf(sdkErrStringFormat, errMsg)
 			return errors.New(errMsg)
 		}
 
 		if !ok {
 			errMsg := fmt.Sprintf("user cert havenot on chain yet, and try again")
-			cc.logger.Debugf("[SDK] %s", errMsg)
+			cc.logger.Debugf(sdkErrStringFormat, errMsg)
 			return errors.New(errMsg)
 		}
 
@@ -157,7 +162,7 @@ func (cc ChainClient) checkUserCertOnChain() error {
 	}, strategy.Limit(10), strategy.Wait(time.Second),
 	); err != nil {
 		errMsg := fmt.Sprintf("check user upload cert on chain failed, try again later, %s", err.Error())
-		cc.logger.Errorf("[SDK] %s", errMsg)
+		cc.logger.Errorf(sdkErrStringFormat, errMsg)
 		return errors.New(errMsg)
 	}
 
@@ -169,7 +174,7 @@ func (cc ChainClient) getCheckCertHash() (bool, error) {
 	certInfo, err := cc.QueryCert([]string{hex.EncodeToString(cc.userCrtHash)})
 	if err != nil {
 		errMsg := fmt.Sprintf("QueryCert failed, %s", err.Error())
-		cc.logger.Errorf("[SDK] %s", errMsg)
+		cc.logger.Errorf(sdkErrStringFormat, errMsg)
 		return false, errors.New(errMsg)
 	}
 
@@ -180,7 +185,7 @@ func (cc ChainClient) getCheckCertHash() (bool, error) {
 	// 返回链上证书列表长度不为1，即报错
 	if len(certInfo.CertInfos) > 1 {
 		errMsg := fmt.Sprintf("CertInfos != 1")
-		cc.logger.Errorf("[SDK] %s", errMsg)
+		cc.logger.Errorf(sdkErrStringFormat, errMsg)
 		return false, errors.New(errMsg)
 	}
 
@@ -190,7 +195,7 @@ func (cc ChainClient) getCheckCertHash() (bool, error) {
 		if hex.EncodeToString(cc.userCrtHash) != certInfo.CertInfos[0].Hash {
 			errMsg := fmt.Sprintf("not equal certHash, [expected:%s]/[actual:%s]",
 				cc.userCrtHash, certInfo.CertInfos[0].Hash)
-			cc.logger.Errorf("[SDK] %s", errMsg)
+			cc.logger.Errorf(sdkErrStringFormat, errMsg)
 			return false, errors.New(errMsg)
 		}
 
@@ -313,7 +318,7 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 					errMsg = fmt.Sprintf("call [%s] meet network error, try to connect another node if has, %s",
 						client.nodeAddr, err.Error())
 
-					cc.logger.Errorf("[SDK] %s", errMsg)
+					cc.logger.Errorf(sdkErrStringFormat, errMsg)
 					ignoreAddrs[client.nodeAddr] = struct{}{}
 					continue
 				}
@@ -323,7 +328,7 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 
 			resp.Code = pb.TxStatusCode_INTERNAL_ERROR
 			errMsg = fmt.Sprintf("client.call failed, %+v", err)
-			cc.logger.Errorf("[SDK] %s", errMsg)
+			cc.logger.Errorf(sdkErrStringFormat, errMsg)
 			return resp, fmt.Errorf(errMsg)
 		}
 

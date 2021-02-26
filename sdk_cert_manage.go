@@ -13,7 +13,7 @@ import (
 )
 
 func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
-	cc.logger.Infof("[SDK] begin to INVOKE system contract, [contract:%s]/[method:%s]",
+	cc.logger.Infof("[SDK] begin to add cert, [contract:%s]/[method:%s]",
 		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERT_ADD.String())
 
 	certHash, err := cc.GetCertHash()
@@ -29,11 +29,11 @@ func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
 
 	resp, err := cc.proposalRequest(pb.TxType_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
 	if err != nil {
-		return resp, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
+		return resp, fmt.Errorf(errStringFormat, pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err = checkProposalRequestResp(resp, false); err != nil {
-		return nil, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	resp.ContractResult = &pb.ContractResult{
@@ -46,7 +46,7 @@ func (cc ChainClient) AddCert() (*pb.TxResponse, error) {
 }
 
 func (cc ChainClient) DeleteCert(certHashes []string) (*pb.TxResponse, error) {
-	cc.logger.Infof("[SDK] begin to INVOKE system contract, [contract:%s]/[method:%s]",
+	cc.logger.Infof("[SDK] begin to delete cert, [contract:%s]/[method:%s]",
 		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERTS_DELETE.String())
 
 	payloadBytes, err := constructSystemContractPayload(
@@ -67,11 +67,11 @@ func (cc ChainClient) DeleteCert(certHashes []string) (*pb.TxResponse, error) {
 
 	resp, err := cc.proposalRequest(pb.TxType_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
 	if err != nil {
-		return resp, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
+		return resp, fmt.Errorf(errStringFormat, pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err = checkProposalRequestResp(resp, false); err != nil {
-		return nil, fmt.Errorf("%s failed, %s", pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, pb.TxType_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	resp.ContractResult = &pb.ContractResult{
@@ -83,7 +83,7 @@ func (cc ChainClient) DeleteCert(certHashes []string) (*pb.TxResponse, error) {
 }
 
 func (cc ChainClient) QueryCert(certHashes []string) (*pb.CertInfos, error) {
-	cc.logger.Infof("[SDK] begin to INVOKE system contract, [contract:%s]/[method:%s]",
+	cc.logger.Infof("[SDK] begin to query cert, [contract:%s]/[method:%s]",
 		pb.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), pb.CertManageFunction_CERTS_QUERY.String())
 
 	payloadBytes, err := constructQueryPayload(
@@ -102,11 +102,11 @@ func (cc ChainClient) QueryCert(certHashes []string) (*pb.CertInfos, error) {
 
 	resp, err := cc.proposalRequest(pb.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf("%s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	certInfos := &pb.CertInfos{}
@@ -164,7 +164,7 @@ func (cc ChainClient) CreateCertManageFrozenPayload(certs []string) ([]byte, err
 		},
 	}
 
-	return cc.CreateCertManagePayload(pb.CertManageFunction_CERTS_FROZEN.String(), pairs)
+	return cc.CreateCertManagePayload(pb.CertManageFunction_CERTS_FREEZE.String(), pairs)
 }
 
 func (cc ChainClient) CreateCertManageUnfrozenPayload(certs []string) ([]byte, error) {
@@ -175,7 +175,7 @@ func (cc ChainClient) CreateCertManageUnfrozenPayload(certs []string) ([]byte, e
 		},
 	}
 
-	return cc.CreateCertManagePayload(pb.CertManageFunction_CERTS_UNFROZEN.String(), pairs)
+	return cc.CreateCertManagePayload(pb.CertManageFunction_CERTS_UNFREEZE.String(), pairs)
 }
 
 func (cc ChainClient) CreateCertManageRevocationPayload(certCrl string) ([]byte, error) {
@@ -186,7 +186,7 @@ func (cc ChainClient) CreateCertManageRevocationPayload(certCrl string) ([]byte,
 		},
 	}
 
-	return cc.CreateCertManagePayload(pb.CertManageFunction_CERTS_REVOCATION.String(), pairs)
+	return cc.CreateCertManagePayload(pb.CertManageFunction_CERTS_REVOKE.String(), pairs)
 }
 
 func (cc ChainClient) SignCertManagePayload(payloadBytes []byte) ([]byte, error) {

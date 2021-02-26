@@ -37,19 +37,19 @@ func TestUserContractCounterGo(t *testing.T) {
 	testUserContractCounterGoInvoke(t, client, "increase", nil, false)
 	time.Sleep(5 * time.Second)
 
-	fmt.Println("====================== 执行合约查询接口 ======================")
+	fmt.Println("====================== 执行合约查询接口1 ======================")
 	testUserContractCounterGoQuery(t, client, "query", nil)
 
 	fmt.Println("====================== 冻结合约 ======================")
 	testUserContractCounterGoFreeze(t, client, admin1, admin2, admin3, admin4, false)
 	time.Sleep(5 * time.Second)
-	fmt.Println("====================== 执行合约查询接口 ======================")
+	fmt.Println("====================== 执行合约查询接口2 ======================")
 	testUserContractCounterGoQuery(t, client, "query", nil)
 
 	fmt.Println("====================== 解冻合约 ======================")
 	testUserContractCounterGoUnfreeze(t, client, admin1, admin2, admin3, admin4, false)
 	time.Sleep(5 * time.Second)
-	fmt.Println("====================== 执行合约查询接口 ======================")
+	fmt.Println("====================== 执行合约查询接口3 ======================")
 	testUserContractCounterGoQuery(t, client, "query", nil)
 
 	//fmt.Println("====================== 吊销合约 ======================")
@@ -185,7 +185,7 @@ func testUserContractCounterGoUnfreeze(t *testing.T, client *ChainClient,
 
 	// 发送创建合约请求
 	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
-	fmt.Printf("resp: %+v\n", resp)
+	fmt.Printf("unfreeze resp: %+v\n", resp)
 	require.Nil(t, err)
 
 	err = checkProposalRequestResp(resp, true)
@@ -220,13 +220,13 @@ func testUserContractCounterGoRevoke(t *testing.T, client *ChainClient,
 
 	// 发送创建合约请求
 	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
-	fmt.Printf("resp: %+v\n", resp)
+	fmt.Printf("revoke resp: %+v\n", resp)
 	require.Nil(t, err)
 
 	err = checkProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
-	fmt.Printf("Unfreeze counter-go contract resp: %+v\n", resp)
+	fmt.Printf("revoke counter-go contract resp: %+v\n", resp)
 }
 
 func testUserContractCounterGoInvoke(t *testing.T, client *ChainClient,

@@ -12,6 +12,10 @@ import (
 	"testing"
 )
 
+const (
+	queryAddr = "query_address"
+)
+
 var (
 	assetContractName = "asset001"
 	assetVersion = "1.0.0"
@@ -26,9 +30,9 @@ func TestUserContractAssetBalanceOf(t *testing.T) {
 	require.Nil(t, err)
 
 	fmt.Println("====================== 1)查询钱包地址 ======================")
-	addr1 := testUserContractAssetQuery(t, client, "query_address", nil)
+	addr1 := testUserContractAssetQuery(t, client, queryAddr, nil)
 	fmt.Printf("client1 address: %s\n", addr1)
-	addr2 := testUserContractAssetQuery(t, client2, "query_address", nil)
+	addr2 := testUserContractAssetQuery(t, client2, queryAddr, nil)
 	fmt.Printf("client2 address: %s\n", addr2)
 
 	fmt.Println("====================== 2)查询钱包余额 ======================")
@@ -69,9 +73,9 @@ func TestUserContractAsset(t *testing.T) {
 	testUserContractAssetInvokeRegister(t, client2, "register", true)
 
 	fmt.Println("====================== 3)查询钱包地址 ======================")
-	addr1 := testUserContractAssetQuery(t, client, "query_address", nil)
+	addr1 := testUserContractAssetQuery(t, client, queryAddr, nil)
 	fmt.Printf("client1 address: %s\n", addr1)
-	addr2 := testUserContractAssetQuery(t, client2, "query_address", nil)
+	addr2 := testUserContractAssetQuery(t, client2, queryAddr, nil)
 	fmt.Printf("client2 address: %s\n", addr2)
 
 	fmt.Println("====================== 4)给用户分别发币100000 ======================")

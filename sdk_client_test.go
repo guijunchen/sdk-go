@@ -32,14 +32,16 @@ const (
 
 	byteCodePath        = "./testdata/counter-go-demo/counter-rust-0.7.2.wasm"
 	upgradeByteCodePath = "./testdata/counter-go-demo/counter-go-upgrade.wasm"
+
+	certPathFormat = "/crypto-config/%s/ca"
 )
 
 var (
 	caPaths     = []string{
-		certPathPrefix + fmt.Sprintf("/crypto-config/%s/ca", orgId1),
-		certPathPrefix + fmt.Sprintf("/crypto-config/%s/ca", orgId2),
-		certPathPrefix + fmt.Sprintf("/crypto-config/%s/ca", orgId3),
-		certPathPrefix + fmt.Sprintf("/crypto-config/%s/ca", orgId4),
+		certPathPrefix + fmt.Sprintf(certPathFormat, orgId1),
+		certPathPrefix + fmt.Sprintf(certPathFormat, orgId2),
+		certPathPrefix + fmt.Sprintf(certPathFormat, orgId3),
+		certPathPrefix + fmt.Sprintf(certPathFormat, orgId4),
 	}
 
 	userKeyPath = certPathPrefix + "/crypto-config/%s/user/client1/client1.tls.key"

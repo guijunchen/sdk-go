@@ -171,7 +171,7 @@ func (cc ChainClient) createMultiSignVotePayload(voteStatus pb.VoteStatus, multi
 	payload, err := constructSystemContractPayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_MULT_SIGN.String(),
 		pb.MultSignFunction_VOTE.String(), pairs, defaultSequence)
 	if err != nil {
-		return nil, fmt.Errorf("constructSystemContractPayload failed, %s", err.Error())
+		return nil, fmt.Errorf("createMultiSignVotePayload failed, %s", err.Error())
 	}
 
 	return payload, nil
@@ -194,7 +194,7 @@ func (cc ChainClient) createQueryMultiSignResultPayload(multiSignReqTxId, payloa
 	payload, err := constructSystemContractPayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_MULT_SIGN.String(),
 		pb.MultSignFunction_VOTE.String(), pairs, defaultSequence)
 	if err != nil {
-		return nil, fmt.Errorf("constructSystemContractPayload failed, %s", err.Error())
+		return nil, fmt.Errorf("createQueryMultiSignResultPayload failed, %s", err.Error())
 	}
 
 	return payload, nil

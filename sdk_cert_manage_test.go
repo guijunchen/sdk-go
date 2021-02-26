@@ -124,7 +124,7 @@ func testCertManageUnfrozen(t *testing.T, client1, admin1 *ChainClient, certs []
 
 	result = string(resp.ContractResult.Result)
 
-	fmt.Printf("resp: %+v, result:%+s\n", resp, result)
+	fmt.Printf("unfrozen resp: %+v, result:%+s\n", resp, result)
 }
 
 func testCertManageRevoke(t *testing.T, client1, admin1 *ChainClient, certCrl string) {
@@ -147,7 +147,7 @@ func testCertManageRevoke(t *testing.T, client1, admin1 *ChainClient, certCrl st
 
 	result = string(resp.ContractResult.Result)
 
-	fmt.Printf("resp: %+v, result:%+s\n", resp, result)
+	fmt.Printf("revoke resp: %+v, result:%+s\n", resp, result)
 }
 
 func testCertAdd(t *testing.T, client *ChainClient) string {
