@@ -17,22 +17,22 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - contractName: 合约名
 	//   - version: 版本号
-	//   - byteCodePath: 合约路径
+	//   - byteCode: 支持传入合约二进制文件路径或Base64编码的二进制内容
 	//   - runtime: 合约运行环境
 	//   - kvs: 合约初始化参数
 	// ```go
-	CreateContractCreatePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
+	CreateContractCreatePayload(contractName, version, byteCode string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
 	// ```
 
 	// ### 1.2 升级合约待签名payload生成
 	// **参数说明**
 	//   - contractName: 合约名
 	//   - version: 版本号
-	//   - byteCodePath: 合约路径
+	//   - byteCode: 支持传入合约二进制文件路径或Base64编码的二进制内容
 	//   - runtime: 合约运行环境
 	//   - kvs: 合约升级参数
 	// ```go
-	CreateContractUpgradePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
+	CreateContractUpgradePayload(contractName, version, byteCode string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
 	// ```
 
 	// ### 1.3 冻结合约payload生成

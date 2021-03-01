@@ -11,6 +11,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
@@ -369,4 +370,15 @@ func BytesToInt(bys []byte, order binary.ByteOrder) (int32, error) {
 	}
 
 	return data, nil
+}
+
+func Exists(path string) bool {
+	_, err := os.Stat(path)
+	if err != nil {
+		if os.IsExist(err) {
+			return true
+		}
+		return false
+	}
+	return true
 }

@@ -5,6 +5,7 @@
 package chainmaker_sdk_go
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/backoff"
@@ -21,14 +22,14 @@ const (
 	retryCnt = 10
 )
 
-func (cc ChainClient) CreateContractCreatePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
+func (cc ChainClient) CreateContractCreatePayload(contractName, version, byteCode string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [ContractCreate] to be signed payload")
-	return cc.createContractManagePayload(contractName, pb.ManageUserContractFunction_INIT_CONTRACT.String(), version, byteCodePath, runtime, kvs)
+	return cc.createContractManagePayload(contractName, pb.ManageUserContractFunction_INIT_CONTRACT.String(), version, byteCode, runtime, kvs)
 }
 
-func (cc ChainClient) CreateContractUpgradePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
+func (cc ChainClient) CreateContractUpgradePayload(contractName, version, byteCode string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [ContractUpgrade] to be signed payload")
-	return cc.createContractManagePayload(contractName, pb.ManageUserContractFunction_UPGRADE_CONTRACT.String(), version, byteCodePath, runtime, kvs)
+	return cc.createContractManagePayload(contractName, pb.ManageUserContractFunction_UPGRADE_CONTRACT.String(), version, byteCode, runtime, kvs)
 }
 
 func (cc ChainClient) CreateContractFreezePayload(contractName string) ([]byte, error) {
@@ -46,12 +47,24 @@ func (cc ChainClient) CreateContractRevokePayload(contractName string) ([]byte, 
 	return cc.createContractOpPayload(contractName, pb.ManageUserContractFunction_REVOKE_CONTRACT.String())
 }
 
-func (cc ChainClient) createContractManagePayload(contractName, method, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
+func (cc ChainClient) createContractManagePayload(contractName, method, version, byteCode string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error) {
+	var (
+		err error
+		codeBytes []byte
+	)
 	cc.logger.Debugf("[SDK] create [ContractManage] to be signed payload")
 
-	codeBytes, err := ioutil.ReadFile(byteCodePath)
-	if err != nil {
-		return nil, fmt.Errorf("Read from file %s error: %s", byteCodePath, err)
+	exists := Exists(byteCode)
+	if exists {
+		codeBytes, err = ioutil.ReadFile(byteCode)
+		if err != nil {
+			return nil, fmt.Errorf("read from byteCode file %s failed, %s", byteCode, err)
+		}
+	} else {
+		codeBytes, err = base64.StdEncoding.DecodeString(byteCode)
+		if err != nil {
+			return nil, fmt.Errorf("base64 decode byteCode failed, %s", err)
+		}
 	}
 
 	payload := &pb.ContractMgmtPayload{
