@@ -94,7 +94,7 @@ func (pool *ConnectionPool) getClient() (*networkClient, error) {
 func (pool *ConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]struct{}) (*networkClient, error) {
 	var nc *networkClient
 
-	if err := retry.Retry(func(uint) error {
+	err := retry.Retry(func(uint) error {
 		for _, cli := range pool.connections {
 
 			if ignoreAddrs != nil {
@@ -126,7 +126,9 @@ func (pool *ConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]stru
 
 		return fmt.Errorf("all client connections are busy")
 
-	}, strategy.Wait(retryInterval * time.Millisecond), strategy.Limit(retryLimit)); err != nil {
+	}, strategy.Wait(retryInterval * time.Millisecond), strategy.Limit(retryLimit))
+
+	if err != nil {
 		return nil, err
 	}
 

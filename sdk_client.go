@@ -144,7 +144,7 @@ func (cc ChainClient) DisableCertHash() error {
 
 // 检查证书是否成功上链
 func (cc ChainClient) checkUserCertOnChain() error {
-	if err := retry.Retry(func(uint) error {
+	err := retry.Retry(func(uint) error {
 		ok, err := cc.getCheckCertHash()
 		if err != nil {
 			errMsg := fmt.Sprintf("check user cert on chain, get and check cert hash failed, %s", err.Error())
@@ -159,8 +159,9 @@ func (cc ChainClient) checkUserCertOnChain() error {
 		}
 
 		return nil
-	}, strategy.Limit(10), strategy.Wait(time.Second),
-	); err != nil {
+	}, strategy.Limit(10), strategy.Wait(time.Second))
+
+	if err != nil {
 		errMsg := fmt.Sprintf("check user upload cert on chain failed, try again later, %s", err.Error())
 		cc.logger.Errorf(sdkErrStringFormat, errMsg)
 		return errors.New(errMsg)

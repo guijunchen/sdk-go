@@ -226,16 +226,7 @@ func generateConfig(opts ...ChainClientOption) (*ChainClientConfig, error) {
 	return config, nil
 }
 
-func readConfigFile(config *ChainClientConfig) error {
-	// 若没有配置配置文件
-	if config.confPath == "" {
-		return nil
-	}
-
-	if err := InitConfig(config.confPath); err != nil {
-		return fmt.Errorf("init config failed, %s", err.Error())
-	}
-
+func setChainConfig(config *ChainClientConfig) {
 	if Config.ChainClientConfig.ChainId != "" && config.chainId == "" {
 		config.chainId = Config.ChainClientConfig.ChainId
 	}
@@ -243,7 +234,9 @@ func readConfigFile(config *ChainClientConfig) error {
 	if Config.ChainClientConfig.OrgId != "" && config.orgId == "" {
 		config.orgId = Config.ChainClientConfig.OrgId
 	}
+}
 
+func setUserConfig(config *ChainClientConfig) {
 	if Config.ChainClientConfig.UserKeyFilePath != "" && config.userKeyFilePath == "" {
 		config.userKeyFilePath = Config.ChainClientConfig.UserKeyFilePath
 	}
@@ -259,7 +252,9 @@ func readConfigFile(config *ChainClientConfig) error {
 	if Config.ChainClientConfig.UserSignCrtFilePath != "" && config.userSignCrtFilePath == "" {
 		config.userSignCrtFilePath = Config.ChainClientConfig.UserSignCrtFilePath
 	}
+}
 
+func setKMSConfig(config *ChainClientConfig) {
 	if config.kmsConfig == nil {
 		config.kmsConfig = NewKmsConfig(
 			Config.ChainClientConfig.KmsConfig.Enable,
@@ -269,7 +264,9 @@ func readConfigFile(config *ChainClientConfig) error {
 			WithServerRegion(Config.ChainClientConfig.KmsConfig.ServerRegion),
 		)
 	}
+}
 
+func setNodeList(config *ChainClientConfig) {
 	if len(Config.ChainClientConfig.NodesConfig) > 0 && len(config.nodeList) == 0 {
 		for _, conf := range Config.ChainClientConfig.NodesConfig {
 			node := NewNodeConfig(
@@ -288,13 +285,37 @@ func readConfigFile(config *ChainClientConfig) error {
 			config.nodeList = append(config.nodeList, node)
 		}
 	}
+}
+
+func readConfigFile(config *ChainClientConfig) error {
+	// 若没有配置配置文件
+	if config.confPath == "" {
+		return nil
+	}
+
+	if err := InitConfig(config.confPath); err != nil {
+		return fmt.Errorf("init config failed, %s", err.Error())
+	}
+
+	setChainConfig(config)
+
+	setUserConfig(config)
+
+	setKMSConfig(config)
+
+	setNodeList(config)
 
 	return nil
 }
 
 // SDK配置校验
 func checkConfig(config *ChainClientConfig) error {
-	if err := readConfigFile(config); err != nil {
+
+	var (
+		err error
+	)
+
+	if err = readConfigFile(config); err != nil {
 		return fmt.Errorf("read sdk config file failed, %s", err.Error())
 	}
 
@@ -303,6 +324,26 @@ func checkConfig(config *ChainClientConfig) error {
 		config.logger = getDefaultLogger()
 	}
 
+	if err = checkNodeListConfig(config); err != nil {
+		return err
+	}
+
+	if err = checkUserConfig(config); err != nil {
+		return err
+	}
+
+	if err = checkChainConfig(config); err != nil {
+		return err
+	}
+
+	if err = checkKMSConfig(config); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func checkNodeListConfig(config *ChainClientConfig) error {
 	// 连接的节点地址不可为空
 	if len(config.nodeList) == 0 {
 		return fmt.Errorf("connect chainmaker node address is empty")
@@ -328,6 +369,10 @@ func checkConfig(config *ChainClientConfig) error {
 		}
 	}
 
+	return nil
+}
+
+func checkUserConfig(config *ChainClientConfig) error {
 	// 用户私钥不可为空
 	if config.userKeyFilePath == "" {
 		return fmt.Errorf("user key file path cannot be empty")
@@ -338,6 +383,10 @@ func checkConfig(config *ChainClientConfig) error {
 		return fmt.Errorf("user crt file path cannot be empty")
 	}
 
+	return nil
+}
+
+func checkChainConfig(config *ChainClientConfig) error {
 	// OrgId不可为空
 	if config.orgId == "" {
 		return fmt.Errorf("orgId cannot be empty")
@@ -348,6 +397,10 @@ func checkConfig(config *ChainClientConfig) error {
 		return fmt.Errorf("chainId cannot be empty")
 	}
 
+	return nil
+}
+
+func checkKMSConfig(config *ChainClientConfig) error {
 	// kms config check
 	if config.kmsConfig != nil && config.kmsConfig.enable {
 		if config.userSignKeyFilePath == "" {
@@ -376,26 +429,59 @@ func checkConfig(config *ChainClientConfig) error {
 func dealConfig(config *ChainClientConfig) error {
 	var err error
 
+	if err = dealUserCrtConfig(config); err != nil {
+		return err
+	}
+
+	if err = dealUserKeyConfig(config); err != nil {
+		return err
+	}
+
+	if err = dealUserSignCrtConfig(config); err != nil {
+		return err
+	}
+
+	if err = dealUserSignKeyConfig(config); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func dealUserCrtConfig(config *ChainClientConfig) error {
+	var err error
 	// 读取用户证书
 	config.userCrtPEM, err = ioutil.ReadFile(config.userCrtFilePath)
 	if err != nil {
 		return fmt.Errorf("read user crt file failed, %s", err.Error())
 	}
 
+	// 将证书转换为证书对象
+	if config.userCrt, err = ParseCert(config.userCrtPEM); err != nil {
+		return fmt.Errorf("ParseCert failed, %s", err.Error())
+	}
+
+	return nil
+}
+
+func dealUserKeyConfig(config *ChainClientConfig) error {
+
 	// 从私钥文件读取用户私钥，转换为privateKey对象
 	skBytes, err := ioutil.ReadFile(config.userKeyFilePath)
 	if err != nil {
 		return fmt.Errorf("read user key file failed, %s", err)
 	}
+
 	config.privateKey, err = asym.PrivateKeyFromPEM(skBytes, nil)
 	if err != nil {
 		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
 	}
 
-	// 将证书转换为证书对象
-	if config.userCrt, err = ParseCert(config.userCrtPEM); err != nil {
-		return fmt.Errorf("ParseCert failed, %s", err.Error())
-	}
+	return nil
+}
+
+func dealUserSignCrtConfig(config *ChainClientConfig) error {
+	var err error
 
 	if config.userSignCrtFilePath != "" {
 		config.userCrtPEM, err = ioutil.ReadFile(config.userSignCrtFilePath)
@@ -406,6 +492,12 @@ func dealConfig(config *ChainClientConfig) error {
 			return fmt.Errorf("ParseSignCert failed, %s", err.Error())
 		}
 	}
+
+	return nil
+}
+
+func dealUserSignKeyConfig(config *ChainClientConfig) error {
+	var err error
 
 	if config.userSignKeyFilePath != "" {
 		config.userSignKeyBytes, err = ioutil.ReadFile(config.userSignKeyFilePath)
