@@ -94,7 +94,7 @@ func (pool *ConnectionPool) getClient() (*networkClient, error) {
 func (pool *ConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]struct{}) (*networkClient, error) {
 	var nc *networkClient
 
-	if err := retry.Retry(func(attempt uint) error {
+	if err := retry.Retry(func(uint) error {
 		for _, cli := range pool.connections {
 
 			if ignoreAddrs != nil {

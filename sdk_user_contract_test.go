@@ -232,7 +232,8 @@ func testUserContractCounterGoRevoke(t *testing.T, client *ChainClient,
 func testUserContractCounterGoInvoke(t *testing.T, client *ChainClient,
 	method string, params map[string]string, withSyncResult bool) {
 
-	invokeUserContract(client, contractName, method, "", params, withSyncResult)
+	err := invokeUserContract(client, contractName, method, "", params, withSyncResult)
+	require.Nil(t, err)
 }
 
 func testUserContractCounterGoQuery(t *testing.T, client *ChainClient,
@@ -242,7 +243,7 @@ func testUserContractCounterGoQuery(t *testing.T, client *ChainClient,
 	fmt.Printf("QUERY counter-go contract resp: %+v\n", resp)
 }
 
-func createUserContract( client *ChainClient, admin1, admin2, admin3, admin4 *ChainClient,
+func createUserContract(client *ChainClient, admin1, admin2, admin3, admin4 *ChainClient,
 	contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair, withSyncResult bool) (*pb.TxResponse, error) {
 
 	payloadBytes, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)

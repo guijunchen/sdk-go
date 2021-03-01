@@ -349,26 +349,24 @@ func checkConfig(config *ChainClientConfig) error {
 	}
 
 	// kms config check
-	if config.kmsConfig != nil {
-		if config.kmsConfig.enable {
-			if config.userSignKeyFilePath == "" {
-				return fmt.Errorf("if enable kms, user sign key file path cannot be empty")
-			}
-			if config.userSignCrtFilePath == "" {
-				return fmt.Errorf("if enable kms, user sign crt file path cannot be empty")
-			}
-			if config.kmsConfig.conf.SecretId == "" {
-				return fmt.Errorf("if enable kms, secret id cannot be empty")
-			}
-			if config.kmsConfig.conf.SecretKey == "" {
-				return fmt.Errorf("if enable kms, secret key cannot be empty")
-			}
-			if config.kmsConfig.conf.ServerAddress == "" {
-				return fmt.Errorf("if enable kms, secret address cannot be empty")
-			}
-			if config.kmsConfig.conf.ServerRegion == "" {
-				return fmt.Errorf("if enable kms, secret region cannot be empty")
-			}
+	if config.kmsConfig != nil && config.kmsConfig.enable {
+		if config.userSignKeyFilePath == "" {
+			return fmt.Errorf("if enable kms, user sign key file path cannot be empty")
+		}
+		if config.userSignCrtFilePath == "" {
+			return fmt.Errorf("if enable kms, user sign crt file path cannot be empty")
+		}
+		if config.kmsConfig.conf.SecretId == "" {
+			return fmt.Errorf("if enable kms, secret id cannot be empty")
+		}
+		if config.kmsConfig.conf.SecretKey == "" {
+			return fmt.Errorf("if enable kms, secret key cannot be empty")
+		}
+		if config.kmsConfig.conf.ServerAddress == "" {
+			return fmt.Errorf("if enable kms, secret address cannot be empty")
+		}
+		if config.kmsConfig.conf.ServerRegion == "" {
+			return fmt.Errorf("if enable kms, secret region cannot be empty")
 		}
 	}
 

@@ -35,7 +35,7 @@ func TestUserContractClaim(t *testing.T) {
 	testUserContractClaimCreate(t, client, admin1, admin2, admin3, admin4, true, true)
 
 	fmt.Println("====================== 调用合约 ======================")
-	fileHash, err := testUserContractClaimInvoke(t, client, "save", true)
+	fileHash, err := testUserContractClaimInvoke(client, "save", true)
 	require.Nil(t, err)
 
 	fmt.Println("====================== 执行合约查询接口 ======================")
@@ -60,7 +60,7 @@ func testUserContractClaimCreate(t *testing.T, client *ChainClient,
 	fmt.Printf("CREATE claim contract resp: %+v\n", resp)
 }
 
-func testUserContractClaimInvoke(t *testing.T, client *ChainClient,
+func testUserContractClaimInvoke(client *ChainClient,
 	method string, withSyncResult bool) (string, error) {
 
 	curTime := fmt.Sprintf("%d", CurrentTimeMillisSeconds())

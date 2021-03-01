@@ -144,7 +144,7 @@ func (cc ChainClient) DisableCertHash() error {
 
 // 检查证书是否成功上链
 func (cc ChainClient) checkUserCertOnChain() error {
-	if err := retry.Retry(func(attempt uint) error {
+	if err := retry.Retry(func(uint) error {
 		ok, err := cc.getCheckCertHash()
 		if err != nil {
 			errMsg := fmt.Sprintf("check user cert on chain, get and check cert hash failed, %s", err.Error())
@@ -309,19 +309,17 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 			}
 
 			statusErr, ok := status.FromError(err)
-			if ok {
-				if statusErr.Code() == codes.DeadlineExceeded ||
-					// desc = "transport: Error while dialing dial tcp 127.0.0.1:12301: connect: connection refused"
-					statusErr.Code() == codes.Unavailable {
+			if ok && (statusErr.Code() == codes.DeadlineExceeded ||
+				// desc = "transport: Error while dialing dial tcp 127.0.0.1:12301: connect: connection refused"
+				statusErr.Code() == codes.Unavailable) {
 
-					resp.Code = pb.TxStatusCode_TIMEOUT
-					errMsg = fmt.Sprintf("call [%s] meet network error, try to connect another node if has, %s",
-						client.nodeAddr, err.Error())
+				resp.Code = pb.TxStatusCode_TIMEOUT
+				errMsg = fmt.Sprintf("call [%s] meet network error, try to connect another node if has, %s",
+					client.nodeAddr, err.Error())
 
-					cc.logger.Errorf(sdkErrStringFormat, errMsg)
-					ignoreAddrs[client.nodeAddr] = struct{}{}
-					continue
-				}
+				cc.logger.Errorf(sdkErrStringFormat, errMsg)
+				ignoreAddrs[client.nodeAddr] = struct{}{}
+				continue
 			}
 
 			cc.logger.Errorf("statusErr.Code() : %s", statusErr.Code())

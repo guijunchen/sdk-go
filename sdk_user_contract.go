@@ -245,7 +245,7 @@ func (cc ChainClient) getSyncResult(txId string) (*pb.ContractResult, error) {
 		err error
 	)
 
-	err = retry.Retry(func(attempt uint) error {
+	err = retry.Retry(func(uint) error {
 		txInfo, err = cc.GetTxByTxId(txId)
 		if err != nil {
 			return err
