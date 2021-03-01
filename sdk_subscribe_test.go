@@ -25,12 +25,13 @@ func TestSubscribeBlock(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	c, err := client.SubscribeBlock(ctx, 45, 55, false)
+	c, err := client.SubscribeBlock(ctx, -1, -1, false)
 	require.Nil(t, err)
 
 	go func() {
 		for i := 0; i < sendTxCount; i++ {
-			testUserContractCounterGoInvoke(t, client, "increase", nil, false)
+			_, err := testUserContractClaimInvoke(client, "save", false)
+			require.Nil(t, err)
 			time.Sleep(2 * time.Second)
 		}
 	}()
@@ -67,14 +68,16 @@ func TestSubscribeTx(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	c, err := client.SubscribeTx(ctx, 45, 55, -1, nil)
+	c, err := client.SubscribeTx(ctx, -1, -1, -1, nil)
+	//c, err := client.SubscribeTx(ctx, 45, 55, -1, nil)
 	//c, err := client.SubscribeTx(ctx, 45, 55, -1, []string{"b7bd37a15fbc49998612bd85b0c918796e3c12eae7384945bf7a82bc523b796d"})
 	//c, err := client.SubscribeTx(ctx, -1, -1, pb.TxType_CREATE_USER_CONTRACT, nil)
 	require.Nil(t, err)
 
 	go func() {
 		for i := 0; i < sendTxCount; i++ {
-			testUserContractCounterGoInvoke(t, client, "increase", nil, false)
+			_, err := testUserContractClaimInvoke(client, "save", false)
+			require.Nil(t, err)
 			time.Sleep(2 * time.Second)
 		}
 	}()
