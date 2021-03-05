@@ -9,7 +9,7 @@ package chainmaker_sdk_go
 
 import (
 	"chainmaker.org/chainmaker-go/common/ca"
-	"chainmaker.org/chainmaker-sdk-pb/api"
+	"chainmaker.org/chainmaker-go/pb/api"
 	"fmt"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"

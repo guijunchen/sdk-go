@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	chainmaker.org/chainmaker-go/common v0.0.0
-	chainmaker.org/chainmaker-sdk-pb v0.0.0
+	chainmaker.org/chainmaker-go/pb v0.0.0
 	github.com/Rican7/retry v0.1.0
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.4.3
@@ -19,6 +19,5 @@ require (
 
 replace (
 	chainmaker.org/chainmaker-go/common => ./common
-	chainmaker.org/chainmaker-sdk-pb => ./pb/protogo
 	chainmaker.org/chainmaker-go/pb => ./pb/protogo
 )

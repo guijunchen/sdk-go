@@ -1,4 +1,4 @@
-module chainmaker.org/chainmaker-sdk-pb
+module chainmaker.org/chainmaker-go/pb
 
 go 1.15
 

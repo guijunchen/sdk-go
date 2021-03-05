@@ -13,7 +13,7 @@ import (
 	"chainmaker.org/chainmaker-go/common/crypto/hash"
 	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
 	"chainmaker.org/chainmaker-go/common/random/uuid"
-	"chainmaker.org/chainmaker-sdk-pb/common"
+	"chainmaker.org/chainmaker-go/pb/common"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/pem"

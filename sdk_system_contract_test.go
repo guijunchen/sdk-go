@@ -8,9 +8,9 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-sdk-pb/common"
-	"chainmaker.org/chainmaker-sdk-pb/consensus"
-	"chainmaker.org/chainmaker-sdk-pb/discovery"
+	"chainmaker.org/chainmaker-go/pb/common"
+	"chainmaker.org/chainmaker-go/pb/consensus"
+	"chainmaker.org/chainmaker-go/pb/discovery"
 	"encoding/hex"
 	"github.com/stretchr/testify/require"
 	"testing"

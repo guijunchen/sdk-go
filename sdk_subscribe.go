@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-sdk-pb/common"
+	"chainmaker.org/chainmaker-go/pb/common"
 	"context"
 	"github.com/golang/protobuf/proto"
 	"io"

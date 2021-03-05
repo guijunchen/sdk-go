@@ -9,7 +9,7 @@ package chainmaker_sdk_go
 
 import (
 	"chainmaker.org/chainmaker-go/common/random/uuid"
-	"chainmaker.org/chainmaker-sdk-pb/common"
+	"chainmaker.org/chainmaker-go/pb/common"
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"testing"
