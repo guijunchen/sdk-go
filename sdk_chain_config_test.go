@@ -1,31 +1,28 @@
-/**
- * @Author: jasonruan
- * @Date:   2020-12-02 18:40:10
- **/
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker-sdk-pb/accesscontrol"
+	"chainmaker.org/chainmaker-sdk-pb/common"
+	"chainmaker.org/chainmaker-sdk-pb/config"
 	"fmt"
 	"github.com/golang/protobuf/proto"
+	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"math/rand"
 	"strconv"
 	"testing"
 	"time"
-
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
-	"github.com/stretchr/testify/require"
 )
 
 const (
-	testKey = "key001"
+	testKey     = "key001"
 	nodePeerId1 = "/ip4/127.0.0.1/tcp/1111/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
 	nodePeerId2 = "/ip4/127.0.0.1/tcp/2222/p2p/QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
 )
 
 func TestChainConfig(t *testing.T) {
 	var (
-		chainConfig *pb.ChainConfig
+		chainConfig *config.ChainConfig
 	)
 
 	client, err := createClient()
@@ -109,25 +106,25 @@ func TestChainConfig(t *testing.T) {
 	// 6) [PermissionAdd]
 	permissionCount := len(testGetChainConfig(t, client).ResourcePolicies)
 	permissionResourceName := "TEST_PREMISSION"
-	principle := &pb.Principle{
+	policy := &accesscontrol.Policy{
 		Rule: "ANY",
 	}
-	testChainConfigPermissionAdd(t, client, admin1, admin2, admin3, admin4, permissionResourceName, principle)
+	testChainConfigPermissionAdd(t, client, admin1, admin2, admin3, admin4, permissionResourceName, policy)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
 	require.Equal(t, permissionCount+1, len(chainConfig.ResourcePolicies))
-	require.Equal(t, true, proto.Equal(principle, chainConfig.ResourcePolicies[permissionCount].Policy))
+	require.Equal(t, true, proto.Equal(policy, chainConfig.ResourcePolicies[permissionCount].Policy))
 
 	// 7) [PermissionUpdate]
 	permissionResourceName = "TEST_PREMISSION"
-	principle = &pb.Principle{
-		Rule: "ALL",
+	policy = &accesscontrol.Policy{
+		Rule: "ANY",
 	}
-	testChainConfigPermissionUpdate(t, client, admin1, admin2, admin3, admin4, permissionResourceName, principle)
+	testChainConfigPermissionUpdate(t, client, admin1, admin2, admin3, admin4, permissionResourceName, policy)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(t, client)
 	require.Equal(t, permissionCount+1, len(chainConfig.ResourcePolicies))
-	require.Equal(t, true, proto.Equal(principle, chainConfig.ResourcePolicies[permissionCount].Policy))
+	require.Equal(t, true, proto.Equal(policy, chainConfig.ResourcePolicies[permissionCount].Policy))
 
 	// 8) [PermissionDelete]
 	testChainConfigPermissionDelete(t, client, admin1, admin2, admin3, admin4, permissionResourceName)
@@ -204,7 +201,7 @@ func TestChainConfig(t *testing.T) {
 	require.Equal(t, 4, len(chainConfig.Consensus.Nodes))
 
 	// 15) [ConsensusExtAdd]
-	kvs := []*pb.KeyValuePair{
+	kvs := []*common.KeyValuePair{
 		{
 			Key:   testKey,
 			Value: "test_value",
@@ -217,7 +214,7 @@ func TestChainConfig(t *testing.T) {
 	require.Equal(t, true, proto.Equal(kvs[0], chainConfig.Consensus.ExtConfig[1]))
 
 	// 16) [ConsensusExtUpdate]
-	kvs = []*pb.KeyValuePair{
+	kvs = []*common.KeyValuePair{
 		{
 			Key:   testKey,
 			Value: "updated_value",
@@ -237,7 +234,7 @@ func TestChainConfig(t *testing.T) {
 	require.Equal(t, 1, len(chainConfig.Consensus.ExtConfig))
 }
 
-func testGetChainConfig(t *testing.T, client *ChainClient) *pb.ChainConfig {
+func testGetChainConfig(t *testing.T, client *ChainClient) *config.ChainConfig {
 	resp, err := client.GetChainConfig()
 	require.Nil(t, err)
 	fmt.Printf("GetChainConfig resp: %+v\n", resp)
@@ -316,10 +313,10 @@ func testChainConfigTrustRootDelete(t *testing.T, client,
 
 func testChainConfigPermissionAdd(t *testing.T, client,
 	admin1, admin2, admin3, admin4 *ChainClient,
-	permissionResourceName string, principle *pb.Principle) {
+	permissionResourceName string, policy *accesscontrol.Policy) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigPermissionAddPayload(permissionResourceName, principle)
+	payloadBytes, err := client.CreateChainConfigPermissionAddPayload(permissionResourceName, policy)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -327,10 +324,10 @@ func testChainConfigPermissionAdd(t *testing.T, client,
 
 func testChainConfigPermissionUpdate(t *testing.T, client,
 	admin1, admin2, admin3, admin4 *ChainClient,
-	permissionResourceName string, principle *pb.Principle) {
+	permissionResourceName string, policy *accesscontrol.Policy) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigPermissionUpdatePayload(permissionResourceName, principle)
+	payloadBytes, err := client.CreateChainConfigPermissionUpdatePayload(permissionResourceName, policy)
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -415,7 +412,7 @@ func testChainConfigConsensusNodeOrgDelete(t *testing.T, client,
 
 func testChainConfigConsensusExtAdd(t *testing.T, client,
 	admin1, admin2, admin3, admin4 *ChainClient,
-	kvs []*pb.KeyValuePair) {
+	kvs []*common.KeyValuePair) {
 
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigConsensusExtAddPayload(kvs)
@@ -426,7 +423,7 @@ func testChainConfigConsensusExtAdd(t *testing.T, client,
 
 func testChainConfigConsensusExtUpdate(t *testing.T, client,
 	admin1, admin2, admin3, admin4 *ChainClient,
-	kvs []*pb.KeyValuePair) {
+	kvs []*common.KeyValuePair) {
 
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigConsensusExtUpdatePayload(kvs)

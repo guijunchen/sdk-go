@@ -1,13 +1,10 @@
-/**
- * @Author: jasonruan
- * @Date:   2020-11-30 14:44:30
- */
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"chainmaker.org/chainmaker-go/common/crypto"
 	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
+	"chainmaker.org/chainmaker-sdk-pb/accesscontrol"
+	"chainmaker.org/chainmaker-sdk-pb/common"
 	"context"
 	"encoding/hex"
 	"errors"
@@ -21,7 +18,7 @@ import (
 )
 
 const (
-	errStringFormat = "%s failed, %s"
+	errStringFormat    = "%s failed, %s"
 	sdkErrStringFormat = "[SDK] %s"
 )
 
@@ -207,20 +204,20 @@ func (cc ChainClient) getCheckCertHash() (bool, error) {
 	return false, nil
 }
 
-func (cc ChainClient) generateTxRequest(txId string, txType pb.TxType, payloadBytes []byte) (*pb.TxRequest, error) {
+func (cc ChainClient) generateTxRequest(txId string, txType common.TxType, payloadBytes []byte) (*common.TxRequest, error) {
 	var (
-		sender *pb.SerializedMember
+		sender *accesscontrol.SerializedMember
 	)
 
 	// 构造Sender
 	if cc.enabledCrtHash && len(cc.userCrtHash) > 0 {
-		sender = &pb.SerializedMember{
+		sender = &accesscontrol.SerializedMember{
 			OrgId:      cc.orgId,
 			MemberInfo: cc.userCrtHash,
 			IsFullCert: false,
 		}
 	} else {
-		sender = &pb.SerializedMember{
+		sender = &accesscontrol.SerializedMember{
 			OrgId:      cc.orgId,
 			MemberInfo: cc.userCrtPEM,
 			IsFullCert: true,
@@ -228,7 +225,7 @@ func (cc ChainClient) generateTxRequest(txId string, txType pb.TxType, payloadBy
 	}
 
 	// 构造Header
-	header := &pb.TxHeader{
+	header := &common.TxHeader{
 		ChainId:        cc.chainId,
 		Sender:         sender,
 		TxType:         txType,
@@ -237,7 +234,7 @@ func (cc ChainClient) generateTxRequest(txId string, txType pb.TxType, payloadBy
 		ExpirationTime: 0,
 	}
 
-	req := &pb.TxRequest{
+	req := &common.TxRequest{
 		Header:    header,
 		Payload:   payloadBytes,
 		Signature: nil,
@@ -259,11 +256,11 @@ func (cc ChainClient) generateTxRequest(txId string, txType pb.TxType, payloadBy
 	return req, nil
 }
 
-func (cc ChainClient) proposalRequest(txType pb.TxType, txId string, payloadBytes []byte) (*pb.TxResponse, error) {
+func (cc ChainClient) proposalRequest(txType common.TxType, txId string, payloadBytes []byte) (*common.TxResponse, error) {
 	return cc.proposalRequestWithTimeout(txType, txId, payloadBytes, -1)
 }
 
-func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, payloadBytes []byte, timeout int64) (*pb.TxResponse, error) {
+func (cc ChainClient) proposalRequestWithTimeout(txType common.TxType, txId string, payloadBytes []byte, timeout int64) (*common.TxResponse, error) {
 	var (
 		errMsg string
 	)
@@ -300,12 +297,12 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 
 		resp, err := client.rpcNode.SendRequest(ctx, req)
 		if err != nil {
-			resp := &pb.TxResponse{
+			resp := &common.TxResponse{
 				Message: err.Error(),
-				ContractResult: &pb.ContractResult{
-					Code:    pb.ContractResultCode_FAIL,
+				ContractResult: &common.ContractResult{
+					Code:    common.ContractResultCode_FAIL,
 					Result:  []byte(txId),
-					Message: pb.ContractResultCode_FAIL.String(),
+					Message: common.ContractResultCode_FAIL.String(),
 				},
 			}
 
@@ -314,7 +311,7 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 				// desc = "transport: Error while dialing dial tcp 127.0.0.1:12301: connect: connection refused"
 				statusErr.Code() == codes.Unavailable) {
 
-				resp.Code = pb.TxStatusCode_TIMEOUT
+				resp.Code = common.TxStatusCode_TIMEOUT
 				errMsg = fmt.Sprintf("call [%s] meet network error, try to connect another node if has, %s",
 					client.nodeAddr, err.Error())
 
@@ -325,7 +322,7 @@ func (cc ChainClient) proposalRequestWithTimeout(txType pb.TxType, txId string, 
 
 			cc.logger.Errorf("statusErr.Code() : %s", statusErr.Code())
 
-			resp.Code = pb.TxStatusCode_INTERNAL_ERROR
+			resp.Code = common.TxStatusCode_INTERNAL_ERROR
 			errMsg = fmt.Sprintf("client.call failed, %+v", err)
 			cc.logger.Errorf(sdkErrStringFormat, errMsg)
 			return resp, fmt.Errorf(errMsg)

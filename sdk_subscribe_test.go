@@ -1,17 +1,12 @@
-/**
- * @Author: jasonruan
- * @Date:   2020-12-03 11:31:40
- **/
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker-sdk-pb/common"
 	"context"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
-
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
-	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -46,7 +41,7 @@ func TestSubscribeBlock(t *testing.T) {
 
 			require.NotNil(t, block)
 
-			blockInfo, ok := block.(*pb.BlockInfo)
+			blockInfo, ok := block.(*common.BlockInfo)
 			require.Equal(t, true, ok)
 
 			fmt.Printf("recv block [%d] => %+v\n", blockInfo.Block.Header.BlockHeight, blockInfo)
@@ -71,7 +66,7 @@ func TestSubscribeTx(t *testing.T) {
 	c, err := client.SubscribeTx(ctx, -1, -1, -1, nil)
 	//c, err := client.SubscribeTx(ctx, 45, 55, -1, nil)
 	//c, err := client.SubscribeTx(ctx, 45, 55, -1, []string{"b7bd37a15fbc49998612bd85b0c918796e3c12eae7384945bf7a82bc523b796d"})
-	//c, err := client.SubscribeTx(ctx, -1, -1, pb.TxType_CREATE_USER_CONTRACT, nil)
+	//c, err := client.SubscribeTx(ctx, -1, -1, common.TxType_CREATE_USER_CONTRACT, nil)
 	require.Nil(t, err)
 
 	go func() {
@@ -92,7 +87,7 @@ func TestSubscribeTx(t *testing.T) {
 
 			require.NotNil(t, txI)
 
-			tx, ok := txI.(*pb.Transaction)
+			tx, ok := txI.(*common.Transaction)
 			require.Equal(t, true, ok)
 
 			fmt.Printf("recv tx [%s] => %+v\n", tx.Header.TxId, tx)

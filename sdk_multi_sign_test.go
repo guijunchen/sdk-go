@@ -1,11 +1,7 @@
-/**
- * @Author: jasonruan
- * @Date:   2020-12-31 11:31:41
- **/
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
+	"chainmaker.org/chainmaker-sdk-pb/common"
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -42,18 +38,18 @@ func testMultiSignUserContractCreate(t *testing.T, client *ChainClient,
 	admin1, admin2, admin3, admin4 *ChainClient) {
 
 	var (
-		err error
+		err          error
 		payloadBytes []byte
-		entry *pb.EndorsementEntry
-		resp *pb.TxResponse
+		entry        *common.EndorsementEntry
+		resp         *common.TxResponse
 	)
 
-	payloadBytes, err = client.CreateContractCreatePayload(contractName, version, byteCodePath, pb.RuntimeType_WASMER, []*pb.KeyValuePair{})
+	payloadBytes, err = client.CreateContractCreatePayload(contractName, version, byteCodePath, common.RuntimeType_WASMER, []*common.KeyValuePair{})
 	require.Nil(t, err)
 
 	entry, err = admin1.SignMultiSignPayload(payloadBytes)
 	require.Nil(t, err)
-	resp, err = admin1.SendMultiSignReq(pb.TxType_MANAGE_USER_CONTRACT, payloadBytes, entry, 100000, -1)
+	resp, err = admin1.SendMultiSignReq(common.TxType_MANAGE_USER_CONTRACT, payloadBytes, entry, 100000, -1)
 	require.Nil(t, err)
 	fmt.Printf("send multi sign req resp: code:%d, msg:%s, payload:%+v\n", resp.Code, resp.Message, resp.ContractResult)
 
@@ -64,19 +60,19 @@ func testMultiSignUserContractCreate(t *testing.T, client *ChainClient,
 
 	entry, err = admin2.SignMultiSignPayload(payloadBytes)
 	require.Nil(t, err)
-	resp, err = admin2.SendMultiSignVote(pb.VoteStatus_AGREE, txId, "", entry, -1)
+	resp, err = admin2.SendMultiSignVote(common.VoteStatus_AGREE, txId, "", entry, -1)
 	require.Nil(t, err)
 	fmt.Printf("send multi sign vote1 resp: code:%d, msg:%s, payload:%+v\n", resp.Code, resp.Message, resp.ContractResult)
 
 	entry, err = admin3.SignMultiSignPayload(payloadBytes)
 	require.Nil(t, err)
-	resp, err = admin3.SendMultiSignVote(pb.VoteStatus_AGREE, txId, "", entry, -1)
+	resp, err = admin3.SendMultiSignVote(common.VoteStatus_AGREE, txId, "", entry, -1)
 	require.Nil(t, err)
 	fmt.Printf("send multi sign vote2 resp: code:%d, msg:%s, payload:%+v\n", resp.Code, resp.Message, resp.ContractResult)
 
 	entry, err = admin4.SignMultiSignPayload(payloadBytes)
 	require.Nil(t, err)
-	resp, err = admin4.SendMultiSignVote(pb.VoteStatus_AGREE, txId, "", entry, -1)
+	resp, err = admin4.SendMultiSignVote(common.VoteStatus_AGREE, txId, "", entry, -1)
 	require.Nil(t, err)
 	fmt.Printf("send multi sign vote3 resp: code:%d, msg:%s, payload:%+v\n", resp.Code, resp.Message, resp.ContractResult)
 }

@@ -1,12 +1,8 @@
-/**
- * @Author: jasonruan
- * @Date:   2021-01-15 12:28:45
- **/
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"chainmaker.org/chainmaker-go/common/random/uuid"
+	"chainmaker.org/chainmaker-sdk-pb/common"
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -14,7 +10,7 @@ import (
 
 var (
 	claimContractName = "claim001"
-	claimVersion = "1.0.0"
+	claimVersion      = "1.0.0"
 	claimByteCodePath = "./testdata/claim-wasm-demo/fact-rust-0.7.2.wasm"
 )
 
@@ -41,7 +37,7 @@ func TestUserContractClaim(t *testing.T) {
 	fmt.Println("====================== 执行合约查询接口 ======================")
 	//txId := "1cbdbe6106cc4132b464185ea8275d0a53c0261b7b1a470fb0c3f10bd4a57ba6"
 	//fileHash = txId[len(txId)/2:]
-	params := map[string]string {
+	params := map[string]string{
 		"file_hash": fileHash,
 	}
 	testUserContractClaimQuery(t, client, "find_by_file_hash", params)
@@ -50,9 +46,8 @@ func TestUserContractClaim(t *testing.T) {
 func testUserContractClaimCreate(t *testing.T, client *ChainClient,
 	admin1, admin2, admin3, admin4 *ChainClient, withSyncResult bool, isIgnoreSameContract bool) {
 
-
 	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		claimContractName, claimVersion, claimByteCodePath, pb.RuntimeType_WASMER, []*pb.KeyValuePair{}, withSyncResult)
+		claimContractName, claimVersion, claimByteCodePath, common.RuntimeType_WASMER, []*common.KeyValuePair{}, withSyncResult)
 	if !isIgnoreSameContract {
 		require.Nil(t, err)
 	}
@@ -65,8 +60,8 @@ func testUserContractClaimInvoke(client *ChainClient,
 
 	curTime := fmt.Sprintf("%d", CurrentTimeMillisSeconds())
 	fileHash := uuid.GetUUID()
-	params := map[string]string {
-		"time": curTime,
+	params := map[string]string{
+		"time":      curTime,
 		"file_hash": fileHash,
 		"file_name": fmt.Sprintf("file_%s", curTime),
 	}

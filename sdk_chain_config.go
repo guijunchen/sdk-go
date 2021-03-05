@@ -1,16 +1,13 @@
-/**
- * @Author: jasonruan
- * @Date:   2020-12-02 10:30:23
- **/
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker-sdk-pb/accesscontrol"
+	"chainmaker.org/chainmaker-sdk-pb/common"
+	"chainmaker.org/chainmaker-sdk-pb/config"
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	"strconv"
 	"strings"
-
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
-	"github.com/golang/protobuf/proto"
 )
 
 const (
@@ -19,30 +16,30 @@ const (
 )
 
 const (
-    getCCSeqErrStringFormat = "get chain config sequence failed, %s"
+	getCCSeqErrStringFormat         = "get chain config sequence failed, %s"
 	genConfigPayloadErrStringFormat = "construct config update payload failed, %s"
 )
 
-func (cc ChainClient) GetChainConfig() (*pb.ChainConfig, error) {
+func (cc ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 	cc.logger.Debug("[SDK] begin to get chain config")
 
-	pairs := make([]*pb.KeyValuePair, 0)
-	payloadBytes, err := constructQueryPayload(pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_GET_CHAIN_CONFIG.String(), pairs)
+	pairs := make([]*common.KeyValuePair, 0)
+	payloadBytes, err := constructQueryPayload(common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_GET_CHAIN_CONFIG.String(), pairs)
 	if err != nil {
 		return nil, fmt.Errorf("construct query payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(pb.TxType_QUERY_SYSTEM_CONTRACT, "", payloadBytes)
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, "", payloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf("send %s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf("send %s failed, %s", common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err := checkProposalRequestResp(resp, true); err != nil {
 		return nil, err
 	}
 
-	chainConfig := &pb.ChainConfig{}
+	chainConfig := &config.ChainConfig{}
 	err = proto.Unmarshal(resp.ContractResult.Result, chainConfig)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal contract result failed, %s", err.Error())
@@ -51,31 +48,31 @@ func (cc ChainClient) GetChainConfig() (*pb.ChainConfig, error) {
 	return chainConfig, nil
 }
 
-func (cc ChainClient) GetChainConfigByBlockHeight(blockHeight int) (*pb.ChainConfig, error) {
+func (cc ChainClient) GetChainConfigByBlockHeight(blockHeight int) (*config.ChainConfig, error) {
 	cc.logger.Debugf("[SDK] begin to get chain config by block height [%d]", blockHeight)
 
-	pairs := make([]*pb.KeyValuePair, 0)
-	pairs = append(pairs, &pb.KeyValuePair{
+	pairs := make([]*common.KeyValuePair, 0)
+	pairs = append(pairs, &common.KeyValuePair{
 		Key:   "block_height",
 		Value: strconv.Itoa(blockHeight),
 	})
 
-	payloadBytes, err := constructQueryPayload(pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_GET_CHAIN_CONFIG_AT.String(), pairs)
+	payloadBytes, err := constructQueryPayload(common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_GET_CHAIN_CONFIG_AT.String(), pairs)
 	if err != nil {
 		return nil, fmt.Errorf("construct query payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(pb.TxType_QUERY_SYSTEM_CONTRACT, "", payloadBytes)
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, "", payloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf("get chain config by block height %s failed, %s", pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf("get chain config by block height %s failed, %s", common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err := checkProposalRequestResp(resp, true); err != nil {
 		return nil, err
 	}
 
-	chainConfig := &pb.ChainConfig{}
+	chainConfig := &config.ChainConfig{}
 	err = proto.Unmarshal(resp.ContractResult.Result, chainConfig)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal contract result failed, %s", err.Error())
@@ -96,7 +93,7 @@ func (cc ChainClient) GetChainConfigSequence() (int, error) {
 }
 
 func (cc ChainClient) SignChainConfigPayload(payloadBytes []byte) ([]byte, error) {
-	payload := &pb.SystemContractPayload{}
+	payload := &common.SystemContractPayload{}
 	if err := proto.Unmarshal(payloadBytes, payload); err != nil {
 		return nil, fmt.Errorf("unmarshal config update payload failed, %s", err)
 	}
@@ -107,18 +104,18 @@ func (cc ChainClient) SignChainConfigPayload(payloadBytes []byte) ([]byte, error
 	}
 
 	// TODO: 后续支持证书索引，减小交易大小
-	sender := &pb.SerializedMember{
+	sender := &accesscontrol.SerializedMember{
 		OrgId:      cc.orgId,
 		MemberInfo: cc.userCrtPEM,
 		IsFullCert: true,
 	}
 
-	entry := &pb.EndorsementEntry{
+	entry := &common.EndorsementEntry{
 		Signer:    sender,
 		Signature: signBytes,
 	}
 
-	payload.Endorsement = []*pb.EndorsementEntry{
+	payload.Endorsement = []*common.EndorsementEntry{
 		entry,
 	}
 
@@ -150,16 +147,16 @@ func (cc ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txS
 		return nil, fmt.Errorf("[tx_scheduler_validate_timeout] should be [0,60]")
 	}
 
-	pairs := make([]*pb.KeyValuePair, 0)
+	pairs := make([]*common.KeyValuePair, 0)
 	if txSchedulerTimeout > 0 {
-		pairs = append(pairs, &pb.KeyValuePair{
+		pairs = append(pairs, &common.KeyValuePair{
 			Key:   "tx_scheduler_timeout",
 			Value: strconv.Itoa(txSchedulerTimeout),
 		})
 	}
 
 	if txSchedulerValidateTimeout > 0 {
-		pairs = append(pairs, &pb.KeyValuePair{
+		pairs = append(pairs, &common.KeyValuePair{
 			Key:   "tx_scheduler_validate_timeout",
 			Value: strconv.Itoa(txSchedulerValidateTimeout),
 		})
@@ -169,8 +166,8 @@ func (cc ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txS
 		return nil, fmt.Errorf("update nothing")
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_CORE_UPDATE.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_CORE_UPDATE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -186,7 +183,7 @@ func (cc ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify bool
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key:   "tx_timestamp_verify",
 			Value: strconv.FormatBool(txTimestampVerify),
@@ -210,32 +207,32 @@ func (cc ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify bool
 	}
 
 	if txTimeout > 0 {
-		pairs = append(pairs, &pb.KeyValuePair{
+		pairs = append(pairs, &common.KeyValuePair{
 			Key:   "tx_timeout",
 			Value: strconv.Itoa(txTimeout),
 		})
 	}
 	if blockTxCapacity > 0 {
-		pairs = append(pairs, &pb.KeyValuePair{
+		pairs = append(pairs, &common.KeyValuePair{
 			Key:   "block_tx_capacity",
 			Value: strconv.Itoa(blockTxCapacity),
 		})
 	}
 	if blockSize > 0 {
-		pairs = append(pairs, &pb.KeyValuePair{
+		pairs = append(pairs, &common.KeyValuePair{
 			Key:   "block_size",
 			Value: strconv.Itoa(blockSize),
 		})
 	}
 	if blockInterval > 0 {
-		pairs = append(pairs, &pb.KeyValuePair{
+		pairs = append(pairs, &common.KeyValuePair{
 			Key:   "block_interval",
 			Value: strconv.Itoa(blockInterval),
 		})
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_BLOCK_UPDATE.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_BLOCK_UPDATE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -251,7 +248,7 @@ func (cc ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId, trust
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key:   orgId,
 			Value: trustRootOrgId,
@@ -262,8 +259,8 @@ func (cc ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId, trust
 		},
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_TRUST_ROOT_ADD.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_TRUST_ROOT_ADD.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -279,7 +276,7 @@ func (cc ChainClient) CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, tr
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key:   orgId,
 			Value: trustRootOrgId,
@@ -290,8 +287,8 @@ func (cc ChainClient) CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, tr
 		},
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_TRUST_ROOT_UPDATE.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_TRUST_ROOT_UPDATE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -307,15 +304,15 @@ func (cc ChainClient) CreateChainConfigTrustRootDeletePayload(trustRootOrgId str
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key:   orgId,
 			Value: trustRootOrgId,
 		},
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_TRUST_ROOT_DELETE.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_TRUST_ROOT_DELETE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -323,7 +320,7 @@ func (cc ChainClient) CreateChainConfigTrustRootDeletePayload(trustRootOrgId str
 	return payload, nil
 }
 
-func (cc ChainClient) CreateChainConfigPermissionAddPayload(permissionResourceName string, principle *pb.Principle) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigPermissionAddPayload(permissionResourceName string, policy *accesscontrol.Policy) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [PermissionAdd] to be signed payload")
 
 	seq, err := cc.GetChainConfigSequence()
@@ -331,20 +328,20 @@ func (cc ChainClient) CreateChainConfigPermissionAddPayload(permissionResourceNa
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	bytes, err := proto.Marshal(principle)
+	bytes, err := proto.Marshal(policy)
 	if err != nil {
-		return nil, fmt.Errorf("marshal principle failed, %s", err)
+		return nil, fmt.Errorf("marshal policy failed, %s", err)
 	}
 
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key:   permissionResourceName,
 			Value: string(bytes),
 		},
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_PERMISSION_ADD.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_PERMISSION_ADD.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -352,7 +349,7 @@ func (cc ChainClient) CreateChainConfigPermissionAddPayload(permissionResourceNa
 	return payload, nil
 }
 
-func (cc ChainClient) CreateChainConfigPermissionUpdatePayload(permissionResourceName string, principle *pb.Principle) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigPermissionUpdatePayload(permissionResourceName string, policy *accesscontrol.Policy) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [PermissionUpdate] to be signed payload")
 
 	seq, err := cc.GetChainConfigSequence()
@@ -360,20 +357,20 @@ func (cc ChainClient) CreateChainConfigPermissionUpdatePayload(permissionResourc
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	bytes, err := proto.Marshal(principle)
+	bytes, err := proto.Marshal(policy)
 	if err != nil {
-		return nil, fmt.Errorf("marshal principle failed, %s", err)
+		return nil, fmt.Errorf("marshal policy failed, %s", err)
 	}
 
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key:   permissionResourceName,
 			Value: string(bytes),
 		},
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_PERMISSION_UPDATE.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_PERMISSION_UPDATE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -389,14 +386,14 @@ func (cc ChainClient) CreateChainConfigPermissionDeletePayload(permissionResourc
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key: permissionResourceName,
 		},
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_PERMISSION_DELETE.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_PERMISSION_DELETE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -412,7 +409,7 @@ func (cc ChainClient) CreateChainConfigConsensusNodeAddrAddPayload(nodeOrgId str
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key:   orgId,
 			Value: nodeOrgId,
@@ -423,8 +420,8 @@ func (cc ChainClient) CreateChainConfigConsensusNodeAddrAddPayload(nodeOrgId str
 		},
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_NODE_ADDR_ADD.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_NODE_ADDR_ADD.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -440,7 +437,7 @@ func (cc ChainClient) CreateChainConfigConsensusNodeAddrUpdatePayload(nodeOrgId,
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key:   orgId,
 			Value: nodeOrgId,
@@ -455,8 +452,8 @@ func (cc ChainClient) CreateChainConfigConsensusNodeAddrUpdatePayload(nodeOrgId,
 		},
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_NODE_ADDR_UPDATE.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_NODE_ADDR_UPDATE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -472,7 +469,7 @@ func (cc ChainClient) CreateChainConfigConsensusNodeAddrDeletePayload(nodeOrgId,
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key:   orgId,
 			Value: nodeOrgId,
@@ -483,8 +480,8 @@ func (cc ChainClient) CreateChainConfigConsensusNodeAddrDeletePayload(nodeOrgId,
 		},
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_NODE_ADDR_DELETE.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_NODE_ADDR_DELETE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -500,7 +497,7 @@ func (cc ChainClient) CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId stri
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key:   orgId,
 			Value: nodeOrgId,
@@ -511,8 +508,8 @@ func (cc ChainClient) CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId stri
 		},
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_NODE_ORG_ADD.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_NODE_ORG_ADD.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -528,7 +525,7 @@ func (cc ChainClient) CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId s
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key:   orgId,
 			Value: nodeOrgId,
@@ -539,8 +536,8 @@ func (cc ChainClient) CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId s
 		},
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_NODE_ORG_UPDATE.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_NODE_ORG_UPDATE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -556,15 +553,15 @@ func (cc ChainClient) CreateChainConfigConsensusNodeOrgDeletePayload(nodeOrgId s
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key:   orgId,
 			Value: nodeOrgId,
 		},
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_NODE_ORG_DELETE.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_NODE_ORG_DELETE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -572,7 +569,7 @@ func (cc ChainClient) CreateChainConfigConsensusNodeOrgDeletePayload(nodeOrgId s
 	return payload, nil
 }
 
-func (cc ChainClient) CreateChainConfigConsensusExtAddPayload(kvs []*pb.KeyValuePair) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigConsensusExtAddPayload(kvs []*common.KeyValuePair) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusExtAdd] to be signed payload")
 
 	seq, err := cc.GetChainConfigSequence()
@@ -580,8 +577,8 @@ func (cc ChainClient) CreateChainConfigConsensusExtAddPayload(kvs []*pb.KeyValue
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_CONSENSUS_EXT_ADD.String(), kvs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_CONSENSUS_EXT_ADD.String(), kvs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -589,7 +586,7 @@ func (cc ChainClient) CreateChainConfigConsensusExtAddPayload(kvs []*pb.KeyValue
 	return payload, nil
 }
 
-func (cc ChainClient) CreateChainConfigConsensusExtUpdatePayload(kvs []*pb.KeyValuePair) ([]byte, error) {
+func (cc ChainClient) CreateChainConfigConsensusExtUpdatePayload(kvs []*common.KeyValuePair) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusExtUpdate] to be signed payload")
 
 	seq, err := cc.GetChainConfigSequence()
@@ -597,8 +594,8 @@ func (cc ChainClient) CreateChainConfigConsensusExtUpdatePayload(kvs []*pb.KeyVa
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_CONSENSUS_EXT_UPDATE.String(), kvs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_CONSENSUS_EXT_UPDATE.String(), kvs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -614,15 +611,15 @@ func (cc ChainClient) CreateChainConfigConsensusExtDeletePayload(keys []string) 
 		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
 	}
 
-	pairs := []*pb.KeyValuePair{}
+	pairs := []*common.KeyValuePair{}
 	for _, key := range keys {
-		pairs = append(pairs, &pb.KeyValuePair{
+		pairs = append(pairs, &common.KeyValuePair{
 			Key: key,
 		})
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, pb.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		pb.ConfigFunction_CONSENSUS_EXT_DELETE.String(), pairs, seq+1)
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_CONSENSUS_EXT_DELETE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -630,17 +627,17 @@ func (cc ChainClient) CreateChainConfigConsensusExtDeletePayload(keys []string) 
 	return payload, nil
 }
 
-func (cc ChainClient) SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*pb.TxResponse, error) {
+func (cc ChainClient) SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*common.TxResponse, error) {
 	txId := GetRandTxId()
 
-	resp, err := cc.proposalRequest(pb.TxType_UPDATE_CHAIN_CONFIG, txId, mergeSignedPayloadBytes)
+	resp, err := cc.proposalRequest(common.TxType_UPDATE_CHAIN_CONFIG, txId, mergeSignedPayloadBytes)
 	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", pb.TxType_UPDATE_CHAIN_CONFIG.String(), err.Error())
+		return resp, fmt.Errorf("send %s failed, %s", common.TxType_UPDATE_CHAIN_CONFIG.String(), err.Error())
 	}
 
-	resp.ContractResult = &pb.ContractResult{
-		Code:    pb.ContractResultCode_OK,
-		Message: pb.ContractResultCode_OK.String(),
+	resp.ContractResult = &common.ContractResult{
+		Code:    common.ContractResultCode_OK,
+		Message: common.ContractResultCode_OK.String(),
 		Result:  []byte(txId),
 	}
 

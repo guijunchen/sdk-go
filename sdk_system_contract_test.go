@@ -1,11 +1,12 @@
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker-sdk-pb/common"
+	"chainmaker.org/chainmaker-sdk-pb/consensus"
+	"chainmaker.org/chainmaker-sdk-pb/discovery"
 	"encoding/hex"
-	"testing"
-
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"github.com/stretchr/testify/require"
+	"testing"
 )
 
 // [系统合约]
@@ -34,40 +35,40 @@ func TestSystemContract(t *testing.T) {
 	testSystemContractGetNodeChainList(t, systemChainClient)
 }
 
-func testSystemContractGetTxByTxId(t *testing.T, client *ChainClient, txId string) *pb.TransactionInfo {
+func testSystemContractGetTxByTxId(t *testing.T, client *ChainClient, txId string) *common.TransactionInfo {
 	transactionInfo, err := client.GetTxByTxId(txId)
 	require.Nil(t, err)
 	return transactionInfo
 }
 
-func testSystemContractGetBlockByHeight(t *testing.T, client *ChainClient, blockHeight int64) *pb.BlockInfo {
+func testSystemContractGetBlockByHeight(t *testing.T, client *ChainClient, blockHeight int64) *common.BlockInfo {
 	blockInfo, err := client.GetBlockByHeight(blockHeight, true)
 	require.Nil(t, err)
 	return blockInfo
 }
 
-func testSystemContractGetBlockByHash(t *testing.T, client *ChainClient, blockHash string) *pb.BlockInfo {
+func testSystemContractGetBlockByHash(t *testing.T, client *ChainClient, blockHash string) *common.BlockInfo {
 	blockInfo, err := client.GetBlockByHash(blockHash, true)
 	require.Nil(t, err)
 	return blockInfo
 }
 
-func testSystemContractGetBlockByTxId(t *testing.T, client *ChainClient, txId string) *pb.BlockInfo {
+func testSystemContractGetBlockByTxId(t *testing.T, client *ChainClient, txId string) *common.BlockInfo {
 	blockInfo, err := client.GetBlockByTxId(txId, true)
 	require.Nil(t, err)
 	return blockInfo
 }
 
-func testSystemContractGetLastConfigBlock(t *testing.T, client *ChainClient) *pb.BlockInfo {
+func testSystemContractGetLastConfigBlock(t *testing.T, client *ChainClient) *common.BlockInfo {
 	blockInfo, err := client.GetLastConfigBlock(true)
 	require.Nil(t, err)
 	return blockInfo
 }
 
-func testSystemContractGetChainInfo(t *testing.T, client *ChainClient) *pb.ChainInfo {
+func testSystemContractGetChainInfo(t *testing.T, client *ChainClient) *discovery.ChainInfo {
 	chainConfig := testGetChainConfig(t, client)
-	chainInfo := &pb.ChainInfo{}
-	if chainConfig.Consensus.Type != pb.ConsensusType_SOLO {
+	chainInfo := &discovery.ChainInfo{}
+	if chainConfig.Consensus.Type != consensus.ConsensusType_SOLO {
 		var err error
 		chainInfo, err = client.GetChainInfo()
 		require.Nil(t, err)
@@ -75,7 +76,7 @@ func testSystemContractGetChainInfo(t *testing.T, client *ChainClient) *pb.Chain
 	return chainInfo
 }
 
-func testSystemContractGetNodeChainList(t *testing.T, client *ChainClient) *pb.ChainList {
+func testSystemContractGetNodeChainList(t *testing.T, client *ChainClient) *discovery.ChainList {
 	chainList, err := client.GetNodeChainList()
 	require.Nil(t, err)
 	return chainList

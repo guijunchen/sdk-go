@@ -1,17 +1,12 @@
-/**
- * @Author: zghh
- * @Date:   2020-12-03 10:16:49
- **/
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker-sdk-pb/common"
 	"encoding/hex"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
-
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
-	"github.com/stretchr/testify/require"
 )
 
 func TestCertHash(t *testing.T) {
@@ -36,7 +31,7 @@ func TestCertHash(t *testing.T) {
 
 func TestCertManage(t *testing.T) {
 	var (
-		err error
+		err             error
 		client1, admin1 *ChainClient
 
 		// org2 client证书
@@ -83,11 +78,11 @@ func testCertIsAvailable(t *testing.T, isAvailable bool) {
 
 func testCertManageFrozen(t *testing.T, client1, admin1 *ChainClient, certs []string) {
 	var (
-		err error
-		payload []byte
+		err                error
+		payload            []byte
 		signedPayloadBytes []byte
-		resp *pb.TxResponse
-		result string
+		resp               *common.TxResponse
+		result             string
 	)
 
 	payload, err = client1.CreateCertManageFrozenPayload(certs)
@@ -106,11 +101,11 @@ func testCertManageFrozen(t *testing.T, client1, admin1 *ChainClient, certs []st
 
 func testCertManageUnfrozen(t *testing.T, client1, admin1 *ChainClient, certs []string) {
 	var (
-		err error
-		payload []byte
+		err                error
+		payload            []byte
 		signedPayloadBytes []byte
-		resp *pb.TxResponse
-		result string
+		resp               *common.TxResponse
+		result             string
 	)
 
 	payload, err = client1.CreateCertManageUnfrozenPayload(certs)
@@ -129,11 +124,11 @@ func testCertManageUnfrozen(t *testing.T, client1, admin1 *ChainClient, certs []
 
 func testCertManageRevoke(t *testing.T, client1, admin1 *ChainClient, certCrl string) {
 	var (
-		err error
-		payload []byte
+		err                error
+		payload            []byte
 		signedPayloadBytes []byte
-		resp *pb.TxResponse
-		result string
+		resp               *common.TxResponse
+		result             string
 	)
 
 	payload, err = client1.CreateCertManageRevocationPayload(certCrl)
@@ -156,7 +151,7 @@ func testCertAdd(t *testing.T, client *ChainClient) string {
 	return hex.EncodeToString(resp.ContractResult.Result)
 }
 
-func testQueryCert(t *testing.T, client *ChainClient, certHashes []string) *pb.CertInfos {
+func testQueryCert(t *testing.T, client *ChainClient, certHashes []string) *common.CertInfos {
 	certInfos, err := client.QueryCert(certHashes)
 	require.Nil(t, err)
 	return certInfos

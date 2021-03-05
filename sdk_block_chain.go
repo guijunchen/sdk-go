@@ -1,14 +1,14 @@
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
+	"chainmaker.org/chainmaker-sdk-pb/config"
 	"context"
 	"fmt"
 )
 
 func (cc ChainClient) CheckNewBlockChainConfig() error {
 	cc.logger.Debug("[SDK] begin to send check new block chain config command")
-	req := &pb.CheckNewBlockChainConfigRequest{}
+	req := &config.CheckNewBlockChainConfigRequest{}
 	client, err := cc.pool.getClient()
 	if err != nil {
 		return err

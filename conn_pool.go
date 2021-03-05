@@ -1,29 +1,25 @@
-/**
- * @Author: jasonruan
- * @Date:   2020-11-30 15:10:17
- **/
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"chainmaker.org/chainmaker-go/common/ca"
+	"chainmaker.org/chainmaker-sdk-pb/api"
 	"fmt"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/connectivity"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
 	"math/rand"
 	"time"
 )
 
 const (
 	retryInterval = 500 // 获取可用客户端连接对象重试时间间隔，单位：ms
-	retryLimit = 5      // 获取可用客户端连接对象最大重试次数
+	retryLimit    = 5   // 获取可用客户端连接对象最大重试次数
 )
 
 // 客户端连接结构定义
 type networkClient struct {
-	rpcNode     pb.RpcNodeClient
+	rpcNode     api.RpcNodeClient
 	conn        *grpc.ClientConn
 	nodeAddr    string
 	useTLS      bool
@@ -33,29 +29,29 @@ type networkClient struct {
 
 // 客户端连接池结构定义
 type ConnectionPool struct {
-	connections         []*networkClient
-	logger              Logger
-	userKeyFilePath     string
-	userCrtFilePath     string
+	connections     []*networkClient
+	logger          Logger
+	userKeyFilePath string
+	userCrtFilePath string
 }
 
 // 创建连接池
 func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 	pool := &ConnectionPool{
-		logger: config.logger,
+		logger:          config.logger,
 		userKeyFilePath: config.userKeyFilePath,
 		userCrtFilePath: config.userCrtFilePath,
 	}
 
 	for _, node := range config.nodeList {
-		cli := &networkClient {
-			nodeAddr: node.addr,
-			useTLS: node.useTLS,
-			caPaths: node.caPaths,
+		cli := &networkClient{
+			nodeAddr:    node.addr,
+			useTLS:      node.useTLS,
+			caPaths:     node.caPaths,
 			tlsHostName: node.tlsHostName,
 		}
 
-		for i:=0; i<node.connCnt; i++ {
+		for i := 0; i < node.connCnt; i++ {
 			pool.connections = append(pool.connections, cli)
 		}
 	}
@@ -112,7 +108,7 @@ func (pool *ConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]stru
 				}
 
 				cli.conn = conn
-				cli.rpcNode = pb.NewRpcNodeClient(conn)
+				cli.rpcNode = api.NewRpcNodeClient(conn)
 				nc = cli
 				return nil
 			}
@@ -126,7 +122,7 @@ func (pool *ConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]stru
 
 		return fmt.Errorf("all client connections are busy")
 
-	}, strategy.Wait(retryInterval * time.Millisecond), strategy.Limit(retryLimit))
+	}, strategy.Wait(retryInterval*time.Millisecond), strategy.Limit(retryLimit))
 
 	if err != nil {
 		return nil, err

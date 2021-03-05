@@ -1,7 +1,3 @@
-/**
- * @Author: jasonruan
- * @Date:   2020-12-01 14:49:44
- */
 package chainmaker_sdk_go
 
 import (
@@ -37,7 +33,7 @@ const (
 )
 
 var (
-	caPaths     = []string{
+	caPaths = []string{
 		certPathPrefix + fmt.Sprintf(certPathFormat, orgId1),
 		certPathPrefix + fmt.Sprintf(certPathFormat, orgId2),
 		certPathPrefix + fmt.Sprintf(certPathFormat, orgId3),
@@ -116,7 +112,7 @@ func createClientWithOrgId(orgId string) (*ChainClient, error) {
 		AddChainClientNodeConfig(node1),
 		// 添加节点2
 		AddChainClientNodeConfig(node2),
-		)
+	)
 
 	if err != nil {
 		return nil, err

@@ -1,7 +1,3 @@
-/**
- * @Author: jasonruan
- * @Date:   2020-11-27 15:55:19
- */
 package chainmaker_sdk_go
 
 type Logger interface {

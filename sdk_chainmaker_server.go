@@ -1,14 +1,14 @@
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
+	"chainmaker.org/chainmaker-sdk-pb/config"
 	"context"
 	"fmt"
 )
 
 func (cc ChainClient) GetChainMakerServerVersion() (string, error) {
 	cc.logger.Debug("[SDK] begin to get chainmaker server version")
-	req := &pb.ChainMakerVersionRequest{}
+	req := &config.ChainMakerVersionRequest{}
 	client, err := cc.pool.getClient()
 	if err != nil {
 		return "", err

@@ -1,11 +1,7 @@
-/**
- * @Author: jasonruan
- * @Date:   2021-01-16 15:22:24
- **/
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
+	"chainmaker.org/chainmaker-sdk-pb/common"
 	"encoding/binary"
 	"fmt"
 	"github.com/stretchr/testify/require"
@@ -18,7 +14,7 @@ const (
 
 var (
 	assetContractName = "asset001"
-	assetVersion = "1.0.0"
+	assetVersion      = "1.0.0"
 	assetByteCodePath = "./testdata/asset-wasm-demo/asset-rust-0.7.2.wasm"
 )
 
@@ -57,7 +53,7 @@ func TestUserContractAsset(t *testing.T) {
 	require.Nil(t, err)
 
 	fmt.Println("====================== 1)安装钱包合约 ======================")
-	pairs := []*pb.KeyValuePair{
+	pairs := []*common.KeyValuePair{
 		{
 			Key:   "issue_limit",
 			Value: "100000000",
@@ -97,11 +93,10 @@ func TestUserContractAsset(t *testing.T) {
 }
 
 func testUserContractAssetCreate(t *testing.T, client *ChainClient,
-	admin1, admin2, admin3, admin4 *ChainClient, kvs []*pb.KeyValuePair, withSyncResult bool, isIgnoreSameContract bool) {
-
+	admin1, admin2, admin3, admin4 *ChainClient, kvs []*common.KeyValuePair, withSyncResult bool, isIgnoreSameContract bool) {
 
 	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		assetContractName, assetVersion, assetByteCodePath, pb.RuntimeType_WASMER, kvs, withSyncResult)
+		assetContractName, assetVersion, assetByteCodePath, common.RuntimeType_WASMER, kvs, withSyncResult)
 	if !isIgnoreSameContract {
 		require.Nil(t, err)
 	}
@@ -125,16 +120,16 @@ func testUserContractAssetQuery(t *testing.T, client *ChainClient, method string
 }
 
 func testUserContractAssetInvoke(t *testing.T, client *ChainClient, method string, amount, addr string, withSyncResult bool) {
-	params := map[string]string {
+	params := map[string]string{
 		"amount": amount,
-		"to": addr,
+		"to":     addr,
 	}
 	err := invokeUserContract(client, assetContractName, method, "", params, withSyncResult)
 	require.Nil(t, err)
 }
 
 func getBalance(t *testing.T, client *ChainClient, addr string) {
-	params := map[string]string {
+	params := map[string]string{
 		"owner": addr,
 	}
 	balance := testUserContractAssetQuery(t, client, "balance_of", params)

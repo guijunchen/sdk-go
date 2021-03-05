@@ -1,11 +1,7 @@
-/**
- * @Author: jasonruan
- * @Date:   2020-12-02 18:41:47
- **/
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
+	"chainmaker.org/chainmaker-sdk-pb/common"
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -84,7 +80,7 @@ func testUserContractCounterGoCreate(t *testing.T, client *ChainClient,
 	admin1, admin2, admin3, admin4 *ChainClient, withSyncResult bool) {
 
 	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		contractName, version, byteCodePath, pb.RuntimeType_WASMER, []*pb.KeyValuePair{}, withSyncResult)
+		contractName, version, byteCodePath, common.RuntimeType_WASMER, []*common.KeyValuePair{}, withSyncResult)
 	require.Nil(t, err)
 
 	fmt.Printf("CREATE counter-go contract resp: %+v\n", resp)
@@ -93,7 +89,7 @@ func testUserContractCounterGoCreate(t *testing.T, client *ChainClient,
 // 更新合约
 func testUserContractCounterGoUpgrade(t *testing.T, client *ChainClient,
 	admin1, admin2, admin3, admin4 *ChainClient) {
-	payloadBytes, err := client.CreateContractUpgradePayload(contractName, upgradeVersion, upgradeByteCodePath, pb.RuntimeType_GASM, []*pb.KeyValuePair{})
+	payloadBytes, err := client.CreateContractUpgradePayload(contractName, upgradeVersion, upgradeByteCodePath, common.RuntimeType_GASM, []*common.KeyValuePair{})
 	require.Nil(t, err)
 
 	// 各组织Admin权限用户签名
@@ -244,7 +240,7 @@ func testUserContractCounterGoQuery(t *testing.T, client *ChainClient,
 }
 
 func createUserContract(client *ChainClient, admin1, admin2, admin3, admin4 *ChainClient,
-	contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair, withSyncResult bool) (*pb.TxResponse, error) {
+	contractName, version, byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool) (*common.TxResponse, error) {
 
 	payloadBytes, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
@@ -300,7 +296,7 @@ func invokeUserContract(client *ChainClient, contractName, method, txId string, 
 		return err
 	}
 
-	if resp.Code != pb.TxStatusCode_SUCCESS {
+	if resp.Code != common.TxStatusCode_SUCCESS {
 		return fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
 	}
 

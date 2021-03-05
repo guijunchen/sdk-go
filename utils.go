@@ -1,25 +1,20 @@
-/**
- * @Author: jasonruan
- * @Date:   2020-12-01 10:12:25
- **/
 package chainmaker_sdk_go
 
 import (
 	"bytes"
+	"chainmaker.org/chainmaker-go/common/crypto"
+	"chainmaker.org/chainmaker-go/common/crypto/hash"
+	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
+	"chainmaker.org/chainmaker-go/common/random/uuid"
+	"chainmaker.org/chainmaker-sdk-pb/common"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	"os"
 	"time"
-
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
-	"chainmaker.org/chainmaker-go/common/crypto"
-	"chainmaker.org/chainmaker-go/common/crypto/hash"
-	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
-	"chainmaker.org/chainmaker-go/common/random/uuid"
-	"github.com/golang/protobuf/proto"
 )
 
 const (
@@ -31,7 +26,7 @@ func GetRandTxId() string {
 }
 
 // calculate unsigned transaction bytes [header bytes || request payload bytes]
-func CalcUnsignedTxBytes(t *pb.Transaction) ([]byte, error) {
+func CalcUnsignedTxBytes(t *common.Transaction) ([]byte, error) {
 	if t == nil {
 		return nil, errors.New("calc unsigned tx bytes error, tx == nil")
 	}
@@ -47,12 +42,12 @@ func CalcUnsignedTxBytes(t *pb.Transaction) ([]byte, error) {
 }
 
 // calculate unsigned transaction request bytes
-func CalcUnsignedTxRequestBytes(txReq *pb.TxRequest) ([]byte, error) {
+func CalcUnsignedTxRequestBytes(txReq *common.TxRequest) ([]byte, error) {
 	if txReq == nil {
 		return nil, errors.New("calc unsigned tx request bytes error, tx == nil")
 	}
 
-	return CalcUnsignedTxBytes(&pb.Transaction{
+	return CalcUnsignedTxBytes(&common.Transaction{
 		Header:         txReq.Header,
 		RequestPayload: txReq.Payload,
 	})
@@ -89,9 +84,9 @@ func signPayload(privateKey crypto.PrivateKey, cert *bcx509.Certificate, msg []b
 	return SignTx(privateKey, cert, msg)
 }
 
-func paramsMap2KVPairs(params map[string]string) (kvPairs []*pb.KeyValuePair) {
+func paramsMap2KVPairs(params map[string]string) (kvPairs []*common.KeyValuePair) {
 	for key, val := range params {
-		kvPair := &pb.KeyValuePair{
+		kvPair := &common.KeyValuePair{
 			Key:   key,
 			Value: val,
 		}
@@ -102,8 +97,8 @@ func paramsMap2KVPairs(params map[string]string) (kvPairs []*pb.KeyValuePair) {
 	return
 }
 
-func constructQueryPayload(contractName, method string, pairs []*pb.KeyValuePair) ([]byte, error) {
-	payload := &pb.QueryPayload{
+func constructQueryPayload(contractName, method string, pairs []*common.KeyValuePair) ([]byte, error) {
+	payload := &common.QueryPayload{
 		ContractName: contractName,
 		Method:       method,
 		Parameters:   pairs,
@@ -117,8 +112,8 @@ func constructQueryPayload(contractName, method string, pairs []*pb.KeyValuePair
 	return payloadBytes, nil
 }
 
-func constructTransactPayload(contractName, method string, pairs []*pb.KeyValuePair) ([]byte, error) {
-	payload := &pb.TransactPayload{
+func constructTransactPayload(contractName, method string, pairs []*common.KeyValuePair) ([]byte, error) {
+	payload := &common.TransactPayload{
 		ContractName: contractName,
 		Method:       method,
 		Parameters:   pairs,
@@ -132,8 +127,8 @@ func constructTransactPayload(contractName, method string, pairs []*pb.KeyValueP
 	return payloadBytes, nil
 }
 
-func constructSystemContractPayload(chainId, contractName, method string, pairs []*pb.KeyValuePair, sequence uint64) ([]byte, error) {
-	payload := &pb.SystemContractPayload{
+func constructSystemContractPayload(chainId, contractName, method string, pairs []*common.KeyValuePair, sequence uint64) ([]byte, error) {
+	payload := &common.SystemContractPayload{
 		ChainId:      chainId,
 		ContractName: contractName,
 		Method:       method,
@@ -149,8 +144,8 @@ func constructSystemContractPayload(chainId, contractName, method string, pairs 
 	return payloadBytes, nil
 }
 
-func constructConfigUpdatePayload(chainId, contractName, method string, pairs []*pb.KeyValuePair, sequence int) ([]byte, error) {
-	payload := &pb.SystemContractPayload{
+func constructConfigUpdatePayload(chainId, contractName, method string, pairs []*common.KeyValuePair, sequence int) ([]byte, error) {
+	payload := &common.SystemContractPayload{
 		ChainId:      chainId,
 		ContractName: contractName,
 		Method:       method,
@@ -167,7 +162,7 @@ func constructConfigUpdatePayload(chainId, contractName, method string, pairs []
 }
 
 func constructSubscribeBlockPayload(startBlock, endBlock int64, withRwSet bool) ([]byte, error) {
-	payload := &pb.SubscribeBlockPayload{
+	payload := &common.SubscribeBlockPayload{
 		StartBlock: startBlock,
 		EndBlock:   endBlock,
 		WithRwSet:  withRwSet,
@@ -181,8 +176,8 @@ func constructSubscribeBlockPayload(startBlock, endBlock int64, withRwSet bool) 
 	return payloadBytes, nil
 }
 
-func constructSubscribeTxPayload(startBlock, endBlock int64, txType pb.TxType, txIds []string) ([]byte, error) {
-	payload := &pb.SubscribeTxPayload{
+func constructSubscribeTxPayload(startBlock, endBlock int64, txType common.TxType, txIds []string) ([]byte, error) {
+	payload := &common.SubscribeTxPayload{
 		StartBlock: startBlock,
 		EndBlock:   endBlock,
 		TxType:     txType,
@@ -197,8 +192,8 @@ func constructSubscribeTxPayload(startBlock, endBlock int64, txType pb.TxType, t
 	return payloadBytes, nil
 }
 
-func checkProposalRequestResp(resp *pb.TxResponse, needContractResult bool) error {
-	if resp.Code != pb.TxStatusCode_SUCCESS {
+func checkProposalRequestResp(resp *common.TxResponse, needContractResult bool) error {
+	if resp.Code != common.TxStatusCode_SUCCESS {
 		return errors.New(resp.Message)
 	}
 
@@ -206,7 +201,7 @@ func checkProposalRequestResp(resp *pb.TxResponse, needContractResult bool) erro
 		return fmt.Errorf("contract result is nil")
 	}
 
-	if resp.ContractResult != nil && resp.ContractResult.Code != pb.ContractResultCode_OK {
+	if resp.ContractResult != nil && resp.ContractResult.Code != common.ContractResultCode_OK {
 		return errors.New(resp.ContractResult.Message)
 	}
 
@@ -218,7 +213,7 @@ func mergeSystemContractSignedPayload(signedPayloadBytes [][]byte) ([]byte, erro
 		return nil, fmt.Errorf("input params is empty")
 	}
 
-	allPayload := &pb.SystemContractPayload{}
+	allPayload := &common.SystemContractPayload{}
 	if err := proto.Unmarshal(signedPayloadBytes[0], allPayload); err != nil {
 		return nil, fmt.Errorf("unmarshal No.0 signed payload failed, %s", err)
 	}
@@ -228,11 +223,11 @@ func mergeSystemContractSignedPayload(signedPayloadBytes [][]byte) ([]byte, erro
 	}
 
 	allPayloadCopy := proto.Clone(allPayload)
-	allPayloadCopy.(*pb.SystemContractPayload).Endorsement = nil
+	allPayloadCopy.(*common.SystemContractPayload).Endorsement = nil
 
 	for i := 1; i < len(signedPayloadBytes); i++ {
 
-		payload := &pb.SystemContractPayload{}
+		payload := &common.SystemContractPayload{}
 		if err := proto.Unmarshal(signedPayloadBytes[i], payload); err != nil {
 			return nil, fmt.Errorf("unmarshal No.%d signed payload failed, %s", i, err)
 		}
@@ -242,7 +237,7 @@ func mergeSystemContractSignedPayload(signedPayloadBytes [][]byte) ([]byte, erro
 		}
 
 		payloadCopy := proto.Clone(payload)
-		payloadCopy.(*pb.SystemContractPayload).Endorsement = nil
+		payloadCopy.(*common.SystemContractPayload).Endorsement = nil
 
 		if !checkPayloads(allPayloadCopy, payloadCopy) {
 			return nil, fmt.Errorf("No.%d signed payload not all the same", i)
@@ -264,7 +259,7 @@ func mergeContractManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, erro
 		return nil, fmt.Errorf("input params is empty")
 	}
 
-	allPayload := &pb.ContractMgmtPayload{}
+	allPayload := &common.ContractMgmtPayload{}
 	if err := proto.Unmarshal(signedPayloadBytes[0], allPayload); err != nil {
 		return nil, fmt.Errorf("unmarshal No.0 signed payload failed, %s", err)
 	}
@@ -274,11 +269,11 @@ func mergeContractManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, erro
 	}
 
 	allPayloadCopy := proto.Clone(allPayload)
-	allPayloadCopy.(*pb.ContractMgmtPayload).Endorsement = nil
+	allPayloadCopy.(*common.ContractMgmtPayload).Endorsement = nil
 
 	for i := 1; i < len(signedPayloadBytes); i++ {
 
-		payload := &pb.ContractMgmtPayload{}
+		payload := &common.ContractMgmtPayload{}
 		if err := proto.Unmarshal(signedPayloadBytes[i], payload); err != nil {
 			return nil, fmt.Errorf("unmarshal No.%d signed payload failed, %s", i, err)
 		}
@@ -288,7 +283,7 @@ func mergeContractManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, erro
 		}
 
 		payloadCopy := proto.Clone(payload)
-		payloadCopy.(*pb.ContractMgmtPayload).Endorsement = nil
+		payloadCopy.(*common.ContractMgmtPayload).Endorsement = nil
 
 		if !checkPayloads(allPayloadCopy, payloadCopy) {
 			return nil, fmt.Errorf("No.%d signed payload not all the same", i)

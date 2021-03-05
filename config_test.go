@@ -1,7 +1,3 @@
-/**
- * @Author: jasonruan
- * @Date:   2020-12-29 11:26:01
- **/
 package chainmaker_sdk_go
 
 import (

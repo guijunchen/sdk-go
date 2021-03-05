@@ -1,15 +1,11 @@
-/**
- * @Author: zghh
- * @Date:   2020-12-02 10:09:05
- **/
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker-sdk-pb/common"
+	"chainmaker.org/chainmaker-sdk-pb/discovery"
 	"fmt"
-	"strconv"
-
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 	"github.com/golang/protobuf/proto"
+	"strconv"
 )
 
 const (
@@ -17,14 +13,14 @@ const (
 	keyWithRWSet = "withRWSet"
 )
 
-func (cc ChainClient) GetTxByTxId(txId string) (*pb.TransactionInfo, error) {
+func (cc ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
-		pb.QueryFunction_GET_TX_BY_TX_ID.String(), txId)
+		common.QueryFunction_GET_TX_BY_TX_ID.String(), txId)
 
 	payloadBytes, err := constructQueryPayload(
-		pb.ContractName_SYSTEM_CONTRACT_QUERY.String(),
-		pb.QueryFunction_GET_TX_BY_TX_ID.String(),
-		[]*pb.KeyValuePair{
+		common.ContractName_SYSTEM_CONTRACT_QUERY.String(),
+		common.QueryFunction_GET_TX_BY_TX_ID.String(),
+		[]*common.KeyValuePair{
 			{
 				Key:   "txId",
 				Value: txId,
@@ -35,16 +31,16 @@ func (cc ChainClient) GetTxByTxId(txId string) (*pb.TransactionInfo, error) {
 		return nil, fmt.Errorf("GetTxByTxId marshal query payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(pb.TxType_QUERY_SYSTEM_CONTRACT, txId, payloadBytes)
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, txId, payloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	transactionInfo := &pb.TransactionInfo{}
+	transactionInfo := &common.TransactionInfo{}
 	if err = proto.Unmarshal(resp.ContractResult.Result, transactionInfo); err != nil {
 		return nil, fmt.Errorf("unmarshal transaction info payload failed, %s", err.Error())
 	}
@@ -52,14 +48,14 @@ func (cc ChainClient) GetTxByTxId(txId string) (*pb.TransactionInfo, error) {
 	return transactionInfo, nil
 }
 
-func (cc ChainClient) GetBlockByHeight(blockHeight int64, withRWSet bool) (*pb.BlockInfo, error) {
+func (cc ChainClient) GetBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%s]",
-		pb.QueryFunction_GET_BLOCK_BY_HEIGHT.String(), blockHeight, strconv.FormatBool(withRWSet))
+		common.QueryFunction_GET_BLOCK_BY_HEIGHT.String(), blockHeight, strconv.FormatBool(withRWSet))
 
 	payloadBytes, err := constructQueryPayload(
-		pb.ContractName_SYSTEM_CONTRACT_QUERY.String(),
-		pb.QueryFunction_GET_BLOCK_BY_HEIGHT.String(),
-		[]*pb.KeyValuePair{
+		common.ContractName_SYSTEM_CONTRACT_QUERY.String(),
+		common.QueryFunction_GET_BLOCK_BY_HEIGHT.String(),
+		[]*common.KeyValuePair{
 			{
 				Key:   "blockHeight",
 				Value: strconv.FormatInt(blockHeight, 10),
@@ -74,16 +70,16 @@ func (cc ChainClient) GetBlockByHeight(blockHeight int64, withRWSet bool) (*pb.B
 		return nil, fmt.Errorf("GetBlockByHeight marshal query payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(pb.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	blockInfo := &pb.BlockInfo{}
+	blockInfo := &common.BlockInfo{}
 	if err = proto.Unmarshal(resp.ContractResult.Result, blockInfo); err != nil {
 		return nil, fmt.Errorf("GetBlockByHeight unmarshal block info payload failed, %s", err.Error())
 	}
@@ -92,14 +88,14 @@ func (cc ChainClient) GetBlockByHeight(blockHeight int64, withRWSet bool) (*pb.B
 
 }
 
-func (cc ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*pb.BlockInfo, error) {
+func (cc ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHash:%s]/[withRWSet:%s]",
-		pb.QueryFunction_GET_BLOCK_BY_HASH.String(), blockHash, strconv.FormatBool(withRWSet))
+		common.QueryFunction_GET_BLOCK_BY_HASH.String(), blockHash, strconv.FormatBool(withRWSet))
 
 	payloadBytes, err := constructQueryPayload(
-		pb.ContractName_SYSTEM_CONTRACT_QUERY.String(),
-		pb.QueryFunction_GET_BLOCK_BY_HASH.String(),
-		[]*pb.KeyValuePair{
+		common.ContractName_SYSTEM_CONTRACT_QUERY.String(),
+		common.QueryFunction_GET_BLOCK_BY_HASH.String(),
+		[]*common.KeyValuePair{
 			{
 				Key:   "blockHash",
 				Value: blockHash,
@@ -114,16 +110,16 @@ func (cc ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*pb.Bloc
 		return nil, fmt.Errorf("GetBlockByHash marshal query payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(pb.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	blockInfo := &pb.BlockInfo{}
+	blockInfo := &common.BlockInfo{}
 	if err = proto.Unmarshal(resp.ContractResult.Result, blockInfo); err != nil {
 		return nil, fmt.Errorf("GetBlockByHash unmarshal block info payload failed, %s", err.Error())
 	}
@@ -132,14 +128,14 @@ func (cc ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*pb.Bloc
 
 }
 
-func (cc ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*pb.BlockInfo, error) {
+func (cc ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]/[withRWSet:%s]",
-		pb.QueryFunction_GET_BLOCK_BY_TX_ID.String(), txId, strconv.FormatBool(withRWSet))
+		common.QueryFunction_GET_BLOCK_BY_TX_ID.String(), txId, strconv.FormatBool(withRWSet))
 
 	payloadBytes, err := constructQueryPayload(
-		pb.ContractName_SYSTEM_CONTRACT_QUERY.String(),
-		pb.QueryFunction_GET_BLOCK_BY_TX_ID.String(),
-		[]*pb.KeyValuePair{
+		common.ContractName_SYSTEM_CONTRACT_QUERY.String(),
+		common.QueryFunction_GET_BLOCK_BY_TX_ID.String(),
+		[]*common.KeyValuePair{
 			{
 				Key:   "txId",
 				Value: txId,
@@ -154,16 +150,16 @@ func (cc ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*pb.BlockInfo
 		return nil, fmt.Errorf("GetBlockByTxId marshal query payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(pb.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	blockInfo := &pb.BlockInfo{}
+	blockInfo := &common.BlockInfo{}
 	if err = proto.Unmarshal(resp.ContractResult.Result, blockInfo); err != nil {
 		return nil, fmt.Errorf("GetBlockByTxId unmarshal block info payload failed, %s", err.Error())
 	}
@@ -171,14 +167,14 @@ func (cc ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*pb.BlockInfo
 	return blockInfo, nil
 }
 
-func (cc ChainClient) GetLastConfigBlock(withRWSet bool) (*pb.BlockInfo, error) {
+func (cc ChainClient) GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[withRWSet:%s]",
-		pb.QueryFunction_GET_LAST_CONFIG_BLOCK.String(), strconv.FormatBool(withRWSet))
+		common.QueryFunction_GET_LAST_CONFIG_BLOCK.String(), strconv.FormatBool(withRWSet))
 
 	payloadBytes, err := constructQueryPayload(
-		pb.ContractName_SYSTEM_CONTRACT_QUERY.String(),
-		pb.QueryFunction_GET_LAST_CONFIG_BLOCK.String(),
-		[]*pb.KeyValuePair{
+		common.ContractName_SYSTEM_CONTRACT_QUERY.String(),
+		common.QueryFunction_GET_LAST_CONFIG_BLOCK.String(),
+		[]*common.KeyValuePair{
 			{
 				Key:   keyWithRWSet,
 				Value: strconv.FormatBool(withRWSet),
@@ -189,16 +185,16 @@ func (cc ChainClient) GetLastConfigBlock(withRWSet bool) (*pb.BlockInfo, error) 
 		return nil, fmt.Errorf("GetLastConfigBlock marshal query payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(pb.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	blockInfo := &pb.BlockInfo{}
+	blockInfo := &common.BlockInfo{}
 	if err = proto.Unmarshal(resp.ContractResult.Result, blockInfo); err != nil {
 		return nil, fmt.Errorf("GetLastConfigBlock unmarshal block info payload failed, %s", err.Error())
 	}
@@ -206,29 +202,29 @@ func (cc ChainClient) GetLastConfigBlock(withRWSet bool) (*pb.BlockInfo, error) 
 	return blockInfo, nil
 }
 
-func (cc ChainClient) GetChainInfo() (*pb.ChainInfo, error) {
+func (cc ChainClient) GetChainInfo() (*discovery.ChainInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		pb.QueryFunction_GET_CHAIN_INFO.String())
+		common.QueryFunction_GET_CHAIN_INFO.String())
 
 	payloadBytes, err := constructQueryPayload(
-		pb.ContractName_SYSTEM_CONTRACT_QUERY.String(),
-		pb.QueryFunction_GET_CHAIN_INFO.String(),
-		[]*pb.KeyValuePair{},
+		common.ContractName_SYSTEM_CONTRACT_QUERY.String(),
+		common.QueryFunction_GET_CHAIN_INFO.String(),
+		[]*common.KeyValuePair{},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("GetChainInfo marshal query payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(pb.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	chainInfo := &pb.ChainInfo{}
+	chainInfo := &discovery.ChainInfo{}
 	if err = proto.Unmarshal(resp.ContractResult.Result, chainInfo); err != nil {
 		return nil, fmt.Errorf("unmarshal chain info payload failed, %s", err.Error())
 	}
@@ -236,29 +232,29 @@ func (cc ChainClient) GetChainInfo() (*pb.ChainInfo, error) {
 	return chainInfo, nil
 }
 
-func (cc ChainClient) GetNodeChainList() (*pb.ChainList, error) {
+func (cc ChainClient) GetNodeChainList() (*discovery.ChainList, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		pb.QueryFunction_GET_NODE_CHAIN_LIST.String())
+		common.QueryFunction_GET_NODE_CHAIN_LIST.String())
 
 	payloadBytes, err := constructQueryPayload(
-		pb.ContractName_SYSTEM_CONTRACT_QUERY.String(),
-		pb.QueryFunction_GET_NODE_CHAIN_LIST.String(),
-		[]*pb.KeyValuePair{},
+		common.ContractName_SYSTEM_CONTRACT_QUERY.String(),
+		common.QueryFunction_GET_NODE_CHAIN_LIST.String(),
+		[]*common.KeyValuePair{},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("GetNodeChainList marshar query payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(pb.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
 	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, pb.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	chainList := &pb.ChainList{}
+	chainList := &discovery.ChainList{}
 	if err = proto.Unmarshal(resp.ContractResult.Result, chainList); err != nil {
 		return nil, fmt.Errorf("unmarshal chain list payload failed, %s", err.Error())
 	}

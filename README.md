@@ -107,7 +107,7 @@ func createClient() (*ChainClient, error) {
   - runtime: 合约运行环境
   - kvs: 合约初始化参数
 ```go
-CreateContractCreatePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
+CreateContractCreatePayload(contractName, version, byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair) ([]byte, error)
 ```
 
 #### 4.1.2 升级合约待签名payload生成
@@ -118,7 +118,7 @@ CreateContractCreatePayload(contractName, version, byteCodePath string, runtime 
   - runtime: 合约运行环境
   - kvs: 合约升级参数
 ```go
-CreateContractUpgradePayload(contractName, version, byteCodePath string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
+CreateContractUpgradePayload(contractName, version, byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair) ([]byte, error)
 ```
 
 #### 4.1.3 合约管理获取Payload签名
@@ -136,10 +136,10 @@ MergeContractManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
   - multiSignedPayload: 多签结果
   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
   - withSyncResult: 是否同步获取交易执行结果
-           当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
-           当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
+           当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+           当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
 ```go
-SendContractCreateRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
+SendContractCreateRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 ```
 
 #### 4.1.6 发送升级合约请求
@@ -147,10 +147,10 @@ SendContractCreateRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyn
   - multiSignedPayload: 多签结果
   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
   - withSyncResult: 是否同步获取交易执行结果
-           当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
-           当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
+           当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+           当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
 ```go
-SendContractUpgradeRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
+SendContractUpgradeRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 ```
 
 #### 4.1.7 合约调用
@@ -163,10 +163,10 @@ SendContractUpgradeRequest(mergeSignedPayloadBytes []byte, timeout int64, withSy
   - params: 合约参数
   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
   - withSyncResult: 是否同步获取交易执行结果
-           当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
-           当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
+           当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+           当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
 ```go
-InvokeContract(contractName, method, txId string, params map[string]string, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
+InvokeContract(contractName, method, txId string, params map[string]string, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 ```
 
 #### 4.1.8 合约查询接口调用
@@ -176,7 +176,7 @@ InvokeContract(contractName, method, txId string, params map[string]string, time
   - params: 合约参数
   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 ```go
-QueryContract(contractName, method string, params map[string]string, timeout int64) (*pb.TxResponse, error)
+QueryContract(contractName, method string, params map[string]string, timeout int64) (*common.TxResponse, error)
 ```
 
 ### 4.2 系统合约接口
@@ -184,7 +184,7 @@ QueryContract(contractName, method string, params map[string]string, timeout int
 **参数说明**
   - txId: 交易ID
 ```go
-GetTxByTxId(txId string) (*pb.TransactionInfo, error)
+GetTxByTxId(txId string) (*common.TransactionInfo, error)
 ```
 
 #### 4.2.2 根据区块高度查询区块
@@ -192,7 +192,7 @@ GetTxByTxId(txId string) (*pb.TransactionInfo, error)
   - blockHeight: 指定区块高度，若为-1，将返回最新区块
   - withRWSet: 是否返回读写集
 ```go
-GetBlockByHeight(blockHeight int64, withRWSet bool) (*pb.BlockInfo, error)
+GetBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error)
 ```
 
 #### 4.2.3 根据区块哈希查询区块
@@ -200,7 +200,7 @@ GetBlockByHeight(blockHeight int64, withRWSet bool) (*pb.BlockInfo, error)
   - blockHash: 指定区块Hash
   - withRWSet: 是否返回读写集
 ```go
-GetBlockByHash(blockHash string, withRWSet bool) (*pb.BlockInfo, error)
+GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
 ```
 
 #### 4.2.4 根据交易Id查询区块
@@ -208,44 +208,44 @@ GetBlockByHash(blockHash string, withRWSet bool) (*pb.BlockInfo, error)
   - txId: 交易ID
   - withRWSet: 是否返回读写集
 ```go
-GetBlockByTxId(txId string, withRWSet bool) (*pb.BlockInfo, error)
+GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
 ```
 
 #### 4.2.5 查询最新的配置块
 **参数说明**
   - withRWSet: 是否返回读写集
 ```go
-GetLastConfigBlock(withRWSet bool) (*pb.BlockInfo, error)
+GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error)
 ```
 
 #### 4.2.6 查询节点已部署的所有合约信息
    - 包括：合约名、合约版本、运行环境、交易ID
 ```go
-GetContractInfo() (*pb.ContractInfo, error)
+GetContractInfo() (*common.ContractInfo, error)
 ```
 
 #### 4.2.7 查询节点加入的链信息
    - 返回ChainId清单
 ```go
-GetNodeChainList() (*pb.ChainList, error)
+GetNodeChainList() (*discovery.ChainList, error)
 ```
 
 #### 4.2.8 查询链信息
   - 包括：当前链最新高度，链节点信息
 ```go
-GetChainInfo() (*pb.ChainInfo, error)
+GetChainInfo() (*discovery.ChainInfo, error)
 ```
 
 ### 4.3 链配置接口
 #### 4.3.1 查询最新链配置
 ```go
-GetChainConfig() (*pb.ChainConfig, error)
+GetChainConfig() (*config.ChainConfig, error)
 ```
 
 #### 4.3.2 根据指定区块高度查询最近链配置
   - 如果当前区块就是配置块，直接返回当前区块的链配置
 ```go
-GetChainConfigByBlockHeight(blockHeight int) (*pb.ChainConfig, error)
+GetChainConfigByBlockHeight(blockHeight int) (*config.ChainConfig, error)
 ```
 
 #### 4.3.3 查询最新链配置序号Sequence
@@ -266,7 +266,7 @@ MergeChainConfigSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
 
 #### 4.3.6 发送链配置更新请求
 ```go
-SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*pb.TxResponse, error)
+SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*common.TxResponse, error)
 ```
 
 > 以下CreateChainConfigXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
@@ -317,17 +317,17 @@ CreateChainConfigTrustRootDeletePayload(trustRootOrgId string) ([]byte, error)
 #### 4.3.12 添加权限配置待签名payload生成
 **参数说明**
   - permissionResourceName: 权限名
-  - principle: 权限规则
+  - policy: 权限规则
 ```go
-CreateChainConfigPermissionAddPayload(permissionResourceName string, principle *pb.Principle) ([]byte, error)
+CreateChainConfigPermissionAddPayload(permissionResourceName string, policy *accesscontrol.Policy) ([]byte, error)
 ```
 
 #### 4.3.13 更新权限配置待签名payload生成
 **参数说明**
   - permissionResourceName: 权限名
-  - principle: 权限规则
+  - policy: 权限规则
 ```go
-CreateChainConfigPermissionUpdatePayload(permissionResourceName string, principle *pb.Principle) ([]byte, error)
+CreateChainConfigPermissionUpdatePayload(permissionResourceName string, policy *accesscontrol.Policy) ([]byte, error)
 ```
 
 #### 4.3.14 删除权限配置待签名payload生成
@@ -389,14 +389,14 @@ CreateChainConfigConsensusNodeOrgDeletePayload(nodeOrgId string) ([]byte, error)
 **参数说明**
   - kvs: 字段key、value对
 ```go
-CreateChainConfigConsensusExtAddPayload(kvs []*pb.KeyValuePair) ([]byte, error)
+CreateChainConfigConsensusExtAddPayload(kvs []*common.KeyValuePair) ([]byte, error)
 ```
 
 #### 4.3.22 添加共识扩展字段待签名payload生成
 **参数说明**
   - kvs: 字段key、value对
 ```go
-CreateChainConfigConsensusExtUpdatePayload(kvs []*pb.KeyValuePair) ([]byte, error)
+CreateChainConfigConsensusExtUpdatePayload(kvs []*common.KeyValuePair) ([]byte, error)
 ```
 
 #### 4.3.23 添加共识扩展字段待签名payload生成
@@ -409,25 +409,25 @@ CreateChainConfigConsensusExtDeletePayload(keys []string) ([]byte, error)
 ### 4.4 证书管理接口
 #### 4.4.1 用户证书添加
 **参数说明**
-  - 在pb.TxResponse.ContractResult.Result字段中返回成功添加的certHash
+  - 在common.TxResponse.ContractResult.Result字段中返回成功添加的certHash
 ```go
-AddCert() (*pb.TxResponse, error)
+AddCert() (*common.TxResponse, error)
 ```
 
 #### 4.4.2 用户证书删除
 **参数说明**
   - certHashes: 证书Hash列表
 ```go
-DeleteCert(certHashes []string) (*pb.TxResponse, error)
+DeleteCert(certHashes []string) (*common.TxResponse, error)
 ```
 
 #### 4.4.3 用户证书查询
 **参数说明**
   - certHashes: 证书Hash列表
 返回值说明：
-  - *pb.CertInfos: 包含证书Hash和证书内容的列表
+  - *common.CertInfos: 包含证书Hash和证书内容的列表
 ```go
-QueryCert(certHashes []string) (*pb.CertInfos, error)
+QueryCert(certHashes []string) (*common.CertInfos, error)
 ```
 
 #### 4.4.4 获取用户证书哈希
@@ -449,18 +449,18 @@ SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRwSet bool) 
 **参数说明**
   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
-  - txType: 订阅交易类型,若为pb.TxType(-1)，表示订阅所有交易类型
+  - txType: 订阅交易类型,若为common.TxType(-1)，表示订阅所有交易类型
   - txIds: 订阅txId列表，若为空，表示订阅所有txId
 ```go
-SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType pb.TxType, txIds []string) (<-chan interface{}, error)
+SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType common.TxType, txIds []string) (<-chan interface{}, error)
 ```
 
 #### 4.5.3 多合一订阅
 **参数说明**
-  - txType: 订阅交易类型，目前已支持：区块消息订阅(pb.TxType_SUBSCRIBE_BLOCK_INFO)、交易消息订阅(pb.TxType_SUBSCRIBE_TX_INFO)
+  - txType: 订阅交易类型，目前已支持：区块消息订阅(common.TxType_SUBSCRIBE_BLOCK_INFO)、交易消息订阅(common.TxType_SUBSCRIBE_TX_INFO)
   - payloadBytes: 消息订阅参数payload
 ```go
-Subscribe(ctx context.Context, txType pb.TxType, payloadBytes []byte) (<-chan interface{}, error)
+Subscribe(ctx context.Context, txType common.TxType, payloadBytes []byte) (<-chan interface{}, error)
 ```
 
 ### 4.6 证书压缩

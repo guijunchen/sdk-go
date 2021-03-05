@@ -1,13 +1,11 @@
-/**
- * @Author: jasonruan
- * @Date:   2020-11-27 15:14:08
- */
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker-sdk-pb/accesscontrol"
+	"chainmaker.org/chainmaker-sdk-pb/common"
+	"chainmaker.org/chainmaker-sdk-pb/config"
+	"chainmaker.org/chainmaker-sdk-pb/discovery"
 	"context"
-
-	"chainmaker.org/chainmaker-go/chainmaker-sdk-go/pb"
 )
 
 // # ChainMaker Go SDK 接口说明
@@ -21,7 +19,7 @@ type SDKInterface interface {
 	//   - runtime: 合约运行环境
 	//   - kvs: 合约初始化参数
 	// ```go
-	CreateContractCreatePayload(contractName, version, byteCode string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
+	CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType, kvs []*common.KeyValuePair) ([]byte, error)
 	// ```
 
 	// ### 1.2 升级合约待签名payload生成
@@ -32,7 +30,7 @@ type SDKInterface interface {
 	//   - runtime: 合约运行环境
 	//   - kvs: 合约升级参数
 	// ```go
-	CreateContractUpgradePayload(contractName, version, byteCode string, runtime pb.RuntimeType, kvs []*pb.KeyValuePair) ([]byte, error)
+	CreateContractUpgradePayload(contractName, version, byteCode string, runtime common.RuntimeType, kvs []*common.KeyValuePair) ([]byte, error)
 	// ```
 
 	// ### 1.3 冻结合约payload生成
@@ -75,10 +73,10 @@ type SDKInterface interface {
 	//   - multiSignedPayload: 多签结果
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	//   - withSyncResult: 是否同步获取交易执行结果
-	//            当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
-	//            当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendContractManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
+	SendContractManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
 	// ### 1.9 合约调用
@@ -91,10 +89,10 @@ type SDKInterface interface {
 	//   - params: 合约参数
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	//   - withSyncResult: 是否同步获取交易执行结果
-	//            当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
-	//            当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	InvokeContract(contractName, method, txId string, params map[string]string, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
+	InvokeContract(contractName, method, txId string, params map[string]string, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
 	// ### 1.10 合约查询接口调用
@@ -104,7 +102,7 @@ type SDKInterface interface {
 	//   - params: 合约参数
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
-	QueryContract(contractName, method string, params map[string]string, timeout int64) (*pb.TxResponse, error)
+	QueryContract(contractName, method string, params map[string]string, timeout int64) (*common.TxResponse, error)
 	// ```
 
 	// ## 2 系统合约接口
@@ -112,7 +110,7 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - txId: 交易ID
 	// ```go
-	GetTxByTxId(txId string) (*pb.TransactionInfo, error)
+	GetTxByTxId(txId string) (*common.TransactionInfo, error)
 	// ```
 
 	// ### 2.2 根据区块高度查询区块
@@ -120,7 +118,7 @@ type SDKInterface interface {
 	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
 	//   - withRWSet: 是否返回读写集
 	// ```go
-	GetBlockByHeight(blockHeight int64, withRWSet bool) (*pb.BlockInfo, error)
+	GetBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
 	// ### 2.3 根据区块哈希查询区块
@@ -128,7 +126,7 @@ type SDKInterface interface {
 	//   - blockHash: 指定区块Hash
 	//   - withRWSet: 是否返回读写集
 	// ```go
-	GetBlockByHash(blockHash string, withRWSet bool) (*pb.BlockInfo, error)
+	GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
 	// ### 2.4 根据交易Id查询区块
@@ -136,38 +134,38 @@ type SDKInterface interface {
 	//   - txId: 交易ID
 	//   - withRWSet: 是否返回读写集
 	// ```go
-	GetBlockByTxId(txId string, withRWSet bool) (*pb.BlockInfo, error)
+	GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
 	// ### 2.5 查询最新的配置块
 	// **参数说明**
 	//   - withRWSet: 是否返回读写集
 	// ```go
-	GetLastConfigBlock(withRWSet bool) (*pb.BlockInfo, error)
+	GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
 	// ### 2.6 查询节点加入的链信息
 	//    - 返回ChainId清单
 	// ```go
-	GetNodeChainList() (*pb.ChainList, error)
+	GetNodeChainList() (*discovery.ChainList, error)
 	// ```
 
 	// ### 2.7 查询链信息
 	//   - 包括：当前链最新高度，链节点信息
 	// ```go
-	GetChainInfo() (*pb.ChainInfo, error)
+	GetChainInfo() (*discovery.ChainInfo, error)
 	// ```
 
 	// ## 3 链配置接口
 	// ### 3.1 查询最新链配置
 	// ```go
-	GetChainConfig() (*pb.ChainConfig, error)
+	GetChainConfig() (*config.ChainConfig, error)
 	// ```
 
 	// ### 3.2 根据指定区块高度查询最近链配置
 	//   - 如果当前区块就是配置块，直接返回当前区块的链配置
 	// ```go
-	GetChainConfigByBlockHeight(blockHeight int) (*pb.ChainConfig, error)
+	GetChainConfigByBlockHeight(blockHeight int) (*config.ChainConfig, error)
 	// ```
 
 	// ### 3.3 查询最新链配置序号Sequence
@@ -188,7 +186,7 @@ type SDKInterface interface {
 
 	// ### 3.6 发送链配置更新请求
 	// ```go
-	SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*pb.TxResponse, error)
+	SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*common.TxResponse, error)
 	// ```
 
 	// > 以下CreateChainConfigXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
@@ -239,17 +237,17 @@ type SDKInterface interface {
 	// ### 3.12 添加权限配置待签名payload生成
 	// **参数说明**
 	//   - permissionResourceName: 权限名
-	//   - principle: 权限规则
+	//   - policy: 权限规则
 	// ```go
-	CreateChainConfigPermissionAddPayload(permissionResourceName string, principle *pb.Principle) ([]byte, error)
+	CreateChainConfigPermissionAddPayload(permissionResourceName string, policy *accesscontrol.Policy) ([]byte, error)
 	// ```
 
 	// ### 3.13 更新权限配置待签名payload生成
 	// **参数说明**
 	//   - permissionResourceName: 权限名
-	//   - principle: 权限规则
+	//   - policy: 权限规则
 	// ```go
-	CreateChainConfigPermissionUpdatePayload(permissionResourceName string, principle *pb.Principle) ([]byte, error)
+	CreateChainConfigPermissionUpdatePayload(permissionResourceName string, policy *accesscontrol.Policy) ([]byte, error)
 	// ```
 
 	// ### 3.14 删除权限配置待签名payload生成
@@ -311,14 +309,14 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - kvs: 字段key、value对
 	// ```go
-	CreateChainConfigConsensusExtAddPayload(kvs []*pb.KeyValuePair) ([]byte, error)
+	CreateChainConfigConsensusExtAddPayload(kvs []*common.KeyValuePair) ([]byte, error)
 	// ```
 
 	// ### 3.22 添加共识扩展字段待签名payload生成
 	// **参数说明**
 	//   - kvs: 字段key、value对
 	// ```go
-	CreateChainConfigConsensusExtUpdatePayload(kvs []*pb.KeyValuePair) ([]byte, error)
+	CreateChainConfigConsensusExtUpdatePayload(kvs []*common.KeyValuePair) ([]byte, error)
 	// ```
 
 	// ### 3.23 添加共识扩展字段待签名payload生成
@@ -331,25 +329,25 @@ type SDKInterface interface {
 	// ## 4 证书管理接口
 	// ### 4.1 用户证书添加
 	// **参数说明**
-	//   - 在pb.TxResponse.ContractResult.Result字段中返回成功添加的certHash
+	//   - 在common.TxResponse.ContractResult.Result字段中返回成功添加的certHash
 	// ```go
-	AddCert() (*pb.TxResponse, error)
+	AddCert() (*common.TxResponse, error)
 	// ```
 
 	// ### 4.2 用户证书删除
 	// **参数说明**
 	//   - certHashes: 证书Hash列表
 	// ```go
-	DeleteCert(certHashes []string) (*pb.TxResponse, error)
+	DeleteCert(certHashes []string) (*common.TxResponse, error)
 	// ```
 
 	// ### 4.3 用户证书查询
 	// **参数说明**
 	//   - certHashes: 证书Hash列表
 	// 返回值说明：
-	//   - *pb.CertInfos: 包含证书Hash和证书内容的列表
+	//   - *common.CertInfos: 包含证书Hash和证书内容的列表
 	// ```go
-	QueryCert(certHashes []string) (*pb.CertInfos, error)
+	QueryCert(certHashes []string) (*common.CertInfos, error)
 	// ```
 
 	// ### 4.4 获取用户证书哈希
@@ -362,7 +360,7 @@ type SDKInterface interface {
 	//   - method: CERTS_FROZEN(证书冻结)/CERTS_UNFROZEN(证书解冻)/CERTS_REVOCATION(证书吊销)
 	//   - kvs: 证书管理操作参数
 	// ```go
-	CreateCertManagePayload(method string, kvs []*pb.KeyValuePair) ([]byte, error)
+	CreateCertManagePayload(method string, kvs []*common.KeyValuePair) ([]byte, error)
 	// ```
 
 	// ### 4.6 生成证书冻结操作Payload
@@ -406,10 +404,10 @@ type SDKInterface interface {
 	//   - multiSignedPayload: 多签结果
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	//   - withSyncResult: 是否同步获取交易执行结果
-	//            当为true时，若成功调用，pb.TxResponse.ContractResult.Result为pb.TransactionInfo
-	//            当为false时，若成功调用，pb.TxResponse.ContractResult.Result为txId
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendCertManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*pb.TxResponse, error)
+	SendCertManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
 	// ## 5 在线多签接口
@@ -418,7 +416,7 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - payloadBytes: 待签名payload
 	// ```go
-	SignMultiSignPayload(payloadBytes []byte) (*pb.EndorsementEntry, error)
+	SignMultiSignPayload(payloadBytes []byte) (*common.EndorsementEntry, error)
 	// ```
 
 	// ### 5.2 多签请求
@@ -429,10 +427,10 @@ type SDKInterface interface {
 	//   - deadlineBlockHeight: 过期的区块高度，若设置为0，表示永不过期
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// **返回值**
-	//   若成功调用，pb.TxResponse.ContractResult.Result为txId
+	//   若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendMultiSignReq(txType pb.TxType, payloadBytes []byte, endorsementEntry *pb.EndorsementEntry, deadlineBlockHeight int,
-		timeout int64) (*pb.TxResponse, error)
+	SendMultiSignReq(txType common.TxType, payloadBytes []byte, endorsementEntry *common.EndorsementEntry, deadlineBlockHeight int,
+		timeout int64) (*common.TxResponse, error)
 	// ```
 
 	// ### 5.3 多签投票
@@ -444,10 +442,10 @@ type SDKInterface interface {
 	//   - endorsementEntry: 签名收集信息
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// **返回值**
-	//   若成功调用，pb.TxResponse.ContractResult.Result为txId
+	//   若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendMultiSignVote(voteStatus pb.VoteStatus, multiSignReqTxId, payloadHash string,
-		endorsementEntry *pb.EndorsementEntry, timeout int64) (*pb.TxResponse, error)
+	SendMultiSignVote(voteStatus common.VoteStatus, multiSignReqTxId, payloadHash string,
+		endorsementEntry *common.EndorsementEntry, timeout int64) (*common.TxResponse, error)
 	// ```
 
 	// ### 5.4 投票查询
@@ -455,7 +453,7 @@ type SDKInterface interface {
 	//   - multiSignReqTxId: 多签请求交易ID(txId或payloadHash至少填其一，txId优先)
 	//   - payloadHash: 待多签payload hash(txId或payloadHash至少填其一，txId优先)
 	// ```go
-	QueryMultiSignResult(multiSignReqTxId, payloadHash string) (*pb.TxResponse, error)
+	QueryMultiSignResult(multiSignReqTxId, payloadHash string) (*common.TxResponse, error)
 	// ```
 
 	// ## 6 消息订阅接口
@@ -472,18 +470,18 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
 	//   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
-	//   - txType: 订阅交易类型,若为pb.TxType(-1)，表示订阅所有交易类型
+	//   - txType: 订阅交易类型,若为common.TxType(-1)，表示订阅所有交易类型
 	//   - txIds: 订阅txId列表，若为空，表示订阅所有txId
 	// ```go
-	SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType pb.TxType, txIds []string) (<-chan interface{}, error)
+	SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType common.TxType, txIds []string) (<-chan interface{}, error)
 	// ```
 
 	// ### 6.3 多合一订阅
 	// **参数说明**
-	//   - txType: 订阅交易类型，目前已支持：区块消息订阅(pb.TxType_SUBSCRIBE_BLOCK_INFO)、交易消息订阅(pb.TxType_SUBSCRIBE_TX_INFO)
+	//   - txType: 订阅交易类型，目前已支持：区块消息订阅(common.TxType_SUBSCRIBE_BLOCK_INFO)、交易消息订阅(common.TxType_SUBSCRIBE_TX_INFO)
 	//   - payloadBytes: 消息订阅参数payload
 	// ```go
-	Subscribe(ctx context.Context, txType pb.TxType, payloadBytes []byte) (<-chan interface{}, error)
+	Subscribe(ctx context.Context, txType common.TxType, payloadBytes []byte) (<-chan interface{}, error)
 	// ```
 
 	// ## 7 证书压缩
