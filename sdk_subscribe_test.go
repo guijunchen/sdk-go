@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	sendTxCount = 10
+	sendTxCount = 5
 )
 
 func TestSubscribeBlock(t *testing.T) {
@@ -25,7 +25,10 @@ func TestSubscribeBlock(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	c, err := client.SubscribeBlock(ctx, -1, -1, false)
+	c, err := client.SubscribeBlock(ctx, 0, 10, true)
+	//c, err := client.SubscribeBlock(ctx, 5, 16, false)
+	//c, err := client.SubscribeBlock(ctx, 0, -1, false)
+	//c, err := client.SubscribeBlock(ctx, 10, -1, false)
 	require.Nil(t, err)
 
 	go func() {
@@ -69,9 +72,10 @@ func TestSubscribeTx(t *testing.T) {
 	defer cancel()
 
 	c, err := client.SubscribeTx(ctx, -1, -1, -1, nil)
-	//c, err := client.SubscribeTx(ctx, 45, 55, -1, nil)
-	//c, err := client.SubscribeTx(ctx, 45, 55, -1, []string{"b7bd37a15fbc49998612bd85b0c918796e3c12eae7384945bf7a82bc523b796d"})
-	//c, err := client.SubscribeTx(ctx, -1, -1, pb.TxType_CREATE_USER_CONTRACT, nil)
+	//c, err := client.SubscribeTx(ctx, 0, 18, -1, nil)
+	//c, err := client.SubscribeTx(ctx, 50, -1, -1, nil)
+	//c, err := client.SubscribeTx(ctx, 0, 0, -1, []string{"04e98331c02d423c91e5b0bb9b9f8519112d6cee26d94620a3c9773a5ce19147"})
+	//c, err := client.SubscribeTx(ctx, -1, -1, pb.TxType_INVOKE_USER_CONTRACT, nil)
 	require.Nil(t, err)
 
 	go func() {
