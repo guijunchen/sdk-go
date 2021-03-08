@@ -1825,7 +1825,10 @@ func (m *TxRequest) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRequest
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRequest
 			}
 			if (iNdEx + skippy) > l {
@@ -2032,7 +2035,10 @@ func (m *TxHeader) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRequest
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRequest
 			}
 			if (iNdEx + skippy) > l {
@@ -2180,7 +2186,10 @@ func (m *QueryPayload) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRequest
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRequest
 			}
 			if (iNdEx + skippy) > l {
@@ -2328,7 +2337,10 @@ func (m *TransactPayload) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRequest
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRequest
 			}
 			if (iNdEx + skippy) > l {
@@ -2561,7 +2573,10 @@ func (m *SystemContractPayload) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRequest
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRequest
 			}
 			if (iNdEx + skippy) > l {
@@ -2813,7 +2828,10 @@ func (m *ContractMgmtPayload) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRequest
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRequest
 			}
 			if (iNdEx + skippy) > l {
@@ -2933,7 +2951,10 @@ func (m *EndorsementEntry) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRequest
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRequest
 			}
 			if (iNdEx + skippy) > l {
@@ -3047,7 +3068,10 @@ func (m *KeyValuePair) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRequest
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRequest
 			}
 			if (iNdEx + skippy) > l {
@@ -3155,7 +3179,10 @@ func (m *SubscribeBlockPayload) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRequest
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRequest
 			}
 			if (iNdEx + skippy) > l {
@@ -3294,7 +3321,10 @@ func (m *SubscribeTxPayload) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRequest
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRequest
 			}
 			if (iNdEx + skippy) > l {

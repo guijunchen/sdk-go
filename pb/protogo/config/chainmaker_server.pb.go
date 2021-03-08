@@ -290,7 +290,10 @@ func (m *ChainMakerVersionRequest) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthChainmakerServer
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthChainmakerServer
 			}
 			if (iNdEx + skippy) > l {
@@ -423,7 +426,10 @@ func (m *ChainMakerVersionResponse) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthChainmakerServer
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthChainmakerServer
 			}
 			if (iNdEx + skippy) > l {

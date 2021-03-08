@@ -1605,7 +1605,10 @@ func (m *ChainConfig) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthChainConfig
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthChainConfig
 			}
 			if (iNdEx + skippy) > l {
@@ -1723,7 +1726,10 @@ func (m *ResourcePolicy) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthChainConfig
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthChainConfig
 			}
 			if (iNdEx + skippy) > l {
@@ -1805,7 +1811,10 @@ func (m *CryptoConfig) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthChainConfig
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthChainConfig
 			}
 			if (iNdEx + skippy) > l {
@@ -1951,7 +1960,10 @@ func (m *BlockConfig) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthChainConfig
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthChainConfig
 			}
 			if (iNdEx + skippy) > l {
@@ -2039,7 +2051,10 @@ func (m *CoreConfig) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthChainConfig
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthChainConfig
 			}
 			if (iNdEx + skippy) > l {
@@ -2176,7 +2191,10 @@ func (m *ConsensusConfig) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthChainConfig
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthChainConfig
 			}
 			if (iNdEx + skippy) > l {
@@ -2290,7 +2308,10 @@ func (m *OrgConfig) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthChainConfig
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthChainConfig
 			}
 			if (iNdEx + skippy) > l {
@@ -2404,7 +2425,10 @@ func (m *TrustRootConfig) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthChainConfig
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthChainConfig
 			}
 			if (iNdEx + skippy) > l {

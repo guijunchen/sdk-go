@@ -1026,7 +1026,10 @@ func (m *VerifyResult) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthConsensus
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthConsensus
 			}
 			if (iNdEx + skippy) > l {
@@ -1169,7 +1172,10 @@ func (m *BlockHeaderConsensusArgs) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthConsensus
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthConsensus
 			}
 			if (iNdEx + skippy) > l {
@@ -1270,7 +1276,10 @@ func (m *GovernmentMember) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthConsensus
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthConsensus
 			}
 			if (iNdEx + skippy) > l {
@@ -1670,7 +1679,10 @@ func (m *GovernmentContract) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthConsensus
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthConsensus
 			}
 			if (iNdEx + skippy) > l {

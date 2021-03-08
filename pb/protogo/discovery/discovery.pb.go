@@ -494,7 +494,10 @@ func (m *ChainInfo) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthDiscovery
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthDiscovery
 			}
 			if (iNdEx + skippy) > l {
@@ -642,7 +645,10 @@ func (m *Node) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthDiscovery
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthDiscovery
 			}
 			if (iNdEx + skippy) > l {
@@ -724,7 +730,10 @@ func (m *ChainList) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthDiscovery
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthDiscovery
 			}
 			if (iNdEx + skippy) > l {

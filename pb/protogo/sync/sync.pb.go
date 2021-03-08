@@ -909,7 +909,10 @@ func (m *SyncMsg) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthSync
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthSync
 			}
 			if (iNdEx + skippy) > l {
@@ -978,7 +981,10 @@ func (m *BlockHeightBCM) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthSync
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthSync
 			}
 			if (iNdEx + skippy) > l {
@@ -1086,7 +1092,10 @@ func (m *BlockSyncReq) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthSync
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthSync
 			}
 			if (iNdEx + skippy) > l {
@@ -1170,7 +1179,10 @@ func (m *BlockBatch) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthSync
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthSync
 			}
 			if (iNdEx + skippy) > l {
@@ -1254,7 +1266,10 @@ func (m *BlockInfoBatch) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthSync
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthSync
 			}
 			if (iNdEx + skippy) > l {
@@ -1374,7 +1389,10 @@ func (m *SyncBlockBatch) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthSync
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthSync
 			}
 			if (iNdEx + skippy) > l {

@@ -13,8 +13,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-// Requires gRPC-Go v1.32.0 or later.
-const _ = grpc.SupportPackageIsVersion7
+const _ = grpc.SupportPackageIsVersion6
 
 // RpcNodeClient is the client API for RpcNode service.
 //
@@ -52,7 +51,7 @@ func (c *rpcNodeClient) SendRequest(ctx context.Context, in *common.TxRequest, o
 }
 
 func (c *rpcNodeClient) Subscribe(ctx context.Context, in *common.TxRequest, opts ...grpc.CallOption) (RpcNode_SubscribeClient, error) {
-	stream, err := c.cc.NewStream(ctx, &RpcNode_ServiceDesc.Streams[0], "/api.RpcNode/Subscribe", opts...)
+	stream, err := c.cc.NewStream(ctx, &_RpcNode_serviceDesc.Streams[0], "/api.RpcNode/Subscribe", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -142,35 +141,28 @@ type RpcNodeServer interface {
 type UnimplementedRpcNodeServer struct {
 }
 
-func (UnimplementedRpcNodeServer) SendRequest(context.Context, *common.TxRequest) (*common.TxResponse, error) {
+func (*UnimplementedRpcNodeServer) SendRequest(context.Context, *common.TxRequest) (*common.TxResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendRequest not implemented")
 }
-func (UnimplementedRpcNodeServer) Subscribe(*common.TxRequest, RpcNode_SubscribeServer) error {
+func (*UnimplementedRpcNodeServer) Subscribe(*common.TxRequest, RpcNode_SubscribeServer) error {
 	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
 }
-func (UnimplementedRpcNodeServer) UpdateDebugConfig(context.Context, *config.DebugConfigRequest) (*config.DebugConfigResponse, error) {
+func (*UnimplementedRpcNodeServer) UpdateDebugConfig(context.Context, *config.DebugConfigRequest) (*config.DebugConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateDebugConfig not implemented")
 }
-func (UnimplementedRpcNodeServer) RefreshLogLevelsConfig(context.Context, *config.LogLevelsRequest) (*config.LogLevelsResponse, error) {
+func (*UnimplementedRpcNodeServer) RefreshLogLevelsConfig(context.Context, *config.LogLevelsRequest) (*config.LogLevelsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RefreshLogLevelsConfig not implemented")
 }
-func (UnimplementedRpcNodeServer) GetChainMakerVersion(context.Context, *config.ChainMakerVersionRequest) (*config.ChainMakerVersionResponse, error) {
+func (*UnimplementedRpcNodeServer) GetChainMakerVersion(context.Context, *config.ChainMakerVersionRequest) (*config.ChainMakerVersionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChainMakerVersion not implemented")
 }
-func (UnimplementedRpcNodeServer) CheckNewBlockChainConfig(context.Context, *config.CheckNewBlockChainConfigRequest) (*config.CheckNewBlockChainConfigResponse, error) {
+func (*UnimplementedRpcNodeServer) CheckNewBlockChainConfig(context.Context, *config.CheckNewBlockChainConfigRequest) (*config.CheckNewBlockChainConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckNewBlockChainConfig not implemented")
 }
-func (UnimplementedRpcNodeServer) mustEmbedUnimplementedRpcNodeServer() {}
+func (*UnimplementedRpcNodeServer) mustEmbedUnimplementedRpcNodeServer() {}
 
-// UnsafeRpcNodeServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to RpcNodeServer will
-// result in compilation errors.
-type UnsafeRpcNodeServer interface {
-	mustEmbedUnimplementedRpcNodeServer()
-}
-
-func RegisterRpcNodeServer(s grpc.ServiceRegistrar, srv RpcNodeServer) {
-	s.RegisterService(&RpcNode_ServiceDesc, srv)
+func RegisterRpcNodeServer(s *grpc.Server, srv RpcNodeServer) {
+	s.RegisterService(&_RpcNode_serviceDesc, srv)
 }
 
 func _RpcNode_SendRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -284,10 +276,7 @@ func _RpcNode_CheckNewBlockChainConfig_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-// RpcNode_ServiceDesc is the grpc.ServiceDesc for RpcNode service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var RpcNode_ServiceDesc = grpc.ServiceDesc{
+var _RpcNode_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "api.RpcNode",
 	HandlerType: (*RpcNodeServer)(nil),
 	Methods: []grpc.MethodDesc{
