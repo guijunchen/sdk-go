@@ -10,7 +10,6 @@ package chainmaker_sdk_go
 import (
 	"chainmaker.org/chainmaker-go/common/crypto"
 	"chainmaker.org/chainmaker-go/common/crypto/asym"
-	kms "chainmaker.org/chainmaker-go/common/crypto/tencentcloudkms"
 	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
 	"chainmaker.org/chainmaker-go/common/log"
 	"fmt"
@@ -79,46 +78,6 @@ func WithNodeTLSHostName(tlsHostName string) NodeOption {
 	}
 }
 
-// KmsConfig is config for KMS.
-type KmsConfig struct {
-	enable bool
-	conf   *kms.KMSConfig
-}
-
-type KmsOption func(kmsConfig *KmsConfig)
-
-func WithSecretId(secretId string) KmsOption {
-	return func(kmsConfig *KmsConfig) {
-		kmsConfig.conf.SecretId = secretId
-	}
-}
-
-func WithSecretKey(secretKey string) KmsOption {
-	return func(kmsConfig *KmsConfig) {
-		kmsConfig.conf.SecretKey = secretKey
-	}
-}
-
-func WithServerAddress(serverAddress string) KmsOption {
-	return func(kmsConfig *KmsConfig) {
-		kmsConfig.conf.ServerAddress = serverAddress
-	}
-}
-
-func WithServerRegion(secretRegion string) KmsOption {
-	return func(kmsConfig *KmsConfig) {
-		kmsConfig.conf.ServerRegion = secretRegion
-	}
-}
-
-func NewKmsConfig(enable bool, options ...KmsOption) *KmsConfig {
-	kc := &KmsConfig{enable: enable, conf: &kms.KMSConfig{}}
-	for i := range options {
-		options[i](kc)
-	}
-	return kc
-}
-
 type ChainClientConfig struct {
 	// logger若不设置，将采用默认日志文件输出日志，建议设置，以便采用集成系统的统一日志输出
 	logger Logger
@@ -135,7 +94,6 @@ type ChainClientConfig struct {
 	userCrtFilePath     string
 	userSignKeyFilePath string
 	userSignCrtFilePath string
-	kmsConfig           *KmsConfig
 
 	// 以下字段为经过处理后的参数
 	privateKey       crypto.PrivateKey
@@ -257,18 +215,6 @@ func setUserConfig(config *ChainClientConfig) {
 	}
 }
 
-func setKMSConfig(config *ChainClientConfig) {
-	if config.kmsConfig == nil {
-		config.kmsConfig = NewKmsConfig(
-			Config.ChainClientConfig.KmsConfig.Enable,
-			WithSecretId(Config.ChainClientConfig.KmsConfig.SecretId),
-			WithSecretKey(Config.ChainClientConfig.KmsConfig.SecretKey),
-			WithServerAddress(Config.ChainClientConfig.KmsConfig.ServerAddress),
-			WithServerRegion(Config.ChainClientConfig.KmsConfig.ServerRegion),
-		)
-	}
-}
-
 func setNodeList(config *ChainClientConfig) {
 	if len(Config.ChainClientConfig.NodesConfig) > 0 && len(config.nodeList) == 0 {
 		for _, conf := range Config.ChainClientConfig.NodesConfig {
@@ -304,8 +250,6 @@ func readConfigFile(config *ChainClientConfig) error {
 
 	setUserConfig(config)
 
-	setKMSConfig(config)
-
 	setNodeList(config)
 
 	return nil
@@ -336,10 +280,6 @@ func checkConfig(config *ChainClientConfig) error {
 	}
 
 	if err = checkChainConfig(config); err != nil {
-		return err
-	}
-
-	if err = checkKMSConfig(config); err != nil {
 		return err
 	}
 
@@ -398,32 +338,6 @@ func checkChainConfig(config *ChainClientConfig) error {
 	// ChainId不可为空
 	if config.chainId == "" {
 		return fmt.Errorf("chainId cannot be empty")
-	}
-
-	return nil
-}
-
-func checkKMSConfig(config *ChainClientConfig) error {
-	// kms config check
-	if config.kmsConfig != nil && config.kmsConfig.enable {
-		if config.userSignKeyFilePath == "" {
-			return fmt.Errorf("if enable kms, user sign key file path cannot be empty")
-		}
-		if config.userSignCrtFilePath == "" {
-			return fmt.Errorf("if enable kms, user sign crt file path cannot be empty")
-		}
-		if config.kmsConfig.conf.SecretId == "" {
-			return fmt.Errorf("if enable kms, secret id cannot be empty")
-		}
-		if config.kmsConfig.conf.SecretKey == "" {
-			return fmt.Errorf("if enable kms, secret key cannot be empty")
-		}
-		if config.kmsConfig.conf.ServerAddress == "" {
-			return fmt.Errorf("if enable kms, secret address cannot be empty")
-		}
-		if config.kmsConfig.conf.ServerRegion == "" {
-			return fmt.Errorf("if enable kms, secret region cannot be empty")
-		}
 	}
 
 	return nil
@@ -507,22 +421,9 @@ func dealUserSignKeyConfig(config *ChainClientConfig) error {
 		if err != nil {
 			return fmt.Errorf("read user sign key file failed, %s", err.Error())
 		}
-		// use kms to load sign private key
-		if config.kmsConfig.enable {
-			kmsClient, err := kms.CreateConnection(config.kmsConfig.conf)
-			if err != nil {
-				return fmt.Errorf("create kms connection failed, %s", err.Error())
-			}
-			config.privateKey, err = kms.LoadPrivateKey(kmsClient, config.userSignKeyBytes)
-			if err != nil {
-				return fmt.Errorf("kms load private key failed, %s", err.Error())
-			}
-			config.logger.Infof("[SDK] load necessary data from KMS success.")
-		} else {
-			config.privateKey, err = asym.PrivateKeyFromPEM(config.userSignKeyBytes, nil)
-			if err != nil {
-				return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
-			}
+		config.privateKey, err = asym.PrivateKeyFromPEM(config.userSignKeyBytes, nil)
+		if err != nil {
+			return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
 		}
 	}
 
