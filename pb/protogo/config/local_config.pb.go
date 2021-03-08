@@ -519,7 +519,10 @@ func (m *DebugConfigRequest) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthLocalConfig
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthLocalConfig
 			}
 			if (iNdEx + skippy) > l {
@@ -620,7 +623,10 @@ func (m *DebugConfigResponse) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthLocalConfig
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthLocalConfig
 			}
 			if (iNdEx + skippy) > l {
@@ -670,7 +676,10 @@ func (m *CheckNewBlockChainConfigRequest) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthLocalConfig
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthLocalConfig
 			}
 			if (iNdEx + skippy) > l {
@@ -771,7 +780,10 @@ func (m *CheckNewBlockChainConfigResponse) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthLocalConfig
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthLocalConfig
 			}
 			if (iNdEx + skippy) > l {

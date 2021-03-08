@@ -699,7 +699,10 @@ func (m *KeyVersion) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRwset
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRwset
 			}
 			if (iNdEx + skippy) > l {
@@ -885,7 +888,10 @@ func (m *TxRead) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRwset
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRwset
 			}
 			if (iNdEx + skippy) > l {
@@ -1035,7 +1041,10 @@ func (m *TxWrite) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRwset
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRwset
 			}
 			if (iNdEx + skippy) > l {
@@ -1185,7 +1194,10 @@ func (m *TxRWSet) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthRwset
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthRwset
 			}
 			if (iNdEx + skippy) > l {

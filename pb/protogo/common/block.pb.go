@@ -1226,7 +1226,10 @@ func (m *Block) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthBlock
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthBlock
 			}
 			if (iNdEx + skippy) > l {
@@ -1346,7 +1349,10 @@ func (m *BlockInfo) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthBlock
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthBlock
 			}
 			if (iNdEx + skippy) > l {
@@ -1507,7 +1513,7 @@ func (m *AdditionalData) Unmarshal(dAtA []byte) error {
 					if err != nil {
 						return err
 					}
-					if (skippy < 0) || (iNdEx+skippy) < 0 {
+					if skippy < 0 {
 						return ErrInvalidLengthBlock
 					}
 					if (iNdEx + skippy) > postIndex {
@@ -1524,7 +1530,10 @@ func (m *AdditionalData) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthBlock
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthBlock
 			}
 			if (iNdEx + skippy) > l {
@@ -1988,7 +1997,10 @@ func (m *BlockHeader) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthBlock
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthBlock
 			}
 			if (iNdEx + skippy) > l {
@@ -2072,7 +2084,10 @@ func (m *DAG) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthBlock
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthBlock
 			}
 			if (iNdEx + skippy) > l {
@@ -2198,7 +2213,10 @@ func (m *DAG_Neighbor) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthBlock
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthBlock
 			}
 			if (iNdEx + skippy) > l {

@@ -27,19 +27,6 @@ type nodesConfigModel struct {
 	TLSHostName string `mapstructure:"tls_host_name"`
 }
 
-type kmsConfigModel struct {
-	// Enable kms
-	Enable bool `mapstructure:"enabled"`
-	// SecretId for kms
-	SecretId string `mapstructure:"secret_id"`
-	// SecretKey for kms
-	SecretKey string `mapstructure:"secret_key"`
-	// ServerAddress of kms server
-	ServerAddress string `mapstructure:"server_address"`
-	// ServerRegion of kms server
-	ServerRegion string `mapstructure:"server_region"`
-}
-
 type chainClientConfigModel struct {
 	// 链ID
 	ChainId string `mapstructure:"chain_id"`
@@ -53,8 +40,6 @@ type chainClientConfigModel struct {
 	UserSignKeyFilePath string `mapstructure:"user_sign_key_file_path"`
 	// 客户端用户交易签名证书路径(若未设置，将使用user_crt_file_path)
 	UserSignCrtFilePath string `mapstructure:"user_sign_crt_file_path"`
-	// kms config
-	KmsConfig kmsConfigModel `mapstructure:"kms"`
 	// 节点配置
 	NodesConfig []nodesConfigModel `mapstructure:"nodes"`
 }
