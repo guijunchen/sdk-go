@@ -8,10 +8,10 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/pb/accesscontrol"
-	"chainmaker.org/chainmaker-go/pb/common"
-	"chainmaker.org/chainmaker-go/pb/config"
-	"chainmaker.org/chainmaker-go/pb/discovery"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/config"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/discovery"
 	"context"
 )
 

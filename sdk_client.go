@@ -10,8 +10,8 @@ package chainmaker_sdk_go
 import (
 	"chainmaker.org/chainmaker-go/common/crypto"
 	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
-	"chainmaker.org/chainmaker-go/pb/accesscontrol"
-	"chainmaker.org/chainmaker-go/pb/common"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"context"
 	"encoding/hex"
 	"errors"

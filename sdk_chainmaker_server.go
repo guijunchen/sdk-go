@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/pb/config"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/config"
 	"context"
 	"fmt"
 )

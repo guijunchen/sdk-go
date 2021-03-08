@@ -4,9 +4,8 @@ go 1.15
 
 require (
 	chainmaker.org/chainmaker-go/common v0.0.0
-	chainmaker.org/chainmaker-go/pb v0.0.0
 	github.com/Rican7/retry v0.1.0
-	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.4.3
 	github.com/hokaccha/go-prettyjson v0.0.0-20201222001619-a42f9ac2ec8e
 	github.com/spf13/viper v1.7.1
@@ -17,7 +16,4 @@ require (
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0 // indirect
 )
 
-replace (
-	chainmaker.org/chainmaker-go/common => ./common
-	chainmaker.org/chainmaker-go/pb => ./pb/protogo
-)
+replace chainmaker.org/chainmaker-go/common => ./common

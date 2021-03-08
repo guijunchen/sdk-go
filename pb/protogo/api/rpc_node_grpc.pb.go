@@ -3,8 +3,8 @@
 package api
 
 import (
-	common "chainmaker.org/chainmaker-go/pb/common"
-	config "chainmaker.org/chainmaker-go/pb/config"
+	common "chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
+	config "chainmaker.org/chainmaker-sdk-go/pb/protogo/config"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
