@@ -1,10 +1,10 @@
 all: replace_go_package create_proto_dir pb grpc reset_go_package
 
 replace_go_package:
-	sed -i "s%chainmaker.org/chainmaker-go/pb%chainmaker.org/chainmaker-sdk-go/pb/protogo%g" pb/proto/*/*.proto
+	sed -i "s%chainmaker.org/chainmaker-go/pb/protogo%chainmaker.org/chainmaker-sdk-go/pb/protogo%g" pb/proto/*/*.proto
 
 reset_go_package:
-	sed -i "s%chainmaker.org/chainmaker-sdk-go/pb/protogo%chainmaker.org/chainmaker-go/pb%g" pb/proto/*/*.proto
+	sed -i "s%chainmaker.org/chainmaker-sdk-go/pb/protogo%chainmaker.org/chainmaker-go/pb/protogo%g" pb/proto/*/*.proto
 
 create_proto_dir:
 	mkdir -p pb/protogo
