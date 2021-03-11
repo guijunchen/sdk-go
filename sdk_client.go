@@ -10,6 +10,7 @@ package chainmaker_sdk_go
 import (
 	"chainmaker.org/chainmaker-go/common/crypto"
 	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
+	"chainmaker.org/chainmaker-go/common/serialize"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"context"
@@ -144,6 +145,10 @@ func (cc *ChainClient) EnableCertHash() error {
 func (cc ChainClient) DisableCertHash() error {
 	cc.enabledCrtHash = false
 	return nil
+}
+
+func (cc ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string]string {
+	return serialize.EasyCodecItemToParamsMap(items)
 }
 
 // 检查证书是否成功上链

@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker-go/common/serialize"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/config"
@@ -503,14 +504,20 @@ type SDKInterface interface {
 	DisableCertHash() error
 	// ```
 
-	// ## 8 管理类接口
-	// ### 8.1 SDK停止接口
+	// ## 9 编解码类
+	// ### 9.1 将EasyCodec编码解码成map
+	// ```go
+	EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string]string
+	// ```
+
+	// ## 10 系统类接口
+	// ### 10.1 SDK停止接口
 	// *关闭连接池连接，释放资源*
 	// ```go
 	Stop() error
 	// ```
 
-	// ### 8.2 获取链版本
+	// ### 10.2 获取链版本
 	// ```go
 	GetChainMakerServerVersion() (string, error)
 	// ```
