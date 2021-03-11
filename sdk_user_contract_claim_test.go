@@ -18,7 +18,11 @@ import (
 var (
 	claimContractName = "claim001"
 	claimVersion      = "1.0.0"
-	claimByteCodePath = "./testdata/claim-wasm-demo/fact-rust-0.7.2.wasm"
+	//runtimeType       = common.RuntimeType_WASMER
+	//claimByteCodePath= "./testdata/claim-wasm-demo/fact-rust-0.7.2.wasm"
+
+	runtimeType       = common.RuntimeType_GASM
+	claimByteCodePath= "./testdata/claim-wasm-demo/claim_easy_codec.wasm"
 )
 
 func TestUserContractClaim(t *testing.T) {
@@ -54,7 +58,7 @@ func testUserContractClaimCreate(t *testing.T, client *ChainClient,
 	admin1, admin2, admin3, admin4 *ChainClient, withSyncResult bool, isIgnoreSameContract bool) {
 
 	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		claimContractName, claimVersion, claimByteCodePath, common.RuntimeType_WASMER, []*common.KeyValuePair{}, withSyncResult)
+		claimContractName, claimVersion, claimByteCodePath, runtimeType, []*common.KeyValuePair{}, withSyncResult)
 	if !isIgnoreSameContract {
 		require.Nil(t, err)
 	}
@@ -85,5 +89,7 @@ func testUserContractClaimQuery(t *testing.T, client *ChainClient,
 	method string, params map[string]string) {
 	resp, err := client.QueryContract(claimContractName, method, params, -1)
 	require.Nil(t, err)
-	fmt.Printf("QUERY claim contract resp: %+v\n", resp)
+
+	paramsMap := client.EasyCodecBytesToParamsMap(resp.ContractResult.Result)
+	fmt.Printf("QUERY claim contract resp: %+v\n", paramsMap)
 }

@@ -147,7 +147,8 @@ func (cc ChainClient) DisableCertHash() error {
 	return nil
 }
 
-func (cc ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string]string {
+func (cc ChainClient) EasyCodecBytesToParamsMap(data []byte) map[string]string {
+	items := serialize.EasyUnmarshal(data)
 	return serialize.EasyCodecItemToParamsMap(items)
 }
 

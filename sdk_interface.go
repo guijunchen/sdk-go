@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/common/serialize"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/config"
@@ -507,7 +506,7 @@ type SDKInterface interface {
 	// ## 9 编解码类
 	// ### 9.1 将EasyCodec编码解码成map
 	// ```go
-	EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string]string
+	EasyCodecBytesToParamsMap(data []byte) map[string]string
 	// ```
 
 	// ## 10 系统类接口
