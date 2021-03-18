@@ -76,7 +76,7 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	}, nil
 }
 
-func (cc ChainClient) Stop() error {
+func (cc *ChainClient) Stop() error {
 	return cc.pool.Close()
 }
 
@@ -142,17 +142,17 @@ func (cc *ChainClient) EnableCertHash() error {
 	return nil
 }
 
-func (cc ChainClient) DisableCertHash() error {
+func (cc *ChainClient) DisableCertHash() error {
 	cc.enabledCrtHash = false
 	return nil
 }
 
-func (cc ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string]string {
+func (cc *ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string]string {
 	return serialize.EasyCodecItemToParamsMap(items)
 }
 
 // 检查证书是否成功上链
-func (cc ChainClient) checkUserCertOnChain() error {
+func (cc *ChainClient) checkUserCertOnChain() error {
 	err := retry.Retry(func(uint) error {
 		ok, err := cc.getCheckCertHash()
 		if err != nil {
@@ -179,7 +179,7 @@ func (cc ChainClient) checkUserCertOnChain() error {
 	return nil
 }
 
-func (cc ChainClient) getCheckCertHash() (bool, error) {
+func (cc *ChainClient) getCheckCertHash() (bool, error) {
 	// 根据已缓存证书Hash，查链上是否存在
 	certInfo, err := cc.QueryCert([]string{hex.EncodeToString(cc.userCrtHash)})
 	if err != nil {
@@ -216,7 +216,7 @@ func (cc ChainClient) getCheckCertHash() (bool, error) {
 	return false, nil
 }
 
-func (cc ChainClient) generateTxRequest(txId string, txType common.TxType, payloadBytes []byte) (*common.TxRequest, error) {
+func (cc *ChainClient) generateTxRequest(txId string, txType common.TxType, payloadBytes []byte) (*common.TxRequest, error) {
 	var (
 		sender *accesscontrol.SerializedMember
 	)
@@ -268,11 +268,11 @@ func (cc ChainClient) generateTxRequest(txId string, txType common.TxType, paylo
 	return req, nil
 }
 
-func (cc ChainClient) proposalRequest(txType common.TxType, txId string, payloadBytes []byte) (*common.TxResponse, error) {
+func (cc *ChainClient) proposalRequest(txType common.TxType, txId string, payloadBytes []byte) (*common.TxResponse, error) {
 	return cc.proposalRequestWithTimeout(txType, txId, payloadBytes, -1)
 }
 
-func (cc ChainClient) proposalRequestWithTimeout(txType common.TxType, txId string, payloadBytes []byte, timeout int64) (*common.TxResponse, error) {
+func (cc *ChainClient) proposalRequestWithTimeout(txType common.TxType, txId string, payloadBytes []byte, timeout int64) (*common.TxResponse, error) {
 	var (
 		errMsg string
 	)

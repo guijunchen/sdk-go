@@ -25,32 +25,32 @@ const (
 	retryCnt = 10
 )
 
-func (cc ChainClient) CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType, kvs []*common.KeyValuePair) ([]byte, error) {
+func (cc *ChainClient) CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType, kvs []*common.KeyValuePair) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [ContractCreate] to be signed payload")
 	return cc.createContractManagePayload(contractName, common.ManageUserContractFunction_INIT_CONTRACT.String(), version, byteCode, runtime, kvs)
 }
 
-func (cc ChainClient) CreateContractUpgradePayload(contractName, version, byteCode string, runtime common.RuntimeType, kvs []*common.KeyValuePair) ([]byte, error) {
+func (cc *ChainClient) CreateContractUpgradePayload(contractName, version, byteCode string, runtime common.RuntimeType, kvs []*common.KeyValuePair) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [ContractUpgrade] to be signed payload")
 	return cc.createContractManagePayload(contractName, common.ManageUserContractFunction_UPGRADE_CONTRACT.String(), version, byteCode, runtime, kvs)
 }
 
-func (cc ChainClient) CreateContractFreezePayload(contractName string) ([]byte, error) {
+func (cc *ChainClient) CreateContractFreezePayload(contractName string) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [ContractFreeze] to be signed payload")
 	return cc.createContractOpPayload(contractName, common.ManageUserContractFunction_FREEZE_CONTRACT.String())
 }
 
-func (cc ChainClient) CreateContractUnfreezePayload(contractName string) ([]byte, error) {
+func (cc *ChainClient) CreateContractUnfreezePayload(contractName string) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [ContractUnfreeze] to be signed payload")
 	return cc.createContractOpPayload(contractName, common.ManageUserContractFunction_UNFREEZE_CONTRACT.String())
 }
 
-func (cc ChainClient) CreateContractRevokePayload(contractName string) ([]byte, error) {
+func (cc *ChainClient) CreateContractRevokePayload(contractName string) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [ContractRevoke] to be signed payload")
 	return cc.createContractOpPayload(contractName, common.ManageUserContractFunction_REVOKE_CONTRACT.String())
 }
 
-func (cc ChainClient) createContractManagePayload(contractName, method, version, byteCode string, runtime common.RuntimeType, kvs []*common.KeyValuePair) ([]byte, error) {
+func (cc *ChainClient) createContractManagePayload(contractName, method, version, byteCode string, runtime common.RuntimeType, kvs []*common.KeyValuePair) ([]byte, error) {
 	var (
 		err       error
 		codeBytes []byte
@@ -90,7 +90,7 @@ func (cc ChainClient) createContractManagePayload(contractName, method, version,
 	return bytes, nil
 }
 
-func (cc ChainClient) createContractOpPayload(contractName, method string) ([]byte, error) {
+func (cc *ChainClient) createContractOpPayload(contractName, method string) ([]byte, error) {
 	payload := &common.ContractMgmtPayload{
 		ChainId: cc.chainId,
 		ContractId: &common.ContractId{
@@ -107,7 +107,7 @@ func (cc ChainClient) createContractOpPayload(contractName, method string) ([]by
 	return bytes, nil
 }
 
-func (cc ChainClient) SignContractManagePayload(payloadBytes []byte) ([]byte, error) {
+func (cc *ChainClient) SignContractManagePayload(payloadBytes []byte) ([]byte, error) {
 	payload := &common.ContractMgmtPayload{}
 	if err := proto.Unmarshal(payloadBytes, payload); err != nil {
 		return nil, fmt.Errorf("unmarshal contract manage payload failed, %s", err)
@@ -141,15 +141,15 @@ func (cc ChainClient) SignContractManagePayload(payloadBytes []byte) ([]byte, er
 	return signedPayloadBytes, nil
 }
 
-func (cc ChainClient) MergeContractManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
+func (cc *ChainClient) MergeContractManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
 	return mergeContractManageSignedPayload(signedPayloadBytes)
 }
 
-func (cc ChainClient) SendContractManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+func (cc *ChainClient) SendContractManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	return cc.sendContractRequest(common.TxType_MANAGE_USER_CONTRACT, mergeSignedPayloadBytes, timeout, withSyncResult)
 }
 
-func (cc ChainClient) sendContractRequest(txType common.TxType, mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+func (cc *ChainClient) sendContractRequest(txType common.TxType, mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	txId := GetRandTxId()
 
 	resp, err := cc.proposalRequestWithTimeout(txType, txId, mergeSignedPayloadBytes, timeout)
@@ -176,7 +176,7 @@ func (cc ChainClient) sendContractRequest(txType common.TxType, mergeSignedPaylo
 	return resp, nil
 }
 
-func (cc ChainClient) InvokeContract(contractName, method, txId string, params map[string]string, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+func (cc *ChainClient) InvokeContract(contractName, method, txId string, params map[string]string, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -221,7 +221,7 @@ func (cc ChainClient) InvokeContract(contractName, method, txId string, params m
 	return resp, nil
 }
 
-func (cc ChainClient) QueryContract(contractName, method string, params map[string]string, timeout int64) (*common.TxResponse, error) {
+func (cc *ChainClient) QueryContract(contractName, method string, params map[string]string, timeout int64) (*common.TxResponse, error) {
 	txId := GetRandTxId()
 
 	cc.logger.Debugf("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
@@ -242,7 +242,7 @@ func (cc ChainClient) QueryContract(contractName, method string, params map[stri
 	return resp, nil
 }
 
-func (cc ChainClient) getSyncResult(txId string) (*common.ContractResult, error) {
+func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error) {
 	var (
 		txInfo *common.TransactionInfo
 		err    error

@@ -14,7 +14,7 @@ import (
 	"io"
 )
 
-func (cc ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRwSet bool) (<-chan interface{}, error) {
+func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRwSet bool) (<-chan interface{}, error) {
 	payloadBytes, err := constructSubscribeBlockPayload(startBlock, endBlock, withRwSet)
 	if err != nil {
 		return nil, err
@@ -23,7 +23,7 @@ func (cc ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock i
 	return cc.Subscribe(ctx, common.TxType_SUBSCRIBE_BLOCK_INFO, payloadBytes)
 }
 
-func (cc ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType common.TxType, txIds []string) (<-chan interface{}, error) {
+func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType common.TxType, txIds []string) (<-chan interface{}, error) {
 	payloadBytes, err := constructSubscribeTxPayload(startBlock, endBlock, txType, txIds)
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func (cc ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int6
 	return cc.Subscribe(ctx, common.TxType_SUBSCRIBE_TX_INFO, payloadBytes)
 }
 
-func (cc ChainClient) Subscribe(ctx context.Context, txType common.TxType, payloadBytes []byte) (<-chan interface{}, error) {
+func (cc *ChainClient) Subscribe(ctx context.Context, txType common.TxType, payloadBytes []byte) (<-chan interface{}, error) {
 	txId := GetRandTxId()
 
 	req, err := cc.generateTxRequest(txId, txType, payloadBytes)

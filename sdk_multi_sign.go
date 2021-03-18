@@ -16,7 +16,7 @@ import (
 	"strconv"
 )
 
-func (cc ChainClient) SignMultiSignPayload(payloadBytes []byte) (*common.EndorsementEntry, error) {
+func (cc *ChainClient) SignMultiSignPayload(payloadBytes []byte) (*common.EndorsementEntry, error) {
 	signBytes, err := signPayload(cc.privateKey, cc.userCrt, payloadBytes)
 	if err != nil {
 		return nil, fmt.Errorf("MultiSignPayloadSign failed, %s", err)
@@ -36,7 +36,7 @@ func (cc ChainClient) SignMultiSignPayload(payloadBytes []byte) (*common.Endorse
 	return entry, nil
 }
 
-func (cc ChainClient) SendMultiSignReq(txType common.TxType, payloadBytes []byte, endorsementEntry *common.EndorsementEntry,
+func (cc *ChainClient) SendMultiSignReq(txType common.TxType, payloadBytes []byte, endorsementEntry *common.EndorsementEntry,
 	deadlineBlockHeight int, timeout int64) (*common.TxResponse, error) {
 	var (
 		resp   common.TxResponse
@@ -55,7 +55,7 @@ func (cc ChainClient) SendMultiSignReq(txType common.TxType, payloadBytes []byte
 	return cc.sendContractRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, multiSignReqPayload, timeout, false)
 }
 
-func (cc ChainClient) SendMultiSignVote(voteStatus common.VoteStatus, multiSignReqTxId, payloadHash string,
+func (cc *ChainClient) SendMultiSignVote(voteStatus common.VoteStatus, multiSignReqTxId, payloadHash string,
 	endorsementEntry *common.EndorsementEntry, timeout int64) (*common.TxResponse, error) {
 
 	var (
@@ -75,7 +75,7 @@ func (cc ChainClient) SendMultiSignVote(voteStatus common.VoteStatus, multiSignR
 	return cc.sendContractRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, multiSignVotePayload, timeout, false)
 }
 
-func (cc ChainClient) QueryMultiSignResult(multiSignReqTxId, payloadHash string) (*common.TxResponse, error) {
+func (cc *ChainClient) QueryMultiSignResult(multiSignReqTxId, payloadHash string) (*common.TxResponse, error) {
 	var (
 		resp   common.TxResponse
 		errMsg string
@@ -93,7 +93,7 @@ func (cc ChainClient) QueryMultiSignResult(multiSignReqTxId, payloadHash string)
 	return cc.sendContractRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, multiSignVotePayload, -1, false)
 }
 
-func (cc ChainClient) createMultiSignReqPayload(txType common.TxType, payloadBytes []byte,
+func (cc *ChainClient) createMultiSignReqPayload(txType common.TxType, payloadBytes []byte,
 	endorsementEntry *common.EndorsementEntry, deadlineBlockHeight int) ([]byte, error) {
 
 	voteInfo := &common.MultiSignVoteInfo{
@@ -134,7 +134,7 @@ func (cc ChainClient) createMultiSignReqPayload(txType common.TxType, payloadByt
 	return payload, nil
 }
 
-func (cc ChainClient) createMultiSignVotePayload(voteStatus common.VoteStatus, multiSignReqTxId, payloadHash string,
+func (cc *ChainClient) createMultiSignVotePayload(voteStatus common.VoteStatus, multiSignReqTxId, payloadHash string,
 	endorsementEntry *common.EndorsementEntry) ([]byte, error) {
 
 	var voteInfo *common.MultiSignVoteInfo
@@ -180,7 +180,7 @@ func (cc ChainClient) createMultiSignVotePayload(voteStatus common.VoteStatus, m
 	return payload, nil
 }
 
-func (cc ChainClient) createQueryMultiSignResultPayload(multiSignReqTxId, payloadHash string) ([]byte, error) {
+func (cc *ChainClient) createQueryMultiSignResultPayload(multiSignReqTxId, payloadHash string) ([]byte, error) {
 	// 构造Payload
 	pairs := []*common.KeyValuePair{
 		// tx_id或payload_hash，如果有tx_id，会优先选择tx_id

@@ -20,7 +20,7 @@ const (
 	keyWithRWSet = "withRWSet"
 )
 
-func (cc ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error) {
+func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
 		common.QueryFunction_GET_TX_BY_TX_ID.String(), txId)
 
@@ -55,7 +55,7 @@ func (cc ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error) 
 	return transactionInfo, nil
 }
 
-func (cc ChainClient) GetBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error) {
+func (cc *ChainClient) GetBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%s]",
 		common.QueryFunction_GET_BLOCK_BY_HEIGHT.String(), blockHeight, strconv.FormatBool(withRWSet))
 
@@ -95,7 +95,7 @@ func (cc ChainClient) GetBlockByHeight(blockHeight int64, withRWSet bool) (*comm
 
 }
 
-func (cc ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error) {
+func (cc *ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHash:%s]/[withRWSet:%s]",
 		common.QueryFunction_GET_BLOCK_BY_HASH.String(), blockHash, strconv.FormatBool(withRWSet))
 
@@ -135,7 +135,7 @@ func (cc ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*common.
 
 }
 
-func (cc ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error) {
+func (cc *ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]/[withRWSet:%s]",
 		common.QueryFunction_GET_BLOCK_BY_TX_ID.String(), txId, strconv.FormatBool(withRWSet))
 
@@ -174,7 +174,7 @@ func (cc ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*common.Block
 	return blockInfo, nil
 }
 
-func (cc ChainClient) GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error) {
+func (cc *ChainClient) GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[withRWSet:%s]",
 		common.QueryFunction_GET_LAST_CONFIG_BLOCK.String(), strconv.FormatBool(withRWSet))
 
@@ -209,7 +209,7 @@ func (cc ChainClient) GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, err
 	return blockInfo, nil
 }
 
-func (cc ChainClient) GetChainInfo() (*discovery.ChainInfo, error) {
+func (cc *ChainClient) GetChainInfo() (*discovery.ChainInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		common.QueryFunction_GET_CHAIN_INFO.String())
 
@@ -239,7 +239,7 @@ func (cc ChainClient) GetChainInfo() (*discovery.ChainInfo, error) {
 	return chainInfo, nil
 }
 
-func (cc ChainClient) GetNodeChainList() (*discovery.ChainList, error) {
+func (cc *ChainClient) GetNodeChainList() (*discovery.ChainList, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		common.QueryFunction_GET_NODE_CHAIN_LIST.String())
 
