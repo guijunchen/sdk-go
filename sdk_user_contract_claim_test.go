@@ -18,7 +18,7 @@ import (
 var (
 	claimContractName = "claim001"
 	claimVersion      = "1.0.0"
-	claimByteCodePath = "./testdata/claim-wasm-demo/fact-rust-0.7.2.wasm"
+	claimByteCodePath = "./testdata/claim-wasm-demo/rust-fact-1.0.0.wasm"
 )
 
 func TestUserContractClaim(t *testing.T) {
