@@ -22,7 +22,7 @@ const (
 var (
 	assetContractName = "asset001"
 	assetVersion      = "1.0.0"
-	assetByteCodePath = "./testdata/asset-wasm-demo/asset-rust-0.7.2.wasm"
+	assetByteCodePath = "./testdata/asset-wasm-demo/rust-asset-management-1.0.0.wasm"
 )
 
 func TestUserContractAssetBalanceOf(t *testing.T) {
