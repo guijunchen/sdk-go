@@ -129,7 +129,7 @@ func (cc *ChainClient) GetCertHash() ([]byte, error) {
 
 	member := &accesscontrol.SerializedMember{
 		OrgId:      cc.orgId,
-		MemberInfo: cc.userCrtPEM,
+		MemberInfo: cc.userCrtBytes,
 		IsFullCert: true,
 	}
 
@@ -205,7 +205,7 @@ func (cc *ChainClient) SignCertManagePayload(payloadBytes []byte) ([]byte, error
 
 	sender := &accesscontrol.SerializedMember{
 		OrgId:      cc.orgId,
-		MemberInfo: cc.userCrtPEM,
+		MemberInfo: cc.userCrtBytes,
 		IsFullCert: true,
 	}
 

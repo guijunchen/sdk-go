@@ -9,6 +9,7 @@ package chainmaker_sdk_go
 
 import (
 	"fmt"
+	"io/ioutil"
 )
 
 const (
@@ -18,6 +19,7 @@ const (
 	orgId3         = "wx-org3.chainmaker.org"
 	orgId4         = "wx-org4.chainmaker.org"
 	orgId5         = "wx-org5.chainmaker.org"
+	orgId6         = "wx-org6.chainmaker.org"
 	contractName   = "counter-go-1"
 	certPathPrefix = "./testdata"
 	tlsHostName    = "chainmaker.org"
@@ -49,6 +51,9 @@ var (
 
 	userKeyPath = certPathPrefix + "/crypto-config/%s/user/client1/client1.tls.key"
 	userCrtPath = certPathPrefix + "/crypto-config/%s/user/client1/client1.tls.crt"
+
+	userSignKeyPath = certPathPrefix + "/crypto-config/%s/user/client1/client1.sign.key"
+	userSignCrtPath = certPathPrefix + "/crypto-config/%s/user/client1/client1.sign.crt"
 
 	adminKeyPath = certPathPrefix + "/crypto-config/%s/user/admin1/admin1.tls.key"
 	adminCrtPath = certPathPrefix + "/crypto-config/%s/user/admin1/admin1.tls.crt"
@@ -139,6 +144,50 @@ func createClientWithConfig() (*ChainClient, error) {
 
 	chainClient, err := NewChainClient(
 		WithConfPath("./testdata/sdk_config.yml"),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	//启用证书压缩（开启证书压缩可以减小交易包大小，提升处理性能）
+	err = chainClient.EnableCertHash()
+	if err != nil {
+		return nil, err
+	}
+
+	return chainClient, nil
+}
+
+// 创建ChainClient（指定证书内容）
+func createClientWithCertBytes() (*ChainClient, error) {
+
+	userCrtBytes, err := ioutil.ReadFile(fmt.Sprintf(userCrtPath, orgId1))
+	if err != nil {
+		return nil, err
+	}
+
+	userKeyBytes, err := ioutil.ReadFile(fmt.Sprintf(userKeyPath, orgId1))
+	if err != nil {
+		return nil, err
+	}
+
+	userSignCrtBytes, err := ioutil.ReadFile(fmt.Sprintf(userSignCrtPath, orgId1))
+	if err != nil {
+		return nil, err
+	}
+
+	userSignKeyBytes, err := ioutil.ReadFile(fmt.Sprintf(userSignKeyPath, orgId1))
+	if err != nil {
+		return nil, err
+	}
+
+	chainClient, err := NewChainClient(
+		WithConfPath("./testdata/sdk_config.yml"),
+		WithUserCrtBytes(userCrtBytes),
+		WithUserKeyBytes(userKeyBytes),
+		WithUserSignKeyBytes(userSignKeyBytes),
+		WithUserSignCrtBytes(userSignCrtBytes),
 	)
 
 	if err != nil {

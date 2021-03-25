@@ -24,7 +24,7 @@ func (cc *ChainClient) SignMultiSignPayload(payloadBytes []byte) (*common.Endors
 
 	sender := &accesscontrol.SerializedMember{
 		OrgId:      cc.orgId,
-		MemberInfo: cc.userCrtPEM,
+		MemberInfo: cc.userCrtBytes,
 		IsFullCert: true,
 	}
 

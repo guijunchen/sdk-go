@@ -38,16 +38,16 @@ type networkClient struct {
 type ConnectionPool struct {
 	connections     []*networkClient
 	logger          Logger
-	userKeyFilePath string
-	userCrtFilePath string
+	userKeyBytes    []byte
+	userCrtBytes    []byte
 }
 
 // 创建连接池
 func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 	pool := &ConnectionPool{
 		logger:          config.logger,
-		userKeyFilePath: config.userKeyFilePath,
-		userCrtFilePath: config.userCrtFilePath,
+		userKeyBytes: config.userKeyBytes,
+		userCrtBytes: config.userCrtBytes,
 	}
 
 	for _, node := range config.nodeList {
@@ -75,8 +75,9 @@ func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPath
 		tlsClient := ca.CAClient{
 			ServerName: tlsHostName,
 			CaPaths:    caPaths,
-			CertFile:   pool.userCrtFilePath,
-			KeyFile:    pool.userKeyFilePath,
+			CertBytes:  pool.userCrtBytes,
+			KeyBytes:   pool.userKeyBytes,
+			Logger:     pool.logger,
 		}
 		c, err := tlsClient.GetCredentialsByCA()
 		if err != nil {

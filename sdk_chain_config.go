@@ -113,7 +113,7 @@ func (cc *ChainClient) SignChainConfigPayload(payloadBytes []byte) ([]byte, erro
 	// TODO: 后续支持证书索引，减小交易大小
 	sender := &accesscontrol.SerializedMember{
 		OrgId:      cc.orgId,
-		MemberInfo: cc.userCrtPEM,
+		MemberInfo: cc.userCrtBytes,
 		IsFullCert: true,
 	}
 
