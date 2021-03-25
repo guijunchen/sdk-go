@@ -38,6 +38,8 @@ type NodeConfig struct {
 	useTLS bool
 	// CA ROOT证书路径
 	caPaths []string
+	// CA ROOT证书内容（同时配置caPaths和caCerts以caCerts为准）
+	caCerts []string
 	// TLS hostname
 	tlsHostName string
 }
@@ -69,6 +71,13 @@ func WithNodeUseTLS(useTLS bool) NodeOption {
 func WithNodeCAPaths(caPaths []string) NodeOption {
 	return func(config *NodeConfig) {
 		config.caPaths = caPaths
+	}
+}
+
+// 添加CA证书内容
+func WithNodeCACerts(caCerts []string) NodeOption {
+	return func(config *NodeConfig) {
+		config.caCerts = caCerts
 	}
 }
 
@@ -335,8 +344,8 @@ func checkNodeListConfig(config *ChainClientConfig) error {
 
 		if node.useTLS {
 			// 如果开启了TLS认证，CA路径必填
-			if len(node.caPaths) == 0 {
-				return fmt.Errorf("if node useTLS is open, should set caPath")
+			if len(node.caPaths) == 0 && len(node.caCerts) == 0{
+				return fmt.Errorf("if node useTLS is open, should set caPaths or caCerts")
 			}
 
 			// 如果开启了TLS认证，需配置TLS HostName

@@ -31,6 +31,7 @@ type networkClient struct {
 	nodeAddr    string
 	useTLS      bool
 	caPaths     []string
+	caCerts     []string
 	tlsHostName string
 }
 
@@ -55,6 +56,7 @@ func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 			nodeAddr:    node.addr,
 			useTLS:      node.useTLS,
 			caPaths:     node.caPaths,
+			caCerts:     node.caCerts,
 			tlsHostName: node.tlsHostName,
 		}
 
@@ -70,15 +72,28 @@ func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 }
 
 // 初始化GPRC客户端连接
-func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths []string, tlsHostName string) (*grpc.ClientConn, error) {
+func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string, tlsHostName string) (*grpc.ClientConn, error) {
+	var tlsClient ca.CAClient
+
 	if useTLS {
-		tlsClient := ca.CAClient{
-			ServerName: tlsHostName,
-			CaPaths:    caPaths,
-			CertBytes:  pool.userCrtBytes,
-			KeyBytes:   pool.userKeyBytes,
-			Logger:     pool.logger,
+		if len(caCerts) != 0 {
+			tlsClient = ca.CAClient{
+				ServerName: tlsHostName,
+				CaCerts:    caCerts,
+				CertBytes:  pool.userCrtBytes,
+				KeyBytes:   pool.userKeyBytes,
+				Logger:     pool.logger,
+			}
+		} else {
+			tlsClient = ca.CAClient{
+				ServerName: tlsHostName,
+				CaPaths:    caPaths,
+				CertBytes:  pool.userCrtBytes,
+				KeyBytes:   pool.userKeyBytes,
+				Logger:     pool.logger,
+			}
 		}
+
 		c, err := tlsClient.GetCredentialsByCA()
 		if err != nil {
 			return nil, err
@@ -109,7 +124,7 @@ func (pool *ConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]stru
 
 			if cli.conn == nil || cli.conn.GetState() == connectivity.Shutdown {
 
-				conn, err := pool.initGRPCConnect(cli.nodeAddr, cli.useTLS, cli.caPaths, cli.tlsHostName)
+				conn, err := pool.initGRPCConnect(cli.nodeAddr, cli.useTLS, cli.caPaths, cli.caCerts, cli.tlsHostName)
 				if err != nil {
 					pool.logger.Errorf("init grpc connection [nodeAddr:%s] failed, %s", cli.nodeAddr, err.Error())
 					continue
