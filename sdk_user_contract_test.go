@@ -20,7 +20,7 @@ const (
 )
 
 func TestUserContractCounterGo(t *testing.T) {
-	client, err := createClientWithConfig()
+	client, err := createClientWithCertBytes()
 	require.Nil(t, err)
 
 	admin1, err := createAdmin(orgId1)
