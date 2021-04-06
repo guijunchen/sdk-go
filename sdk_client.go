@@ -37,7 +37,7 @@ type ChainClient struct {
 	pool       *ConnectionPool
 	chainId    string
 	orgId      string
-	userCrtPEM []byte
+	userCrtBytes []byte
 	userCrt    *bcx509.Certificate
 	privateKey crypto.PrivateKey
 	// 用户压缩证书
@@ -70,7 +70,7 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		logger:     config.logger,
 		chainId:    config.chainId,
 		orgId:      config.orgId,
-		userCrtPEM: config.userCrtPEM,
+		userCrtBytes: config.userCrtBytes,
 		userCrt:    config.userCrt,
 		privateKey: config.privateKey,
 	}, nil
@@ -231,7 +231,7 @@ func (cc *ChainClient) generateTxRequest(txId string, txType common.TxType, payl
 	} else {
 		sender = &accesscontrol.SerializedMember{
 			OrgId:      cc.orgId,
-			MemberInfo: cc.userCrtPEM,
+			MemberInfo: cc.userCrtBytes,
 			IsFullCert: true,
 		}
 	}

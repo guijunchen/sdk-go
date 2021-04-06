@@ -120,7 +120,7 @@ func (cc *ChainClient) SignContractManagePayload(payloadBytes []byte) ([]byte, e
 
 	sender := &accesscontrol.SerializedMember{
 		OrgId:      cc.orgId,
-		MemberInfo: cc.userCrtPEM,
+		MemberInfo: cc.userCrtBytes,
 		IsFullCert: true,
 	}
 
