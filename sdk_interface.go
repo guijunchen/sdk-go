@@ -504,20 +504,20 @@ type SDKInterface interface {
 	DisableCertHash() error
 	// ```
 
-	// ## 9 编解码类
-	// ### 9.1 将EasyCodec编码解码成map
+	// ## 8 编解码类
+	// ### 8.1 将EasyCodec编码解码成map
 	// ```go
 	EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string]string
 	// ```
 
-	// ## 10 系统类接口
-	// ### 10.1 SDK停止接口
+	// ## 9 系统类接口
+	// ### 9.1 SDK停止接口
 	// *关闭连接池连接，释放资源*
 	// ```go
 	Stop() error
 	// ```
 
-	// ### 10.2 获取链版本
+	// ### 9.2 获取链版本
 	// ```go
 	GetChainMakerServerVersion() (string, error)
 	// ```
