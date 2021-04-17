@@ -4,7 +4,7 @@
 package tbft
 
 import (
-	common "chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
+	common "chainmaker.org/chainmaker-go/pb/protogo/common"
 	fmt "fmt"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
@@ -1981,10 +1981,7 @@ func (m *ValidatorSet) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTbft
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTbft
 			}
 			if (iNdEx + skippy) > l {
@@ -2087,10 +2084,7 @@ func (m *TBFTMsg) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTbft
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTbft
 			}
 			if (iNdEx + skippy) > l {
@@ -2301,10 +2295,7 @@ func (m *Proposal) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTbft
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTbft
 			}
 			if (iNdEx + skippy) > l {
@@ -2513,10 +2504,7 @@ func (m *Vote) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTbft
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTbft
 			}
 			if (iNdEx + skippy) > l {
@@ -2678,7 +2666,7 @@ func (m *BlockVotes) Unmarshal(dAtA []byte) error {
 					if err != nil {
 						return err
 					}
-					if skippy < 0 {
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
 						return ErrInvalidLengthTbft
 					}
 					if (iNdEx + skippy) > postIndex {
@@ -2714,10 +2702,7 @@ func (m *BlockVotes) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTbft
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTbft
 			}
 			if (iNdEx + skippy) > l {
@@ -2989,7 +2974,7 @@ func (m *VoteSet) Unmarshal(dAtA []byte) error {
 					if err != nil {
 						return err
 					}
-					if skippy < 0 {
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
 						return ErrInvalidLengthTbft
 					}
 					if (iNdEx + skippy) > postIndex {
@@ -3118,7 +3103,7 @@ func (m *VoteSet) Unmarshal(dAtA []byte) error {
 					if err != nil {
 						return err
 					}
-					if skippy < 0 {
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
 						return ErrInvalidLengthTbft
 					}
 					if (iNdEx + skippy) > postIndex {
@@ -3135,10 +3120,7 @@ func (m *VoteSet) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTbft
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTbft
 			}
 			if (iNdEx + skippy) > l {
@@ -3298,10 +3280,7 @@ func (m *RoundVoteSet) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTbft
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTbft
 			}
 			if (iNdEx + skippy) > l {
@@ -3487,7 +3466,7 @@ func (m *HeightRoundVoteSet) Unmarshal(dAtA []byte) error {
 					if err != nil {
 						return err
 					}
-					if skippy < 0 {
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
 						return ErrInvalidLengthTbft
 					}
 					if (iNdEx + skippy) > postIndex {
@@ -3504,10 +3483,7 @@ func (m *HeightRoundVoteSet) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTbft
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTbft
 			}
 			if (iNdEx + skippy) > l {
@@ -3826,10 +3802,7 @@ func (m *ConsensusState) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTbft
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTbft
 			}
 			if (iNdEx + skippy) > l {
@@ -4072,10 +4045,7 @@ func (m *GossipState) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTbft
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTbft
 			}
 			if (iNdEx + skippy) > l {
