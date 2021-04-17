@@ -23,7 +23,7 @@ func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock 
 	return cc.Subscribe(ctx, common.TxType_SUBSCRIBE_BLOCK_INFO, payloadBytes)
 }
 
-func (cc *ChainClient) SubscribeContractEvent(ctx context.Context,  topic string, contractName string) (<-chan interface{}, error) {
+func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, topic string, contractName string) (<-chan interface{}, error) {
 	payloadBytes, err := constructSubscribeContractEventPayload(topic, contractName)
 	if err != nil {
 		return nil, err
@@ -31,15 +31,6 @@ func (cc *ChainClient) SubscribeContractEvent(ctx context.Context,  topic string
 
 	return cc.Subscribe(ctx, common.TxType_SUBSCRIBE_CONTRACT_EVENT_INFO, payloadBytes)
 }
-/*func (cc *ChainClient) QueryContractEvent(ctx context.Context, startBlock int ,endBlock int, topic string, contractName string, withRwSet bool) (<-chan interface{}, error) {
-	payloadBytes, err := constructSubscribeBlockPayload(startBlock, endBlock, withRwSet)
-	if err != nil {
-		return nil, err
-	}
-
-	return cc.Subscribe(ctx, common.TxType_SUBSCRIBE_BLOCK_INFO, payloadBytes)
-}
-*/
 
 
 func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType common.TxType, txIds []string) (<-chan interface{}, error) {
@@ -107,12 +98,12 @@ func (cc *ChainClient) Subscribe(ctx context.Context, txType common.TxType, payl
 						return
 					}
 				case common.TxType_SUBSCRIBE_CONTRACT_EVENT_INFO:
-					event := &common.ContractEvent{}
-					if err = proto.Unmarshal(result.Data, event); err != nil {
-						cc.logger.Error("[SDK] Subscriber receive contract event failed, %s", err)
-						close(c)
-						return
-					}
+						event := &common.ContractEvent{}
+						if err = proto.Unmarshal(result.Data, event); err != nil {
+							cc.logger.Error("[SDK] Subscriber receive contract event failed, %s", err)
+							close(c)
+							return
+						}
 
 					ret = event
 

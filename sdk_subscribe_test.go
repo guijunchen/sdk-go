@@ -72,11 +72,8 @@ func TestSubscribeContractEvent(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-
-	//订阅0-10区块间的区块事件。
-	//c, err := client.SubscribeBlock(ctx, 0, 10, true)
 	//订阅指定合约的合约事件
-	c, err := client.SubscribeContractEvent(ctx,"topic_vx","claim001")
+	c, err := client.SubscribeContractEvent(ctx, "topic3", "claim001")
 
 	require.Nil(t, err)
 
@@ -90,18 +87,18 @@ func TestSubscribeContractEvent(t *testing.T) {
 
 	for {
 		select {
-		case block, ok := <-c:
+		case event, ok := <-c:
 			if !ok {
 				fmt.Println("chan is close!")
 				return
 			}
 
-			require.NotNil(t, block)
+			require.NotNil(t, event)
 
-			contractEventInfo, ok := block.(*common.ContractEvent)
+			contractEventInfo, ok := event.(*common.ContractEvent)
 			require.Equal(t, true, ok)
 
-			fmt.Printf("recv contract event [%d] => %+v\n",contractEventInfo.BlockHeight , contractEventInfo)
+			fmt.Printf("recv contract event [%d] => %+v\n", contractEventInfo.BlockHeight, contractEventInfo)
 
 			//if err := client.Stop(); err != nil {
 			//	return

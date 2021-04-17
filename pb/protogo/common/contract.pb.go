@@ -35,7 +35,7 @@ const (
 	// used to manage certificates
 	ContractName_SYSTEM_CONTRACT_CERT_MANAGE ContractName = 2
 	// governance contract
-	ContractName_SYSTEM_CONTRACT_GOVERNMENT ContractName = 3
+	ContractName_SYSTEM_CONTRACT_GOVERNANCE ContractName = 3
 	// multi signature contract on chain
 	ContractName_SYSTEM_CONTRACT_MULTI_SIGN ContractName = 4
 )
@@ -44,7 +44,7 @@ var ContractName_name = map[int32]string{
 	0: "SYSTEM_CONTRACT_CHAIN_CONFIG",
 	1: "SYSTEM_CONTRACT_QUERY",
 	2: "SYSTEM_CONTRACT_CERT_MANAGE",
-	3: "SYSTEM_CONTRACT_GOVERNMENT",
+	3: "SYSTEM_CONTRACT_GOVERNANCE",
 	4: "SYSTEM_CONTRACT_MULTI_SIGN",
 }
 
@@ -52,7 +52,7 @@ var ContractName_value = map[string]int32{
 	"SYSTEM_CONTRACT_CHAIN_CONFIG": 0,
 	"SYSTEM_CONTRACT_QUERY":        1,
 	"SYSTEM_CONTRACT_CERT_MANAGE":  2,
-	"SYSTEM_CONTRACT_GOVERNMENT":   3,
+	"SYSTEM_CONTRACT_GOVERNANCE":   3,
 	"SYSTEM_CONTRACT_MULTI_SIGN":   4,
 }
 
@@ -102,7 +102,7 @@ var QueryFunction_name = map[int32]string{
 	5:  "GET_LAST_CONFIG_BLOCK",
 	6:  "GET_BLOCK_BY_HASH",
 	7:  "GET_NODE_CHAIN_LIST",
-	8:  "GET_GOVERNMENT_CONTRACT",
+	8:  "GET_GOVERNANCE_CONTRACT",
 	9:  "GET_BLOCK_WITH_TXRWSETS_BY_HEIGHT",
 	10: "GET_BLOCK_WITH_TXRWSETS_BY_HASH",
 	11: "GET_LAST_BLOCK",
@@ -117,7 +117,7 @@ var QueryFunction_value = map[string]int32{
 	"GET_LAST_CONFIG_BLOCK":             5,
 	"GET_BLOCK_BY_HASH":                 6,
 	"GET_NODE_CHAIN_LIST":               7,
-	"GET_GOVERNMENT_CONTRACT":           8,
+	"GET_GOVERNANCE_CONTRACT":           8,
 	"GET_BLOCK_WITH_TXRWSETS_BY_HEIGHT": 9,
 	"GET_BLOCK_WITH_TXRWSETS_BY_HASH":   10,
 	"GET_LAST_BLOCK":                    11,

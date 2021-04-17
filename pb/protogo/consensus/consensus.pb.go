@@ -4,7 +4,7 @@
 package consensus
 
 import (
-	common "chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
+	common "chainmaker.org/chainmaker-go/pb/protogo/common"
 	fmt "fmt"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
