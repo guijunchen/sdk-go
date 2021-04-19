@@ -13,8 +13,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	evmCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"math/big"
@@ -28,8 +26,11 @@ const (
 	tokenByteCodePath = "./testdata/token-evm-demo/token.bin"
 	tokenABIPath      = "./testdata/token-evm-demo/token.abi"
 
-	client1Addr       = "0xbe8cd0f69425253c3bab99344d61eb34f57bdc21"
-	client2Addr       = "0xa55f1e0cb68b0cc589906078237094bdb9715bfd"
+	//client1Addr       = "0xbe8cd0f69425253c3bab99344d61eb34f57bdc21"
+	//client2Addr       = "0xa55f1e0cb68b0cc589906078237094bdb9715bfd"
+
+	client1Addr         = "1087848554046178479107522336262214072175637027873"
+	client2Addr         = "944104665674401770091203869615921096651560803325"
 
 	amount            = 500000
 )
@@ -57,7 +58,7 @@ func TestUserContractTokenEVM(t *testing.T) {
 	testUserContractTokenEVMCreate(t, client, admin1, admin2, admin3, admin4, true, true)
 
 	//fmt.Println("====================== client1给client2地址转账200 ======================")
-	testUserContractTokenEVMTransfer(t, client, true)
+	//testUserContractTokenEVMTransfer(t, client, true)
 
 	//fmt.Println("====================== 查看余额 ======================")
 	testUserContractTokenEVMBalanceOf(t, client, client1Addr, true)
@@ -70,16 +71,36 @@ func testUserContractTokenEVMCreate(t *testing.T, client *ChainClient,
 	// 构造合约参数，RLP编码
 	//addr := evmutils.StringToAddress(client1Addr)
 
-	params := []interface{} {
-		evmCommon.FromHex(client1Addr),
-		//big.NewInt(amount),
-	}
+	//params := []interface{} {
+	//	evmCommon.FromHex(client1Addr),
+	//	//big.NewInt(amount),
+	//}
+	//
+	//b, err := rlp.EncodeToBytes(params)
+	//pairs := []*common.KeyValuePair{
+	//	{
+	//		Key:   "data",
+	//		Value: hex.EncodeToString(b),
+	//	},
+	//}
 
-	b, err := rlp.EncodeToBytes(params)
+	abiJson, err := ioutil.ReadFile(tokenABIPath)
+	require.Nil(t, err)
+
+	myAbi, err := abi.JSON(strings.NewReader(string(abiJson)))
+	require.Nil(t, err)
+
+	//addr := evmutils.StringToAddress(client1Addr)
+	addr := evmutils.BigToAddress(evmutils.FromDecimalString(client1Addr))
+
+	dataByte, err := myAbi.Pack("", addr)
+	require.Nil(t, err)
+
+	data := hex.EncodeToString(dataByte)
 	pairs := []*common.KeyValuePair{
 		{
 			Key:   "data",
-			Value: hex.EncodeToString(b),
+			Value: data,
 		},
 	}
 
@@ -103,7 +124,8 @@ func testUserContractTokenEVMTransfer(t *testing.T, client *ChainClient, withSyn
 	myAbi, err := abi.JSON(strings.NewReader(string(abiJson)))
 	require.Nil(t, err)
 
-	addr := evmutils.StringToAddress(client2Addr)
+	//addr := evmutils.StringToAddress(client2Addr)
+	addr := evmutils.BigToAddress(evmutils.FromDecimalString(client2Addr))
 
 	dataByte, err := myAbi.Pack("transfer", addr, big.NewInt(amount))
 	require.Nil(t, err)
@@ -126,7 +148,8 @@ func testUserContractTokenEVMBalanceOf(t *testing.T, client *ChainClient, addres
 	myAbi, err := abi.JSON(strings.NewReader(string(abiJson)))
 	require.Nil(t, err)
 
-	addr := evmutils.StringToAddress(address)
+	//addr := evmutils.StringToAddress(address)
+	addr := evmutils.BigToAddress(evmutils.FromDecimalString(client1Addr))
 
 	dataByte, err := myAbi.Pack("balanceOf", addr)
 	require.Nil(t, err)

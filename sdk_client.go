@@ -370,6 +370,12 @@ func (cc *ChainClient) GetEVMAddressFromCertBytes(certBytes []byte) (string, err
 		return "", fmt.Errorf("make address from cert SKI failed, %s", err)
 	}
 
-	return fmt.Sprintf("0x%x", addrInt.AsStringKey()), nil
+	//return fmt.Sprintf("0x%x", addrInt.AsStringKey()), nil
+	//address := evmutils.BigToAddress(addrInt)
+	//address := evmutils.EVMIntToHashBytes(addrInt)
+	//return hex.EncodeToString([]byte(address)), nil
+	//return fmt.Sprintf("%s", address), nil
+
+	return addrInt.String(), nil
 }
 
