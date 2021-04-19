@@ -11,12 +11,14 @@ import (
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/backoff"
 	"github.com/Rican7/retry/strategy"
 	"github.com/golang/protobuf/proto"
 	"io/ioutil"
+	"strings"
 	"time"
 )
 
@@ -64,9 +66,20 @@ func (cc *ChainClient) createContractManagePayload(contractName, method, version
 			return nil, fmt.Errorf("read from byteCode file %s failed, %s", byteCode, err)
 		}
 	} else {
-		codeBytes, err = base64.StdEncoding.DecodeString(byteCode)
-		if err != nil {
-			return nil, fmt.Errorf("base64 decode byteCode failed, %s", err)
+		for {
+			byteCode = strings.TrimSpace(byteCode)
+
+			codeBytes, err = hex.DecodeString(byteCode)
+			if err == nil {
+				break
+			}
+
+			codeBytes, err = base64.StdEncoding.DecodeString(byteCode)
+			if err == nil {
+				break
+			}
+
+			return nil, fmt.Errorf("decode byteCode failed, %s", err)
 		}
 	}
 

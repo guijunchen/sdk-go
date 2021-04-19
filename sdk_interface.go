@@ -504,10 +504,24 @@ type SDKInterface interface {
 	DisableCertHash() error
 	// ```
 
-	// ## 8 编解码类
+	// ## 8 工具类
 	// ### 8.1 将EasyCodec编码解码成map
 	// ```go
 	EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string]string
+	// ```
+
+	// ### 8.2 根据X.509证书路径得到EVM地址
+	// ```go
+	// **参数说明**
+	//   - certFilePath: 证书文件路径
+	GetEVMAddressFromCertPath(certFilePath string) (string, error)
+	// ```
+
+	// ### 8.3 根据X.509证书内容得到EVM地址
+	// ```go
+	// **参数说明**
+	//   - certBytes: 证书内容
+	GetEVMAddressFromCertBytes(certBytes []byte) (string, error)
 	// ```
 
 	// ## 9 系统类接口

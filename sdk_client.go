@@ -10,17 +10,20 @@ package chainmaker_sdk_go
 import (
 	"chainmaker.org/chainmaker-go/common/crypto"
 	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
+	"chainmaker.org/chainmaker-go/common/evmutils"
 	"chainmaker.org/chainmaker-go/common/serialize"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"context"
 	"encoding/hex"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"io/ioutil"
 	"strings"
 	"time"
 )
@@ -344,3 +347,29 @@ func (cc *ChainClient) proposalRequestWithTimeout(txType common.TxType, txId str
 		return resp, nil
 	}
 }
+
+func (cc *ChainClient) GetEVMAddressFromCertPath(certFilePath string) (string, error) {
+	certBytes, err := ioutil.ReadFile(certFilePath)
+	if err != nil {
+		return "", fmt.Errorf("read cert file [%s] failed, %s", certFilePath, err)
+	}
+
+	return cc.GetEVMAddressFromCertBytes(certBytes)
+}
+
+func (cc *ChainClient) GetEVMAddressFromCertBytes(certBytes []byte) (string, error) {
+	block, _ := pem.Decode(certBytes)
+	cert, err := bcx509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return "", fmt.Errorf("ParseCertificate cert failed, %s", err)
+	}
+
+	ski := hex.EncodeToString(cert.SubjectKeyId)
+	addrInt, err := evmutils.MakeAddressFromHex(ski)
+	if err != nil {
+		return "", fmt.Errorf("make address from cert SKI failed, %s", err)
+	}
+
+	return fmt.Sprintf("0x%x", addrInt.AsStringKey()), nil
+}
+
