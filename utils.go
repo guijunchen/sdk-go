@@ -184,8 +184,8 @@ func constructSubscribeBlockPayload(startBlock, endBlock int64, withRwSet bool) 
 }
 func constructSubscribeContractEventPayload(topic, contractName string) ([]byte, error) {
 	payload := &common.SubscribeContractEventPayload{
-		Topic: topic,
-		ContractName:   contractName,
+		Topic:        topic,
+		ContractName: contractName,
 	}
 
 	payloadBytes, err := proto.Marshal(payload)
