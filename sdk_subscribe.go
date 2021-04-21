@@ -32,7 +32,6 @@ func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, topic string,
 	return cc.Subscribe(ctx, common.TxType_SUBSCRIBE_CONTRACT_EVENT_INFO, payloadBytes)
 }
 
-
 func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType common.TxType, txIds []string) (<-chan interface{}, error) {
 	payloadBytes, err := constructSubscribeTxPayload(startBlock, endBlock, txType, txIds)
 	if err != nil {
@@ -98,13 +97,12 @@ func (cc *ChainClient) Subscribe(ctx context.Context, txType common.TxType, payl
 						return
 					}
 				case common.TxType_SUBSCRIBE_CONTRACT_EVENT_INFO:
-						event := &common.ContractEvent{}
-						if err = proto.Unmarshal(result.Data, event); err != nil {
-							cc.logger.Error("[SDK] Subscriber receive contract event failed, %s", err)
-							close(c)
-							return
-						}
-
+					event := &common.ContractEventInfo{}
+					if err = proto.Unmarshal(result.Data, event); err != nil {
+						cc.logger.Error("[SDK] Subscriber receive contract event failed, %s", err)
+						close(c)
+						return
+					}
 					ret = event
 
 				default:

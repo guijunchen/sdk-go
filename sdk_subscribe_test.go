@@ -92,12 +92,9 @@ func TestSubscribeContractEvent(t *testing.T) {
 				fmt.Println("chan is close!")
 				return
 			}
-
 			require.NotNil(t, event)
-
-			contractEventInfo, ok := event.(*common.ContractEvent)
+			contractEventInfo, ok := event.(*common.ContractEventInfo)
 			require.Equal(t, true, ok)
-
 			fmt.Printf("recv contract event [%d] => %+v\n", contractEventInfo.BlockHeight, contractEventInfo)
 
 			//if err := client.Stop(); err != nil {
