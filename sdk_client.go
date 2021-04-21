@@ -276,28 +276,33 @@ func (cc *ChainClient) proposalRequest(txType common.TxType, txId string, payloa
 }
 
 func (cc *ChainClient) proposalRequestWithTimeout(txType common.TxType, txId string, payloadBytes []byte, timeout int64) (*common.TxResponse, error) {
-	var (
-		errMsg string
-	)
-
 	if txId == "" {
 		txId = GetRandTxId()
 	}
 
+	req, err := cc.generateTxRequest(txId, txType, payloadBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return cc.sendTxRequest(req, timeout)
+}
+
+func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64) (*common.TxResponse, error) {
+
+	var (
+		errMsg string
+	)
+
 	if timeout < 0 {
 		timeout = SendTxTimeout
-		if strings.HasPrefix(txType.String(), "QUERY") {
+		if strings.HasPrefix(txRequest.Header.TxType.String(), "QUERY") {
 			timeout = GetTxTimeout
 		}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
-
-	req, err := cc.generateTxRequest(txId, txType, payloadBytes)
-	if err != nil {
-		return nil, err
-	}
 
 	ignoreAddrs := make(map[string]struct{})
 	for {
@@ -310,13 +315,13 @@ func (cc *ChainClient) proposalRequestWithTimeout(txType common.TxType, txId str
 			cc.logger.Debugf("[SDK] begin try to connect node [%s]", client.nodeAddr)
 		}
 
-		resp, err := client.rpcNode.SendRequest(ctx, req)
+		resp, err := client.rpcNode.SendRequest(ctx, txRequest)
 		if err != nil {
 			resp := &common.TxResponse{
 				Message: err.Error(),
 				ContractResult: &common.ContractResult{
 					Code:    common.ContractResultCode_FAIL,
-					Result:  []byte(txId),
+					Result:  []byte(txRequest.Header.TxId),
 					Message: common.ContractResultCode_FAIL.String(),
 				},
 			}
