@@ -182,6 +182,19 @@ func constructSubscribeBlockPayload(startBlock, endBlock int64, withRwSet bool) 
 
 	return payloadBytes, nil
 }
+func constructSubscribeContractEventPayload(topic, contractName string) ([]byte, error) {
+	payload := &common.SubscribeContractEventPayload{
+		Topic:        topic,
+		ContractName: contractName,
+	}
+
+	payloadBytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return payloadBytes, nil
+}
 
 func constructSubscribeTxPayload(startBlock, endBlock int64, txType common.TxType, txIds []string) ([]byte, error) {
 	payload := &common.SubscribeTxPayload{

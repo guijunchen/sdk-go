@@ -13,12 +13,13 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 var (
 	claimContractName = "claim001"
 	claimVersion      = "1.0.0"
-	claimByteCodePath = "./testdata/claim-wasm-demo/rust-fact-1.0.0.wasm"
+	claimByteCodePath = "./testdata/claim-wasm-demo/go-fact-1.0.0.wasm"
 )
 
 func TestUserContractClaim(t *testing.T) {
@@ -59,7 +60,7 @@ func testUserContractClaimCreate(t *testing.T, client *ChainClient,
 	admin1, admin2, admin3, admin4 *ChainClient, withSyncResult bool, isIgnoreSameContract bool) {
 
 	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		claimContractName, claimVersion, claimByteCodePath, common.RuntimeType_WASMER, []*common.KeyValuePair{}, withSyncResult)
+		claimContractName, claimVersion, claimByteCodePath, common.RuntimeType_GASM, []*common.KeyValuePair{}, withSyncResult)
 	if !isIgnoreSameContract {
 		require.Nil(t, err)
 	}
@@ -70,7 +71,9 @@ func testUserContractClaimCreate(t *testing.T, client *ChainClient,
 func testUserContractClaimInvoke(client *ChainClient,
 	method string, withSyncResult bool) (string, error) {
 
-	curTime := fmt.Sprintf("%d", CurrentTimeMillisSeconds())
+	//curTime := fmt.Sprintf("%d", CurrentTimeMillisSeconds())
+	curTime := time.Now().Format("2006-01-02 15:04:05" )
+
 	fileHash := uuid.GetUUID()
 	params := map[string]string{
 		"time":      curTime,
