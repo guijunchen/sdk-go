@@ -28,7 +28,7 @@ const (
 
 func TestUserContractStorageEVM(t *testing.T) {
 	fmt.Println("====================== create client ======================")
-	client, err := createClientWithCertBytes()
+	client, err := createClientWithConfig()
 	require.Nil(t, err)
 
 	fmt.Println("====================== create admin1 ======================")
@@ -90,8 +90,8 @@ func testUserContractStorageEVMSet(t *testing.T, client *ChainClient, data int64
 	err = invokeUserContract(client, storageContractName, method, "", pairs, withSyncResult)
 	require.Nil(t, err)
 }
-
 func testUserContractStorageEVMGet(t *testing.T, client *ChainClient, withSyncResult bool) {
+
 	abiJson, err := ioutil.ReadFile(storageABIPath)
 	require.Nil(t, err)
 
@@ -108,6 +108,10 @@ func testUserContractStorageEVMGet(t *testing.T, client *ChainClient, withSyncRe
 		"data": dataString,
 	}
 
-	err = invokeUserContract(client, storageContractName, method, "", pairs, withSyncResult)
+	result, err := invokeUserContractWithResult(client, storageContractName, method, "", pairs, withSyncResult)
 	require.Nil(t, err)
+
+	val, err := myAbi.Unpack("get", result)
+	require.Nil(t, err)
+	fmt.Printf("val: %d\n", val)
 }
