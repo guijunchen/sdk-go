@@ -26,8 +26,8 @@ const (
 	tokenByteCodePath = "./testdata/token-evm-demo/token.bin"
 	tokenABIPath      = "./testdata/token-evm-demo/token.abi"
 
-	//client1Addr       = "0xbe8cd0f69425253c3bab99344d61eb34f57bdc21"
-	//client2Addr       = "0xa55f1e0cb68b0cc589906078237094bdb9715bfd"
+	client1Addr       = "0xbe8cd0f69425253c3bab99344d61eb34f57bdc21"
+	client2Addr       = "0xa55f1e0cb68b0cc589906078237094bdb9715bfd"
 
 	client1AddrInt    = "1087848554046178479107522336262214072175637027873"
 	client2AddrInt    = "944104665674401770091203869615921096651560803325"
@@ -80,8 +80,14 @@ func testUserContractTokenEVMCreate(t *testing.T, client *ChainClient,
 	myAbi, err := abi.JSON(strings.NewReader(string(abiJson)))
 	require.Nil(t, err)
 
-	//addr := evmutils.StringToAddress(client1Addr)
-	addr := evmutils.BigToAddress(evmutils.FromDecimalString(client1AddrInt))
+	// 方式1: 16进制
+	//addr := evmutils.BigToAddress(evmutils.FromHexString(client1Addr[2:]))
+	// 方式2: Int
+	//addr := evmutils.BigToAddress(evmutils.FromDecimalString(client1AddrInt))
+	// 方式3: ski
+	addrInt, err := evmutils.MakeAddressFromHex(client1AddrSki)
+	require.Nil(t, err)
+	addr := evmutils.BigToAddress(addrInt)
 
 	dataByte, err := myAbi.Pack("", addr)
 	require.Nil(t, err)
