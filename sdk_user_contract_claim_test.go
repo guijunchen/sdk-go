@@ -22,15 +22,20 @@ var (
 )
 
 func TestUserContractClaim(t *testing.T) {
+	fmt.Println("====================== create client ======================")
 	client, err := createClientWithCertBytes()
 	require.Nil(t, err)
 
+	fmt.Println("====================== create admin1 ======================")
 	admin1, err := createAdmin(orgId1)
 	require.Nil(t, err)
+	fmt.Println("====================== create admin2 ======================")
 	admin2, err := createAdmin(orgId2)
 	require.Nil(t, err)
+	fmt.Println("====================== create admin3 ======================")
 	admin3, err := createAdmin(orgId3)
 	require.Nil(t, err)
+	fmt.Println("====================== create admin4 ======================")
 	admin4, err := createAdmin(orgId4)
 	require.Nil(t, err)
 
@@ -74,6 +79,7 @@ func testUserContractClaimInvoke(client *ChainClient,
 	}
 
 	err := invokeUserContract(client, claimContractName, method, "", params, withSyncResult)
+	//err := invokeUserContractStepByStep(client, claimContractName, method, "", params, withSyncResult)
 	if err != nil {
 		return "", err
 	}

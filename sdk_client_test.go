@@ -9,7 +9,9 @@ package chainmaker_sdk_go
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"io/ioutil"
+	"testing"
 )
 
 const (
@@ -285,4 +287,20 @@ func createAdmin(orgId string) (*ChainClient, error) {
 	}
 
 	return adminClient, nil
+}
+
+
+func TestChainClient_GetEVMAddressFromCertPath(t *testing.T) {
+	client, err := createClientWithConfig()
+	require.Nil(t, err)
+
+	certFilePath := fmt.Sprintf(userCrtPath, orgId1)
+	addr, err := client.GetEVMAddressFromCertPath(certFilePath)
+	require.Nil(t, err)
+	fmt.Printf("client1 address: %s\n", addr)
+
+	certFilePath = fmt.Sprintf(userCrtPath, orgId2)
+	addr, err = client.GetEVMAddressFromCertPath(certFilePath)
+	require.Nil(t, err)
+	fmt.Printf("client2 address: %s\n", addr)
 }

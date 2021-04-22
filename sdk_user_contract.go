@@ -11,12 +11,14 @@ import (
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/backoff"
 	"github.com/Rican7/retry/strategy"
 	"github.com/golang/protobuf/proto"
 	"io/ioutil"
+	"strings"
 	"time"
 )
 
@@ -64,9 +66,20 @@ func (cc *ChainClient) createContractManagePayload(contractName, method, version
 			return nil, fmt.Errorf("read from byteCode file %s failed, %s", byteCode, err)
 		}
 	} else {
-		codeBytes, err = base64.StdEncoding.DecodeString(byteCode)
-		if err != nil {
-			return nil, fmt.Errorf("base64 decode byteCode failed, %s", err)
+		for {
+			byteCode = strings.TrimSpace(byteCode)
+
+			codeBytes, err = hex.DecodeString(byteCode)
+			if err == nil {
+				break
+			}
+
+			codeBytes, err = base64.StdEncoding.DecodeString(byteCode)
+			if err == nil {
+				break
+			}
+
+			return nil, fmt.Errorf("decode byteCode failed, %s", err)
 		}
 	}
 
@@ -268,3 +281,59 @@ func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error
 	}
 	return txInfo.Transaction.Result.ContractResult, nil
 }
+
+func (cc *ChainClient) GetTxRequest(contractName, method, txId string, params map[string]string) (*common.TxRequest, error) {
+	if txId == "" {
+		txId = GetRandTxId()
+	}
+
+	cc.logger.Debugf("[SDK] begin to create TxRequest, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
+		contractName, method, txId, params)
+
+	pairs := paramsMap2KVPairs(params)
+
+	payloadBytes, err := constructTransactPayload(contractName, method, pairs)
+	if err != nil {
+		return nil, fmt.Errorf("construct transact payload failed, %s", err.Error())
+	}
+
+	req, err := cc.generateTxRequest(txId, common.TxType_INVOKE_USER_CONTRACT, payloadBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+func (cc *ChainClient) SendTxRequest(txRequest *common.TxRequest, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+
+	resp, err := cc.sendTxRequest(txRequest, timeout)
+	if err != nil {
+		return resp, fmt.Errorf("%s failed, %s", common.TxType_INVOKE_USER_CONTRACT.String(), err.Error())
+	}
+
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if !withSyncResult {
+			resp.ContractResult = &common.ContractResult{
+				Code:    common.ContractResultCode_OK,
+				Message: common.ContractResultCode_OK.String(),
+				Result:  []byte(txRequest.Header.TxId),
+			}
+		} else {
+			contractResult, err := cc.getSyncResult(txRequest.Header.TxId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+
+			if contractResult.Code != common.ContractResultCode_OK {
+				resp.Code = common.TxStatusCode_CONTRACT_FAIL
+				resp.Message = contractResult.Message
+			}
+
+			resp.ContractResult = contractResult
+		}
+	}
+
+	return resp, nil
+}
+
