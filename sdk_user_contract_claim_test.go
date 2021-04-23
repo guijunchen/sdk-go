@@ -60,7 +60,7 @@ func testUserContractClaimCreate(t *testing.T, client *ChainClient,
 	admin1, admin2, admin3, admin4 *ChainClient, withSyncResult bool, isIgnoreSameContract bool) {
 
 	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		claimContractName, claimVersion, claimByteCodePath, common.RuntimeType_GASM, []*common.KeyValuePair{}, withSyncResult)
+		claimContractName, claimVersion, claimByteCodePath, common.RuntimeType_WASMER, []*common.KeyValuePair{}, withSyncResult)
 	if !isIgnoreSameContract {
 		require.Nil(t, err)
 	}
