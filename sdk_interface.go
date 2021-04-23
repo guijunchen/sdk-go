@@ -520,4 +520,30 @@ type SDKInterface interface {
 	// ```go
 	GetChainMakerServerVersion() (string, error)
 	// ```
+
+	// ## 11 系统隐私合约类接口
+	// ### 11.1 证书上链及验证
+	// ```go
+	SaveCert(userCert, enclaveCert string) ([]byte, error)
+	//```
+
+	// ### 11.2 隐私目录上链
+	// ```go
+	SaveDir(userCert, orderId, dirHash, dirSign string, privateDir *common.StrSlice) ([]byte, error)
+	//```
+
+	// ### 11.3 隐私合约代码查询
+	// ```go
+	GetContract(userCert, contractName, codeHash, hashSign string) (*common.PrivateGetContract, error)
+	//```
+
+	// ### 11.4 隐私计算结果上链
+	// ```go
+	SaveData(computeResult, contractName, gas, reportSign, userCert string, rwSet *common.TxRWSet, events *common.StrSlice) ([]byte, error)
+	//```
+
+	// ### 11.5 隐私计算结果查询
+	// ```go
+	GetData(contractName, privateKey, userCert, dirSign string) ([]byte, error)
+	//```
 }
