@@ -65,6 +65,47 @@ func TestSubscribeBlock(t *testing.T) {
 		}
 	}
 }
+func TestSubscribeContractEvent(t *testing.T) {
+	client, err := createClient()
+	require.Nil(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	//订阅指定合约的合约事件
+	c, err := client.SubscribeContractEvent(ctx, "topic3", "claim001")
+
+	require.Nil(t, err)
+
+	go func() {
+		for i := 0; i < sendTxCount; i++ {
+			_, err := testUserContractClaimInvoke(client, "save", false)
+			require.Nil(t, err)
+			time.Sleep(2 * time.Second)
+		}
+	}()
+
+	for {
+		select {
+		case event, ok := <-c:
+			if !ok {
+				fmt.Println("chan is close!")
+				return
+			}
+			require.NotNil(t, event)
+			contractEventInfo, ok := event.(*common.ContractEventInfo)
+			require.Equal(t, true, ok)
+			fmt.Printf("recv contract event [%d] => %+v\n", contractEventInfo.BlockHeight, contractEventInfo)
+
+			//if err := client.Stop(); err != nil {
+			//	return
+			//}
+			//return
+		case <-ctx.Done():
+			return
+		}
+	}
+}
 
 func TestSubscribeTx(t *testing.T) {
 	client, err := createClient()

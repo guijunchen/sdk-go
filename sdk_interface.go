@@ -113,6 +113,29 @@ type SDKInterface interface {
 	QueryContract(contractName, method string, params map[string]string, timeout int64) (*common.TxResponse, error)
 	// ```
 
+	// ### 1.11 构造待发送交易体
+	// **参数说明**
+	//   - contractName: 合约名称
+	//   - method: 合约方法
+	//   - txId: 交易ID
+	//           格式要求：长度为64bit，字符在a-z0-9
+	//           可为空，若为空字符串，将自动生成txId
+	//   - params: 合约参数
+	// ```go
+	GetTxRequest(contractName, method, txId string, params map[string]string) (*common.TxRequest, error)
+	// ```
+
+	// ### 1.12 发送已构造好的交易体
+	// **参数说明**
+	//   - txRequest: 已构造好的交易体
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
+	// ```go
+	SendTxRequest(txRequest *common.TxRequest, timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	// ```
+
 	// ## 2 系统合约接口
 	// ### 2.1 根据交易Id查询交易
 	// **参数说明**
@@ -504,10 +527,24 @@ type SDKInterface interface {
 	DisableCertHash() error
 	// ```
 
-	// ## 8 编解码类
+	// ## 8 工具类
 	// ### 8.1 将EasyCodec编码解码成map
 	// ```go
 	EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string]string
+	// ```
+
+	// ### 8.2 根据X.509证书路径得到EVM地址
+	// **参数说明**
+	//   - certFilePath: 证书文件路径
+	// ```go
+	GetEVMAddressFromCertPath(certFilePath string) (string, error)
+	// ```
+
+	// ### 8.3 根据X.509证书内容得到EVM地址
+	// **参数说明**
+	//   - certBytes: 证书内容
+	// ```go
+	GetEVMAddressFromCertBytes(certBytes []byte) (string, error)
 	// ```
 
 	// ## 9 系统类接口
