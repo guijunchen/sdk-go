@@ -10,17 +10,20 @@ package chainmaker_sdk_go
 import (
 	"chainmaker.org/chainmaker-go/common/crypto"
 	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
+	"chainmaker.org/chainmaker-go/common/evmutils"
 	"chainmaker.org/chainmaker-go/common/serialize"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"context"
 	"encoding/hex"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"io/ioutil"
 	"strings"
 	"time"
 )
@@ -273,28 +276,33 @@ func (cc *ChainClient) proposalRequest(txType common.TxType, txId string, payloa
 }
 
 func (cc *ChainClient) proposalRequestWithTimeout(txType common.TxType, txId string, payloadBytes []byte, timeout int64) (*common.TxResponse, error) {
-	var (
-		errMsg string
-	)
-
 	if txId == "" {
 		txId = GetRandTxId()
 	}
 
+	req, err := cc.generateTxRequest(txId, txType, payloadBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return cc.sendTxRequest(req, timeout)
+}
+
+func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64) (*common.TxResponse, error) {
+
+	var (
+		errMsg string
+	)
+
 	if timeout < 0 {
 		timeout = SendTxTimeout
-		if strings.HasPrefix(txType.String(), "QUERY") {
+		if strings.HasPrefix(txRequest.Header.TxType.String(), "QUERY") {
 			timeout = GetTxTimeout
 		}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
-
-	req, err := cc.generateTxRequest(txId, txType, payloadBytes)
-	if err != nil {
-		return nil, err
-	}
 
 	ignoreAddrs := make(map[string]struct{})
 	for {
@@ -307,13 +315,13 @@ func (cc *ChainClient) proposalRequestWithTimeout(txType common.TxType, txId str
 			cc.logger.Debugf("[SDK] begin try to connect node [%s]", client.nodeAddr)
 		}
 
-		resp, err := client.rpcNode.SendRequest(ctx, req)
+		resp, err := client.rpcNode.SendRequest(ctx, txRequest)
 		if err != nil {
 			resp := &common.TxResponse{
 				Message: err.Error(),
 				ContractResult: &common.ContractResult{
 					Code:    common.ContractResultCode_FAIL,
-					Result:  []byte(txId),
+					Result:  []byte(txRequest.Header.TxId),
 					Message: common.ContractResultCode_FAIL.String(),
 				},
 			}
@@ -344,3 +352,35 @@ func (cc *ChainClient) proposalRequestWithTimeout(txType common.TxType, txId str
 		return resp, nil
 	}
 }
+
+func (cc *ChainClient) GetEVMAddressFromCertPath(certFilePath string) (string, error) {
+	certBytes, err := ioutil.ReadFile(certFilePath)
+	if err != nil {
+		return "", fmt.Errorf("read cert file [%s] failed, %s", certFilePath, err)
+	}
+
+	return cc.GetEVMAddressFromCertBytes(certBytes)
+}
+
+func (cc *ChainClient) GetEVMAddressFromCertBytes(certBytes []byte) (string, error) {
+	block, _ := pem.Decode(certBytes)
+	cert, err := bcx509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return "", fmt.Errorf("ParseCertificate cert failed, %s", err)
+	}
+
+	ski := hex.EncodeToString(cert.SubjectKeyId)
+	addrInt, err := evmutils.MakeAddressFromHex(ski)
+	if err != nil {
+		return "", fmt.Errorf("make address from cert SKI failed, %s", err)
+	}
+
+	//return fmt.Sprintf("0x%x", addrInt.AsStringKey()), nil
+	//address := evmutils.BigToAddress(addrInt)
+	//address := evmutils.EVMIntToHashBytes(addrInt)
+	//return hex.EncodeToString([]byte(address)), nil
+	//return fmt.Sprintf("%s", address), nil
+
+	return addrInt.String(), nil
+}
+
