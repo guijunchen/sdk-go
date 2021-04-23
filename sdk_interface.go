@@ -268,42 +268,42 @@ type SDKInterface interface {
 	// ### 3.15 添加共识节点地址待签名payload生成
 	// **参数说明**
 	//   - nodeOrgId: 节点组织Id
-	//   - nodeAddresses: 节点地址
+	//   - nodeIds: 节点Id
 	// ```go
-	CreateChainConfigConsensusNodeAddrAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
+	CreateChainConfigConsensusNodeIdAddPayload(nodeOrgId string, nodeIds []string) ([]byte, error)
 	// ```
 
 	// ### 3.16 更新共识节点地址待签名payload生成
 	// **参数说明**
 	//   - nodeOrgId: 节点组织Id
-	//   - nodeOldAddress: 节点原地址
-	//   - nodeNewAddress: 节点新地址
+	//   - nodeOldNodeId: 节点原Id
+	//   - nodeNewNodeId: 节点新Id
 	// ```go
-	CreateChainConfigConsensusNodeAddrUpdatePayload(nodeOrgId, nodeOldAddress, nodeNewAddress string) ([]byte, error)
+	CreateChainConfigConsensusNodeIdUpdatePayload(nodeOrgId, nodeOldNodeId, nodeNewNodeId string) ([]byte, error)
 	// ```
 
 	// ### 3.17 删除共识节点地址待签名payload生成
 	// **参数说明**
 	//   - nodeOrgId: 节点组织Id
-	//   - nodeAddress: 节点地址
+	//   - nodeId: 节点Id
 	// ```go
-	CreateChainConfigConsensusNodeAddrDeletePayload(nodeOrgId, nodeAddress string) ([]byte, error)
+	CreateChainConfigConsensusNodeIdDeletePayload(nodeOrgId, nodeId string) ([]byte, error)
 	// ```
 
 	// ### 3.18 添加共识节点待签名payload生成
 	// **参数说明**
 	//   - nodeOrgId: 节点组织Id
-	//   - nodeAddresses: 节点地址
+	//   - nodeIds: 节点Id
 	// ```go
-	CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
+	CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId string, nodeIds []string) ([]byte, error)
 	// ```
 
 	// ### 3.19 更新共识节点待签名payload生成
 	// **参数说明**
 	//   - nodeOrgId: 节点组织Id
-	//   - nodeAddresses: 节点地址
+	//   - nodeIds: 节点Id
 	// ```go
-	CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
+	CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeIds []string) ([]byte, error)
 	// ```
 
 	// ### 3.20 删除共识节点待签名payload生成
