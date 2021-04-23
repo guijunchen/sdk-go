@@ -19,7 +19,7 @@ import (
 
 const (
 	orgId = "org_id"
-	addrs = "addresses"
+	nIds  = "node_ids"
 )
 
 const (
@@ -407,7 +407,7 @@ func (cc *ChainClient) CreateChainConfigPermissionDeletePayload(permissionResour
 	return payload, nil
 }
 
-func (cc *ChainClient) CreateChainConfigConsensusNodeAddrAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
+func (cc *ChainClient) CreateChainConfigConsensusNodeIdAddPayload(nodeOrgId string, nodeIds []string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeAddrAdd] to be signed payload")
 
 	seq, err := cc.GetChainConfigSequence()
@@ -421,13 +421,13 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeAddrAddPayload(nodeOrgId st
 			Value: nodeOrgId,
 		},
 		{
-			Key:   addrs,
-			Value: strings.Join(nodeAddresses, ","),
+			Key:   nIds,
+			Value: strings.Join(nodeIds, ","),
 		},
 	}
 
 	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		common.ConfigFunction_NODE_ADDR_ADD.String(), pairs, seq+1)
+		common.ConfigFunction_NODE_ID_ADD.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -435,7 +435,7 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeAddrAddPayload(nodeOrgId st
 	return payload, nil
 }
 
-func (cc *ChainClient) CreateChainConfigConsensusNodeAddrUpdatePayload(nodeOrgId, nodeOldAddress, nodeNewAddress string) ([]byte, error) {
+func (cc *ChainClient) CreateChainConfigConsensusNodeIdUpdatePayload(nodeOrgId, nodeOldIds, nodeNewIds string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeAddrUpdate] to be signed payload")
 
 	seq, err := cc.GetChainConfigSequence()
@@ -449,17 +449,17 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeAddrUpdatePayload(nodeOrgId
 			Value: nodeOrgId,
 		},
 		{
-			Key:   "address",
-			Value: nodeOldAddress,
+			Key:   "node_id",
+			Value: nodeOldIds,
 		},
 		{
-			Key:   "new_address",
-			Value: nodeNewAddress,
+			Key:   "new_node_id",
+			Value: nodeNewIds,
 		},
 	}
 
 	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		common.ConfigFunction_NODE_ADDR_UPDATE.String(), pairs, seq+1)
+		common.ConfigFunction_NODE_ID_UPDATE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -467,7 +467,7 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeAddrUpdatePayload(nodeOrgId
 	return payload, nil
 }
 
-func (cc *ChainClient) CreateChainConfigConsensusNodeAddrDeletePayload(nodeOrgId, nodeAddress string) ([]byte, error) {
+func (cc *ChainClient) CreateChainConfigConsensusNodeIdDeletePayload(nodeOrgId, nodeId string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeAddrDelete] to be signed payload")
 
 	seq, err := cc.GetChainConfigSequence()
@@ -481,13 +481,13 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeAddrDeletePayload(nodeOrgId
 			Value: nodeOrgId,
 		},
 		{
-			Key:   "address",
-			Value: nodeAddress,
+			Key:   "node_id",
+			Value: nodeId,
 		},
 	}
 
 	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		common.ConfigFunction_NODE_ADDR_DELETE.String(), pairs, seq+1)
+		common.ConfigFunction_NODE_ID_DELETE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
@@ -495,7 +495,7 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeAddrDeletePayload(nodeOrgId
 	return payload, nil
 }
 
-func (cc *ChainClient) CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
+func (cc *ChainClient) CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId string, nodeIds []string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeOrgAdd] to be signed payload")
 
 	seq, err := cc.GetChainConfigSequence()
@@ -509,8 +509,8 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId str
 			Value: nodeOrgId,
 		},
 		{
-			Key:   addrs,
-			Value: strings.Join(nodeAddresses, ","),
+			Key:   nIds,
+			Value: strings.Join(nodeIds, ","),
 		},
 	}
 
@@ -523,7 +523,7 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId str
 	return payload, nil
 }
 
-func (cc *ChainClient) CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error) {
+func (cc *ChainClient) CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeIds []string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeOrgUpdate] to be signed payload")
 
 	seq, err := cc.GetChainConfigSequence()
@@ -537,8 +537,8 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId 
 			Value: nodeOrgId,
 		},
 		{
-			Key:   addrs,
-			Value: strings.Join(nodeAddresses, ","),
+			Key:   nIds,
+			Value: strings.Join(nodeIds, ","),
 		},
 	}
 
