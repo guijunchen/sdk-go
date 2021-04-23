@@ -4,7 +4,7 @@
 package common
 
 import (
-	accesscontrol "chainmaker.org/chainmaker-go/pb/protogo/accesscontrol"
+	accesscontrol "chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	fmt "fmt"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
