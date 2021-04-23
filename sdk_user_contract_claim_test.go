@@ -19,7 +19,7 @@ import (
 var (
 	claimContractName = "claim001"
 	claimVersion      = "1.0.0"
-	claimByteCodePath = "./testdata/claim-wasm-demo/go-fact-1.0.0.wasm"
+	claimByteCodePath = "./testdata/claim-wasm-demo/rust-fact-1.0.0.wasm"
 )
 
 func TestUserContractClaim(t *testing.T) {
@@ -67,7 +67,7 @@ func testUserContractClaimInvoke(client *ChainClient,
 	method string, withSyncResult bool) (string, error) {
 
 	//curTime := fmt.Sprintf("%d", CurrentTimeMillisSeconds())
-	curTime := time.Now().Format("2006-01-02 15:04:05" )
+	curTime := time.Now().Format("2006-01-02 15:04:05")
 
 	fileHash := uuid.GetUUID()
 	params := map[string]string{
