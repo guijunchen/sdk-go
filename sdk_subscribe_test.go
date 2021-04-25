@@ -73,7 +73,7 @@ func TestSubscribeContractEvent(t *testing.T) {
 	defer cancel()
 
 	//订阅指定合约的合约事件
-	c, err := client.SubscribeContractEvent(ctx, "topic3", "claim001")
+	c, err := client.SubscribeContractEvent(ctx, "topic_vx", "claim001")
 
 	require.Nil(t, err)
 
