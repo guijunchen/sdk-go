@@ -14,18 +14,24 @@ import (
 )
 
 func (cc *ChainClient) SaveCert(userCert, enclaveCert string) ([]byte, error) {
-
 	cc.logger.Infof("[SDK] begin to save cert , [contract:%s]/[method:%s]",
-		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(), common.PrivateComputeContractFunction_SAVE_CERT.String())
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_SAVE_CERT.String(),
+	)
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string]string{
-		"user_cert":userCert,
-		"enclave_cert":enclaveCert,
+		"user_cert":    userCert,
+		"enclave_cert": enclaveCert,
 	})
 
-	payloadBytes, err := constructSystemContractPayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_SAVE_CERT.String(), pairs, defaultSequence)
+	payloadBytes, err := constructSystemContractPayload(
+		cc.chainId,
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_SAVE_CERT.String(),
+		pairs,
+		defaultSequence,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("construct save cert payload failed, %s", err.Error())
 	}
@@ -42,9 +48,13 @@ func (cc *ChainClient) SaveCert(userCert, enclaveCert string) ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
-func (cc *ChainClient) SaveDir(userCert, orderId, dirHash, dirSign string, privateDir *common.StrSlice) ([]byte, error) {
+func (cc *ChainClient) SaveDir(userCert, orderId, dirHash, dirSign string,
+	privateDir *common.StrSlice) ([]byte, error) {
+
 	cc.logger.Infof("[SDK] begin to save dir , [contract:%s]/[method:%s]",
-		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(), common.PrivateComputeContractFunction_SAVE_DIR.String())
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_SAVE_DIR.String(),
+	)
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string]string{
@@ -55,8 +65,13 @@ func (cc *ChainClient) SaveDir(userCert, orderId, dirHash, dirSign string, priva
 		"private_dir": privateDir.String(),
 	})
 
-	payloadBytes, err := constructSystemContractPayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_SAVE_DIR.String(), pairs, defaultSequence)
+	payloadBytes, err := constructSystemContractPayload(
+		cc.chainId,
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_SAVE_DIR.String(),
+		pairs,
+		defaultSequence,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("construct save dir payload failed, %s", err.Error())
 	}
@@ -73,9 +88,13 @@ func (cc *ChainClient) SaveDir(userCert, orderId, dirHash, dirSign string, priva
 	return resp.ContractResult.Result, nil
 }
 
-func (cc *ChainClient) GetContract(userCert, contractName, codeHash, hashSign string) (*common.PrivateGetContract, error) {
+func (cc *ChainClient) GetContract(userCert, contractName, codeHash,
+	hashSign string) (*common.PrivateGetContract, error) {
+
 	cc.logger.Infof("[SDK] begin to get contract , [contract:%s]/[method:%s]",
-		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(), common.PrivateComputeContractFunction_GET_CONTRACT.String())
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_GET_CONTRACT.String(),
+	)
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string]string{
@@ -85,8 +104,11 @@ func (cc *ChainClient) GetContract(userCert, contractName, codeHash, hashSign st
 		"hash_sign":     hashSign,
 	})
 
-	payloadBytes, err := constructQueryPayload(common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_GET_CONTRACT.String(), pairs)
+	payloadBytes, err := constructQueryPayload(
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_GET_CONTRACT.String(),
+		pairs,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("marshal get contract payload failed, %s", err.Error())
 	}
@@ -108,9 +130,13 @@ func (cc *ChainClient) GetContract(userCert, contractName, codeHash, hashSign st
 	return contractInfo, nil
 }
 
-func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, userCert string, rwSet *common.TxRWSet, events *common.StrSlice) ([]byte, error) {
+func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, userCert string, rwSet *common.TxRWSet,
+	events *common.StrSlice) ([]byte, error) {
+
 	cc.logger.Infof("[SDK] begin to save data , [contract:%s]/[method:%s]",
-		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(), common.PrivateComputeContractFunction_SAVA_DATA.String())
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_SAVA_DATA.String(),
+	)
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string]string{
@@ -123,8 +149,13 @@ func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, us
 		"user_cert":      userCert,
 	})
 
-	payloadBytes, err := constructSystemContractPayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_SAVA_DATA.String(), pairs, defaultSequence)
+	payloadBytes, err := constructSystemContractPayload(
+		cc.chainId,
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_SAVA_DATA.String(),
+		pairs,
+		defaultSequence,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("construct save data payload failed, %s", err.Error())
 	}
@@ -143,7 +174,9 @@ func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, us
 
 func (cc *ChainClient) GetData(contractName, privateKey, userCert, dirSign string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
-		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(), common.PrivateComputeContractFunction_GET_DATA.String())
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_GET_DATA.String(),
+	)
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string]string{
@@ -153,8 +186,11 @@ func (cc *ChainClient) GetData(contractName, privateKey, userCert, dirSign strin
 		"dir_sign":      dirSign,
 	})
 
-	payloadBytes, err := constructQueryPayload(common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_GET_DATA.String(), pairs)
+	payloadBytes, err := constructQueryPayload(
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_GET_DATA.String(),
+		pairs,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("marshal get data payload failed, %s", err.Error())
 	}

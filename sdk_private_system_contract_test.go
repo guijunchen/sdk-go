@@ -87,7 +87,7 @@ func TestChainClient_GetContract(t *testing.T) {
 				hashSign:     "1",
 			},
 
-			want: nil,
+			want:    nil,
 			wantErr: true,
 		},
 
@@ -232,7 +232,8 @@ func TestChainClient_SaveData(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			got, err := cc.SaveData(tt.args.computeResult, tt.args.contractName, tt.args.gas, tt.args.reportSign, tt.args.userCert, tt.args.rwSet, tt.args.events)
+			got, err := cc.SaveData(tt.args.computeResult, tt.args.contractName, tt.args.gas, tt.args.reportSign,
+				tt.args.userCert, tt.args.rwSet, tt.args.events)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SaveData() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -290,7 +291,8 @@ func TestChainClient_SaveDir(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			got, err := cc.SaveDir(tt.args.userCert, tt.args.orderId, tt.args.dirHash, tt.args.dirSign, tt.args.privateDir)
+			got, err := cc.SaveDir(tt.args.userCert, tt.args.orderId, tt.args.dirHash, tt.args.dirSign,
+				tt.args.privateDir)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SaveDir() error = %v, wantErr %v", err, tt.wantErr)
 				return
