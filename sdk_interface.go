@@ -546,4 +546,9 @@ type SDKInterface interface {
 	// ```go
 	GetData(contractName, privateKey, userCert, dirSign string) ([]byte, error)
 	//```
+
+	// ### 11.5 隐私合约代码上链
+	// ```go
+	SaveContract(contractCode []byte, codeHash string) (*common.ContractResult, error)
+	//```
 }

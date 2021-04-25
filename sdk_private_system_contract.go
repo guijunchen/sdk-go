@@ -206,3 +206,39 @@ func (cc *ChainClient) GetData(contractName, privateKey, userCert, dirSign strin
 
 	return resp.ContractResult.Result, nil
 }
+
+func (cc *ChainClient) SaveContract(contractCode []byte, codeHash string) (*common.ContractResult, error) {
+
+	cc.logger.Infof("[SDK] begin to save contract code , [contract:%s]/[method:%s]",
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_SAVE_CONTRACT.String(),
+	)
+
+	// 构造Payload
+	pairs := paramsMap2KVPairs(map[string]string{
+		"contract_code": string(contractCode),
+		"contract_name": codeHash,
+	})
+
+	payloadBytes, err := constructSystemContractPayload(
+		cc.chainId,
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_SAVE_CONTRACT.String(),
+		pairs,
+		defaultSequence,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("construct save contract code payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if err = checkProposalRequestResp(resp, false); err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	return resp.ContractResult, nil
+}
