@@ -135,7 +135,7 @@ func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, us
 
 	cc.logger.Infof("[SDK] begin to save data , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_SAVA_DATA.String(),
+		common.PrivateComputeContractFunction_SAVE_DATA.String(),
 	)
 
 	// 构造Payload
@@ -152,7 +152,7 @@ func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, us
 	payloadBytes, err := constructSystemContractPayload(
 		cc.chainId,
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_SAVA_DATA.String(),
+		common.PrivateComputeContractFunction_SAVE_DATA.String(),
 		pairs,
 		defaultSequence,
 	)
