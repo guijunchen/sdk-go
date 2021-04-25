@@ -214,23 +214,23 @@ func (m *BlockHeaderConsensusArgs) GetConsensusData() *common.TxRWSet {
 	return nil
 }
 
-type GovernmentMember struct {
+type GovernanceMember struct {
 	NodeID string `protobuf:"bytes,1,opt,name=NodeID,proto3" json:"NodeID,omitempty"`
 	Index  int64  `protobuf:"varint,2,opt,name=Index,proto3" json:"Index,omitempty"`
 }
 
-func (m *GovernmentMember) Reset()         { *m = GovernmentMember{} }
-func (m *GovernmentMember) String() string { return proto.CompactTextString(m) }
-func (*GovernmentMember) ProtoMessage()    {}
-func (*GovernmentMember) Descriptor() ([]byte, []int) {
+func (m *GovernanceMember) Reset()         { *m = GovernanceMember{} }
+func (m *GovernanceMember) String() string { return proto.CompactTextString(m) }
+func (*GovernanceMember) ProtoMessage()    {}
+func (*GovernanceMember) Descriptor() ([]byte, []int) {
 	return fileDescriptor_477fc6492de41e15, []int{2}
 }
-func (m *GovernmentMember) XXX_Unmarshal(b []byte) error {
+func (m *GovernanceMember) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *GovernmentMember) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *GovernanceMember) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_GovernmentMember.Marshal(b, m, deterministic)
+		return xxx_messageInfo_GovernanceMember.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -240,33 +240,33 @@ func (m *GovernmentMember) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 		return b[:n], nil
 	}
 }
-func (m *GovernmentMember) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GovernmentMember.Merge(m, src)
+func (m *GovernanceMember) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GovernanceMember.Merge(m, src)
 }
-func (m *GovernmentMember) XXX_Size() int {
+func (m *GovernanceMember) XXX_Size() int {
 	return m.Size()
 }
-func (m *GovernmentMember) XXX_DiscardUnknown() {
-	xxx_messageInfo_GovernmentMember.DiscardUnknown(m)
+func (m *GovernanceMember) XXX_DiscardUnknown() {
+	xxx_messageInfo_GovernanceMember.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GovernmentMember proto.InternalMessageInfo
+var xxx_messageInfo_GovernanceMember proto.InternalMessageInfo
 
-func (m *GovernmentMember) GetNodeID() string {
+func (m *GovernanceMember) GetNodeID() string {
 	if m != nil {
 		return m.NodeID
 	}
 	return ""
 }
 
-func (m *GovernmentMember) GetIndex() int64 {
+func (m *GovernanceMember) GetIndex() int64 {
 	if m != nil {
 		return m.Index
 	}
 	return 0
 }
 
-type GovernmentContract struct {
+type GovernanceContract struct {
 	EpochId           uint64        `protobuf:"varint,1,opt,name=EpochId,proto3" json:"EpochId,omitempty"`
 	Type              ConsensusType `protobuf:"varint,2,opt,name=Type,proto3,enum=consensus.ConsensusType" json:"Type,omitempty"`
 	CurMaxIndex       int64         `protobuf:"varint,3,opt,name=CurMaxIndex,proto3" json:"CurMaxIndex,omitempty"`
@@ -282,23 +282,23 @@ type GovernmentContract struct {
 	BlockNumPerEpoch uint64              `protobuf:"varint,12,opt,name=BlockNumPerEpoch,proto3" json:"BlockNumPerEpoch,omitempty"`
 	ValidatorNum     uint64              `protobuf:"varint,13,opt,name=ValidatorNum,proto3" json:"ValidatorNum,omitempty"`
 	NodeProposeRound uint64              `protobuf:"varint,14,opt,name=NodeProposeRound,proto3" json:"NodeProposeRound,omitempty"`
-	Members          []*GovernmentMember `protobuf:"bytes,15,rep,name=Members,proto3" json:"Members,omitempty"`
-	Validators       []*GovernmentMember `protobuf:"bytes,16,rep,name=Validators,proto3" json:"Validators,omitempty"`
-	NextValidators   []*GovernmentMember `protobuf:"bytes,17,rep,name=NextValidators,proto3" json:"NextValidators,omitempty"`
+	Members          []*GovernanceMember `protobuf:"bytes,15,rep,name=Members,proto3" json:"Members,omitempty"`
+	Validators       []*GovernanceMember `protobuf:"bytes,16,rep,name=Validators,proto3" json:"Validators,omitempty"`
+	NextValidators   []*GovernanceMember `protobuf:"bytes,17,rep,name=NextValidators,proto3" json:"NextValidators,omitempty"`
 }
 
-func (m *GovernmentContract) Reset()         { *m = GovernmentContract{} }
-func (m *GovernmentContract) String() string { return proto.CompactTextString(m) }
-func (*GovernmentContract) ProtoMessage()    {}
-func (*GovernmentContract) Descriptor() ([]byte, []int) {
+func (m *GovernanceContract) Reset()         { *m = GovernanceContract{} }
+func (m *GovernanceContract) String() string { return proto.CompactTextString(m) }
+func (*GovernanceContract) ProtoMessage()    {}
+func (*GovernanceContract) Descriptor() ([]byte, []int) {
 	return fileDescriptor_477fc6492de41e15, []int{3}
 }
-func (m *GovernmentContract) XXX_Unmarshal(b []byte) error {
+func (m *GovernanceContract) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *GovernmentContract) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *GovernanceContract) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_GovernmentContract.Marshal(b, m, deterministic)
+		return xxx_messageInfo_GovernanceContract.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -308,124 +308,124 @@ func (m *GovernmentContract) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-func (m *GovernmentContract) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GovernmentContract.Merge(m, src)
+func (m *GovernanceContract) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GovernanceContract.Merge(m, src)
 }
-func (m *GovernmentContract) XXX_Size() int {
+func (m *GovernanceContract) XXX_Size() int {
 	return m.Size()
 }
-func (m *GovernmentContract) XXX_DiscardUnknown() {
-	xxx_messageInfo_GovernmentContract.DiscardUnknown(m)
+func (m *GovernanceContract) XXX_DiscardUnknown() {
+	xxx_messageInfo_GovernanceContract.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GovernmentContract proto.InternalMessageInfo
+var xxx_messageInfo_GovernanceContract proto.InternalMessageInfo
 
-func (m *GovernmentContract) GetEpochId() uint64 {
+func (m *GovernanceContract) GetEpochId() uint64 {
 	if m != nil {
 		return m.EpochId
 	}
 	return 0
 }
 
-func (m *GovernmentContract) GetType() ConsensusType {
+func (m *GovernanceContract) GetType() ConsensusType {
 	if m != nil {
 		return m.Type
 	}
 	return ConsensusType_SOLO
 }
 
-func (m *GovernmentContract) GetCurMaxIndex() int64 {
+func (m *GovernanceContract) GetCurMaxIndex() int64 {
 	if m != nil {
 		return m.CurMaxIndex
 	}
 	return 0
 }
 
-func (m *GovernmentContract) GetSkipTimeoutCommit() bool {
+func (m *GovernanceContract) GetSkipTimeoutCommit() bool {
 	if m != nil {
 		return m.SkipTimeoutCommit
 	}
 	return false
 }
 
-func (m *GovernmentContract) GetConfigSequence() uint64 {
+func (m *GovernanceContract) GetConfigSequence() uint64 {
 	if m != nil {
 		return m.ConfigSequence
 	}
 	return 0
 }
 
-func (m *GovernmentContract) GetN() uint64 {
+func (m *GovernanceContract) GetN() uint64 {
 	if m != nil {
 		return m.N
 	}
 	return 0
 }
 
-func (m *GovernmentContract) GetMinQuorumForQc() uint64 {
+func (m *GovernanceContract) GetMinQuorumForQc() uint64 {
 	if m != nil {
 		return m.MinQuorumForQc
 	}
 	return 0
 }
 
-func (m *GovernmentContract) GetCachedLen() uint64 {
+func (m *GovernanceContract) GetCachedLen() uint64 {
 	if m != nil {
 		return m.CachedLen
 	}
 	return 0
 }
 
-func (m *GovernmentContract) GetNextSwitchHeight() uint64 {
+func (m *GovernanceContract) GetNextSwitchHeight() uint64 {
 	if m != nil {
 		return m.NextSwitchHeight
 	}
 	return 0
 }
 
-func (m *GovernmentContract) GetTransitBlock() uint64 {
+func (m *GovernanceContract) GetTransitBlock() uint64 {
 	if m != nil {
 		return m.TransitBlock
 	}
 	return 0
 }
 
-func (m *GovernmentContract) GetBlockNumPerEpoch() uint64 {
+func (m *GovernanceContract) GetBlockNumPerEpoch() uint64 {
 	if m != nil {
 		return m.BlockNumPerEpoch
 	}
 	return 0
 }
 
-func (m *GovernmentContract) GetValidatorNum() uint64 {
+func (m *GovernanceContract) GetValidatorNum() uint64 {
 	if m != nil {
 		return m.ValidatorNum
 	}
 	return 0
 }
 
-func (m *GovernmentContract) GetNodeProposeRound() uint64 {
+func (m *GovernanceContract) GetNodeProposeRound() uint64 {
 	if m != nil {
 		return m.NodeProposeRound
 	}
 	return 0
 }
 
-func (m *GovernmentContract) GetMembers() []*GovernmentMember {
+func (m *GovernanceContract) GetMembers() []*GovernanceMember {
 	if m != nil {
 		return m.Members
 	}
 	return nil
 }
 
-func (m *GovernmentContract) GetValidators() []*GovernmentMember {
+func (m *GovernanceContract) GetValidators() []*GovernanceMember {
 	if m != nil {
 		return m.Validators
 	}
 	return nil
 }
 
-func (m *GovernmentContract) GetNextValidators() []*GovernmentMember {
+func (m *GovernanceContract) GetNextValidators() []*GovernanceMember {
 	if m != nil {
 		return m.NextValidators
 	}
@@ -437,8 +437,8 @@ func init() {
 	proto.RegisterEnum("consensus.VerifyResult_Code", VerifyResult_Code_name, VerifyResult_Code_value)
 	proto.RegisterType((*VerifyResult)(nil), "consensus.VerifyResult")
 	proto.RegisterType((*BlockHeaderConsensusArgs)(nil), "consensus.BlockHeaderConsensusArgs")
-	proto.RegisterType((*GovernmentMember)(nil), "consensus.GovernmentMember")
-	proto.RegisterType((*GovernmentContract)(nil), "consensus.GovernmentContract")
+	proto.RegisterType((*GovernanceMember)(nil), "consensus.GovernanceMember")
+	proto.RegisterType((*GovernanceContract)(nil), "consensus.GovernanceContract")
 }
 
 func init() { proto.RegisterFile("consensus/consensus.proto", fileDescriptor_477fc6492de41e15) }
@@ -464,7 +464,7 @@ var fileDescriptor_477fc6492de41e15 = []byte{
 	0xc9, 0x17, 0xb0, 0xc3, 0x78, 0x1c, 0xb8, 0xb2, 0xab, 0xc6, 0xd2, 0x24, 0xa1, 0x3d, 0xbc, 0xc7,
 	0x19, 0xd5, 0x52, 0x2a, 0x13, 0x72, 0x9c, 0x71, 0x3c, 0xb3, 0x23, 0x9b, 0xee, 0xc8, 0x35, 0x7c,
 	0x5c, 0xae, 0xc1, 0x5a, 0xb0, 0x5b, 0x13, 0x23, 0xb6, 0xa9, 0x6a, 0xfc, 0x02, 0xfa, 0xaf, 0xfc,
-	0x1e, 0x45, 0xe0, 0x63, 0x10, 0xf5, 0xd1, 0x1f, 0xa1, 0x20, 0x5f, 0xc2, 0xee, 0x80, 0xbb, 0xd8,
+	0x1e, 0x45, 0x60, 0x07, 0x0e, 0xf6, 0xd1, 0x1f, 0xa1, 0x20, 0x5f, 0xc2, 0xee, 0x80, 0xbb, 0xd8,
 	0x3d, 0x93, 0x53, 0x15, 0xd9, 0x6b, 0x96, 0x34, 0xee, 0x06, 0x2e, 0x2e, 0xe4, 0xd6, 0x54, 0x96,
 	0x26, 0x8d, 0x7f, 0x76, 0x80, 0xac, 0x2d, 0x0c, 0x1e, 0x44, 0xc2, 0x76, 0x22, 0x42, 0x21, 0x7f,
 	0x3e, 0xe7, 0xce, 0xa4, 0xeb, 0x4a, 0x17, 0x8d, 0x2d, 0x53, 0x72, 0x00, 0x9a, 0xfc, 0xc9, 0xe9,
@@ -489,7 +489,7 @@ var fileDescriptor_477fc6492de41e15 = []byte{
 	0xf9, 0x52, 0xcb, 0x3d, 0xbd, 0xd4, 0x72, 0xff, 0xbd, 0xd4, 0x72, 0xbf, 0x1d, 0x3b, 0x13, 0xdb,
 	0x0b, 0x7c, 0x7b, 0x8a, 0xa2, 0xc5, 0xc5, 0xb8, 0xbd, 0x4e, 0x0f, 0x43, 0x77, 0x7a, 0x38, 0xe6,
 	0xed, 0xf9, 0xa8, 0x2d, 0x3f, 0x6b, 0x63, 0xbe, 0xfe, 0x36, 0x8e, 0x76, 0x25, 0xfa, 0xf1, 0x73,
-	0x00, 0x00, 0x00, 0xff, 0xff, 0xfe, 0x1b, 0x4d, 0xec, 0x39, 0x05, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0xff, 0xff, 0x29, 0xe3, 0x20, 0x0a, 0x39, 0x05, 0x00, 0x00,
 }
 
 func (m *VerifyResult) Marshal() (dAtA []byte, err error) {
@@ -589,7 +589,7 @@ func (m *BlockHeaderConsensusArgs) MarshalToSizedBuffer(dAtA []byte) (int, error
 	return len(dAtA) - i, nil
 }
 
-func (m *GovernmentMember) Marshal() (dAtA []byte, err error) {
+func (m *GovernanceMember) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -599,12 +599,12 @@ func (m *GovernmentMember) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *GovernmentMember) MarshalTo(dAtA []byte) (int, error) {
+func (m *GovernanceMember) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *GovernmentMember) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GovernanceMember) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -624,7 +624,7 @@ func (m *GovernmentMember) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *GovernmentContract) Marshal() (dAtA []byte, err error) {
+func (m *GovernanceContract) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -634,12 +634,12 @@ func (m *GovernmentContract) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *GovernmentContract) MarshalTo(dAtA []byte) (int, error) {
+func (m *GovernanceContract) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *GovernmentContract) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GovernanceContract) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -816,7 +816,7 @@ func (m *BlockHeaderConsensusArgs) Size() (n int) {
 	return n
 }
 
-func (m *GovernmentMember) Size() (n int) {
+func (m *GovernanceMember) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -832,7 +832,7 @@ func (m *GovernmentMember) Size() (n int) {
 	return n
 }
 
-func (m *GovernmentContract) Size() (n int) {
+func (m *GovernanceContract) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1026,10 +1026,7 @@ func (m *VerifyResult) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthConsensus
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthConsensus
 			}
 			if (iNdEx + skippy) > l {
@@ -1172,10 +1169,7 @@ func (m *BlockHeaderConsensusArgs) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthConsensus
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthConsensus
 			}
 			if (iNdEx + skippy) > l {
@@ -1190,7 +1184,7 @@ func (m *BlockHeaderConsensusArgs) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GovernmentMember) Unmarshal(dAtA []byte) error {
+func (m *GovernanceMember) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1213,10 +1207,10 @@ func (m *GovernmentMember) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GovernmentMember: wiretype end group for non-group")
+			return fmt.Errorf("proto: GovernanceMember: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GovernmentMember: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GovernanceMember: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1276,10 +1270,7 @@ func (m *GovernmentMember) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthConsensus
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthConsensus
 			}
 			if (iNdEx + skippy) > l {
@@ -1294,7 +1285,7 @@ func (m *GovernmentMember) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GovernmentContract) Unmarshal(dAtA []byte) error {
+func (m *GovernanceContract) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1317,10 +1308,10 @@ func (m *GovernmentContract) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GovernmentContract: wiretype end group for non-group")
+			return fmt.Errorf("proto: GovernanceContract: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GovernmentContract: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GovernanceContract: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1600,7 +1591,7 @@ func (m *GovernmentContract) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Members = append(m.Members, &GovernmentMember{})
+			m.Members = append(m.Members, &GovernanceMember{})
 			if err := m.Members[len(m.Members)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1634,7 +1625,7 @@ func (m *GovernmentContract) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Validators = append(m.Validators, &GovernmentMember{})
+			m.Validators = append(m.Validators, &GovernanceMember{})
 			if err := m.Validators[len(m.Validators)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1668,7 +1659,7 @@ func (m *GovernmentContract) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NextValidators = append(m.NextValidators, &GovernmentMember{})
+			m.NextValidators = append(m.NextValidators, &GovernanceMember{})
 			if err := m.NextValidators[len(m.NextValidators)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1679,10 +1670,7 @@ func (m *GovernmentContract) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthConsensus
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthConsensus
 			}
 			if (iNdEx + skippy) > l {
