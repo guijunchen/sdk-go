@@ -303,3 +303,46 @@ func TestChainClient_SaveDir(t *testing.T) {
 		})
 	}
 }
+
+func TestChainClient_SaveContract(t *testing.T) {
+
+	type args struct {
+		contractCode []byte
+		codeHash     string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *common.ContractResult
+		wantErr bool
+	}{
+		{
+			name: "test1",
+			args: args{
+				contractCode: nil,
+				codeHash:     "",
+			},
+			want: &common.ContractResult{
+				Code:    0,
+				Result:  nil,
+				Message: "",
+				GasUsed: 0,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.SaveContract(tt.args.contractCode, tt.args.codeHash)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SaveContract() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SaveContract() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
