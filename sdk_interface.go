@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker-go/common/crypto"
 	"chainmaker.org/chainmaker-go/common/serialize"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
@@ -557,5 +558,62 @@ type SDKInterface interface {
 	// ### 9.2 获取链版本
 	// ```go
 	GetChainMakerServerVersion() (string, error)
+	// ```
+
+	// ## 11 层级属性加密类接口
+	// > 注意：层级属性加密模块 `Id` 使用 `/` 作为分隔符，例如： Org1/Ou1/Member1
+	// ### 11.1 生成层级属性参数初始化交易 payload
+	// **参数说明**
+	//   - orgId: 参与方组织 id
+	//   - hibeParams: 传入序列化后的hibeParams byte数组
+	// ```go
+	CreateHibeInitParamsTxPayloadParams(orgId string, hibeParams []byte) (map[string]string, error)
+	// ```
+
+	// ### 11.2 生成层级属性加密交易 payload，加密参数已知
+	// **参数说明**
+	//   - plaintext: 待加密交易消息明文
+	//   - receiverIds: 消息接收者 id 列表，需和 paramsList 一一对应
+	//   - paramsBytesList: 消息接收者对应的加密参数，需和 receiverIds 一一对应
+	//   - txId: 以交易 Id 作为链上存储 hibeMsg 的 Key, 如果不提供存储的信息可能被覆盖
+	//	 - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
+	// ```go
+	CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, paramsBytesList [][]byte, txId string, keyType crypto.KeyType) (map[string]string, error)
+	// ```
+
+	// ### 11.3 生成层级属性加密交易 payload，参数由链上查询得出
+	// **参数说明**
+	//	 - contractName: 合约名
+	//	 - queryParamsMethod: 链上查询 hibe.Params 的合约方法
+	//   - plaintext: 待加密交易消息明文
+	//   - receiverIds: 消息接收者 id 列表，需和 paramsList 一一对应
+	//   - paramsList: 消息接收者对应的加密参数，需和 receiverIds 一一对应
+	//   - receiverOrgIds: 链上查询 hibe Params 的 Key 列表，需要和 receiverIds 一一对应
+	//   - txId: 以交易 Id 作为链上存储 hibeMsg 的 Key, 如果不提供存储的信息可能被覆盖
+	//	 - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
+	//	 - timeout: （内部查询 HibeParams 的）超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	// ```go
+	CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte, receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType, timeout int64) (map[string]string, error)
+	// ```
+
+	// ### 11.4 查询某一组织的加密公共参数，返回其序列化后的byte数组
+	// **参数说明**
+	//	 - contractName: 合约名
+	// 	 - method: 查询的合约方法名
+	//   - orgId: 参与方 id
+	//	 - timeout: 查询超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	// ```go
+	QueryHibeParamsWithOrgId(contractName, method, orgId string, timeout int64) ([]byte, error)
+	// ```
+
+	// ### 11.5 已知交易id，根据私钥解密密文交易
+	// **参数说明**
+	//   - localId: 本地层级属性加密 id
+	//   - hibeParams: hibeParams 序列化后的byte数组
+	//   - hibePrivKey: hibe私钥序列化后的byte数组
+	//   - txId: 层级属性加密交易 id
+	//	 - keyType: 对加密信息进行对称解密的方法，请和加密时使用的方法保持一致，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
+	// ```go
+	DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
 	// ```
 }
