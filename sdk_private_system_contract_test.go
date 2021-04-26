@@ -14,6 +14,11 @@ import (
 	"testing"
 )
 
+const(
+	computeContract = "private_computation"
+)
+
+
 func TestChainClient_SaveCert(t *testing.T) {
 
 	type args struct {
@@ -81,21 +86,8 @@ func TestChainClient_GetContract(t *testing.T) {
 		{
 			name: "test1",
 			args: args{
-				userCert:     "1",
-				contractName: "2",
-				codeHash:     "1",
-				hashSign:     "1",
-			},
-
-			want: nil,
-			wantErr: true,
-		},
-
-		{
-			name: "test2",
-			args: args{
 				userCert:     "",
-				contractName: "",
+				contractName: "my_asset",
 				codeHash:     "",
 				hashSign:     "",
 			},
@@ -139,28 +131,50 @@ func TestChainClient_GetData(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
+		//{
+		//	name: "test1",
+		//	args: args{
+		//		contractName: computeContract,
+		//		privateKey:   "key1",
+		//		userCert:     "",
+		//		dirSign:      "",
+		//	},
+		//	want:    []byte{},
+		//	wantErr: true,
+		//},
+		//{
+		//	name: "test2",
+		//	args: args{
+		//		contractName: computeContract,
+		//		privateKey:   "key3",
+		//		userCert:     "",
+		//		dirSign:      "",
+		//	},
+		//	want:    []byte{},
+		//	wantErr: true,
+		//},
 		{
-			name: "test1",
+			name: "test3",
 			args: args{
-				contractName: "",
-				privateKey:   "",
+				contractName: computeContract,
+				privateKey:   "key5",
 				userCert:     "",
 				dirSign:      "",
 			},
-			want:    []byte{},
+			want:    []byte("value_5"),
 			wantErr: true,
 		},
-		{
-			name: "test2",
-			args: args{
-				contractName: "",
-				privateKey:   "",
-				userCert:     "",
-				dirSign:      "",
-			},
-			want:    []byte{},
-			wantErr: true,
-		},
+		//{
+		//	name: "test4",
+		//	args: args{
+		//		contractName: computeContract,
+		//		privateKey:   "dir_key1",
+		//		userCert:     "",
+		//		dirSign:      "",
+		//	},
+		//	want:    []byte{},
+		//	wantErr: true,
+		//},
 	}
 
 	for _, tt := range tests {
@@ -168,8 +182,8 @@ func TestChainClient_GetData(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
 			got, err := cc.GetData(tt.args.contractName, tt.args.privateKey, tt.args.userCert, tt.args.dirSign)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetData() error = %v, wantErr %v", err, tt.wantErr)
+			if err != nil || tt.wantErr != true {
+				t.Errorf("SaveData() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
@@ -191,6 +205,19 @@ func TestChainClient_SaveData(t *testing.T) {
 		events        *common.StrSlice
 	}
 
+	rwSet := &common.TxRWSet{
+		TxReads: []*common.TxRead{
+			{Key:[]byte("key1"), Value:[]byte("value1"), ContractName: computeContract},
+			{Key:[]byte("key2"), Value:[]byte("value2"), ContractName: computeContract},
+			{Key:[]byte("key3"), Value:[]byte("value3"), ContractName: computeContract},
+		},
+		TxWrites: []*common.TxWrite{
+			{Key:[]byte("key3"), Value:[]byte("value_3"), ContractName: computeContract},
+			{Key:[]byte("key4"), Value:[]byte("value_4"), ContractName: computeContract},
+			{Key:[]byte("key5"), Value:[]byte("value_5"), ContractName: computeContract},
+		},
+	}
+
 	tests := []struct {
 		name    string
 		args    args
@@ -200,27 +227,12 @@ func TestChainClient_SaveData(t *testing.T) {
 		{
 			name: "test1",
 			args: args{
-				computeResult: "",
-				contractName:  "",
+				computeResult: "true",
+				contractName:  computeContract,
 				gas:           "",
 				reportSign:    "",
 				userCert:      "",
-				rwSet:         nil,
-				events:        nil,
-			},
-			want:    []byte{},
-			wantErr: true,
-		},
-
-		{
-			name: "test2",
-			args: args{
-				computeResult: "",
-				contractName:  "",
-				gas:           "",
-				reportSign:    "",
-				userCert:      "",
-				rwSet:         nil,
+				rwSet:         rwSet,
 				events:        nil,
 			},
 			want:    []byte{},
@@ -232,13 +244,10 @@ func TestChainClient_SaveData(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			got, err := cc.SaveData(tt.args.computeResult, tt.args.contractName, tt.args.gas, tt.args.reportSign, tt.args.userCert, tt.args.rwSet, tt.args.events)
-			if (err != nil) != tt.wantErr {
+			res, err := cc.SaveData(tt.args.computeResult, tt.args.contractName, tt.args.gas, tt.args.reportSign, tt.args.userCert, tt.args.rwSet, tt.args.events)
+			if string(res) != "OK" || err != nil || tt.wantErr != true {
 				t.Errorf("SaveData() error = %v, wantErr %v", err, tt.wantErr)
 				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SaveData() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -264,22 +273,12 @@ func TestChainClient_SaveDir(t *testing.T) {
 			name: "test1",
 			args: args{
 				userCert:   "",
-				orderId:    "",
+				orderId:    computeContract,
 				dirHash:    "",
 				dirSign:    "",
-				privateDir: nil,
-			},
-			want:    []byte{},
-			wantErr: true,
-		},
-		{
-			name: "test2",
-			args: args{
-				userCert:   "",
-				orderId:    "",
-				dirHash:    "",
-				dirSign:    "",
-				privateDir: nil,
+				privateDir: &common.StrSlice{
+					StrArr: []string{"dir_key1", "dir_key2", "dir_key3" },
+				},
 			},
 			want:    []byte{},
 			wantErr: true,
@@ -291,12 +290,9 @@ func TestChainClient_SaveDir(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
 			got, err := cc.SaveDir(tt.args.userCert, tt.args.orderId, tt.args.dirHash, tt.args.dirSign, tt.args.privateDir)
-			if (err != nil) != tt.wantErr {
+			if string(got) != "OK" || err != nil || tt.wantErr != true {
 				t.Errorf("SaveDir() error = %v, wantErr %v", err, tt.wantErr)
 				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SaveDir() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

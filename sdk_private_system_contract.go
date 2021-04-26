@@ -66,11 +66,11 @@ func (cc *ChainClient) SaveDir(userCert, orderId, dirHash, dirSign string, priva
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = checkProposalRequestResp(resp, true); err != nil {
+	if resp.Code != common.TxStatusCode_SUCCESS || resp.Message != "OK" {
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	return resp.ContractResult.Result, nil
+	return []byte(resp.Message), nil
 }
 
 func (cc *ChainClient) GetContract(userCert, contractName, codeHash, hashSign string) (*common.PrivateGetContract, error) {
@@ -113,11 +113,29 @@ func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, us
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(), common.PrivateComputeContractFunction_SAVA_DATA.String())
 
 	// 构造Payload
+	var rwSetStr string
+	if rwSet != nil{
+		rwb, err := rwSet.Marshal()
+		if err != nil {
+			return nil, fmt.Errorf("construct save data payload failed, %s", err.Error())
+		}
+		rwSetStr = string(rwb)
+	}
+
+	var eventsStr string
+	if events != nil{
+		eb, err := events.Marshal()
+		if err != nil {
+			return nil, fmt.Errorf("construct save data payload failed, %s", err.Error())
+		}
+		eventsStr = string(eb)
+	}
+
 	pairs := paramsMap2KVPairs(map[string]string{
 		"compute_result": computeResult,
 		"contract_name":  contractName,
-		"rw_set":         rwSet.String(),
-		"events":         events.String(),
+		"rw_set":         rwSetStr,
+		"events":         eventsStr,
 		"gas":            gas,
 		"report_sign":    reportSign,
 		"user_cert":      userCert,
@@ -134,11 +152,11 @@ func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, us
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = checkProposalRequestResp(resp, true); err != nil {
+	if resp.Code != common.TxStatusCode_SUCCESS || resp.Message != "OK" {
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	return resp.ContractResult.Result, nil
+	return []byte(resp.Message), nil
 }
 
 func (cc *ChainClient) GetData(contractName, privateKey, userCert, dirSign string) ([]byte, error) {
