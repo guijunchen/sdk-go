@@ -86,6 +86,19 @@ func TestChainClient_GetContract(t *testing.T) {
 		{
 			name: "test1",
 			args: args{
+				userCert:     "1",
+				contractName: "2",
+				codeHash:     "1",
+				hashSign:     "1",
+			},
+
+			want:    nil,
+			wantErr: true,
+		},
+
+		{
+			name: "test2",
+			args: args{
 				userCert:     "",
 				contractName: "my_asset",
 				codeHash:     "",
@@ -293,6 +306,49 @@ func TestChainClient_SaveDir(t *testing.T) {
 			if string(got) != "OK" || err != nil || tt.wantErr != true {
 				t.Errorf("SaveDir() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+		})
+	}
+}
+
+func TestChainClient_SaveContract(t *testing.T) {
+
+	type args struct {
+		contractCode []byte
+		codeHash     string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *common.ContractResult
+		wantErr bool
+	}{
+		{
+			name: "test1",
+			args: args{
+				contractCode: nil,
+				codeHash:     "",
+			},
+			want: &common.ContractResult{
+				Code:    0,
+				Result:  nil,
+				Message: "",
+				GasUsed: 0,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.SaveContract(tt.args.contractCode, tt.args.codeHash)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SaveContract() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SaveContract() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
