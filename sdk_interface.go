@@ -549,6 +549,6 @@ type SDKInterface interface {
 
 	// ### 11.5 隐私合约代码上链
 	// ```go
-	SaveContract(contractCode []byte, codeHash, name, txId, version string, withSyncResult bool, timeout int64) (*common.ContractResult, error)
+	SaveContract(contractCode []byte, codeHash, contractName, txId, version string, withSyncResult bool, timeout int64) (*common.ContractResult, error)
 	//```
 }

@@ -305,7 +305,7 @@ func (cc *ChainClient) GetData(contractName, privateKey, userCert, dirSign strin
 	return resp.ContractResult.Result, nil
 }
 
-func (cc *ChainClient) SaveContract(contractCode []byte, codeHash, name, txId, version string, withSyncResult bool,
+func (cc *ChainClient) SaveContract(contractCode []byte, codeHash, contractName, txId, version string, withSyncResult bool,
 	timeout int64) (*common.ContractResult, error) {
 	if txId == "" {
 		txId = GetRandTxId()
@@ -321,7 +321,7 @@ func (cc *ChainClient) SaveContract(contractCode []byte, codeHash, name, txId, v
 	pairs := paramsMap2KVPairs(map[string]string{
 		"contract_code": string(contractCode),
 		"code_hash":     codeHash,
-		"name ":         name,
+		"contract_name": contractName,
 		"version":       version,
 	})
 

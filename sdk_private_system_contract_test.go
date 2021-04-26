@@ -14,10 +14,9 @@ import (
 	"testing"
 )
 
-const(
+const (
 	computeContract = "private_computation"
 )
-
 
 func TestChainClient_SaveCert(t *testing.T) {
 
@@ -37,11 +36,11 @@ func TestChainClient_SaveCert(t *testing.T) {
 		{
 			name: "test1",
 			args: args{
-				userCert:    "",
-				enclaveCert: "",
-				txId: "",
+				userCert:       "",
+				enclaveCert:    "",
+				txId:           "",
 				withSyncResult: true,
-				timeout: 1000,
+				timeout:        1000,
 			},
 			want:    []byte{},
 			wantErr: true,
@@ -49,11 +48,11 @@ func TestChainClient_SaveCert(t *testing.T) {
 		{
 			name: "test2",
 			args: args{
-				userCert:    "",
-				enclaveCert: "",
-				txId: "",
+				userCert:       "",
+				enclaveCert:    "",
+				txId:           "",
 				withSyncResult: true,
-				timeout: 1000,
+				timeout:        1000,
 			},
 			want:    []byte{},
 			wantErr: true,
@@ -231,14 +230,14 @@ func TestChainClient_SaveData(t *testing.T) {
 
 	rwSet := &common.TxRWSet{
 		TxReads: []*common.TxRead{
-			{Key:[]byte("key1"), Value:[]byte("value1"), ContractName: computeContract},
-			{Key:[]byte("key2"), Value:[]byte("value2"), ContractName: computeContract},
-			{Key:[]byte("key3"), Value:[]byte("value3"), ContractName: computeContract},
+			{Key: []byte("key1"), Value: []byte("value1"), ContractName: computeContract},
+			{Key: []byte("key2"), Value: []byte("value2"), ContractName: computeContract},
+			{Key: []byte("key3"), Value: []byte("value3"), ContractName: computeContract},
 		},
 		TxWrites: []*common.TxWrite{
-			{Key:[]byte("key3"), Value:[]byte("value_3"), ContractName: computeContract},
-			{Key:[]byte("key4"), Value:[]byte("value_4"), ContractName: computeContract},
-			{Key:[]byte("key5"), Value:[]byte("value_5"), ContractName: computeContract},
+			{Key: []byte("key3"), Value: []byte("value_3"), ContractName: computeContract},
+			{Key: []byte("key4"), Value: []byte("value_4"), ContractName: computeContract},
+			{Key: []byte("key5"), Value: []byte("value_5"), ContractName: computeContract},
 		},
 	}
 
@@ -251,15 +250,15 @@ func TestChainClient_SaveData(t *testing.T) {
 		{
 			name: "test1",
 			args: args{
-				computeResult: "true",
-				contractName:  computeContract,
-				gas:           "",
-				reportSign:    "",
-				userCert:      "",
-				rwSet:         rwSet,
-				events:        nil,
+				computeResult:  "true",
+				contractName:   computeContract,
+				gas:            "",
+				reportSign:     "",
+				userCert:       "",
+				rwSet:          rwSet,
+				events:         nil,
 				withSyncResult: false,
-				timeout: 1,
+				timeout:        1,
 			},
 			want:    []byte{},
 			wantErr: true,
@@ -301,16 +300,16 @@ func TestChainClient_SaveDir(t *testing.T) {
 		{
 			name: "test1",
 			args: args{
-				userCert:   "",
-				orderId:    computeContract,
-				dirHash:    "",
-				dirSign:    "",
+				userCert: "",
+				orderId:  computeContract,
+				dirHash:  "",
+				dirSign:  "",
 				privateDir: &common.StrSlice{
-					StrArr: []string{"dir_key1", "dir_key2", "dir_key3" },
+					StrArr: []string{"dir_key1", "dir_key2", "dir_key3"},
 				},
-				txId: "",
+				txId:           "",
 				withSyncResult: true,
-				timeout: 1,
+				timeout:        1,
 			},
 			want:    []byte{},
 			wantErr: true,
@@ -336,7 +335,7 @@ func TestChainClient_SaveContract(t *testing.T) {
 	type args struct {
 		contractCode   []byte
 		codeHash       string
-		name           string
+		contractName   string
 		txId           string
 		version        string
 		withSyncResult bool
@@ -351,11 +350,11 @@ func TestChainClient_SaveContract(t *testing.T) {
 		{
 			name: "test1",
 			args: args{
-				contractCode: nil,
-				codeHash:     "",
-				version: version,
+				contractCode:   nil,
+				codeHash:       "",
+				version:        version,
 				withSyncResult: false,
-				timeout: 1,
+				timeout:        1,
 			},
 			want: &common.ContractResult{
 				Code:    0,
@@ -370,7 +369,7 @@ func TestChainClient_SaveContract(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			got, err := cc.SaveContract(tt.args.contractCode, tt.args.codeHash, tt.args.name, tt.args.txId,
+			got, err := cc.SaveContract(tt.args.contractCode, tt.args.codeHash, tt.args.contractName, tt.args.txId,
 				tt.args.version, tt.args.withSyncResult, tt.args.timeout)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SaveContract() error = %v, wantErr %v", err, tt.wantErr)
