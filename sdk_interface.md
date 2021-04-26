@@ -501,12 +501,12 @@
 ## 11 系统隐私合约类接口
 ### 11.1 证书上链及验证
 ```go
-	SaveCert(userCert, enclaveCert string) ([]byte, error)
+	SaveCert(userCert, enclaveCert, txId string, withSyncResult bool, timeout int64) ([]byte, error)
 ```
 
 ### 11.2 隐私目录上链
 ```go
-	SaveDir(userCert, orderId, dirHash, dirSign string, privateDir *common.StrSlice) ([]byte, error)
+	SaveDir(userCert, orderId, dirHash, dirSign, txId string, privateDir *common.StrSlice, withSyncResult bool, timeout int64) ([]byte, error)
 ```
 
 ### 11.3 隐私合约代码查询
@@ -516,7 +516,7 @@
 
 ### 11.4 隐私计算结果上链
 ```go
-	SaveData(computeResult, contractName, gas, reportSign, userCert string, rwSet *common.TxRWSet, events *common.StrSlice) ([]byte, error)
+	SaveData(computeResult, contractName, gas, reportSign, userCert, txId string, rwSet *common.TxRWSet, events *common.StrSlice, withSyncResult bool, timeout int64) ([]byte, error)
 ```
 
 ### 11.5 隐私计算结果查询
@@ -526,5 +526,5 @@
 
 ### 11.6 隐私合约代码上链
 ```go
-	SaveContract(contractCode []byte, codeHash string) (*common.ContractResult, error)
+	SaveContract(contractCode []byte, codeHash, name, txId ,version string, withSyncResult bool, timeout int64) (*common.ContractResult, error)
 ```

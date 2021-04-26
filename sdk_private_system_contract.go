@@ -13,10 +13,15 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func (cc *ChainClient) SaveCert(userCert, enclaveCert string) ([]byte, error) {
-	cc.logger.Infof("[SDK] begin to save cert , [contract:%s]/[method:%s]",
+func (cc *ChainClient) SaveCert(userCert, enclaveCert, txId string, withSyncResult bool, timeout int64) ([]byte, error) {
+	if txId == "" {
+		txId = GetRandTxId()
+	}
+
+	cc.logger.Infof("[SDK] begin to save cert , [contract:%s]/[method:%s]/[txId:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_SAVE_CERT.String(),
+		txId,
 	)
 
 	// 构造Payload
@@ -36,9 +41,31 @@ func (cc *ChainClient) SaveCert(userCert, enclaveCert string) ([]byte, error) {
 		return nil, fmt.Errorf("construct save cert payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes, timeout)
 	if err != nil {
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if !withSyncResult {
+			resp.ContractResult = &common.ContractResult{
+				Code:    common.ContractResultCode_OK,
+				Message: common.ContractResultCode_OK.String(),
+				Result:  []byte(txId),
+			}
+		} else {
+			contractResult, err := cc.getSyncResult(txId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+
+			if contractResult.Code != common.ContractResultCode_OK {
+				resp.Code = common.TxStatusCode_CONTRACT_FAIL
+				resp.Message = contractResult.Message
+			}
+
+			resp.ContractResult = contractResult
+		}
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
@@ -48,12 +75,17 @@ func (cc *ChainClient) SaveCert(userCert, enclaveCert string) ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
-func (cc *ChainClient) SaveDir(userCert, orderId, dirHash, dirSign string,
-	privateDir *common.StrSlice) ([]byte, error) {
+func (cc *ChainClient) SaveDir(userCert, orderId, dirHash, dirSign, txId string,
+	privateDir *common.StrSlice, withSyncResult bool, timeout int64) ([]byte, error) {
 
-	cc.logger.Infof("[SDK] begin to save dir , [contract:%s]/[method:%s]",
+	if txId == "" {
+		txId = GetRandTxId()
+	}
+
+	cc.logger.Infof("[SDK] begin to save dir , [contract:%s]/[method:%s]/[txId:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_SAVE_DIR.String(),
+		txId,
 	)
 
 	// 构造Payload
@@ -76,9 +108,31 @@ func (cc *ChainClient) SaveDir(userCert, orderId, dirHash, dirSign string,
 		return nil, fmt.Errorf("construct save dir payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes, timeout)
 	if err != nil {
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if !withSyncResult {
+			resp.ContractResult = &common.ContractResult{
+				Code:    common.ContractResultCode_OK,
+				Message: common.ContractResultCode_OK.String(),
+				Result:  []byte(txId),
+			}
+		} else {
+			contractResult, err := cc.getSyncResult(txId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+
+			if contractResult.Code != common.ContractResultCode_OK {
+				resp.Code = common.TxStatusCode_CONTRACT_FAIL
+				resp.Message = contractResult.Message
+			}
+
+			resp.ContractResult = contractResult
+		}
 	}
 
 	if resp.Code != common.TxStatusCode_SUCCESS || resp.Message != "OK" {
@@ -130,17 +184,21 @@ func (cc *ChainClient) GetContract(userCert, contractName, codeHash,
 	return contractInfo, nil
 }
 
-func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, userCert string, rwSet *common.TxRWSet,
-	events *common.StrSlice) ([]byte, error) {
+func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, userCert, txId string, rwSet *common.TxRWSet,
+	events *common.StrSlice, withSyncResult bool, timeout int64) ([]byte, error) {
+	if txId == "" {
+		txId = GetRandTxId()
+	}
 
-	cc.logger.Infof("[SDK] begin to save data , [contract:%s]/[method:%s]",
+	cc.logger.Infof("[SDK] begin to save data , [contract:%s]/[method:%s]/[txId:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_SAVE_DATA.String(),
+		txId,
 	)
 
 	// 构造Payload
 	var rwSetStr string
-	if rwSet != nil{
+	if rwSet != nil {
 		rwb, err := rwSet.Marshal()
 		if err != nil {
 			return nil, fmt.Errorf("construct save data payload failed, %s", err.Error())
@@ -149,7 +207,7 @@ func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, us
 	}
 
 	var eventsStr string
-	if events != nil{
+	if events != nil {
 		eb, err := events.Marshal()
 		if err != nil {
 			return nil, fmt.Errorf("construct save data payload failed, %s", err.Error())
@@ -178,9 +236,31 @@ func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, us
 		return nil, fmt.Errorf("construct save data payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes, timeout)
 	if err != nil {
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if !withSyncResult {
+			resp.ContractResult = &common.ContractResult{
+				Code:    common.ContractResultCode_OK,
+				Message: common.ContractResultCode_OK.String(),
+				Result:  []byte(txId),
+			}
+		} else {
+			contractResult, err := cc.getSyncResult(txId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+
+			if contractResult.Code != common.ContractResultCode_OK {
+				resp.Code = common.TxStatusCode_CONTRACT_FAIL
+				resp.Message = contractResult.Message
+			}
+
+			resp.ContractResult = contractResult
+		}
 	}
 
 	if resp.Code != common.TxStatusCode_SUCCESS || resp.Message != "OK" {
@@ -225,17 +305,24 @@ func (cc *ChainClient) GetData(contractName, privateKey, userCert, dirSign strin
 	return resp.ContractResult.Result, nil
 }
 
-func (cc *ChainClient) SaveContract(contractCode []byte, codeHash string) (*common.ContractResult, error) {
+func (cc *ChainClient) SaveContract(contractCode []byte, codeHash, name, txId, version string, withSyncResult bool,
+	timeout int64) (*common.ContractResult, error) {
+	if txId == "" {
+		txId = GetRandTxId()
+	}
 
-	cc.logger.Infof("[SDK] begin to save contract code , [contract:%s]/[method:%s]",
+	cc.logger.Infof("[SDK] begin to save contract code , [contract:%s]/[method:%s]/[txId:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_SAVE_CONTRACT.String(),
+		txId,
 	)
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string]string{
 		"contract_code": string(contractCode),
-		"contract_name": codeHash,
+		"code_hash":     codeHash,
+		"name ":         name,
+		"version":       version,
 	})
 
 	payloadBytes, err := constructSystemContractPayload(
@@ -249,13 +336,31 @@ func (cc *ChainClient) SaveContract(contractCode []byte, codeHash string) (*comm
 		return nil, fmt.Errorf("construct save contract code payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes, timeout)
 	if err != nil {
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	if err = checkProposalRequestResp(resp, false); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if !withSyncResult {
+			resp.ContractResult = &common.ContractResult{
+				Code:    common.ContractResultCode_OK,
+				Message: common.ContractResultCode_OK.String(),
+				Result:  []byte(txId),
+			}
+		} else {
+			contractResult, err := cc.getSyncResult(txId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+
+			if contractResult.Code != common.ContractResultCode_OK {
+				resp.Code = common.TxStatusCode_CONTRACT_FAIL
+				resp.Message = contractResult.Message
+			}
+
+			resp.ContractResult = contractResult
+		}
 	}
 
 	return resp.ContractResult, nil

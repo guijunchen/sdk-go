@@ -22,10 +22,12 @@ const(
 func TestChainClient_SaveCert(t *testing.T) {
 
 	type args struct {
-		userCert    string
-		enclaveCert string
+		userCert       string
+		enclaveCert    string
+		txId           string
+		withSyncResult bool
+		timeout        int64
 	}
-
 	tests := []struct {
 		name    string
 		args    args
@@ -37,6 +39,9 @@ func TestChainClient_SaveCert(t *testing.T) {
 			args: args{
 				userCert:    "",
 				enclaveCert: "",
+				txId: "",
+				withSyncResult: true,
+				timeout: 1000,
 			},
 			want:    []byte{},
 			wantErr: true,
@@ -46,6 +51,9 @@ func TestChainClient_SaveCert(t *testing.T) {
 			args: args{
 				userCert:    "",
 				enclaveCert: "",
+				txId: "",
+				withSyncResult: true,
+				timeout: 1000,
 			},
 			want:    []byte{},
 			wantErr: true,
@@ -56,7 +64,7 @@ func TestChainClient_SaveCert(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			got, err := cc.SaveCert(tt.args.userCert, tt.args.enclaveCert)
+			got, err := cc.SaveCert(tt.args.userCert, tt.args.enclaveCert, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SaveCert() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -209,13 +217,16 @@ func TestChainClient_GetData(t *testing.T) {
 func TestChainClient_SaveData(t *testing.T) {
 
 	type args struct {
-		computeResult string
-		contractName  string
-		gas           string
-		reportSign    string
-		userCert      string
-		rwSet         *common.TxRWSet
-		events        *common.StrSlice
+		computeResult  string
+		contractName   string
+		gas            string
+		reportSign     string
+		userCert       string
+		txId           string
+		rwSet          *common.TxRWSet
+		events         *common.StrSlice
+		withSyncResult bool
+		timeout        int64
 	}
 
 	rwSet := &common.TxRWSet{
@@ -247,6 +258,8 @@ func TestChainClient_SaveData(t *testing.T) {
 				userCert:      "",
 				rwSet:         rwSet,
 				events:        nil,
+				withSyncResult: false,
+				timeout: 1,
 			},
 			want:    []byte{},
 			wantErr: true,
@@ -257,7 +270,8 @@ func TestChainClient_SaveData(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			res, err := cc.SaveData(tt.args.computeResult, tt.args.contractName, tt.args.gas, tt.args.reportSign, tt.args.userCert, tt.args.rwSet, tt.args.events)
+			res, err := cc.SaveData(tt.args.computeResult, tt.args.contractName, tt.args.gas, tt.args.reportSign,
+				tt.args.userCert, tt.args.txId, tt.args.rwSet, tt.args.events, tt.args.withSyncResult, tt.args.timeout)
 			if string(res) != "OK" || err != nil || tt.wantErr != true {
 				t.Errorf("SaveData() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -269,13 +283,15 @@ func TestChainClient_SaveData(t *testing.T) {
 func TestChainClient_SaveDir(t *testing.T) {
 
 	type args struct {
-		userCert   string
-		orderId    string
-		dirHash    string
-		dirSign    string
-		privateDir *common.StrSlice
+		userCert       string
+		orderId        string
+		dirHash        string
+		dirSign        string
+		txId           string
+		privateDir     *common.StrSlice
+		withSyncResult bool
+		timeout        int64
 	}
-
 	tests := []struct {
 		name    string
 		args    args
@@ -292,6 +308,9 @@ func TestChainClient_SaveDir(t *testing.T) {
 				privateDir: &common.StrSlice{
 					StrArr: []string{"dir_key1", "dir_key2", "dir_key3" },
 				},
+				txId: "",
+				withSyncResult: true,
+				timeout: 1,
 			},
 			want:    []byte{},
 			wantErr: true,
@@ -302,7 +321,8 @@ func TestChainClient_SaveDir(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			got, err := cc.SaveDir(tt.args.userCert, tt.args.orderId, tt.args.dirHash, tt.args.dirSign, tt.args.privateDir)
+			got, err := cc.SaveDir(tt.args.userCert, tt.args.orderId, tt.args.dirHash, tt.args.dirSign, tt.args.txId,
+				tt.args.privateDir, tt.args.withSyncResult, tt.args.timeout)
 			if string(got) != "OK" || err != nil || tt.wantErr != true {
 				t.Errorf("SaveDir() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -314,8 +334,13 @@ func TestChainClient_SaveDir(t *testing.T) {
 func TestChainClient_SaveContract(t *testing.T) {
 
 	type args struct {
-		contractCode []byte
-		codeHash     string
+		contractCode   []byte
+		codeHash       string
+		name           string
+		txId           string
+		version        string
+		withSyncResult bool
+		timeout        int64
 	}
 	tests := []struct {
 		name    string
@@ -328,6 +353,9 @@ func TestChainClient_SaveContract(t *testing.T) {
 			args: args{
 				contractCode: nil,
 				codeHash:     "",
+				version: version,
+				withSyncResult: false,
+				timeout: 1,
 			},
 			want: &common.ContractResult{
 				Code:    0,
@@ -342,7 +370,8 @@ func TestChainClient_SaveContract(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			got, err := cc.SaveContract(tt.args.contractCode, tt.args.codeHash)
+			got, err := cc.SaveContract(tt.args.contractCode, tt.args.codeHash, tt.args.name, tt.args.txId,
+				tt.args.version, tt.args.withSyncResult, tt.args.timeout)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SaveContract() error = %v, wantErr %v", err, tt.wantErr)
 				return
