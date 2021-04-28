@@ -41,7 +41,7 @@ func (cc *ChainClient) SaveCert(userCert, enclaveCert, txId string, withSyncResu
 		return nil, fmt.Errorf("construct save cert payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes, timeout)
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, txId, payloadBytes, timeout)
 	if err != nil {
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
 	}
@@ -108,7 +108,7 @@ func (cc *ChainClient) SaveDir(userCert, orderId, dirHash, dirSign, txId string,
 		return nil, fmt.Errorf("construct save dir payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes, timeout)
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, txId, payloadBytes, timeout)
 	if err != nil {
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
 	}
@@ -236,7 +236,7 @@ func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, us
 		return nil, fmt.Errorf("construct save data payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes, timeout)
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, txId, payloadBytes, timeout)
 	if err != nil {
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
 	}
@@ -336,7 +336,7 @@ func (cc *ChainClient) SaveContract(contractCode []byte, codeHash, contractName,
 		return nil, fmt.Errorf("construct save contract code payload failed, %s", err.Error())
 	}
 
-	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes, timeout)
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, txId, payloadBytes, timeout)
 	if err != nil {
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
 	}
