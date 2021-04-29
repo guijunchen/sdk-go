@@ -501,7 +501,7 @@
 ## 11 系统隐私合约类接口
 ### 11.1 证书上链及验证
 ```go
-	SaveCert(userCert, enclaveCert, txId string, withSyncResult bool, timeout int64) ([]byte, error)
+	SaveCert(userCert, enclaveCert, enclaveId, txId string, withSyncResult bool, timeout int64) ([]byte, error)
 ```
 
 ### 11.2 隐私目录上链

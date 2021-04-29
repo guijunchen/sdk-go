@@ -13,7 +13,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func (cc *ChainClient) SaveCert(userCert, enclaveCert, txId string, withSyncResult bool, timeout int64) ([]byte, error) {
+func (cc *ChainClient) SaveCert(userCert, enclaveCert, enclaveId, txId string, withSyncResult bool, timeout int64) ([]byte, error) {
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -28,6 +28,7 @@ func (cc *ChainClient) SaveCert(userCert, enclaveCert, txId string, withSyncResu
 	pairs := paramsMap2KVPairs(map[string]string{
 		"user_cert":    userCert,
 		"enclave_cert": enclaveCert,
+		"enclave_id" : enclaveId,
 	})
 
 	payloadBytes, err := constructSystemContractPayload(

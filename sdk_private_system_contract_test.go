@@ -23,6 +23,7 @@ func TestChainClient_SaveCert(t *testing.T) {
 	type args struct {
 		userCert       string
 		enclaveCert    string
+		enclaveId      string
 		txId           string
 		withSyncResult bool
 		timeout        int64
@@ -38,6 +39,7 @@ func TestChainClient_SaveCert(t *testing.T) {
 			args: args{
 				userCert:       "user1",
 				enclaveCert:    "enclave1",
+				enclaveId:      "enclaveId",
 				txId:           "",
 				withSyncResult: false,
 				timeout:        1,
@@ -51,7 +53,7 @@ func TestChainClient_SaveCert(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			got, err := cc.SaveCert(tt.args.userCert, tt.args.enclaveCert, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
+			got, err := cc.SaveCert(tt.args.userCert, tt.args.enclaveCert, tt.args.enclaveId, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
 			if err != nil {
 				t.Errorf("SaveCert() error = %v, response %v", err, got)
 				return
@@ -81,7 +83,7 @@ func TestChainClient_SaveContract(t *testing.T) {
 		{
 			name: "test1",
 			args: args{
-				contractName:  "JUSTTEST2",
+				contractName:   "JUSTTEST2",
 				contractCode:   []byte("zhe ci yi ding hui cheng gong."),
 				codeHash:       "",
 				version:        version,
@@ -103,11 +105,11 @@ func TestChainClient_SaveContract(t *testing.T) {
 			require.Nil(t, err)
 			got, err := cc.SaveContract(tt.args.contractCode, tt.args.codeHash, tt.args.contractName, tt.args.txId,
 				tt.args.version, tt.args.withSyncResult, tt.args.timeout)
-			if err != nil{
+			if err != nil {
 				t.Errorf("SaveContract() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got.Message != "OK"{
+			if got.Message != "OK" {
 				t.Errorf("SaveContract() got = %v, want %v", got, tt.want)
 			}
 		})
@@ -222,7 +224,7 @@ func TestChainClient_SaveDir(t *testing.T) {
 			require.Nil(t, err)
 			got, err := cc.SaveDir(tt.args.userCert, tt.args.orderId, tt.args.dirHash, tt.args.dirSign, tt.args.txId,
 				tt.args.privateDir, tt.args.withSyncResult, tt.args.timeout)
-			if string(got) != "OK" || err != nil{
+			if string(got) != "OK" || err != nil {
 				t.Errorf("SaveDir() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -267,7 +269,7 @@ func TestChainClient_GetContract(t *testing.T) {
 			require.Nil(t, err)
 			got, err := cc.GetContract(tt.args.userCert, tt.args.contractName, tt.args.codeHash, tt.args.hashSign)
 			code := string(got.ContractCode)
-			if err != nil{
+			if err != nil {
 				t.Errorf("GetContract() error = %v, wantErr %v, code %s", err, tt.wantErr, code)
 				return
 			}
@@ -354,4 +356,3 @@ func TestChainClient_GetData(t *testing.T) {
 		})
 	}
 }
-
