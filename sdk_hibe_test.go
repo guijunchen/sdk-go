@@ -129,18 +129,6 @@ func testUserHibeContractMsgGoQuery(t *testing.T, client *ChainClient) {
 	topHibePrvKey, err := ReadHibePrvKeysWithFilePath(localTopLevelHibePrvKeyFilePath)
 	require.Nil(t, err)
 
-	//msgBytes1, err := client.DecryptHibeTxByBizId(hibeContractName, findMsgByBizId, localTopLevelId, localParams, topHibePrvKey, txId, keyType)
-	//require.Nil(t, err)
-	//t.Logf("QUERY hibe-contract-go-1 contract resp DecryptHibeTxByBizId [Decrypt Msg By TopLevel privateKey] message: %s\n", string(msgBytes1))
-	//
-	//msgBytes2, err := client.DecryptHibeTxByBizId(hibeContractName, findMsgByBizId, localTopLevelId, localParams, topHibePrvKey, txId, keyType)
-	//require.Nil(t, err)
-	//t.Logf("QUERY hibe-contract-go-1 contract resp DecryptHibeTxByBizId [Decrypt Msg By SecondLevel privateKey] message: %s\n", string(msgBytes2))
-	//
-	//msgBytes3, err := client.DecryptHibeTxByBizId(hibeContractName, findMsgByBizId, localTopLevelId, localParams, topHibePrvKey, txId, keyType)
-	//require.Nil(t, err)
-	//t.Logf("QUERY hibe-contract-go-1 contract resp DecryptHibeTxByBizId [Decrypt Msg By ThirdLevel privateKey] message: %s\n", string(msgBytes3))
-
 	msgBytes1, err := client.DecryptHibeTxByTxId(localTopLevelId, localParams, topHibePrvKey, txId, keyType)
 	require.Nil(t, err)
 	t.Logf("QUERY hibe-contract-go-1 contract resp DecryptHibeTxByBizId [Decrypt Msg By TopLevel privateKey] message: %s\n", string(msgBytes1))
@@ -240,10 +228,6 @@ func invokeUserHibeContractMsg(t *testing.T, client *ChainClient, contractName, 
 	org[0] = "wx-org1.chainmaker.org"
 	org[1] = "wx-org1.chainmaker.org"
 	org[2] = "wx-org1.chainmaker.org"
-	//for i, id := range receiverId {
-	//	splitId := strings.Split(id, "/")
-	//	org[i] = splitId[0]
-	//}
 
 	// query params
 	paramsBytesList := make([][]byte, 0)

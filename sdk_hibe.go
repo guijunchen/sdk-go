@@ -30,7 +30,7 @@ const (
 	HibeParamsValueKey = "params"
 )
 
-func (cc ChainClient) CreateHibeInitParamsTxPayloadParams(orgId string, hibeParams []byte) (map[string]string, error) {
+func (cc *ChainClient) CreateHibeInitParamsTxPayloadParams(orgId string, hibeParams []byte) (map[string]string, error) {
 	if err := localhibe.ValidateId(orgId); err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (cc ChainClient) CreateHibeInitParamsTxPayloadParams(orgId string, hibePara
 	return payloadParams, nil
 }
 
-func (cc ChainClient) CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, paramsBytesList [][]byte, txId string, keyType crypto.KeyType) (map[string]string, error) {
+func (cc *ChainClient) CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, paramsBytesList [][]byte, txId string, keyType crypto.KeyType) (map[string]string, error) {
 	if len(paramsBytesList) == 0 {
 		return nil, errors.New("invalid parameters, paramsBytesList is nil")
 	}
@@ -88,7 +88,7 @@ func (cc ChainClient) CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, 
 	return payloadParams, nil
 }
 
-func (cc ChainClient) CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte, receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType, timeout int64) (map[string]string, error) {
+func (cc *ChainClient) CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte, receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType, timeout int64) (map[string]string, error) {
 	hibeParamsBytesList := make([][]byte, len(receiverOrgIds))
 	for i, id := range receiverOrgIds {
 		hibeParamsBytes, err := cc.QueryHibeParamsWithOrgId(contractName, queryParamsMethod, id, timeout)
