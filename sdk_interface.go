@@ -93,7 +93,7 @@ type SDKInterface interface {
 	//   - contractName: 合约名称
 	//   - method: 合约方法
 	//   - txId: 交易ID
-	//           格式要求：长度为64bit，字符在a-z0-9
+	//           格式要求：长度为64字节，字符在a-z0-9
 	//           可为空，若为空字符串，将自动生成txId
 	//   - params: 合约参数
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
@@ -119,7 +119,7 @@ type SDKInterface interface {
 	//   - contractName: 合约名称
 	//   - method: 合约方法
 	//   - txId: 交易ID
-	//           格式要求：长度为64bit，字符在a-z0-9
+	//           格式要求：长度为64字节，字符在a-z0-9
 	//           可为空，若为空字符串，将自动生成txId
 	//   - params: 合约参数
 	// ```go
@@ -548,21 +548,9 @@ type SDKInterface interface {
 	GetEVMAddressFromCertBytes(certBytes []byte) (string, error)
 	// ```
 
-	// ## 9 系统类接口
-	// ### 9.1 SDK停止接口
-	// *关闭连接池连接，释放资源*
-	// ```go
-	Stop() error
-	// ```
-
-	// ### 9.2 获取链版本
-	// ```go
-	GetChainMakerServerVersion() (string, error)
-	// ```
-
-	// ## 11 层级属性加密类接口
+	// ## 9 层级属性加密类接口
 	// > 注意：层级属性加密模块 `Id` 使用 `/` 作为分隔符，例如： Org1/Ou1/Member1
-	// ### 11.1 生成层级属性参数初始化交易 payload
+	// ### 9.1 生成层级属性参数初始化交易 payload
 	// **参数说明**
 	//   - orgId: 参与方组织 id
 	//   - hibeParams: 传入序列化后的hibeParams byte数组
@@ -570,7 +558,7 @@ type SDKInterface interface {
 	CreateHibeInitParamsTxPayloadParams(orgId string, hibeParams []byte) (map[string]string, error)
 	// ```
 
-	// ### 11.2 生成层级属性加密交易 payload，加密参数已知
+	// ### 9.2 生成层级属性加密交易 payload，加密参数已知
 	// **参数说明**
 	//   - plaintext: 待加密交易消息明文
 	//   - receiverIds: 消息接收者 id 列表，需和 paramsList 一一对应
@@ -581,7 +569,7 @@ type SDKInterface interface {
 	CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, paramsBytesList [][]byte, txId string, keyType crypto.KeyType) (map[string]string, error)
 	// ```
 
-	// ### 11.3 生成层级属性加密交易 payload，参数由链上查询得出
+	// ### 9.3 生成层级属性加密交易 payload，参数由链上查询得出
 	// **参数说明**
 	//	 - contractName: 合约名
 	//	 - queryParamsMethod: 链上查询 hibe.Params 的合约方法
@@ -596,7 +584,7 @@ type SDKInterface interface {
 	CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte, receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType, timeout int64) (map[string]string, error)
 	// ```
 
-	// ### 11.4 查询某一组织的加密公共参数，返回其序列化后的byte数组
+	// ### 9.4 查询某一组织的加密公共参数，返回其序列化后的byte数组
 	// **参数说明**
 	//	 - contractName: 合约名
 	// 	 - method: 查询的合约方法名
@@ -606,7 +594,7 @@ type SDKInterface interface {
 	QueryHibeParamsWithOrgId(contractName, method, orgId string, timeout int64) ([]byte, error)
 	// ```
 
-	// ### 11.5 已知交易id，根据私钥解密密文交易
+	// ### 9.5 已知交易id，根据私钥解密密文交易
 	// **参数说明**
 	//   - localId: 本地层级属性加密 id
 	//   - hibeParams: hibeParams 序列化后的byte数组
@@ -616,4 +604,17 @@ type SDKInterface interface {
 	// ```go
 	DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
 	// ```
+
+	// ## 10 系统类接口
+	// ### 10.1 SDK停止接口
+	// *关闭连接池连接，释放资源*
+	// ```go
+	Stop() error
+	// ```
+
+	// ### 10.2 获取链版本
+	// ```go
+	GetChainMakerServerVersion() (string, error)
+	// ```
+
 }
