@@ -13,7 +13,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func (cc *ChainClient) SaveCert(userCert, enclaveCert, enclaveId, txId string, withSyncResult bool, timeout int64) ([]byte, error) {
+func (cc *ChainClient) SaveCert(userCert, enclaveCert, enclaveId, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -28,7 +28,7 @@ func (cc *ChainClient) SaveCert(userCert, enclaveCert, enclaveId, txId string, w
 	pairs := paramsMap2KVPairs(map[string]string{
 		"user_cert":    userCert,
 		"enclave_cert": enclaveCert,
-		"enclave_id" : enclaveId,
+		"enclave_id":   enclaveId,
 	})
 
 	payloadBytes, err := constructSystemContractPayload(
@@ -73,11 +73,11 @@ func (cc *ChainClient) SaveCert(userCert, enclaveCert, enclaveId, txId string, w
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	return resp.ContractResult.Result, nil
+	return resp, nil
 }
 
-func (cc *ChainClient) SaveDir(userCert, orderId, dirHash, dirSign, txId string,
-	privateDir *common.StrSlice, withSyncResult bool, timeout int64) ([]byte, error) {
+func (cc *ChainClient) SaveDir(userCert, orderId, txId string,
+	privateDir *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 
 	if txId == "" {
 		txId = GetRandTxId()
@@ -93,8 +93,6 @@ func (cc *ChainClient) SaveDir(userCert, orderId, dirHash, dirSign, txId string,
 	pairs := paramsMap2KVPairs(map[string]string{
 		"user_cert":   userCert,
 		"order_id":    orderId,
-		"dir_hash":    dirHash,
-		"dir_sign":    dirSign,
 		"private_dir": privateDir.String(),
 	})
 
@@ -140,11 +138,10 @@ func (cc *ChainClient) SaveDir(userCert, orderId, dirHash, dirSign, txId string,
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	return []byte(resp.Message), nil
+	return resp, nil
 }
 
-func (cc *ChainClient) GetContract(userCert, contractName, codeHash,
-	hashSign string) (*common.PrivateGetContract, error) {
+func (cc *ChainClient) GetContract(userCert, contractName, codeHash string) (*common.PrivateGetContract, error) {
 
 	cc.logger.Infof("[SDK] begin to get contract , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
@@ -156,7 +153,6 @@ func (cc *ChainClient) GetContract(userCert, contractName, codeHash,
 		"user_cert":     userCert,
 		"contract_name": contractName,
 		"code_hash":     codeHash,
-		"hash_sign":     hashSign,
 	})
 
 	payloadBytes, err := constructQueryPayload(
@@ -185,8 +181,8 @@ func (cc *ChainClient) GetContract(userCert, contractName, codeHash,
 	return contractInfo, nil
 }
 
-func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, userCert, txId string, rwSet *common.TxRWSet,
-	events *common.StrSlice, withSyncResult bool, timeout int64) ([]byte, error) {
+func (cc *ChainClient) SaveData(code, computeResult, contractName, gas, reportSign, userCert, txId string, rwSet *common.TxRWSet,
+	events *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error) { //todo   change params   return TxResponse
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -217,6 +213,7 @@ func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, us
 	}
 
 	pairs := paramsMap2KVPairs(map[string]string{
+		"code":           code,
 		"compute_result": computeResult,
 		"contract_name":  contractName,
 		"rw_set":         rwSetStr,
@@ -268,10 +265,10 @@ func (cc *ChainClient) SaveData(computeResult, contractName, gas, reportSign, us
 		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
-	return []byte(resp.Message), nil
+	return resp, nil
 }
 
-func (cc *ChainClient) GetData(contractName, privateKey, userCert, dirSign string) ([]byte, error) {
+func (cc *ChainClient) GetData(contractName, key, userCert string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_GET_DATA.String(),
@@ -280,9 +277,8 @@ func (cc *ChainClient) GetData(contractName, privateKey, userCert, dirSign strin
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string]string{
 		"contract_name": contractName,
-		"private_key":   privateKey,
+		"key":           key,
 		"user_cert":     userCert,
-		"dir_sign":      dirSign,
 	})
 
 	payloadBytes, err := constructQueryPayload(
@@ -306,8 +302,8 @@ func (cc *ChainClient) GetData(contractName, privateKey, userCert, dirSign strin
 	return resp.ContractResult.Result, nil
 }
 
-func (cc *ChainClient) SaveContract(contractCode []byte, codeHash, contractName, txId, version string, withSyncResult bool,
-	timeout int64) (*common.ContractResult, error) {
+func (cc *ChainClient) SaveContract(userCert string, codeBytes []byte, codeHash, contractName, version, txId string,
+	withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -320,10 +316,11 @@ func (cc *ChainClient) SaveContract(contractCode []byte, codeHash, contractName,
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string]string{
-		"contract_code": string(contractCode),
+		"contract_code": string(codeBytes),
 		"code_hash":     codeHash,
 		"contract_name": contractName,
 		"version":       version,
+		"user_cert":     userCert,
 	})
 
 	payloadBytes, err := constructSystemContractPayload(
@@ -364,5 +361,66 @@ func (cc *ChainClient) SaveContract(contractCode []byte, codeHash, contractName,
 		}
 	}
 
-	return resp.ContractResult, nil
+	return resp, nil
+}
+
+func (cc *ChainClient) SaveQuote(userCert, enclaveId, quoteId, quote, sign, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+	if txId == "" {
+		txId = GetRandTxId()
+	}
+
+	cc.logger.Infof("[SDK] begin to save contract code , [contract:%s]/[method:%s]/[txId:%s]",
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_SAVE_CONTRACT.String(), //todo change quote
+		txId,
+	)
+
+	// 构造Payload
+	pairs := paramsMap2KVPairs(map[string]string{
+		"user_cert":  userCert,
+		"enclave_id": enclaveId,
+		"quote_id":   quoteId,
+		"quote":      quote,
+		"sign":       sign,
+	})
+
+	payloadBytes, err := constructSystemContractPayload(
+		cc.chainId,
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_SAVE_CONTRACT.String(), //todo change quote
+		pairs,
+		defaultSequence,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("construct save quote  payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, txId, payloadBytes, timeout)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if !withSyncResult {
+			resp.ContractResult = &common.ContractResult{
+				Code:    common.ContractResultCode_OK,
+				Message: common.ContractResultCode_OK.String(),
+				Result:  []byte(txId),
+			}
+		} else {
+			contractResult, err := cc.getSyncResult(txId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+
+			if contractResult.Code != common.ContractResultCode_OK {
+				resp.Code = common.TxStatusCode_CONTRACT_FAIL
+				resp.Message = contractResult.Message
+			}
+
+			resp.ContractResult = contractResult
+		}
+	}
+
+	return resp, nil
 }

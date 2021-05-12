@@ -501,30 +501,30 @@
 ## 11 系统隐私合约类接口
 ### 11.1 证书上链及验证
 ```go
-	SaveCert(userCert, enclaveCert, enclaveId, txId string, withSyncResult bool, timeout int64) ([]byte, error)
+    SaveCert(userCert, enclaveCert, enclaveId, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 ```
 
 ### 11.2 隐私目录上链
 ```go
-	SaveDir(userCert, orderId, dirHash, dirSign, txId string, privateDir *common.StrSlice, withSyncResult bool, timeout int64) ([]byte, error)
+	SaveDir(userCert, orderId, txId string, privateDir *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 ```
 
 ### 11.3 隐私合约代码查询
 ```go
-	GetContract(userCert, contractName, codeHash, hashSign string) (*common.PrivateGetContract, error)
+	GetContract(userCert, contractName, codeHash string) (*common.PrivateGetContract, error)
 ```
 
 ### 11.4 隐私计算结果上链
 ```go
-	SaveData(computeResult, contractName, gas, reportSign, userCert, txId string, rwSet *common.TxRWSet, events *common.StrSlice, withSyncResult bool, timeout int64) ([]byte, error)
+    SaveData(code, computeResult, contractName, gas, reportSign, userCert, txId string, rwSet *common.TxRWSet, events *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 ```
 
 ### 11.5 隐私计算结果查询
 ```go
-	GetData(contractName, privateKey, userCert, dirSign string) ([]byte, error)
+	GetData(contractName, key, userCert string) ([]byte, error)
 ```
 
 ### 11.6 隐私合约代码上链
 ```go
-	SaveContract(contractCode []byte, codeHash, name, txId ,version string, withSyncResult bool, timeout int64) (*common.ContractResult, error)
+	SaveContract(userCert string, codeBytes []byte, codeHash, contractName, version, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 ```
