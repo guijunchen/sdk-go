@@ -528,3 +528,8 @@
 ```go
 	SaveContract(userCert string, codeBytes []byte, codeHash, contractName, version, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 ```
+
+// ### 11.7 enclave通过⽹关调⽤
+ ```go
+    SaveQuote(userCert, enclaveId, quoteId, quote, sign string) (*common.TxResponse, error)
+```

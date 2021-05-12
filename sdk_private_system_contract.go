@@ -371,7 +371,7 @@ func (cc *ChainClient) SaveQuote(userCert, enclaveId, quoteId, quote, sign, txId
 
 	cc.logger.Infof("[SDK] begin to save contract code , [contract:%s]/[method:%s]/[txId:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_SAVE_CONTRACT.String(), //todo change quote
+		common.PrivateComputeContractFunction_SAVE_QUOTE.String(),
 		txId,
 	)
 
@@ -387,7 +387,7 @@ func (cc *ChainClient) SaveQuote(userCert, enclaveId, quoteId, quote, sign, txId
 	payloadBytes, err := constructSystemContractPayload(
 		cc.chainId,
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_SAVE_CONTRACT.String(), //todo change quote
+		common.PrivateComputeContractFunction_SAVE_QUOTE.String(),
 		pairs,
 		defaultSequence,
 	)

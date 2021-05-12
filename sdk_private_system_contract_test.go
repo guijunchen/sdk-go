@@ -178,7 +178,7 @@ func TestChainClient_SaveData(t *testing.T) {
 			res, err := cc.SaveData(tt.args.code, tt.args.computeResult, tt.args.contractName, tt.args.gas, tt.args.reportSign,
 				tt.args.userCert, tt.args.txId, tt.args.rwSet, tt.args.events, tt.args.withSyncResult, tt.args.timeout)
 
-			if string(res.ContractResult.Result) != "OK" || err != nil || tt.wantErr != true {  //todo check nil
+			if string(res.ContractResult.Result) != "OK" || err != nil || tt.wantErr != true { //todo check nil
 				t.Errorf("SaveData() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -348,6 +348,61 @@ func TestChainClient_GetData(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetData() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestChainClient_SaveQuote(t *testing.T) {
+
+	type args struct {
+		userCert       string
+		enclaveId      string
+		quoteId        string
+		quote          string
+		sign           string
+		txId           string
+		withSyncResult bool
+		timeout        int64
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    *common.TxResponse
+		wantErr bool
+	}{
+		{
+			name: "e1",
+			args: args{
+				userCert:       "",
+				enclaveId:      "",
+				quoteId:        "",
+				quote:          "",
+				sign:           "",
+				txId:           "",
+				withSyncResult: false,
+				timeout:        0,
+			},
+			want: &common.TxResponse{
+				Code:           0,
+				Message:        "",
+				ContractResult: nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.SaveQuote(tt.args.userCert, tt.args.enclaveId, tt.args.quoteId, tt.args.quote, tt.args.sign, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SaveQuote() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SaveQuote() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
