@@ -89,9 +89,14 @@ func (cc *ChainClient) SaveDir(orderId, txId string,
 	)
 
 	// 构造Payload
+	priDirBytes, err := privateDir.Marshal()
+	if err != nil {
+		return nil, fmt.Errorf("serielized private dir failed, %s", err.Error())
+	}
+
 	pairs := paramsMap2KVPairs(map[string]string{
 		"order_id":    orderId,
-		"private_dir": privateDir.String(),
+		"private_dir": string(priDirBytes),
 	})
 
 	payloadBytes, err := constructSystemContractPayload(
