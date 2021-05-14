@@ -653,9 +653,9 @@ type SDKInterface interface {
 
 	// ### 10.3 归档数据恢复
 	// **参数说明**
-	//   - fullBlockInfo: 完整区块数据（store.BlockWithRWSet二进制数组）
+	//   - startBlockHeight: 起始归档恢复区块高度
 	// ```go
-	RestoreBlocks(fullBlockInfo [][]byte) (*common.TxResponse, error)
+	RestoreBlocks(startBlockHeight int64) (*common.TxResponse, error)
 	// ```
 
 	// ## 11 系统类接口
