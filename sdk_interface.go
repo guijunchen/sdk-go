@@ -14,6 +14,7 @@ import (
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/config"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/discovery"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/store"
 	"context"
 )
 
@@ -153,7 +154,15 @@ type SDKInterface interface {
 	GetBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.3 根据区块哈希查询区块
+	// ### 2.3 根据区块高度查询完整区块
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error)
+	// ```
+
+	// ### 2.4 根据区块哈希查询区块
 	// **参数说明**
 	//   - blockHash: 指定区块Hash
 	//   - withRWSet: 是否返回读写集
@@ -161,7 +170,7 @@ type SDKInterface interface {
 	GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.4 根据交易Id查询区块
+	// ### 2.5 根据交易Id查询区块
 	// **参数说明**
 	//   - txId: 交易ID
 	//   - withRWSet: 是否返回读写集
@@ -169,23 +178,37 @@ type SDKInterface interface {
 	GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.5 查询最新的配置块
+	// ### 2.6 查询最新的配置块
 	// **参数说明**
 	//   - withRWSet: 是否返回读写集
 	// ```go
 	GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.6 查询节点加入的链信息
+	// ### 2.7 查询节点加入的链信息
 	//    - 返回ChainId清单
 	// ```go
 	GetNodeChainList() (*discovery.ChainList, error)
 	// ```
 
-	// ### 2.7 查询链信息
+	// ### 2.8 查询链信息
 	//   - 包括：当前链最新高度，链节点信息
 	// ```go
 	GetChainInfo() (*discovery.ChainInfo, error)
+	// ```
+
+	// ### 2.9 根据交易Id获取区块高度
+	// **参数说明**
+	//   - txId: 交易ID
+	// ```go
+	GetBlockHeightByTxId(txId string) (int64, error)
+	// ```
+
+	// ### 2.10 根据区块Hash获取区块高度
+	// **参数说明**
+	//   - blockHash: 指定区块Hash
+	// ```go
+	GetBlockHeightByHash(blockHash string) (int64, error)
 	// ```
 
 	// ## 3 链配置接口
@@ -613,14 +636,36 @@ type SDKInterface interface {
 	DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
 	// ```
 
-	// ## 10 系统类接口
-	// ### 10.1 SDK停止接口
+	// ## 10 数据归档接口
+	// ### 10.1 获取已归档区块高度
+	// **参数说明**
+	//   - 输出已归档的区块高度
+	// ```go
+	GetArchivedBlockHeight() (int64, error)
+	// ```
+
+	// ### 10.2 区块数据归档
+	// **参数说明**
+	//   - targetBlockHeight: 目标归档区块高度
+	// ```go
+	ArchiveBlock(targetBlockHeight int64) (*common.TxResponse, error)
+	// ```
+
+	// ### 10.3 归档数据恢复
+	// **参数说明**
+	//   - fullBlockInfo: 完整区块数据（store.BlockWithRWSet二进制数组）
+	// ```go
+	RestoreBlocks(fullBlockInfo [][]byte) (*common.TxResponse, error)
+	// ```
+
+	// ## 11 系统类接口
+	// ### 11.1 SDK停止接口
 	// *关闭连接池连接，释放资源*
 	// ```go
 	Stop() error
 	// ```
 
-	// ### 10.2 获取链版本
+	// ### 11.2 获取链版本
 	// ```go
 	GetChainMakerServerVersion() (string, error)
 	// ```

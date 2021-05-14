@@ -10,6 +10,7 @@ package chainmaker_sdk_go
 import (
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/discovery"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/store"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"strconv"
@@ -268,3 +269,20 @@ func (cc *ChainClient) GetNodeChainList() (*discovery.ChainList, error) {
 
 	return chainList, nil
 }
+
+func (cc *ChainClient) GetArchivedBlockHeight() (int64, error) {
+	panic("implement me")
+}
+
+func (cc *ChainClient) GetFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error) {
+	panic("implement me")
+}
+
+func (cc *ChainClient) GetBlockHeightByTxId(txId string) (int64, error) {
+	panic("implement me")
+}
+
+func (cc *ChainClient) GetBlockHeightByHash(blockHash string) (int64, error) {
+	panic("implement me")
+}
+
