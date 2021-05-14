@@ -33,6 +33,7 @@ type networkClient struct {
 	caPaths     []string
 	caCerts     []string
 	tlsHostName string
+	ID 			string
 }
 
 // 客户端连接池结构定义
@@ -51,13 +52,14 @@ func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 		userCrtBytes: config.userCrtBytes,
 	}
 
-	for _, node := range config.nodeList {
+	for idx, node := range config.nodeList {
 		cli := &networkClient{
 			nodeAddr:    node.addr,
 			useTLS:      node.useTLS,
 			caPaths:     node.caPaths,
 			caCerts:     node.caCerts,
 			tlsHostName: node.tlsHostName,
+			ID: fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
 		}
 
 		for i := 0; i < node.connCnt; i++ {
@@ -117,7 +119,7 @@ func (pool *ConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]stru
 		for _, cli := range pool.connections {
 
 			if ignoreAddrs != nil {
-				if _, ok := ignoreAddrs[cli.nodeAddr]; ok {
+				if _, ok := ignoreAddrs[cli.ID]; ok {
 					continue
 				}
 			}
@@ -126,7 +128,7 @@ func (pool *ConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]stru
 
 				conn, err := pool.initGRPCConnect(cli.nodeAddr, cli.useTLS, cli.caPaths, cli.caCerts, cli.tlsHostName)
 				if err != nil {
-					pool.logger.Errorf("init grpc connection [nodeAddr:%s] failed, %s", cli.nodeAddr, err.Error())
+					pool.logger.Errorf("init grpc connection [nodeAddr:%s] failed, %s", cli.ID, err.Error())
 					continue
 				}
 
