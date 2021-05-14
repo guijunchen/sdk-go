@@ -286,3 +286,46 @@ func (cc *ChainClient) GetBlockHeightByHash(blockHash string) (int64, error) {
 	panic("implement me")
 }
 
+func (cc *ChainClient) GetLastBlock(withRWSet bool) (*common.BlockInfo, error) {
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[withRWSet:%s]",
+		common.QueryFunction_GET_LAST_BLOCK.String(), strconv.FormatBool(withRWSet))
+
+	payloadBytes, err := constructQueryPayload(
+		common.ContractName_SYSTEM_CONTRACT_QUERY.String(),
+		common.QueryFunction_GET_LAST_BLOCK.String(),
+		[]*common.KeyValuePair{
+			{
+				Key:   keyWithRWSet,
+				Value: strconv.FormatBool(withRWSet),
+			},
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("GetLastBlock marshal query payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	blockInfo := &common.BlockInfo{}
+	if err = proto.Unmarshal(resp.ContractResult.Result, blockInfo); err != nil {
+		return nil, fmt.Errorf("GetLastBlock unmarshal block info payload failed, %s", err.Error())
+	}
+
+	return blockInfo, nil
+}
+
+func (cc *ChainClient) GetCurrentBlockHeight() (int64, error) {
+	block, err := cc.GetLastBlock(false)
+	if err != nil {
+		return -1, err
+	}
+
+	return block.Block.Header.BlockHeight, nil
+}

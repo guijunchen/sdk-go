@@ -185,30 +185,42 @@ type SDKInterface interface {
 	GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.7 查询节点加入的链信息
+	// ### 2.7 查询最新区块
+	// **参数说明**
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetLastBlock(withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 2.8 查询节点加入的链信息
 	//    - 返回ChainId清单
 	// ```go
 	GetNodeChainList() (*discovery.ChainList, error)
 	// ```
 
-	// ### 2.8 查询链信息
+	// ### 2.9 查询链信息
 	//   - 包括：当前链最新高度，链节点信息
 	// ```go
 	GetChainInfo() (*discovery.ChainInfo, error)
 	// ```
 
-	// ### 2.9 根据交易Id获取区块高度
+	// ### 2.10 根据交易Id获取区块高度
 	// **参数说明**
 	//   - txId: 交易ID
 	// ```go
 	GetBlockHeightByTxId(txId string) (int64, error)
 	// ```
 
-	// ### 2.10 根据区块Hash获取区块高度
+	// ### 2.11 根据区块Hash获取区块高度
 	// **参数说明**
 	//   - blockHash: 指定区块Hash
 	// ```go
 	GetBlockHeightByHash(blockHash string) (int64, error)
+	// ```
+
+	// ### 2.12 查询当前最新区块高度
+	// ```go
+	GetCurrentBlockHeight() (int64, error)
 	// ```
 
 	// ## 3 链配置接口
