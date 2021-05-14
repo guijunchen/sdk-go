@@ -312,7 +312,7 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 		}
 
 		if len(ignoreAddrs) > 0 {
-			cc.logger.Debugf("[SDK] begin try to connect node [%s]", client.nodeAddr)
+			cc.logger.Debugf("[SDK] begin try to connect node [%s]", client.ID)
 		}
 
 		resp, err := client.rpcNode.SendRequest(ctx, txRequest)
@@ -333,10 +333,10 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 
 				resp.Code = common.TxStatusCode_TIMEOUT
 				errMsg = fmt.Sprintf("call [%s] meet network error, try to connect another node if has, %s",
-					client.nodeAddr, err.Error())
+					client.ID, err.Error())
 
 				cc.logger.Errorf(sdkErrStringFormat, errMsg)
-				ignoreAddrs[client.nodeAddr] = struct{}{}
+				ignoreAddrs[client.ID] = struct{}{}
 				continue
 			}
 
