@@ -323,11 +323,13 @@ func (cc *ChainClient) GetBlockHeightByHash(blockHash string) (int64, error) {
 
 func (cc *ChainClient) getBlockHeight(txId, blockHash string) (int64, error) {
 	var (
+		contractName string
 		method string
 		pairs []*common.KeyValuePair
 	)
 
 	if txId != "" {
+		contractName = common.ContractName_SYSTEM_CONTRACT_QUERY.String()
 		method = common.QueryFunction_GET_BLOCK_HEIGHT_BY_TX_ID.String()
 		pairs = []*common.KeyValuePair{
 			{
@@ -338,6 +340,7 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (int64, error) {
 
 		cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]", method, txId)
 	} else if blockHash != ""{
+		contractName = common.ContractName_SYSTEM_CONTRACT_QUERY.String()
 		method = common.QueryFunction_GET_BLOCK_HEIGHT_BY_HASH.String()
 		pairs = []*common.KeyValuePair{
 			{
@@ -346,16 +349,16 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (int64, error) {
 			},
 		}
 
-		cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]", method, txId)
+		cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHash:%s]", method, blockHash)
 	} else {
-		//return -1, fmt.Errorf("invalid params")
+		contractName = common.ContractName_SYSTEM_CONTRACT_ARCHIVE_STORE.String()
 		method = common.ArchiveStoreContractFunction_GET_ARCHIVED_BLOCK_HEIGHT.String()
 		pairs = []*common.KeyValuePair{}
 
-		cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]", method, txId)
+		cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]", method)
 	}
 
-	payloadBytes, err := constructQueryPayload( common.ContractName_SYSTEM_CONTRACT_QUERY.String(), method, pairs)
+	payloadBytes, err := constructQueryPayload(contractName, method, pairs)
 	if err != nil {
 		return -1, fmt.Errorf("%s marshal query payload failed, %s", method, err.Error())
 	}

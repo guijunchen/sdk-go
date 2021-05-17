@@ -24,28 +24,36 @@ func TestSystemContract(t *testing.T) {
 	client, err := createClient()
 	require.Nil(t, err)
 
-	blockInfo := testSystemContractGetBlockByHeight(t, client, -1)
-	testSystemContractGetTxByTxId(t, client, blockInfo.Block.Txs[0].Header.TxId)
-	testSystemContractGetBlockByHash(t, client, hex.EncodeToString(blockInfo.Block.Header.BlockHash))
-	testSystemContractGetBlockByTxId(t, client, blockInfo.Block.Txs[0].Header.TxId)
-	testSystemContractGetLastConfigBlock(t, client)
-	testSystemContractGetLastBlock(t, client)
-	//testSystemContractGetFullBlockByHeight(t, client, 10)
-	testSystemContractGetCurrentBlockHeight(t, client)
-	testSystemContractGetChainInfo(t, client)
+	//blockInfo := testSystemContractGetBlockByHeight(t, client, -1)
+	//testSystemContractGetTxByTxId(t, client, blockInfo.Block.Txs[0].Header.TxId)
+	//testSystemContractGetBlockByHash(t, client, hex.EncodeToString(blockInfo.Block.Header.BlockHash))
+	//testSystemContractGetBlockByTxId(t, client, blockInfo.Block.Txs[0].Header.TxId)
+	//testSystemContractGetLastConfigBlock(t, client)
+	//testSystemContractGetLastBlock(t, client)
+	//testSystemContractGetChainInfo(t, client)
+	//
+	//systemChainClient, err := NewChainClient(
+	//	WithChainClientOrgId(orgId1),
+	//	WithChainClientChainId(chainId),
+	//	WithChainClientLogger(getDefaultLogger()),
+	//	WithUserKeyFilePath(fmt.Sprintf(userKeyPath, orgId1)),
+	//	WithUserCrtFilePath(fmt.Sprintf(userCrtPath, orgId1)),
+	//	AddChainClientNodeConfig(node1),
+	//	AddChainClientNodeConfig(node2),
+	//)
+	//require.Nil(t, err)
+	//
+	//testSystemContractGetNodeChainList(t, systemChainClient)
 
-	systemChainClient, err := NewChainClient(
-		WithChainClientOrgId(orgId1),
-		WithChainClientChainId(chainId),
-		WithChainClientLogger(getDefaultLogger()),
-		WithUserKeyFilePath(fmt.Sprintf(userKeyPath, orgId1)),
-		WithUserCrtFilePath(fmt.Sprintf(userCrtPath, orgId1)),
-		AddChainClientNodeConfig(node1),
-		AddChainClientNodeConfig(node2),
-	)
-	require.Nil(t, err)
-
-	testSystemContractGetNodeChainList(t, systemChainClient)
+	// Archive test
+	var blockHeight int64 = 4
+	fullBlock := testSystemContractGetFullBlockByHeight(t, client, blockHeight)
+	//testSystemContractGetCurrentBlockHeight(t, client)
+	heightByTxId := testSystemContractGetBlockHeightByTxId(t, client, fullBlock.Block.Txs[0].Header.TxId)
+	require.Equal(t, blockHeight, heightByTxId)
+	heightByHash := testSystemContractGetBlockHeightByHash(t, client, hex.EncodeToString(fullBlock.Block.Header.BlockHash))
+	require.Equal(t, blockHeight, heightByHash)
+	//testSystemContractGetArchivedBlockHeight(t, client)
 }
 
 func testSystemContractGetTxByTxId(t *testing.T, client *ChainClient, txId string) *common.TransactionInfo {
@@ -92,6 +100,27 @@ func testSystemContractGetCurrentBlockHeight(t *testing.T, client *ChainClient) 
 	height, err := client.GetCurrentBlockHeight()
 	require.Nil(t, err)
 	fmt.Printf("current block height: %d\n", height)
+	return height
+}
+
+func testSystemContractGetArchivedBlockHeight(t *testing.T, client *ChainClient) int64 {
+	height, err := client.GetArchivedBlockHeight()
+	require.Nil(t, err)
+	fmt.Printf("archived block height: %d\n", height)
+	return height
+}
+
+func testSystemContractGetBlockHeightByTxId(t *testing.T, client *ChainClient, txId string) int64 {
+	height, err := client.GetBlockHeightByTxId(txId)
+	require.Nil(t, err)
+	fmt.Printf("txId [%s] => block height: %d\n", txId, height)
+	return height
+}
+
+func testSystemContractGetBlockHeightByHash(t *testing.T, client *ChainClient, blockHash string) int64 {
+	height, err := client.GetBlockHeightByHash(blockHash)
+	require.Nil(t, err)
+	fmt.Printf("blockHash [%s] => block height: %d\n", blockHash, height)
 	return height
 }
 

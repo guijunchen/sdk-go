@@ -670,6 +670,45 @@ type SDKInterface interface {
 	RestoreBlocks(startBlockHeight int64) (*common.TxResponse, error)
 	// ```
 
+	// ### 10.4 根据交易Id查询已归档交易
+	// **参数说明**
+	//   - txId: 交易ID
+	// ```go
+	GetArchivedTxByTxId(txId string) (*common.TransactionInfo, error)
+	// ```
+
+	// ### 10.5 根据区块高度查询已归档区块
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 10.6 根据区块高度查询已归档完整区块
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error)
+	// ```
+
+	// ### 10.7 根据区块哈希查询已归档区块
+	// **参数说明**
+	//   - blockHash: 指定区块Hash
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 10.8 根据交易Id查询已归档区块
+	// **参数说明**
+	//   - txId: 交易ID
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
 	// ## 11 系统类接口
 	// ### 11.1 SDK停止接口
 	// *关闭连接池连接，释放资源*
