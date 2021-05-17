@@ -14,6 +14,7 @@ import (
 	localhibe "chainmaker.org/chainmaker-go/common/crypto/hibe"
 	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
 	"chainmaker.org/chainmaker-go/common/random/uuid"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"encoding/binary"
 	"encoding/hex"
@@ -231,6 +232,41 @@ func checkProposalRequestResp(resp *common.TxResponse, needContractResult bool) 
 
 	return nil
 }
+
+func (cc *ChainClient) signSystemContractPayload(payloadBytes []byte) ([]byte, error) {
+	payload := &common.SystemContractPayload{}
+	if err := proto.Unmarshal(payloadBytes, payload); err != nil {
+		return nil, fmt.Errorf("unmarshal system contract payload failed, %s", err)
+	}
+
+	signBytes, err := signPayload(cc.privateKey, cc.userCrt, payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf("SignPayload failed, %s", err)
+	}
+
+	sender := &accesscontrol.SerializedMember{
+		OrgId:      cc.orgId,
+		MemberInfo: cc.userCrtBytes,
+		IsFullCert: true,
+	}
+
+	entry := &common.EndorsementEntry{
+		Signer:    sender,
+		Signature: signBytes,
+	}
+
+	payload.Endorsement = []*common.EndorsementEntry{
+		entry,
+	}
+
+	signedPayloadBytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("marshal system contract sigend payload failed, %s", err)
+	}
+
+	return signedPayloadBytes, nil
+}
+
 
 func mergeSystemContractSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
 	if len(signedPayloadBytes) == 0 {

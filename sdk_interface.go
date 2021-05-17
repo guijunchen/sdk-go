@@ -656,11 +656,31 @@ type SDKInterface interface {
 	GetArchivedBlockHeight() (int64, error)
 	// ```
 
+	// ```go
+	CreateArchiveBlockPayload(targetBlockHeight int64) ([]byte, error)
+	// ```
+
+	// ```go
+	CreateRestoreBlocksPayload(startBlockHeight int64) ([]byte, error)
+	// ```
+
+	// ```go
+	CreateArchivePayload(method string, kvs []*common.KeyValuePair) ([]byte, error)
+	// ```
+
+	// ```go
+	SignArchivePayload(payloadBytes []byte) ([]byte, error)
+	// ```
+
+	// ```go
+	MergeArchivePayload(signedPayloadBytes [][]byte) ([]byte, error)
+	// ```
+
 	// ### 10.2 区块数据归档
 	// **参数说明**
-	//   - targetBlockHeight: 目标归档区块高度
+	//   -
 	// ```go
-	ArchiveBlock(targetBlockHeight int64) (*common.TxResponse, error)
+	SendArchiveBlockRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
 	// ### 10.3 归档数据恢复

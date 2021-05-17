@@ -46,7 +46,7 @@ func TestSystemContract(t *testing.T) {
 	//testSystemContractGetNodeChainList(t, systemChainClient)
 
 	// Archive test
-	var blockHeight int64 = 4
+	var blockHeight int64 = 8
 	fullBlock := testSystemContractGetFullBlockByHeight(t, client, blockHeight)
 	//testSystemContractGetCurrentBlockHeight(t, client)
 	heightByTxId := testSystemContractGetBlockHeightByTxId(t, client, fullBlock.Block.Txs[0].Header.TxId)
