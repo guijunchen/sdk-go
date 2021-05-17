@@ -6,7 +6,7 @@ func (cc *ChainClient) ArchiveBlock(targetBlockHeight int64) (*common.TxResponse
 	panic("implement me")
 }
 
-func (cc *ChainClient) RestoreBlocks(fullBlockInfo [][]byte) (*common.TxResponse, error) {
+func (cc *ChainClient) RestoreBlocks(startBlockHeight int64) (*common.TxResponse, error) {
 	panic("implement me")
 }
 

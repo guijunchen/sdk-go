@@ -11,7 +11,10 @@ import (
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/consensus"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/discovery"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/store"
 	"encoding/hex"
+	"fmt"
+	"github.com/hokaccha/go-prettyjson"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -26,14 +29,17 @@ func TestSystemContract(t *testing.T) {
 	testSystemContractGetBlockByHash(t, client, hex.EncodeToString(blockInfo.Block.Header.BlockHash))
 	testSystemContractGetBlockByTxId(t, client, blockInfo.Block.Txs[0].Header.TxId)
 	testSystemContractGetLastConfigBlock(t, client)
+	testSystemContractGetLastBlock(t, client)
+	//testSystemContractGetFullBlockByHeight(t, client, 10)
+	testSystemContractGetCurrentBlockHeight(t, client)
 	testSystemContractGetChainInfo(t, client)
 
 	systemChainClient, err := NewChainClient(
 		WithChainClientOrgId(orgId1),
 		WithChainClientChainId(chainId),
 		WithChainClientLogger(getDefaultLogger()),
-		WithUserKeyFilePath(userKeyPath),
-		WithUserCrtFilePath(userCrtPath),
+		WithUserKeyFilePath(fmt.Sprintf(userKeyPath, orgId1)),
+		WithUserCrtFilePath(fmt.Sprintf(userCrtPath, orgId1)),
 		AddChainClientNodeConfig(node1),
 		AddChainClientNodeConfig(node2),
 	)
@@ -72,6 +78,23 @@ func testSystemContractGetLastConfigBlock(t *testing.T, client *ChainClient) *co
 	return blockInfo
 }
 
+func testSystemContractGetLastBlock(t *testing.T, client *ChainClient) *common.BlockInfo {
+	blockInfo, err := client.GetLastBlock(true)
+	require.Nil(t, err)
+	fmt.Printf("last block height: %d\n", blockInfo.Block.Header.BlockHeight)
+	marshal, err := prettyjson.Marshal(blockInfo)
+	require.Nil(t, err)
+	fmt.Printf("blockInfo: %s\n", marshal)
+	return blockInfo
+}
+
+func testSystemContractGetCurrentBlockHeight(t *testing.T, client *ChainClient) int64 {
+	height, err := client.GetCurrentBlockHeight()
+	require.Nil(t, err)
+	fmt.Printf("current block height: %d\n", height)
+	return height
+}
+
 func testSystemContractGetChainInfo(t *testing.T, client *ChainClient) *discovery.ChainInfo {
 	chainConfig := testGetChainConfig(t, client)
 	chainInfo := &discovery.ChainInfo{}
@@ -87,4 +110,13 @@ func testSystemContractGetNodeChainList(t *testing.T, client *ChainClient) *disc
 	chainList, err := client.GetNodeChainList()
 	require.Nil(t, err)
 	return chainList
+}
+
+func testSystemContractGetFullBlockByHeight(t *testing.T, client *ChainClient, blockHeight int64) *store.BlockWithRWSet {
+	fullBlockInfo, err := client.GetFullBlockByHeight(blockHeight)
+	require.Nil(t, err)
+	marshal, err := prettyjson.Marshal(fullBlockInfo)
+	require.Nil(t, err)
+	fmt.Printf("fullBlockInfo: %s\n", marshal)
+	return fullBlockInfo
 }
