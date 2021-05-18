@@ -48,12 +48,13 @@ func TestSystemContract(t *testing.T) {
 	// Archive test
 	var blockHeight int64 = 8
 	fullBlock := testSystemContractGetFullBlockByHeight(t, client, blockHeight)
-	//testSystemContractGetCurrentBlockHeight(t, client)
 	heightByTxId := testSystemContractGetBlockHeightByTxId(t, client, fullBlock.Block.Txs[0].Header.TxId)
 	require.Equal(t, blockHeight, heightByTxId)
 	heightByHash := testSystemContractGetBlockHeightByHash(t, client, hex.EncodeToString(fullBlock.Block.Header.BlockHash))
 	require.Equal(t, blockHeight, heightByHash)
-	//testSystemContractGetArchivedBlockHeight(t, client)
+
+	testSystemContractGetCurrentBlockHeight(t, client)
+	testSystemContractGetArchivedBlockHeight(t, client)
 }
 
 func testSystemContractGetTxByTxId(t *testing.T, client *ChainClient, txId string) *common.TransactionInfo {

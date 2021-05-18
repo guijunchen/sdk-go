@@ -15,7 +15,7 @@ func (cc *ChainClient) CreateArchiveBlockPayload(targetBlockHeight int64) ([]byt
 		},
 	}
 
-	return cc.CreateCertManagePayload(common.ArchiveStoreContractFunction_ARCHIVE_BLOCK.String(), pairs)
+	return cc.CreateArchivePayload(common.ArchiveStoreContractFunction_ARCHIVE_BLOCK.String(), pairs)
 }
 
 func (cc *ChainClient) CreateRestoreBlocksPayload(startBlockHeight int64) ([]byte, error) {
