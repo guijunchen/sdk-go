@@ -97,13 +97,16 @@ func (cc *ChainClient) Subscribe(ctx context.Context, txType common.TxType, payl
 						return
 					}
 				case common.TxType_SUBSCRIBE_CONTRACT_EVENT_INFO:
-					event := &common.ContractEventInfo{}
-					if err = proto.Unmarshal(result.Data, event); err != nil {
+					events := &common.ContractEventInfoList{}
+					if err = proto.Unmarshal(result.Data, events); err != nil {
 						cc.logger.Error("[SDK] Subscriber receive contract event failed, %s", err)
 						close(c)
 						return
 					}
-					ret = event
+					for _, event := range events.ContractEvents {
+						c <- event
+					}
+					continue
 
 				default:
 					ret = result.Data
