@@ -46,7 +46,7 @@ func TestSystemContract(t *testing.T) {
 	//testSystemContractGetNodeChainList(t, systemChainClient)
 
 	// Archive test
-	var blockHeight int64 = 8
+	var blockHeight int64 = 3
 	fullBlock := testSystemContractGetFullBlockByHeight(t, client, blockHeight)
 	heightByTxId := testSystemContractGetBlockHeightByTxId(t, client, fullBlock.Block.Txs[0].Header.TxId)
 	require.Equal(t, blockHeight, heightByTxId)
@@ -144,6 +144,11 @@ func testSystemContractGetNodeChainList(t *testing.T, client *ChainClient) *disc
 
 func testSystemContractGetFullBlockByHeight(t *testing.T, client *ChainClient, blockHeight int64) *store.BlockWithRWSet {
 	fullBlockInfo, err := client.GetFullBlockByHeight(blockHeight)
+	if err != nil {
+		if IsArchivedString(err.Error()) {
+			fmt.Println("Is archived...")
+		}
+	}
 	require.Nil(t, err)
 	marshal, err := prettyjson.Marshal(fullBlockInfo)
 	require.Nil(t, err)

@@ -217,6 +217,24 @@ func constructSubscribeTxPayload(startBlock, endBlock int64, txType common.TxTyp
 	return payloadBytes, nil
 }
 
+func IsArchived(txStatusCode common.TxStatusCode) bool {
+	if txStatusCode == common.TxStatusCode_ARCHIVED_BLOCK || txStatusCode == common.TxStatusCode_ARCHIVED_TX {
+		return true
+	}
+
+	return false
+}
+
+func IsArchivedString(txStatusCode string) bool {
+	if txStatusCode == common.TxStatusCode_ARCHIVED_BLOCK.String() ||
+		txStatusCode == common.TxStatusCode_ARCHIVED_TX.String() {
+
+		return true
+	}
+
+	return false
+}
+
 func checkProposalRequestResp(resp *common.TxResponse, needContractResult bool) error {
 	if resp.Code != common.TxStatusCode_SUCCESS {
 		return errors.New(resp.Message)

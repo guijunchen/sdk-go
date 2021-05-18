@@ -11,6 +11,7 @@ import (
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/discovery"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/store"
+	"errors"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"strconv"
@@ -48,6 +49,9 @@ func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error)
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
+		if IsArchived(resp.Code) {
+			return nil, errors.New(resp.Code.String())
+		}
 		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -87,6 +91,9 @@ func (cc *ChainClient) GetBlockByHeight(blockHeight int64, withRWSet bool) (*com
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
+		if IsArchived(resp.Code) {
+			return nil, errors.New(resp.Code.String())
+		}
 		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -127,6 +134,9 @@ func (cc *ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*common
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
+		if IsArchived(resp.Code) {
+			return nil, errors.New(resp.Code.String())
+		}
 		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -167,6 +177,9 @@ func (cc *ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*common.Bloc
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
+		if IsArchived(resp.Code) {
+			return nil, errors.New(resp.Code.String())
+		}
 		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
@@ -274,7 +287,7 @@ func (cc *ChainClient) GetNodeChainList() (*discovery.ChainList, error) {
 }
 
 func (cc *ChainClient) GetFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]",
 		common.QueryFunction_GET_FULL_BLOCK_BY_HEIGHT.String(), blockHeight)
 
 	payloadBytes, err := constructQueryPayload(
@@ -298,6 +311,10 @@ func (cc *ChainClient) GetFullBlockByHeight(blockHeight int64) (*store.BlockWith
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
+		if IsArchived(resp.Code) {
+			return nil, errors.New(resp.Code.String())
+		}
+
 		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
 	}
 

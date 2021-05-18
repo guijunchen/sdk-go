@@ -20,7 +20,7 @@ func TestArchive(t *testing.T) {
 	require.Nil(t, err)
 
 	fmt.Println("====================== 数据归档 ======================")
-	var targetBlockHeight int64 = 6
+	var targetBlockHeight int64 = 5
 	testArchiveBlock(t, admin1, targetBlockHeight)
 }
 
