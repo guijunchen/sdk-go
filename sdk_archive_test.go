@@ -16,18 +16,15 @@ import (
 
 func TestArchive(t *testing.T) {
 
-	client1, err := createClientWithOrgId(orgId1)
-	require.Nil(t, err)
-
 	admin1, err := createAdmin(orgId1)
 	require.Nil(t, err)
 
 	fmt.Println("====================== 数据归档 ======================")
-	var targetBlockHeight int64 = 4
-	testArchiveBlock(t, client1, admin1, targetBlockHeight)
+	var targetBlockHeight int64 = 6
+	testArchiveBlock(t, admin1, targetBlockHeight)
 }
 
-func testArchiveBlock(t *testing.T, client1, admin1 *ChainClient, targetBlockHeight int64) {
+func testArchiveBlock(t *testing.T, admin1 *ChainClient, targetBlockHeight int64) {
 	var (
 		err                error
 		payload            []byte
@@ -36,13 +33,13 @@ func testArchiveBlock(t *testing.T, client1, admin1 *ChainClient, targetBlockHei
 		result             string
 	)
 
-	payload, err = client1.CreateArchiveBlockPayload(targetBlockHeight)
+	payload, err = admin1.CreateArchiveBlockPayload(targetBlockHeight)
 	require.Nil(t, err)
 
 	signedPayloadBytes, err = admin1.SignArchivePayload(payload)
 	require.Nil(t, err)
 
-	resp, err = client1.SendArchiveBlockRequest(signedPayloadBytes, -1, true)
+	resp, err = admin1.SendArchiveBlockRequest(signedPayloadBytes, -1, true)
 	require.Nil(t, err)
 
 	result = string(resp.ContractResult.Result)
