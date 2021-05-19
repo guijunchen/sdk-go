@@ -27,6 +27,11 @@ type nodesConfigModel struct {
 	TLSHostName string `mapstructure:"tls_host_name"`
 }
 
+type archiveConfigModel struct {
+	// secret key
+	SecretKey string `mapstructure:"secret_key"`
+}
+
 type chainClientConfigModel struct {
 	// 链ID
 	ChainId string `mapstructure:"chain_id"`
@@ -42,6 +47,8 @@ type chainClientConfigModel struct {
 	UserSignCrtFilePath string `mapstructure:"user_sign_crt_file_path"`
 	// 节点配置
 	NodesConfig []nodesConfigModel `mapstructure:"nodes"`
+	// 归档特性的配置
+	ArchiveConfig *archiveConfigModel `mapstructure:"archive,omitempty"`
 }
 
 type ChainClientConfigModel struct {
