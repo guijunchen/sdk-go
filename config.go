@@ -51,12 +51,8 @@ type chainClientConfigModel struct {
 	UserSignCrtFilePath string `mapstructure:"user_sign_crt_file_path"`
 	// 节点配置
 	NodesConfig []nodesConfigModel `mapstructure:"nodes"`
-<<<<<<< HEAD
-	ArchiveConfig archiveConfigModel `mapstructure:"archive"`
-=======
 	// 归档特性的配置
 	ArchiveConfig *archiveConfigModel `mapstructure:"archive,omitempty"`
->>>>>>> 63d61b783e844097c1386ecb99959b73ad7ffb41
 }
 
 type ChainClientConfigModel struct {
