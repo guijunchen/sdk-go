@@ -36,20 +36,32 @@ const (
 var _ SDKInterface = (*ChainClient)(nil)
 
 type ChainClient struct {
-	logger     Logger
-	pool       *ConnectionPool
-	chainId    string
-	orgId      string
+	logger       Logger
+	pool         *ConnectionPool
+	chainId      string
+	orgId        string
 	userCrtBytes []byte
-	userCrt    *bcx509.Certificate
-	privateKey crypto.PrivateKey
+	userCrt      *bcx509.Certificate
+	privateKey   crypto.PrivateKey
 	// 用户压缩证书
 	enabledCrtHash bool
 	userCrtHash    []byte
+
+	// archive config
+	archiveConfig *ArchiveConfig
 }
 
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
 	config := &NodeConfig{}
+	for _, opt := range opts {
+		opt(config)
+	}
+
+	return config
+}
+
+func NewArchiveConfig(opts ...ArchiveOption) *ArchiveConfig {
+	config := &ArchiveConfig{}
 	for _, opt := range opts {
 		opt(config)
 	}
@@ -69,13 +81,14 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	}
 
 	return &ChainClient{
-		pool:       pool,
-		logger:     config.logger,
-		chainId:    config.chainId,
-		orgId:      config.orgId,
-		userCrtBytes: config.userCrtBytes,
-		userCrt:    config.userCrt,
-		privateKey: config.privateKey,
+		pool:          pool,
+		logger:        config.logger,
+		chainId:       config.chainId,
+		orgId:         config.orgId,
+		userCrtBytes:  config.userCrtBytes,
+		userCrt:       config.userCrt,
+		privateKey:    config.privateKey,
+		archiveConfig: config.archiveConfig,
 	}, nil
 }
 
@@ -383,4 +396,3 @@ func (cc *ChainClient) GetEVMAddressFromCertBytes(certBytes []byte) (string, err
 
 	return addrInt.String(), nil
 }
-
