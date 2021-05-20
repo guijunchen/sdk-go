@@ -21,8 +21,8 @@ const (
 	ComputeRes  = "private_compute_result"
 	enclaveId   = "enclave_id"
 	enclaveCert = "enclave_certificate"
-	quoteId   	= "quote_id"
-	quote 		= "quote_content"
+	quoteId     = "quote_id"
+	quote       = "quote_content"
 	orderId     = "order_id"
 )
 
@@ -76,7 +76,7 @@ func TestChainClient_SaveCert(t *testing.T) {
 func TestChainClient_SaveQuote(t *testing.T) {
 
 	type args struct {
-		enclaveId     string
+		enclaveId      string
 		quoteId        string
 		quote          string
 		sign           string
@@ -165,7 +165,7 @@ func TestChainClient_SaveContract(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
 			got, err := cc.SaveContract(tt.args.codeBytes, tt.args.codeHash, tt.args.contractName, tt.args.version, tt.args.txId,
-				 tt.args.withSyncResult, tt.args.timeout)
+				tt.args.withSyncResult, tt.args.timeout)
 			if err != nil {
 				t.Errorf("SaveContract() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -232,7 +232,7 @@ func TestChainClient_SaveData(t *testing.T) {
 			require.Nil(t, err)
 			res, err := cc.SaveData(tt.args.contractName, tt.args.result, tt.args.txId, tt.args.rwSet, tt.args.events, tt.args.withSyncResult, tt.args.timeout)
 
-			if res.ContractResult.Code !=  common.ContractResultCode_OK  || err != nil || tt.wantErr != true { //todo check nil
+			if res.ContractResult.Code != common.ContractResultCode_OK || err != nil || tt.wantErr != true { //todo check nil
 				t.Errorf("SaveData() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -345,7 +345,7 @@ func TestChainClient_GetData(t *testing.T) {
 			name: "test1",
 			args: args{
 				contractName: computeName,
-				key:   "key1",
+				key:          "key1",
 			},
 			want:    []byte("value_1"),
 			wantErr: true,
@@ -354,7 +354,7 @@ func TestChainClient_GetData(t *testing.T) {
 			name: "test2",
 			args: args{
 				contractName: "",
-				key:  orderId,
+				key:          orderId,
 			},
 			want:    dirByte,
 			wantErr: true,
@@ -372,7 +372,7 @@ func TestChainClient_GetData(t *testing.T) {
 			name: "test4",
 			args: args{
 				contractName: "",
-				key:		quoteId,
+				key:          quoteId,
 			},
 			want:    []byte(quote),
 			wantErr: true,
@@ -395,3 +395,108 @@ func TestChainClient_GetData(t *testing.T) {
 	}
 }
 
+func TestChainClient_GetCert(t *testing.T) { //
+	type args struct {
+		enclaveId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name: "test1",
+			args: args{
+				enclaveId: "111",
+			},
+			want:    []byte(""),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.GetCert(tt.args.enclaveId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetCert() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetCert() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestChainClient_GetDir(t *testing.T) {
+
+	type args struct {
+		orderId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name: "test1",
+			args: args{
+				orderId: "orderId",
+			},
+			want:    []byte(""),
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.GetDir(tt.args.orderId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetDir() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetDir() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestChainClient_GetQuote(t *testing.T) {
+
+	type args struct {
+		quoteId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name:    "test1",
+			args:    args{quoteId: "quoteId"},
+			want:    []byte(""),
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.GetQuote(tt.args.quoteId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetQuote() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetQuote() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
