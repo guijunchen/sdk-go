@@ -21,6 +21,7 @@ import (
 
 // [系统合约]
 func TestSystemContract(t *testing.T) {
+	//client, err := createClientWithConfig()
 	client, err := createClient()
 	require.Nil(t, err)
 
@@ -46,7 +47,7 @@ func TestSystemContract(t *testing.T) {
 	//testSystemContractGetNodeChainList(t, systemChainClient)
 
 	// Archive test
-	var blockHeight int64 = 3
+	var blockHeight int64 = 4
 	fullBlock := testSystemContractGetFullBlockByHeight(t, client, blockHeight)
 	heightByTxId := testSystemContractGetBlockHeightByTxId(t, client, fullBlock.Block.Txs[0].Header.TxId)
 	require.Equal(t, blockHeight, heightByTxId)

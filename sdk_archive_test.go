@@ -22,7 +22,7 @@ func TestArchive(t *testing.T) {
 	require.Nil(t, err)
 
 	fmt.Println("====================== 数据归档 ======================")
-	var targetBlockHeight int64 = 5
+	var targetBlockHeight int64 = 4
 	testArchiveBlock(t, admin1, targetBlockHeight)
 }
 
@@ -83,7 +83,10 @@ func testArchiveBlock(t *testing.T, admin1 *ChainClient, targetBlockHeight int64
 	signedPayloadBytes, err = admin1.SignArchivePayload(payload)
 	require.Nil(t, err)
 
-	resp, err = admin1.SendArchiveBlockRequest(signedPayloadBytes, -1, true)
+	resp, err = admin1.SendArchiveBlockRequest(signedPayloadBytes, -1, false)
+	require.Nil(t, err)
+
+	err = checkProposalRequestResp(resp, true)
 	require.Nil(t, err)
 
 	result = string(resp.ContractResult.Result)
