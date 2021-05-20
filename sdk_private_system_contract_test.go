@@ -410,7 +410,7 @@ func TestChainClient_GetCert(t *testing.T) { //
 			args: args{
 				enclaveId: "111",
 			},
-			want:    []byte(""),
+			want:    nil,
 			wantErr: false,
 		},
 	}
@@ -446,8 +446,8 @@ func TestChainClient_GetDir(t *testing.T) {
 			args: args{
 				orderId: "orderId",
 			},
-			want:    []byte(""),
-			wantErr: true,
+			want:    nil,
+			wantErr: false,
 		},
 	}
 
@@ -481,8 +481,8 @@ func TestChainClient_GetQuote(t *testing.T) {
 		{
 			name:    "test1",
 			args:    args{quoteId: "quoteId"},
-			want:    []byte(""),
-			wantErr: true,
+			want:    nil,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
