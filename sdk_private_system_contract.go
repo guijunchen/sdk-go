@@ -428,3 +428,101 @@ func (cc *ChainClient) SaveQuote(enclaveId, quoteId, quote, sign, txId string, w
 
 	return resp, nil
 }
+
+
+func (cc *ChainClient) GetCert(enclaveId string) ([]byte, error) {
+	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_GET_CERT.String(),
+	)
+
+	// 构造Payload
+	pairs := paramsMap2KVPairs(map[string]string{
+		"enclave_id": enclaveId,
+	})
+
+	payloadBytes, err := constructQueryPayload(
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_GET_CERT.String(),
+		pairs,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("marshal get data payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	return resp.ContractResult.Result, nil
+}
+
+
+func (cc *ChainClient) GetDir(orderId string) ([]byte, error) {
+	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_GET_DIR.String(),
+	)
+
+	// 构造Payload
+	pairs := paramsMap2KVPairs(map[string]string{
+		"order_id": orderId,
+	})
+
+	payloadBytes, err := constructQueryPayload(
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_GET_DIR.String(),
+		pairs,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("marshal get data payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	return resp.ContractResult.Result, nil
+}
+
+func (cc *ChainClient) GetQuote(quoteId string) ([]byte, error) {
+	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_GET_QUOTE.String(),
+	)
+
+	// 构造Payload
+	pairs := paramsMap2KVPairs(map[string]string{
+		"quote_id": quoteId,
+	})
+
+	payloadBytes, err := constructQueryPayload(
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_GET_QUOTE.String(),
+		pairs,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("marshal get data payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	return resp.ContractResult.Result, nil
+}

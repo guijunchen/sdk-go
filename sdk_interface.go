@@ -547,13 +547,29 @@ type SDKInterface interface {
 	GetData(contractName, key string) ([]byte, error)
 	//```
 
-	// ### 11.5 隐私合约代码上链
+	// ### 11.6 隐私合约代码上链
 	// ```go
 	SaveContract(codeBytes []byte, codeHash, contractName, version, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	//```
 
-	// ### 11.6 enclave通过⽹关调⽤
+	// ### 11.7 enclave通过⽹关调⽤
 	// ```go
 	SaveQuote(enclaveId, quoteId, quote, sign, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	//```
+
+	// ### 11.8 隐私计算证书查询
+	// ```go
+	GetCert(enclaveId string) ([]byte, error)
+	// ```
+
+	// ### 11.9 隐私计算隐私目录查询
+	// ```go
+	GetDir(orderId string) ([]byte, error)
+	// ```
+
+	// ### 11.10 隐私计算隐私目录查询
+	// ```go
+	GetQuote(quoteId string) ([]byte, error)
+	// ```
+
 }
