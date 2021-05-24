@@ -51,6 +51,10 @@ type ChainClient struct {
 	archiveConfig *ArchiveConfig
 }
 
+func (cc *ChainClient) CreateArchivePayload(method string, kvs []*common.KeyValuePair) ([]byte, error) {
+	panic("implement me")
+}
+
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
 	config := &NodeConfig{}
 	for _, opt := range opts {

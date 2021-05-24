@@ -17,34 +17,25 @@ const (
 )
 
 func (cc *ChainClient) CreateArchiveBlockPayload(targetBlockHeight int64) ([]byte, error) {
-	pairs := []*common.KeyValuePair{
-		{
-			Key:   "targetBlockHeight",
-			Value: fmt.Sprintf("%d", targetBlockHeight),
-		},
-	}
-
-	return cc.CreateArchivePayload(common.ArchiveStoreContractFunction_ARCHIVE_BLOCK.String(), pairs)
-}
-
-func (cc *ChainClient) CreateRestoreBlocksPayload(startBlockHeight int64) ([]byte, error) {
-	panic("implement me")
-}
-
-func (cc *ChainClient) CreateArchivePayload(method string, kvs []*common.KeyValuePair) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [Archive] to be signed payload")
 
-	//payload := &common.SystemContractPayload{
-	//	ChainId:      cc.chainId,
-	//	ContractName: common.ContractName_SYSTEM_CONTRACT_ARCHIVE_STORE.String(),
-	//	Method:       method,
-	//	Parameters:   kvs,
-	//}
+	payload := &common.ArchiveBlockPayload {
+		BlockHeight: targetBlockHeight,
+	}
 
-	payload := &common.TransactPayload {
-		ContractName: common.ContractName_SYSTEM_CONTRACT_ARCHIVE_STORE.String(),
-		Method:       method,
-		Parameters:   kvs,
+	bytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("construct archive payload failed, %s", err)
+	}
+
+	return bytes, nil
+}
+
+func (cc *ChainClient) CreateRestoreBlockPayload(fullBlock []byte) ([]byte, error) {
+	cc.logger.Debugf("[SDK] create [restore] to be signed payload")
+
+	payload := &common.RestoreBlockPayload {
+		FullBlock: fullBlock,
 	}
 
 	bytes, err := proto.Marshal(payload)
@@ -56,15 +47,16 @@ func (cc *ChainClient) CreateArchivePayload(method string, kvs []*common.KeyValu
 }
 
 func (cc *ChainClient) SignArchivePayload(payloadBytes []byte) ([]byte, error) {
-	return cc.signSystemContractPayload(payloadBytes)
+	//return cc.signSystemContractPayload(payloadBytes)
+	return payloadBytes, nil
 }
 
 func (cc *ChainClient) SendArchiveBlockRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
-	return cc.sendContractRequest(common.TxType_QUERY_SYSTEM_CONTRACT, mergeSignedPayloadBytes, timeout, withSyncResult)
+	return cc.sendContractRequest(common.TxType_ARCHIVE_FULL_BLOCK, mergeSignedPayloadBytes, timeout, withSyncResult)
 }
 
-func (cc *ChainClient) RestoreBlocks(startBlockHeight int64) (*common.TxResponse, error) {
-	panic("implement me")
+func (cc *ChainClient) SendRestoreBlockRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+	return cc.sendContractRequest(common.TxType_RESTORE_FULL_BLOCK, mergeSignedPayloadBytes, timeout, withSyncResult)
 }
 
 func (cc *ChainClient) GetArchivedFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error) {

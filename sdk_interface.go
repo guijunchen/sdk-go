@@ -665,18 +665,18 @@ type SDKInterface interface {
 
 	// ### 10.3 构造归档归档数据恢复Payload
 	// **参数说明**
-	//   - startBlockHeight: 归档数据恢复起始高度
+	//   - fullBlock: 完整区块数据（对应结构：store.BlockWithRWSet）
 	// ```go
-	CreateRestoreBlocksPayload(startBlockHeight int64) ([]byte, error)
+	CreateRestoreBlockPayload(fullBlock []byte) ([]byte, error)
 	// ```
 
-	// ### 10.4 构造数据归档操作Payload
-	// **参数说明**
-	//   - method: 归档操作方法
-	//   - kvs: 归档操作参数
-	// ```go
-	CreateArchivePayload(method string, kvs []*common.KeyValuePair) ([]byte, error)
-	// ```
+	//// ### 10.4 构造数据归档操作Payload
+	//// **参数说明**
+	////   - method: 归档操作方法
+	////   - kvs: 归档操作参数
+	//// ```go
+	//CreateArchivePayload(method string, kvs []*common.KeyValuePair) ([]byte, error)
+	//// ```
 
 	// ### 10.5 获取归档操作Payload签名
 	// **参数说明**
@@ -698,9 +698,13 @@ type SDKInterface interface {
 
 	// ### 10.7 归档数据恢复
 	// **参数说明**
-	//   - startBlockHeight: 起始归档恢复区块高度
+	//   - mergeSignedPayloadBytes: 签名结果
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	RestoreBlocks(startBlockHeight int64) (*common.TxResponse, error)
+	SendRestoreBlockRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
 	// ### 10.8 根据交易Id查询已归档交易

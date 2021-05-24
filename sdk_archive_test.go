@@ -11,6 +11,7 @@ import (
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"encoding/hex"
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -18,12 +19,34 @@ import (
 
 func TestArchive(t *testing.T) {
 
-	admin1, err := createAdmin(orgId1)
+	//admin1, err := createAdmin(orgId1)
+	//admin1, err := createClientWithOrgId(orgId1)
+	admin1, err := createClientWithOrgId(orgId2)
 	require.Nil(t, err)
 
 	fmt.Println("====================== 数据归档 ======================")
-	var targetBlockHeight int64 = 4
+	var targetBlockHeight int64 = 2
 	testArchiveBlock(t, admin1, targetBlockHeight)
+}
+
+func TestRestore(t *testing.T) {
+	admin1, err := createAdmin(orgId1)
+	require.Nil(t, err)
+
+	client, err := createClientWithConfig()
+	require.Nil(t, err)
+
+	fmt.Println("====================== 归档恢复 ======================")
+	var blockHeight int64 = 2
+
+	fullBlock, err := client.GetArchivedFullBlockByHeight(blockHeight)
+	require.Nil(t, err)
+	prettyJsonShow(t, "GetArchivedFullBlockByHeight fullBlock", fullBlock)
+
+	fullBlockBytes, err := proto.Marshal(fullBlock)
+	require.Nil(t, err)
+
+	testRestoreBlock(t, admin1, fullBlockBytes)
 }
 
 func TestGetFromArchiveStore(t *testing.T) {
@@ -95,4 +118,28 @@ func testArchiveBlock(t *testing.T, admin1 *ChainClient, targetBlockHeight int64
 }
 
 
+func testRestoreBlock(t *testing.T, admin1 *ChainClient, fullBlock []byte) {
+	var (
+		err                error
+		payload            []byte
+		signedPayloadBytes []byte
+		resp               *common.TxResponse
+		result             string
+	)
 
+	payload, err = admin1.CreateRestoreBlockPayload(fullBlock)
+	require.Nil(t, err)
+
+	signedPayloadBytes, err = admin1.SignArchivePayload(payload)
+	require.Nil(t, err)
+
+	resp, err = admin1.SendRestoreBlockRequest(signedPayloadBytes, -1, false)
+	require.Nil(t, err)
+
+	err = checkProposalRequestResp(resp, true)
+	require.Nil(t, err)
+
+	result = string(resp.ContractResult.Result)
+
+	fmt.Printf("resp: %+v, result:%+s\n", resp, result)
+}

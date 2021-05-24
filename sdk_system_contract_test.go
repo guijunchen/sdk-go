@@ -12,7 +12,6 @@ import (
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/consensus"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/discovery"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/store"
-	"encoding/hex"
 	"fmt"
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/stretchr/testify/require"
@@ -47,12 +46,12 @@ func TestSystemContract(t *testing.T) {
 	//testSystemContractGetNodeChainList(t, systemChainClient)
 
 	// Archive test
-	var blockHeight int64 = 4
-	fullBlock := testSystemContractGetFullBlockByHeight(t, client, blockHeight)
-	heightByTxId := testSystemContractGetBlockHeightByTxId(t, client, fullBlock.Block.Txs[0].Header.TxId)
-	require.Equal(t, blockHeight, heightByTxId)
-	heightByHash := testSystemContractGetBlockHeightByHash(t, client, hex.EncodeToString(fullBlock.Block.Header.BlockHash))
-	require.Equal(t, blockHeight, heightByHash)
+	//var blockHeight int64 = 8
+	//fullBlock := testSystemContractGetFullBlockByHeight(t, client, blockHeight)
+	//heightByTxId := testSystemContractGetBlockHeightByTxId(t, client, fullBlock.Block.Txs[0].Header.TxId)
+	//require.Equal(t, blockHeight, heightByTxId)
+	//heightByHash := testSystemContractGetBlockHeightByHash(t, client, hex.EncodeToString(fullBlock.Block.Header.BlockHash))
+	//require.Equal(t, blockHeight, heightByHash)
 
 	testSystemContractGetCurrentBlockHeight(t, client)
 	testSystemContractGetArchivedBlockHeight(t, client)
