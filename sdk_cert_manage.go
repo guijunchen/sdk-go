@@ -15,7 +15,7 @@ import (
 	"strings"
 )
 
-func (cc ChainClient) AddCert() (*common.TxResponse, error) {
+func (cc *ChainClient) AddCert() (*common.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to add cert, [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), common.CertManageFunction_CERT_ADD.String())
 
@@ -48,7 +48,7 @@ func (cc ChainClient) AddCert() (*common.TxResponse, error) {
 	return resp, nil
 }
 
-func (cc ChainClient) DeleteCert(certHashes []string) (*common.TxResponse, error) {
+func (cc *ChainClient) DeleteCert(certHashes []string) (*common.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to delete cert, [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), common.CertManageFunction_CERTS_DELETE.String())
 
@@ -85,7 +85,7 @@ func (cc ChainClient) DeleteCert(certHashes []string) (*common.TxResponse, error
 	return resp, nil
 }
 
-func (cc ChainClient) QueryCert(certHashes []string) (*common.CertInfos, error) {
+func (cc *ChainClient) QueryCert(certHashes []string) (*common.CertInfos, error) {
 	cc.logger.Infof("[SDK] begin to query cert, [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_CERT_MANAGE.String(), common.CertManageFunction_CERTS_QUERY.String())
 
@@ -120,7 +120,7 @@ func (cc ChainClient) QueryCert(certHashes []string) (*common.CertInfos, error) 
 	return certInfos, nil
 }
 
-func (cc ChainClient) GetCertHash() ([]byte, error) {
+func (cc *ChainClient) GetCertHash() ([]byte, error) {
 	chainConfig, err := cc.GetChainConfig()
 
 	if err != nil {
@@ -129,7 +129,7 @@ func (cc ChainClient) GetCertHash() ([]byte, error) {
 
 	member := &accesscontrol.SerializedMember{
 		OrgId:      cc.orgId,
-		MemberInfo: cc.userCrtPEM,
+		MemberInfo: cc.userCrtBytes,
 		IsFullCert: true,
 	}
 
@@ -141,7 +141,7 @@ func (cc ChainClient) GetCertHash() ([]byte, error) {
 	return certHash, nil
 }
 
-func (cc ChainClient) CreateCertManagePayload(method string, kvs []*common.KeyValuePair) ([]byte, error) {
+func (cc *ChainClient) CreateCertManagePayload(method string, kvs []*common.KeyValuePair) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [CertManage] to be signed payload")
 
 	payload := &common.SystemContractPayload{
@@ -159,7 +159,7 @@ func (cc ChainClient) CreateCertManagePayload(method string, kvs []*common.KeyVa
 	return bytes, nil
 }
 
-func (cc ChainClient) CreateCertManageFrozenPayload(certs []string) ([]byte, error) {
+func (cc *ChainClient) CreateCertManageFrozenPayload(certs []string) ([]byte, error) {
 	pairs := []*common.KeyValuePair{
 		{
 			Key:   "certs",
@@ -170,7 +170,7 @@ func (cc ChainClient) CreateCertManageFrozenPayload(certs []string) ([]byte, err
 	return cc.CreateCertManagePayload(common.CertManageFunction_CERTS_FREEZE.String(), pairs)
 }
 
-func (cc ChainClient) CreateCertManageUnfrozenPayload(certs []string) ([]byte, error) {
+func (cc *ChainClient) CreateCertManageUnfrozenPayload(certs []string) ([]byte, error) {
 	pairs := []*common.KeyValuePair{
 		{
 			Key:   "certs",
@@ -181,7 +181,7 @@ func (cc ChainClient) CreateCertManageUnfrozenPayload(certs []string) ([]byte, e
 	return cc.CreateCertManagePayload(common.CertManageFunction_CERTS_UNFREEZE.String(), pairs)
 }
 
-func (cc ChainClient) CreateCertManageRevocationPayload(certCrl string) ([]byte, error) {
+func (cc *ChainClient) CreateCertManageRevocationPayload(certCrl string) ([]byte, error) {
 	pairs := []*common.KeyValuePair{
 		{
 			Key:   "cert_crl",
@@ -192,7 +192,7 @@ func (cc ChainClient) CreateCertManageRevocationPayload(certCrl string) ([]byte,
 	return cc.CreateCertManagePayload(common.CertManageFunction_CERTS_REVOKE.String(), pairs)
 }
 
-func (cc ChainClient) SignCertManagePayload(payloadBytes []byte) ([]byte, error) {
+func (cc *ChainClient) SignCertManagePayload(payloadBytes []byte) ([]byte, error) {
 	payload := &common.SystemContractPayload{}
 	if err := proto.Unmarshal(payloadBytes, payload); err != nil {
 		return nil, fmt.Errorf("unmarshal contract manage payload failed, %s", err)
@@ -205,7 +205,7 @@ func (cc ChainClient) SignCertManagePayload(payloadBytes []byte) ([]byte, error)
 
 	sender := &accesscontrol.SerializedMember{
 		OrgId:      cc.orgId,
-		MemberInfo: cc.userCrtPEM,
+		MemberInfo: cc.userCrtBytes,
 		IsFullCert: true,
 	}
 
@@ -226,10 +226,10 @@ func (cc ChainClient) SignCertManagePayload(payloadBytes []byte) ([]byte, error)
 	return signedPayloadBytes, nil
 }
 
-func (cc ChainClient) MergeCertManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
+func (cc *ChainClient) MergeCertManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
 	return mergeSystemContractSignedPayload(signedPayloadBytes)
 }
 
-func (cc ChainClient) SendCertManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+func (cc *ChainClient) SendCertManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	return cc.sendContractRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, mergeSignedPayloadBytes, timeout, withSyncResult)
 }

@@ -13,7 +13,7 @@ import (
 	"fmt"
 )
 
-func (cc ChainClient) CheckNewBlockChainConfig() error {
+func (cc *ChainClient) CheckNewBlockChainConfig() error {
 	cc.logger.Debug("[SDK] begin to send check new block chain config command")
 	req := &config.CheckNewBlockChainConfigRequest{}
 	client, err := cc.pool.getClient()

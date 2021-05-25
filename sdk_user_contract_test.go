@@ -20,7 +20,7 @@ const (
 )
 
 func TestUserContractCounterGo(t *testing.T) {
-	client, err := createClientWithConfig()
+	client, err := createClientWithCertBytes()
 	require.Nil(t, err)
 
 	admin1, err := createAdmin(orgId1)
@@ -296,9 +296,62 @@ func createUserContract(client *ChainClient, admin1, admin2, admin3, admin4 *Cha
 	return resp, nil
 }
 
+func invokeUserContractWithResult(client *ChainClient, contractName, method, txId string, params map[string]string, withSyncResult bool) ([]byte, error) {
+
+	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Code != common.TxStatusCode_SUCCESS {
+		return nil, fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
+	}
+
+	return resp.ContractResult.Result, nil
+}
+
+func invokeUserContractWithContractResult(client *ChainClient, contractName, method, txId string,
+	params map[string]string, withSyncResult bool) (*common.ContractResult, error) {
+
+	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Code != common.TxStatusCode_SUCCESS {
+		return nil, fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
+	}
+
+	return resp.ContractResult, nil
+}
+
 func invokeUserContract(client *ChainClient, contractName, method, txId string, params map[string]string, withSyncResult bool) error {
 
 	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
+	if err != nil {
+		return err
+	}
+
+	if resp.Code != common.TxStatusCode_SUCCESS {
+		return fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
+	}
+
+	if !withSyncResult {
+		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
+	} else {
+		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%s]\n", resp.Code, resp.Message, resp.ContractResult)
+	}
+
+	return nil
+}
+
+func invokeUserContractStepByStep(client *ChainClient, contractName, method, txId string, params map[string]string, withSyncResult bool) error {
+	req, err := client.GetTxRequest(contractName, method, "", params)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.SendTxRequest(req, -1, withSyncResult)
 	if err != nil {
 		return err
 	}
