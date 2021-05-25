@@ -289,7 +289,6 @@ func createAdmin(orgId string) (*ChainClient, error) {
 	return adminClient, nil
 }
 
-
 func TestChainClient_GetEVMAddressFromCertPath(t *testing.T) {
 	client, err := createClientWithConfig()
 	require.Nil(t, err)

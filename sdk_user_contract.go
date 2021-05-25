@@ -336,4 +336,3 @@ func (cc *ChainClient) SendTxRequest(txRequest *common.TxRequest, timeout int64,
 
 	return resp, nil
 }
-
