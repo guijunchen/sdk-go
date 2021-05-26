@@ -440,3 +440,8 @@ func (cc *ChainClient) GetCurrentBlockHeight() (int64, error) {
 
 	return block.Block.Header.BlockHeight, nil
 }
+
+func (cc *ChainClient) GetBlockHeaderByHeight(blockHeight int64) (*common.BlockHeader, error) {
+	panic("implement me")
+}
+

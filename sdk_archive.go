@@ -51,12 +51,12 @@ func (cc *ChainClient) SignArchivePayload(payloadBytes []byte) ([]byte, error) {
 	return payloadBytes, nil
 }
 
-func (cc *ChainClient) SendArchiveBlockRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
-	return cc.sendContractRequest(common.TxType_ARCHIVE_FULL_BLOCK, mergeSignedPayloadBytes, timeout, withSyncResult)
+func (cc *ChainClient) SendArchiveBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error) {
+	return cc.sendContractRequest(common.TxType_ARCHIVE_FULL_BLOCK, mergeSignedPayloadBytes, timeout, false)
 }
 
-func (cc *ChainClient) SendRestoreBlockRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
-	return cc.sendContractRequest(common.TxType_RESTORE_FULL_BLOCK, mergeSignedPayloadBytes, timeout, withSyncResult)
+func (cc *ChainClient) SendRestoreBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error) {
+	return cc.sendContractRequest(common.TxType_RESTORE_FULL_BLOCK, mergeSignedPayloadBytes, timeout, false)
 }
 
 func (cc *ChainClient) GetArchivedFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error) {

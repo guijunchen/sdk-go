@@ -106,10 +106,10 @@ func testArchiveBlock(t *testing.T, admin1 *ChainClient, targetBlockHeight int64
 	signedPayloadBytes, err = admin1.SignArchivePayload(payload)
 	require.Nil(t, err)
 
-	resp, err = admin1.SendArchiveBlockRequest(signedPayloadBytes, -1, false)
+	resp, err = admin1.SendArchiveBlockRequest(signedPayloadBytes, -1)
 	require.Nil(t, err)
 
-	err = checkProposalRequestResp(resp, true)
+	err = checkProposalRequestResp(resp, false)
 	require.Nil(t, err)
 
 	result = string(resp.ContractResult.Result)
@@ -133,10 +133,10 @@ func testRestoreBlock(t *testing.T, admin1 *ChainClient, fullBlock []byte) {
 	signedPayloadBytes, err = admin1.SignArchivePayload(payload)
 	require.Nil(t, err)
 
-	resp, err = admin1.SendRestoreBlockRequest(signedPayloadBytes, -1, false)
+	resp, err = admin1.SendRestoreBlockRequest(signedPayloadBytes, -1)
 	require.Nil(t, err)
 
-	err = checkProposalRequestResp(resp, true)
+	err = checkProposalRequestResp(resp, false)
 	require.Nil(t, err)
 
 	result = string(resp.ContractResult.Result)

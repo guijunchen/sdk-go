@@ -223,6 +223,14 @@ type SDKInterface interface {
 	GetCurrentBlockHeight() (int64, error)
 	// ```
 
+	// ### 2.13 根据区块高度查询区块头
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块头
+	// ```go
+	GetBlockHeaderByHeight(blockHeight int64) (*common.BlockHeader, error)
+	// ```
+
+
 	// ## 3 链配置接口
 	// ### 3.1 查询最新链配置
 	// ```go
@@ -477,7 +485,7 @@ type SDKInterface interface {
 	SendCertManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
-	// ## 5 在线多签接口
+	// ## 5 在线多签接口(该功能尚不支持)
 	// ### 5.1 待签payload签名
 	//  *一般需要使用具有管理员权限账号进行签名*
 	// **参数说明**
@@ -670,22 +678,14 @@ type SDKInterface interface {
 	CreateRestoreBlockPayload(fullBlock []byte) ([]byte, error)
 	// ```
 
-	//// ### 10.4 构造数据归档操作Payload
-	//// **参数说明**
-	////   - method: 归档操作方法
-	////   - kvs: 归档操作参数
-	//// ```go
-	//CreateArchivePayload(method string, kvs []*common.KeyValuePair) ([]byte, error)
-	//// ```
-
-	// ### 10.5 获取归档操作Payload签名
+	// ### 10.4 获取归档操作Payload签名
 	// **参数说明**
 	//   - payloadBytes: 待签名payload
 	// ```go
 	SignArchivePayload(payloadBytes []byte) ([]byte, error)
 	// ```
 
-	// ### 10.6 发送归档请求
+	// ### 10.5 发送归档请求
 	// **参数说明**
 	//   - mergeSignedPayloadBytes: 签名结果
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
@@ -693,10 +693,10 @@ type SDKInterface interface {
 	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
 	//            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendArchiveBlockRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	SendArchiveBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error)
 	// ```
 
-	// ### 10.7 归档数据恢复
+	// ### 10.6 归档数据恢复
 	// **参数说明**
 	//   - mergeSignedPayloadBytes: 签名结果
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
@@ -704,17 +704,17 @@ type SDKInterface interface {
 	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
 	//            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendRestoreBlockRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	SendRestoreBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error)
 	// ```
 
-	// ### 10.8 根据交易Id查询已归档交易
+	// ### 10.7 根据交易Id查询已归档交易
 	// **参数说明**
 	//   - txId: 交易ID
 	// ```go
 	GetArchivedTxByTxId(txId string) (*common.TransactionInfo, error)
 	// ```
 
-	// ### 10.9 根据区块高度查询已归档区块
+	// ### 10.8 根据区块高度查询已归档区块
 	// **参数说明**
 	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
 	//   - withRWSet: 是否返回读写集
@@ -722,14 +722,14 @@ type SDKInterface interface {
 	GetArchivedBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 10.10 根据区块高度查询已归档完整区块(包含：区块数据、读写集、合约事件日志)
+	// ### 10.9 根据区块高度查询已归档完整区块(包含：区块数据、读写集、合约事件日志)
 	// **参数说明**
 	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
 	// ```go
 	GetArchivedFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error)
 	// ```
 
-	// ### 10.11 根据区块哈希查询已归档区块
+	// ### 10.10 根据区块哈希查询已归档区块
 	// **参数说明**
 	//   - blockHash: 指定区块Hash
 	//   - withRWSet: 是否返回读写集
@@ -737,7 +737,7 @@ type SDKInterface interface {
 	GetArchivedBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 10.12 根据交易Id查询已归档区块
+	// ### 10.11 根据交易Id查询已归档区块
 	// **参数说明**
 	//   - txId: 交易ID
 	//   - withRWSet: 是否返回读写集
