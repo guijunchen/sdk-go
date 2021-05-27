@@ -14,6 +14,7 @@ import (
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/config"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/discovery"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/store"
 	"context"
 )
 
@@ -153,7 +154,15 @@ type SDKInterface interface {
 	GetBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.3 根据区块哈希查询区块
+	// ### 2.3 根据区块高度查询完整区块
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error)
+	// ```
+
+	// ### 2.4 根据区块哈希查询区块
 	// **参数说明**
 	//   - blockHash: 指定区块Hash
 	//   - withRWSet: 是否返回读写集
@@ -161,7 +170,7 @@ type SDKInterface interface {
 	GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.4 根据交易Id查询区块
+	// ### 2.5 根据交易Id查询区块
 	// **参数说明**
 	//   - txId: 交易ID
 	//   - withRWSet: 是否返回读写集
@@ -169,24 +178,58 @@ type SDKInterface interface {
 	GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.5 查询最新的配置块
+	// ### 2.6 查询最新的配置块
 	// **参数说明**
 	//   - withRWSet: 是否返回读写集
 	// ```go
 	GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.6 查询节点加入的链信息
+	// ### 2.7 查询最新区块
+	// **参数说明**
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetLastBlock(withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 2.8 查询节点加入的链信息
 	//    - 返回ChainId清单
 	// ```go
 	GetNodeChainList() (*discovery.ChainList, error)
 	// ```
 
-	// ### 2.7 查询链信息
+	// ### 2.9 查询链信息
 	//   - 包括：当前链最新高度，链节点信息
 	// ```go
 	GetChainInfo() (*discovery.ChainInfo, error)
 	// ```
+
+	// ### 2.10 根据交易Id获取区块高度
+	// **参数说明**
+	//   - txId: 交易ID
+	// ```go
+	GetBlockHeightByTxId(txId string) (int64, error)
+	// ```
+
+	// ### 2.11 根据区块Hash获取区块高度
+	// **参数说明**
+	//   - blockHash: 指定区块Hash
+	// ```go
+	GetBlockHeightByHash(blockHash string) (int64, error)
+	// ```
+
+	// ### 2.12 查询当前最新区块高度
+	// ```go
+	GetCurrentBlockHeight() (int64, error)
+	// ```
+
+	// ### 2.13 根据区块高度查询区块头
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块头
+	// ```go
+	GetBlockHeaderByHeight(blockHeight int64) (*common.BlockHeader, error)
+	// ```
+
 
 	// ## 3 链配置接口
 	// ### 3.1 查询最新链配置
@@ -442,7 +485,7 @@ type SDKInterface interface {
 	SendCertManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
-	// ## 5 在线多签接口
+	// ## 5 在线多签接口(该功能尚不支持)
 	// ### 5.1 待签payload签名
 	//  *一般需要使用具有管理员权限账号进行签名*
 	// **参数说明**
@@ -613,16 +656,104 @@ type SDKInterface interface {
 	DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
 	// ```
 
-	// ## 10 系统类接口
-	// ### 10.1 SDK停止接口
+	// ## 10 数据归档接口
+	// ### 10.1 获取已归档区块高度
+	// **参数说明**
+	//   - 输出已归档的区块高度
+	// ```go
+	GetArchivedBlockHeight() (int64, error)
+	// ```
+
+	// ### 10.2 构造数据归档区块Payload
+	// **参数说明**
+	//   - targetBlockHeight: 归档目标区块高度
+	// ```go
+	CreateArchiveBlockPayload(targetBlockHeight int64) ([]byte, error)
+	// ```
+
+	// ### 10.3 构造归档归档数据恢复Payload
+	// **参数说明**
+	//   - fullBlock: 完整区块数据（对应结构：store.BlockWithRWSet）
+	// ```go
+	CreateRestoreBlockPayload(fullBlock []byte) ([]byte, error)
+	// ```
+
+	// ### 10.4 获取归档操作Payload签名
+	// **参数说明**
+	//   - payloadBytes: 待签名payload
+	// ```go
+	SignArchivePayload(payloadBytes []byte) ([]byte, error)
+	// ```
+
+	// ### 10.5 发送归档请求
+	// **参数说明**
+	//   - mergeSignedPayloadBytes: 签名结果
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
+	// ```go
+	SendArchiveBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error)
+	// ```
+
+	// ### 10.6 归档数据恢复
+	// **参数说明**
+	//   - mergeSignedPayloadBytes: 签名结果
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
+	// ```go
+	SendRestoreBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error)
+	// ```
+
+	// ### 10.7 根据交易Id查询已归档交易
+	// **参数说明**
+	//   - txId: 交易ID
+	// ```go
+	GetArchivedTxByTxId(txId string) (*common.TransactionInfo, error)
+	// ```
+
+	// ### 10.8 根据区块高度查询已归档区块
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 10.9 根据区块高度查询已归档完整区块(包含：区块数据、读写集、合约事件日志)
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
+	// ```go
+	GetArchivedFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error)
+	// ```
+
+	// ### 10.10 根据区块哈希查询已归档区块
+	// **参数说明**
+	//   - blockHash: 指定区块Hash
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 10.11 根据交易Id查询已归档区块
+	// **参数说明**
+	//   - txId: 交易ID
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ## 11 系统类接口
+	// ### 11.1 SDK停止接口
 	// *关闭连接池连接，释放资源*
 	// ```go
 	Stop() error
 	// ```
 
-	// ### 10.2 获取链版本
+	// ### 11.2 获取链版本
 	// ```go
 	GetChainMakerServerVersion() (string, error)
 	// ```
-
 }
