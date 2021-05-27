@@ -345,8 +345,8 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (int64, error) {
 		pairs        []*common.KeyValuePair
 	)
 
+	contractName = common.ContractName_SYSTEM_CONTRACT_QUERY.String()
 	if txId != "" {
-		contractName = common.ContractName_SYSTEM_CONTRACT_QUERY.String()
 		method = common.QueryFunction_GET_BLOCK_HEIGHT_BY_TX_ID.String()
 		pairs = []*common.KeyValuePair{
 			{
@@ -357,7 +357,6 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (int64, error) {
 
 		cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]", method, txId)
 	} else if blockHash != "" {
-		contractName = common.ContractName_SYSTEM_CONTRACT_QUERY.String()
 		method = common.QueryFunction_GET_BLOCK_HEIGHT_BY_HASH.String()
 		pairs = []*common.KeyValuePair{
 			{
@@ -368,8 +367,7 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (int64, error) {
 
 		cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHash:%s]", method, blockHash)
 	} else {
-		contractName = common.ContractName_SYSTEM_CONTRACT_ARCHIVE_STORE.String()
-		method = common.ArchiveStoreContractFunction_GET_ARCHIVED_BLOCK_HEIGHT.String()
+		method = common.QueryFunction_GET_ARCHIVED_BLOCK_HEIGHT.String()
 		pairs = []*common.KeyValuePair{}
 
 		cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]", method)
