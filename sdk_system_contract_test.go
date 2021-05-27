@@ -55,6 +55,8 @@ func TestSystemContract(t *testing.T) {
 
 	testSystemContractGetCurrentBlockHeight(t, client)
 	testSystemContractGetArchivedBlockHeight(t, client)
+
+	testSystemContractGetBlockHeaderByHeight(t, client)
 }
 
 func testSystemContractGetTxByTxId(t *testing.T, client *ChainClient, txId string) *common.TransactionInfo {
@@ -154,4 +156,15 @@ func testSystemContractGetFullBlockByHeight(t *testing.T, client *ChainClient, b
 	require.Nil(t, err)
 	fmt.Printf("fullBlockInfo: %s\n", marshal)
 	return fullBlockInfo
+}
+
+func testSystemContractGetBlockHeaderByHeight(t *testing.T, client *ChainClient) {
+	_, err := client.GetBlockHeaderByHeight(0)
+	require.Nil(t, err)
+
+	_, err = client.GetBlockHeaderByHeight(5)
+	require.Nil(t, err)
+
+	_, err = client.GetBlockHeaderByHeight(-2)
+	require.Error(t, err)
 }

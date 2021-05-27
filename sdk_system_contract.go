@@ -18,11 +18,11 @@ import (
 )
 
 const (
-	SYSTEM_CHAIN = "system_chain"
-	keyWithRWSet = "withRWSet"
-	keyBlockHash = "blockHash"
+	SYSTEM_CHAIN   = "system_chain"
+	keyWithRWSet   = "withRWSet"
+	keyBlockHash   = "blockHash"
 	keyBlockHeight = "blockHeight"
-	keyTxId = "txId"
+	keyTxId        = "txId"
 )
 
 func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error) {
@@ -341,8 +341,8 @@ func (cc *ChainClient) GetBlockHeightByHash(blockHash string) (int64, error) {
 func (cc *ChainClient) getBlockHeight(txId, blockHash string) (int64, error) {
 	var (
 		contractName string
-		method string
-		pairs []*common.KeyValuePair
+		method       string
+		pairs        []*common.KeyValuePair
 	)
 
 	if txId != "" {
@@ -356,7 +356,7 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (int64, error) {
 		}
 
 		cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]", method, txId)
-	} else if blockHash != ""{
+	} else if blockHash != "" {
 		contractName = common.ContractName_SYSTEM_CONTRACT_QUERY.String()
 		method = common.QueryFunction_GET_BLOCK_HEIGHT_BY_HASH.String()
 		pairs = []*common.KeyValuePair{
@@ -442,6 +442,36 @@ func (cc *ChainClient) GetCurrentBlockHeight() (int64, error) {
 }
 
 func (cc *ChainClient) GetBlockHeaderByHeight(blockHeight int64) (*common.BlockHeader, error) {
-	panic("implement me")
-}
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]",
+		common.QueryFunction_GET_BLOCK_HEADER_BY_HEIGHT.String(), blockHeight)
 
+	payloadBytes, err := constructQueryPayload(
+		common.ContractName_SYSTEM_CONTRACT_QUERY.String(),
+		common.QueryFunction_GET_BLOCK_HEADER_BY_HEIGHT.String(),
+		[]*common.KeyValuePair{
+			{
+				Key:   keyBlockHeight,
+				Value: strconv.FormatInt(blockHeight, 10),
+			},
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("GetBlockHeaderByHeight marshal query payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	blockHeader := &common.BlockHeader{}
+	if err = proto.Unmarshal(resp.ContractResult.Result, blockHeader); err != nil {
+		return nil, fmt.Errorf("GetBlockHeaderByHeight unmarshal block header payload failed, %s", err.Error())
+	}
+
+	return blockHeader, nil
+}
