@@ -12,6 +12,7 @@ import (
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/consensus"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/discovery"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/store"
+	"encoding/hex"
 	"fmt"
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/stretchr/testify/require"
@@ -24,38 +25,41 @@ func TestSystemContract(t *testing.T) {
 	client, err := createClient()
 	require.Nil(t, err)
 
-	//blockInfo := testSystemContractGetBlockByHeight(t, client, -1)
-	//testSystemContractGetTxByTxId(t, client, blockInfo.Block.Txs[0].Header.TxId)
-	//testSystemContractGetBlockByHash(t, client, hex.EncodeToString(blockInfo.Block.Header.BlockHash))
-	//testSystemContractGetBlockByTxId(t, client, blockInfo.Block.Txs[0].Header.TxId)
-	//testSystemContractGetLastConfigBlock(t, client)
-	//testSystemContractGetLastBlock(t, client)
-	//testSystemContractGetChainInfo(t, client)
-	//
-	//systemChainClient, err := NewChainClient(
-	//	WithChainClientOrgId(orgId1),
-	//	WithChainClientChainId(chainId),
-	//	WithChainClientLogger(getDefaultLogger()),
-	//	WithUserKeyFilePath(fmt.Sprintf(userKeyPath, orgId1)),
-	//	WithUserCrtFilePath(fmt.Sprintf(userCrtPath, orgId1)),
-	//	AddChainClientNodeConfig(node1),
-	//	AddChainClientNodeConfig(node2),
-	//)
-	//require.Nil(t, err)
-	//
-	//testSystemContractGetNodeChainList(t, systemChainClient)
+	blockInfo := testSystemContractGetBlockByHeight(t, client, -1)
+	testSystemContractGetTxByTxId(t, client, blockInfo.Block.Txs[0].Header.TxId)
+	testSystemContractGetBlockByHash(t, client, hex.EncodeToString(blockInfo.Block.Header.BlockHash))
+	testSystemContractGetBlockByTxId(t, client, blockInfo.Block.Txs[0].Header.TxId)
+	testSystemContractGetLastConfigBlock(t, client)
+	testSystemContractGetLastBlock(t, client)
+	testSystemContractGetChainInfo(t, client)
 
-	// Archive test
-	//var blockHeight int64 = 8
-	//fullBlock := testSystemContractGetFullBlockByHeight(t, client, blockHeight)
-	//heightByTxId := testSystemContractGetBlockHeightByTxId(t, client, fullBlock.Block.Txs[0].Header.TxId)
-	//require.Equal(t, blockHeight, heightByTxId)
-	//heightByHash := testSystemContractGetBlockHeightByHash(t, client, hex.EncodeToString(fullBlock.Block.Header.BlockHash))
-	//require.Equal(t, blockHeight, heightByHash)
+	systemChainClient, err := NewChainClient(
+		WithChainClientOrgId(orgId1),
+		WithChainClientChainId(chainId),
+		WithChainClientLogger(getDefaultLogger()),
+		WithUserKeyFilePath(fmt.Sprintf(userKeyPath, orgId1)),
+		WithUserCrtFilePath(fmt.Sprintf(userCrtPath, orgId1)),
+		AddChainClientNodeConfig(node1),
+		AddChainClientNodeConfig(node2),
+	)
+	require.Nil(t, err)
+
+	testSystemContractGetNodeChainList(t, systemChainClient)
+}
+
+func TestSystemContractArchive(t *testing.T) {
+	client, err := createClient()
+	require.Nil(t, err)
+
+	var blockHeight int64 = 4
+	fullBlock := testSystemContractGetFullBlockByHeight(t, client, blockHeight)
+	heightByTxId := testSystemContractGetBlockHeightByTxId(t, client, fullBlock.Block.Txs[0].Header.TxId)
+	require.Equal(t, blockHeight, heightByTxId)
+	heightByHash := testSystemContractGetBlockHeightByHash(t, client, hex.EncodeToString(fullBlock.Block.Header.BlockHash))
+	require.Equal(t, blockHeight, heightByHash)
 
 	testSystemContractGetCurrentBlockHeight(t, client)
 	testSystemContractGetArchivedBlockHeight(t, client)
-
 	testSystemContractGetBlockHeaderByHeight(t, client)
 }
 
