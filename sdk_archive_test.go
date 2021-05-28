@@ -19,13 +19,13 @@ import (
 
 func TestArchive(t *testing.T) {
 
-	//admin1, err := createAdmin(orgId1)
+	admin1, err := createAdmin(orgId1)
 	//admin1, err := createClientWithOrgId(orgId1)
-	admin1, err := createClientWithOrgId(orgId2)
+	//admin1, err := createClientWithOrgId(orgId2)
 	require.Nil(t, err)
 
 	fmt.Println("====================== 数据归档 ======================")
-	var targetBlockHeight int64 = 2
+	var targetBlockHeight int64 = 3
 	testArchiveBlock(t, admin1, targetBlockHeight)
 }
 
