@@ -181,6 +181,8 @@ func TestChainClient_SaveData(t *testing.T) {
 	type args struct {
 		result         *common.ContractResult
 		contractName   string
+		contractVersion string
+		codeHash       []byte
 		txId           string
 		rwSet          *common.TxRWSet
 		events         *common.StrSlice
@@ -200,6 +202,7 @@ func TestChainClient_SaveData(t *testing.T) {
 		},
 	}
 
+	codeHash := sha256.Sum256([]byte(computeCode))
 	tests := []struct {
 		name    string
 		args    args
@@ -216,6 +219,8 @@ func TestChainClient_SaveData(t *testing.T) {
 					GasUsed: 0,
 				},
 				contractName:   computeName,
+				contractVersion: version,
+				codeHash:       codeHash[:],
 				rwSet:          rwSet,
 				events:         nil,
 				withSyncResult: false,
@@ -230,7 +235,7 @@ func TestChainClient_SaveData(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			res, err := cc.SaveData(tt.args.contractName, tt.args.result, tt.args.txId, tt.args.rwSet, tt.args.events, tt.args.withSyncResult, tt.args.timeout)
+			res, err := cc.SaveData(tt.args.contractName, tt.args.contractVersion, tt.args.codeHash, tt.args.result, tt.args.txId, tt.args.rwSet, tt.args.events, tt.args.withSyncResult, tt.args.timeout)
 
 			if res.ContractResult.Code != common.ContractResultCode_OK || err != nil || tt.wantErr != true { //todo check nil
 				t.Errorf("SaveData() error = %v, wantErr %v", err, tt.wantErr)
@@ -304,6 +309,7 @@ func TestChainClient_GetContract(t *testing.T) {
 			},
 			want: &common.PrivateGetContract{
 				ContractCode: []byte(computeCode),
+				Version:      version,
 				GasLimit:     10000000000,
 			},
 			wantErr: nil,

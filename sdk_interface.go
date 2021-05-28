@@ -539,7 +539,7 @@ type SDKInterface interface {
 
 	// ### 11.4 隐私计算结果上链
 	// ```go
-	SaveData(ccontractName string, result *common.ContractResult, txId string, rwSet *common.TxRWSet, events *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	SaveData(contractName string, contractVersion string, codeHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, events *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	//```
 
 	// ### 11.5 隐私计算结果查询
