@@ -36,6 +36,6 @@ dep:
 	go get -u github.com/gogo/protobuf/protoc-gen-gogofaster
 
 clean:
-	rm -f pb/*.pb.go pb/*/*.pb.go
+	rm -rf pb/protogo/*
 
 .PHONY: pb
