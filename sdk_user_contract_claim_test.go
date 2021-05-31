@@ -8,8 +8,8 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/common/random/uuid"
-	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
+	"chainmaker.org/chainmaker/common/random/uuid"
+	"chainmaker.org/chainmaker/pb-go/common"
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"testing"

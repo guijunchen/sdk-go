@@ -8,10 +8,10 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/common/crypto"
-	"chainmaker.org/chainmaker-go/common/crypto/asym"
-	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
-	"chainmaker.org/chainmaker-go/common/log"
+	"chainmaker.org/chainmaker/common/crypto"
+	"chainmaker.org/chainmaker/common/crypto/asym"
+	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
+	"chainmaker.org/chainmaker/common/log"
 	"fmt"
 	"go.uber.org/zap"
 	"io/ioutil"

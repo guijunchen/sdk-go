@@ -8,10 +8,10 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-go/common/crypto"
-	localhibe "chainmaker.org/chainmaker-go/common/crypto/hibe"
-	"chainmaker.org/chainmaker-go/common/serialize"
-	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
+	"chainmaker.org/chainmaker/common/crypto"
+	localhibe "chainmaker.org/chainmaker/common/crypto/hibe"
+	"chainmaker.org/chainmaker/common/serialize"
+	"chainmaker.org/chainmaker/pb-go/common"
 	"encoding/json"
 	"errors"
 	"fmt"
