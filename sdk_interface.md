@@ -507,7 +507,6 @@
 ```go
 	DisableCertHash() error
 ```
-
 ## 8 工具类
 ### 8.1 将EasyCodec编码解码成map
 ```go

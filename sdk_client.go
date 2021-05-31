@@ -383,4 +383,3 @@ func (cc *ChainClient) GetEVMAddressFromCertBytes(certBytes []byte) (string, err
 
 	return addrInt.String(), nil
 }
-

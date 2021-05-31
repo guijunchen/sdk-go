@@ -186,6 +186,7 @@ func constructSubscribeBlockPayload(startBlock, endBlock int64, withRwSet bool) 
 
 	return payloadBytes, nil
 }
+
 func constructSubscribeContractEventPayload(topic, contractName string) ([]byte, error) {
 	payload := &common.SubscribeContractEventPayload{
 		Topic:        topic,
