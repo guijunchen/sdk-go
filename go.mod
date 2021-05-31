@@ -1,4 +1,4 @@
-module chainmaker.org/chainmaker-sdk-go
+module chainmaker.org/chainmaker/sdk-go
 
 go 1.15
 
