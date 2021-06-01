@@ -18,6 +18,7 @@ import (
 const (
 	computeName = "compute_name"
 	computeCode = "compute_code"
+	computeCode2 = "compute_code2"
 	ComputeRes  = "private_compute_result"
 	enclaveId   = "enclave_id"
 	enclaveCert = "enclave_certificate"
@@ -176,6 +177,60 @@ func TestChainClient_SaveContract(t *testing.T) {
 		})
 	}
 }
+
+func TestChainClient_UpdateContract(t *testing.T) {
+	type args struct {
+		codeBytes      []byte
+		codeHash       string
+		contractName   string
+		txId           string
+		version        string
+		withSyncResult bool
+		timeout        int64
+	}
+
+	codeHash := sha256.Sum256([]byte(computeCode2))
+	tests := []struct {
+		name    string
+		args    args
+		want    *common.ContractResult
+		wantErr bool
+	}{
+		{
+			name: "test1",
+			args: args{
+				contractName:   computeName,
+				codeBytes:      []byte(computeCode2),
+				codeHash:       string(codeHash[:]),
+				version:        upgradeVersion,
+				withSyncResult: false,
+				timeout:        1,
+			},
+			want: &common.ContractResult{
+				Code:    0,
+				Result:  nil,
+				Message: "OK",
+				GasUsed: 0,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.UpdateContract(tt.args.codeBytes, tt.args.codeHash, tt.args.contractName, tt.args.version, tt.args.txId,
+				tt.args.withSyncResult, tt.args.timeout)
+			if err != nil {
+				t.Errorf("UpdateContract() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got.Message != "OK" {
+				t.Errorf("UpdateContract() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 func TestChainClient_SaveData(t *testing.T) {
 
 	type args struct {
@@ -294,6 +349,7 @@ func TestChainClient_GetContract(t *testing.T) {
 	}
 
 	codeHash := sha256.Sum256([]byte(computeCode))
+	codeHash2 := sha256.Sum256([]byte(computeCode2))
 
 	tests := []struct {
 		name    string
@@ -302,7 +358,7 @@ func TestChainClient_GetContract(t *testing.T) {
 		wantErr interface{}
 	}{
 		{
-			name: "test2",
+			name: "test1",
 			args: args{
 				contractName: computeName,
 				codeHash:     string(codeHash[:]),
@@ -310,6 +366,19 @@ func TestChainClient_GetContract(t *testing.T) {
 			want: &common.PrivateGetContract{
 				ContractCode: []byte(computeCode),
 				Version:      version,
+				GasLimit:     10000000000,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "test2",
+			args: args{
+				contractName: computeName,
+				codeHash:     string(codeHash2[:]),
+			},
+			want: &common.PrivateGetContract{
+				ContractCode: []byte(computeCode2),
+				Version:      upgradeVersion,
 				GasLimit:     10000000000,
 			},
 			wantErr: nil,

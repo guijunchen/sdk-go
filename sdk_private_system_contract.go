@@ -371,6 +371,67 @@ func (cc *ChainClient) SaveContract(codeBytes []byte, codeHash, contractName, ve
 	return resp, nil
 }
 
+func (cc *ChainClient) UpdateContract(codeBytes []byte, codeHash, contractName, version, txId string,
+	withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+	if txId == "" {
+		txId = GetRandTxId()
+	}
+
+	cc.logger.Infof("[SDK] begin to update contract code , [contract:%s]/[method:%s]/[txId:%s]",
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_UPDATE_CONTRACT.String(),
+		txId,
+	)
+
+	// 构造Payload
+	pairs := paramsMap2KVPairs(map[string]string{
+		"contract_code": string(codeBytes),
+		"code_hash":     codeHash,
+		"contract_name": contractName,
+		"version":       version,
+	})
+
+	payloadBytes, err := constructSystemContractPayload(
+		cc.chainId,
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_UPDATE_CONTRACT.String(),
+		pairs,
+		defaultSequence,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("construct update contract code payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, txId, payloadBytes, timeout)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if !withSyncResult {
+			resp.ContractResult = &common.ContractResult{
+				Code:    common.ContractResultCode_OK,
+				Message: common.ContractResultCode_OK.String(),
+				Result:  []byte(txId),
+			}
+		} else {
+			contractResult, err := cc.getSyncResult(txId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+
+			if contractResult.Code != common.ContractResultCode_OK {
+				resp.Code = common.TxStatusCode_CONTRACT_FAIL
+				resp.Message = contractResult.Message
+			}
+
+			resp.ContractResult = contractResult
+		}
+	}
+
+	return resp, nil
+}
+
 func (cc *ChainClient) SaveQuote(enclaveId, quoteId, quote, sign, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
