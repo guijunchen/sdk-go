@@ -183,7 +183,7 @@ func (cc *ChainClient) GetContract(contractName, codeHash string) (*common.Priva
 	return contractInfo, nil
 }
 
-func (cc *ChainClient) SaveData(contractName string, contractVersion string, codeHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet,
+func (cc *ChainClient) SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, sign []byte,
 	events *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error) { //todo   change params   return TxResponse
 	if txId == "" {
 		txId = GetRandTxId()
@@ -227,9 +227,11 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 		"result":        resultStr,
 		"contract_name": contractName,
 		"version":       contractVersion,
-		"hash":			 string(codeHash),
+		"code_hash":     string(codeHash),
 		"rw_set":        rwSetStr,
 		"events":        eventsStr,
+		"report_hash":   string(reportHash),
+		"sign":          string(sign),
 	})
 
 	payloadBytes, err := constructSystemContractPayload(
@@ -492,7 +494,6 @@ func (cc *ChainClient) SaveQuote(enclaveId, quoteId, quote, sign, txId string, w
 	return resp, nil
 }
 
-
 func (cc *ChainClient) GetCert(enclaveId string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
@@ -524,7 +525,6 @@ func (cc *ChainClient) GetCert(enclaveId string) ([]byte, error) {
 
 	return resp.ContractResult.Result, nil
 }
-
 
 func (cc *ChainClient) GetDir(orderId string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
