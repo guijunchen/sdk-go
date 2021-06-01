@@ -572,4 +572,8 @@ type SDKInterface interface {
 	GetQuote(quoteId string) ([]byte, error)
 	// ```
 
+	// ###  11.11 隐私计算调用者权限验证
+	// ```go
+    CheckCallerCertAuth(userCert, signature, payload, orgId string) (*common.TxResponse, error)
+	// ```
 }

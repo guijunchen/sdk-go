@@ -227,7 +227,7 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 		"result":        resultStr,
 		"contract_name": contractName,
 		"version":       contractVersion,
-		"hash":			 string(codeHash),
+		"hash":          string(codeHash),
 		"rw_set":        rwSetStr,
 		"events":        eventsStr,
 	})
@@ -431,7 +431,6 @@ func (cc *ChainClient) SaveQuote(enclaveId, quoteId, quote, sign, txId string, w
 	return resp, nil
 }
 
-
 func (cc *ChainClient) GetCert(enclaveId string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
@@ -463,7 +462,6 @@ func (cc *ChainClient) GetCert(enclaveId string) ([]byte, error) {
 
 	return resp.ContractResult.Result, nil
 }
-
 
 func (cc *ChainClient) GetDir(orderId string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
@@ -527,4 +525,39 @@ func (cc *ChainClient) GetQuote(quoteId string) ([]byte, error) {
 	}
 
 	return resp.ContractResult.Result, nil
+}
+
+func (cc *ChainClient) CheckCallerCertAuth(userCert, signature, payload, orgId string) (*common.TxResponse, error) {
+	cc.logger.Infof("[SDK] begin to check caller cert auth  , [contract:%s]/[method:%s]",
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_CHECK_CALLER_CERT_AUTH.String(),
+	)
+
+	// 构造Payload
+	pairs := paramsMap2KVPairs(map[string]string{
+		"user_cert": userCert,
+		"signature": signature,
+		"payload":   payload,
+		"org_id":    orgId,
+	})
+
+	payloadBytes, err := constructQueryPayload(
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_CHECK_CALLER_CERT_AUTH.String(),
+		pairs,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("marshal get data payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	return resp, nil
 }
