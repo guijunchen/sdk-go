@@ -593,7 +593,7 @@ func (cc *ChainClient) GetQuote(quoteId string) ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
-func (cc *ChainClient) CheckCallerCertAuth(userCert, signature, payload, orgId string) (*common.TxResponse, error) {
+func (cc *ChainClient) CheckCallerCertAuth(userCert, clientSign, payload, orgId string) (*common.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to check caller cert auth  , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_CHECK_CALLER_CERT_AUTH.String(),
@@ -601,10 +601,10 @@ func (cc *ChainClient) CheckCallerCertAuth(userCert, signature, payload, orgId s
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string]string{
-		"user_cert": userCert,
-		"signature": signature,
-		"payload":   payload,
-		"org_id":    orgId,
+		"user_cert":   userCert,
+		"client_sign": clientSign,
+		"payload":     payload,
+		"org_id":      orgId,
 	})
 
 	payloadBytes, err := constructQueryPayload(
