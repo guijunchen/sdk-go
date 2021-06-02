@@ -184,7 +184,7 @@ func (cc *ChainClient) GetContract(contractName, codeHash string) (*common.Priva
 }
 
 func (cc *ChainClient) SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, sign []byte,
-	events *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error) { //todo   change params   return TxResponse
+	events *common.StrSlice, userCert []byte, signature []byte, orgId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) { //todo   change params   return TxResponse
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -224,6 +224,9 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 	}
 
 	pairs := paramsMap2KVPairs(map[string]string{
+		"user_cert":     string(userCert),
+		"signature":     string(signature),//user request signature
+		"org_id":        orgId,
 		"result":        resultStr,
 		"contract_name": contractName,
 		"version":       contractVersion,
