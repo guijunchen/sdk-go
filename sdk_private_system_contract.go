@@ -183,8 +183,8 @@ func (cc *ChainClient) GetContract(contractName, codeHash string) (*common.Priva
 	return contractInfo, nil
 }
 
-func (cc *ChainClient) SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, sign []byte,
-	events *common.StrSlice, userCert []byte, signature []byte, orgId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) { //todo   change params   return TxResponse
+func (cc *ChainClient) SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, reportSign []byte,
+	events *common.StrSlice, userCert []byte, clientSign []byte, orgId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) { //todo   change params   return TxResponse
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -225,7 +225,7 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 
 	pairs := paramsMap2KVPairs(map[string]string{
 		"user_cert":     string(userCert),
-		"signature":     string(signature),//user request signature
+		"client_sign":   string(clientSign), //user request clientSign
 		"org_id":        orgId,
 		"result":        resultStr,
 		"contract_name": contractName,
@@ -234,7 +234,7 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 		"rw_set":        rwSetStr,
 		"events":        eventsStr,
 		"report_hash":   string(reportHash),
-		"sign":          string(sign),
+		"report_sign":   string(reportSign),
 	})
 
 	payloadBytes, err := constructSystemContractPayload(
