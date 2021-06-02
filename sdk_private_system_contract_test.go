@@ -16,15 +16,15 @@ import (
 )
 
 const (
-	computeName = "compute_name"
-	computeCode = "compute_code"
+	computeName  = "compute_name"
+	computeCode  = "compute_code"
 	computeCode2 = "compute_code2"
-	ComputeRes  = "private_compute_result"
-	enclaveId   = "enclave_id"
-	enclaveCert = "enclave_certificate"
-	quoteId     = "quote_id"
-	quote       = "quote_content"
-	orderId     = "order_id"
+	ComputeRes   = "private_compute_result"
+	enclaveId    = "enclave_id"
+	enclaveCert  = "enclave_certificate"
+	quoteId      = "quote_id"
+	quote        = "quote_content"
+	orderId      = "order_id"
 )
 
 var priDir *common.StrSlice = &common.StrSlice{
@@ -234,15 +234,20 @@ func TestChainClient_UpdateContract(t *testing.T) {
 func TestChainClient_SaveData(t *testing.T) {
 
 	type args struct {
-		result         *common.ContractResult
-		contractName   string
+		userCert        []byte
+		signature       []byte
+		orgId           string
+		result          *common.ContractResult
+		contractName    string
 		contractVersion string
-		codeHash       []byte
-		txId           string
-		rwSet          *common.TxRWSet
-		events         *common.StrSlice
-		withSyncResult bool
-		timeout        int64
+		codeHash        []byte
+		reportHash      []byte
+		txId            string
+		rwSet           *common.TxRWSet
+		sign            []byte
+		events          *common.StrSlice
+		withSyncResult  bool
+		timeout         int64
 	}
 
 	rwSet := &common.TxRWSet{
@@ -258,6 +263,9 @@ func TestChainClient_SaveData(t *testing.T) {
 	}
 
 	codeHash := sha256.Sum256([]byte(computeCode))
+	// todo add reportHash,sign
+	//reportHash :=
+	//sign := asym.Sign()
 	tests := []struct {
 		name    string
 		args    args
@@ -273,10 +281,15 @@ func TestChainClient_SaveData(t *testing.T) {
 					Message: "",
 					GasUsed: 0,
 				},
-				contractName:   computeName,
+				userCert:        []byte{},
+				signature:       []byte{},
+				orgId:           "",
+				contractName:    computeName,
 				contractVersion: version,
-				codeHash:       codeHash[:],
-				rwSet:          rwSet,
+				codeHash:        codeHash[:],
+				//reportHash:     reportHash[:],
+				rwSet: rwSet,
+				//sign:           sign
 				events:         nil,
 				withSyncResult: false,
 				timeout:        1,
@@ -290,7 +303,8 @@ func TestChainClient_SaveData(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			res, err := cc.SaveData(tt.args.contractName, tt.args.contractVersion, tt.args.codeHash, tt.args.result, tt.args.txId, tt.args.rwSet, tt.args.events, tt.args.withSyncResult, tt.args.timeout)
+			res, err := cc.SaveData(tt.args.contractName, tt.args.contractVersion, tt.args.codeHash, tt.args.reportHash, tt.args.result,
+				tt.args.txId, tt.args.rwSet, tt.args.sign, tt.args.events,tt.args.userCert, tt.args.signature, tt.args.orgId,  tt.args.withSyncResult, tt.args.timeout)
 
 			if res.ContractResult.Code != common.ContractResultCode_OK || err != nil || tt.wantErr != true { //todo check nil
 				t.Errorf("SaveData() error = %v, wantErr %v", err, tt.wantErr)
