@@ -10,8 +10,13 @@ package chainmaker_sdk_go
 import (
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
+	"os"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -20,108 +25,57 @@ const (
 	computeCode  = "compute_code"
 	computeCode2 = "compute_code2"
 	ComputeRes   = "private_compute_result"
-	enclaveId    = "enclave_id"
-	enclaveCert  = "enclave_certificate"
+	//enclaveId    = "enclave_id"
 	quoteId      = "quote_id"
 	quote        = "quote_content"
 	orderId      = "order_id"
 )
 
+var (
+	proof []byte
+	enclaveId string
+	caCert []byte
+	report string
+)
+
+func readFileData(filename string, t *testing.T) []byte {
+	file, err := os.Open(filename)
+	if err != nil {
+		t.Fatalf("open file '%s' error: %v", filename, err)
+	}
+
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		t.Fatalf("read file '%v' error: %v", filename, err)
+	}
+
+	return data
+}
+
+func initCaCert(t *testing.T) {
+	caCert = readFileData("testdata/remote_attestation/enclave_cacert.crt", t)
+}
+
+func initProof(t *testing.T) {
+	var err error
+	proofHex := readFileData("testdata/remote_attestation/proof.hex", t)
+	proof, err = hex.DecodeString(string(proofHex))
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+}
+
+func initEnclaveId(t *testing.T) {
+	enclaveId = "global_enclave_id"
+}
+
+func initReport(t *testing.T) {
+	reportBytes := readFileData("testdata/remote_attestation/report.dat", t)
+	report = string(reportBytes)
+}
+
 var priDir *common.StrSlice = &common.StrSlice{
 	StrArr: []string{"dir_key1", "dir_key2", "dir_key3"},
-}
-
-func TestChainClient_SaveCert(t *testing.T) {
-
-	type args struct {
-		enclaveCert    string
-		enclaveId      string
-		txId           string
-		withSyncResult bool
-		timeout        int64
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    []byte
-		wantErr bool
-	}{
-		{
-			name: "test1",
-			args: args{
-				enclaveCert:    enclaveCert,
-				enclaveId:      enclaveId,
-				txId:           "",
-				withSyncResult: false,
-				timeout:        1,
-			},
-			want:    []byte{},
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cc, err := createClient()
-			require.Nil(t, err)
-			got, err := cc.SaveCert(tt.args.enclaveCert, tt.args.enclaveId, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
-			if err != nil {
-				t.Errorf("SaveCert() error = %v, response %v", err, got)
-				return
-			}
-
-		})
-	}
-}
-
-func TestChainClient_SaveQuote(t *testing.T) {
-
-	type args struct {
-		enclaveId      string
-		quoteId        string
-		quote          string
-		sign           string
-		txId           string
-		withSyncResult bool
-		timeout        int64
-	}
-
-	tests := []struct {
-		name    string
-		args    args
-		want    *common.TxResponse
-		wantErr bool
-	}{
-		{
-			name: "TEST1",
-			args: args{
-				enclaveId:      enclaveId,
-				quoteId:        quoteId,
-				quote:          quote,
-				sign:           "",
-				txId:           "",
-				withSyncResult: false,
-				timeout:        -1,
-			},
-			want: &common.TxResponse{
-				Code:           0,
-				Message:        "OK",
-				ContractResult: nil,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cc, err := createClient()
-			require.Nil(t, err)
-			got, err := cc.SaveQuote(tt.args.enclaveId, tt.args.quoteId, tt.args.quote, tt.args.sign, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
-			if got.ContractResult.Code != common.ContractResultCode_OK || err != nil {
-				t.Errorf("SaveQuote() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-		})
-	}
 }
 
 func TestChainClient_SaveContract(t *testing.T) {
@@ -454,7 +408,7 @@ func TestChainClient_GetData(t *testing.T) {
 				contractName: "",
 				key:          enclaveId,
 			},
-			want:    []byte(enclaveCert),
+			want:    []byte(caCert),
 			wantErr: true,
 		},
 		{
@@ -479,41 +433,6 @@ func TestChainClient_GetData(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetData() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestChainClient_GetCert(t *testing.T) { //
-	type args struct {
-		enclaveId string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    []byte
-		wantErr bool
-	}{
-		{
-			name: "test1",
-			args: args{
-				enclaveId: "111",
-			},
-			want:    nil,
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cc, err := createClient()
-			require.Nil(t, err)
-			got, err := cc.GetCert(tt.args.enclaveId)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetCert() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetCert() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -556,10 +475,196 @@ func TestChainClient_GetDir(t *testing.T) {
 	}
 }
 
-func TestChainClient_GetQuote(t *testing.T) {
+
+func TestChainClient_SaveCACert(t *testing.T) {
+
+	initCaCert(t)
 
 	type args struct {
-		quoteId string
+		caCert    		string
+		txId           	string
+		withSyncResult 	bool
+		timeout        	int64
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name: "test1",
+			args: args{
+				caCert:    		string(caCert),
+				txId:           "",
+				withSyncResult: true,
+				timeout:        1,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.SaveCACert(tt.args.caCert, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
+			if err != nil {
+				t.Errorf("SaveCert() error = %v, response %v", err, got)
+				return
+			}
+
+		})
+	}
+}
+
+
+func TestChainClient_GetCACert(t *testing.T) { //
+
+	initCaCert(t)
+
+	type args struct {
+		txId           	string
+		withSyncResult 	bool
+		timeout        	int64
+	}
+	tests := []struct {
+		name    string
+		args	args
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name: "test1",
+			args: args {
+				txId:           "",
+				withSyncResult: true,
+				timeout:        1,
+			},
+			want:    caCert,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.GetCACert()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetCert() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetCert() got = %s, want %s", got, tt.want)
+			}
+		})
+	}
+}
+
+
+func TestChainClient_SaveEnclaveReport(t *testing.T) {
+
+	initEnclaveId(t)
+	initReport(t)
+
+	type args struct {
+		enclaveId    	string
+		report 			string
+		txId           	string
+		withSyncResult 	bool
+		timeout        	int64
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name: "test1",
+			args: args{
+				enclaveId:    	enclaveId,
+				report:			report,
+				txId:           "",
+				withSyncResult: true,
+				timeout:        1,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.SaveEnclaveReport(tt.args.enclaveId, tt.args.report, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
+			if err != nil {
+				t.Errorf("SaveCert() error = %v, response %v", err, got)
+				return
+			}
+
+		})
+	}
+}
+
+
+func TestChainClient_SaveRemoteAttestationProof(t *testing.T) {
+
+	initProof(t)
+
+	type args struct {
+		proof      	   string
+		txId           string
+		withSyncResult bool
+		timeout        int64
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    *common.TxResponse
+		wantErr bool
+	}{
+		{
+			name: "TEST1",
+			args: args{
+				proof:       	string(proof),
+				txId:           "",
+				withSyncResult: true,
+				timeout:        -1,
+			},
+			want: &common.TxResponse{
+				Code:           0,
+				Message:        "OK",
+				ContractResult: nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.SaveRemoteAttestationProof(tt.args.proof, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
+			if got.ContractResult.Code != common.ContractResultCode_OK || err != nil {
+				t.Errorf("SaveRemoteAttestation() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			fmt.Printf("enclaveId = 0x%x \n", got.ContractResult.Result)
+		})
+	}
+}
+
+
+func TestChainClient_GetEnclaveEncryptPubKey(t *testing.T) {
+
+	initEnclaveId(t)
+
+	type args struct {
+		enclaveId string
 	}
 	tests := []struct {
 		name    string
@@ -569,7 +674,9 @@ func TestChainClient_GetQuote(t *testing.T) {
 	}{
 		{
 			name:    "test1",
-			args:    args{quoteId: "quoteId"},
+			args:    args{
+				enclaveId: enclaveId,
+			},
 			want:    nil,
 			wantErr: false,
 		},
@@ -578,7 +685,177 @@ func TestChainClient_GetQuote(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			got, err := cc.GetQuote(tt.args.quoteId)
+			got, err := cc.GetEnclaveEncryptPubKey(tt.args.enclaveId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetEnclaveEncryptPubKey() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if got == nil {
+				t.Errorf("GetEnclaveEncryptPubKey() pub key should not be empty.")
+				return
+			}
+
+			fmt.Printf("encrypt pub key => %s \n", got)
+		})
+	}
+}
+
+
+func TestChainClient_GetEnclaveVerificationPubKey(t *testing.T) {
+
+	initEnclaveId(t)
+
+	type args struct {
+		enclaveId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name:    "test1",
+			args:    args{
+				enclaveId: enclaveId,
+			},
+			want:    nil,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.GetEnclaveVerificationPubKey(tt.args.enclaveId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetEnclaveVerificationPubKey() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got == nil {
+				t.Errorf("GetEnclaveVerificationPubKey() pub key should not be empty.")
+				return
+			}
+
+			fmt.Printf("verification pub key => %s \n", got)
+		})
+	}
+}
+
+
+
+func TestChainClient_GetEnclaveReport(t *testing.T) {
+
+	initEnclaveId(t)
+	initReport(t)
+
+	type args struct {
+		enclaveId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "test1",
+			args:    args{
+				enclaveId: enclaveId,
+			},
+			want:    report,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.GetEnclaveReport(tt.args.enclaveId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetEnclaveReport() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if strings.Compare(string(got), tt.want) != 0 {
+				t.Errorf("GetEnclaveReport() got = %s, want %s", got, tt.want)
+			}
+		})
+	}
+}
+
+
+
+func TestChainClient_GetEnclaveChallenge(t *testing.T) {
+
+	initEnclaveId(t)
+
+	type args struct {
+		enclaveId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name:    "test1",
+			args:    args{
+				enclaveId: enclaveId,
+			},
+			want:    nil,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.GetEnclaveChallenge(tt.args.enclaveId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetQuote() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got == nil {
+				t.Errorf("GetEnclaveChallenge() challenge should not be empty.")
+				return
+			}
+
+			fmt.Printf("challenge => %s \n", got)
+		})
+	}
+}
+
+
+
+func TestChainClient_GetEnclaveSignature(t *testing.T) {
+
+	initEnclaveId(t)
+
+	type args struct {
+		enclaveId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name:    "test1",
+			args:    args{
+				enclaveId: enclaveId,
+			},
+			want:    nil,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.GetEnclaveSignature(tt.args.enclaveId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetQuote() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -589,3 +866,45 @@ func TestChainClient_GetQuote(t *testing.T) {
 		})
 	}
 }
+
+
+
+func TestChainClient_GetEnclaveProof(t *testing.T) {
+
+	initEnclaveId(t)
+	initProof(t)
+
+	type args struct {
+		enclaveId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name:    "test1",
+			args:    args{
+				enclaveId: enclaveId,
+			},
+			want:    proof,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.GetEnclaveSignature(tt.args.enclaveId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetQuote() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetQuote() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+

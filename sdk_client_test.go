@@ -24,7 +24,7 @@ const (
 	version        = "1.0.0"
 	upgradeVersion = "2.0.0"
 
-	nodeAddr1 = "127.0.0.1:12301"
+	nodeAddr1 = "192.168.12.192:22301"
 	connCnt1  = 5
 
 	nodeAddr2 = "127.0.0.1:12301"
@@ -101,7 +101,7 @@ func createClientWithOrgId(orgId string) (*ChainClient, error) {
 
 	if node2 == nil {
 		// 创建节点2
-		node2 = createNode(nodeAddr2, connCnt2)
+		//node2 = createNode(nodeAddr2, connCnt2)
 	}
 
 	chainClient, err := NewChainClient(
@@ -118,7 +118,7 @@ func createClientWithOrgId(orgId string) (*ChainClient, error) {
 		// 添加节点1
 		AddChainClientNodeConfig(node1),
 		// 添加节点2
-		AddChainClientNodeConfig(node2),
+		//AddChainClientNodeConfig(node2),
 	)
 
 	if err != nil {
