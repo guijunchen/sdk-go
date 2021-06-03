@@ -492,9 +492,9 @@ func (cc *ChainClient) SaveCACert(enclaveCACert, txId string, withSyncResult boo
 			if contractResult.Code != common.ContractResultCode_OK {
 				resp.Code = common.TxStatusCode_CONTRACT_FAIL
 				resp.Message = contractResult.Message
+			}else {
+				resp.ContractResult = contractResult
 			}
-
-			resp.ContractResult = contractResult
 		}
 	}
 
@@ -543,7 +543,7 @@ func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncRe
 		txId = GetRandTxId()
 	}
 
-	cc.logger.Infof("[SDK] begin to save contract code , [contract:%s]/[method:%s]/[txId:%s]",
+	cc.logger.Infof("[SDK] begin to save_remote_attestation_proof , [contract:%s]/[method:%s]/[txId:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_SAVE_REMOTE_ATTESTATION.String(),
 		txId,
@@ -586,17 +586,17 @@ func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncRe
 			if contractResult.Code != common.ContractResultCode_OK {
 				resp.Code = common.TxStatusCode_CONTRACT_FAIL
 				resp.Message = contractResult.Message
+			}else {
+				resp.ContractResult = contractResult
 			}
-
-			resp.ContractResult = contractResult
 		}
 	}
 
 	return resp, nil
 }
 
-func (cc *ChainClient) GetEnclaveEcryptPubKey(enclaveId string) ([]byte, error) {
-	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
+func (cc *ChainClient) GetEnclaveEncryptPubKey(enclaveId string) ([]byte, error) {
+	cc.logger.Infof("[SDK] begin get_enclave_encrypt_pub_key() , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_GET_ENCLAVE_ENCRYPT_PUB_KEY.String(),
 	)
