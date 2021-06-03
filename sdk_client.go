@@ -9,6 +9,7 @@ package chainmaker_sdk_go
 
 import (
 	"chainmaker.org/chainmaker/common/crypto"
+	"chainmaker.org/chainmaker/common/crypto/asym"
 	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
 	"chainmaker.org/chainmaker/common/evmutils"
 	"chainmaker.org/chainmaker/common/serialize"
@@ -36,13 +37,13 @@ const (
 var _ SDKInterface = (*ChainClient)(nil)
 
 type ChainClient struct {
-	logger     Logger
-	pool       *ConnectionPool
-	chainId    string
-	orgId      string
+	logger       Logger
+	pool         *ConnectionPool
+	chainId      string
+	orgId        string
 	userCrtBytes []byte
-	userCrt    *bcx509.Certificate
-	privateKey crypto.PrivateKey
+	userCrt      *bcx509.Certificate
+	privateKey   crypto.PrivateKey
 	// 用户压缩证书
 	enabledCrtHash bool
 	userCrtHash    []byte
@@ -69,13 +70,13 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	}
 
 	return &ChainClient{
-		pool:       pool,
-		logger:     config.logger,
-		chainId:    config.chainId,
-		orgId:      config.orgId,
+		pool:         pool,
+		logger:       config.logger,
+		chainId:      config.chainId,
+		orgId:        config.orgId,
 		userCrtBytes: config.userCrtBytes,
-		userCrt:    config.userCrt,
-		privateKey: config.privateKey,
+		userCrt:      config.userCrt,
+		privateKey:   config.privateKey,
 	}, nil
 }
 
@@ -148,6 +149,39 @@ func (cc *ChainClient) EnableCertHash() error {
 func (cc *ChainClient) DisableCertHash() error {
 	cc.enabledCrtHash = false
 	return nil
+}
+
+func (cc *ChainClient) GetEnabledCrtHash() bool {
+	return cc.enabledCrtHash
+}
+
+func (cc *ChainClient) GetUserCrtHash() []byte {
+	return cc.userCrtHash
+}
+
+//new add
+func CreateChainClient(pool *ConnectionPool, userCrtBytes, privKey, userCrtHash []byte, orgId, chainId string, enabledCrtHash int) (*ChainClient, error) {
+	cert, err := ParseCert(userCrtBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	priv, err := asym.PrivateKeyFromPEM(privKey, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	chain := &ChainClient{
+		pool:         pool,
+		logger:       pool.logger,
+		chainId:      chainId,
+		orgId:        orgId,
+		userCrtBytes: userCrtBytes,
+		userCrt:      cert,
+		privateKey:   priv,
+	}
+
+	return chain, nil
 }
 
 func (cc *ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string]string {
