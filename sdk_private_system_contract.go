@@ -184,7 +184,7 @@ func (cc *ChainClient) GetContract(contractName, codeHash string) (*common.Priva
 }
 
 func (cc *ChainClient) SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, reportSign []byte,
-	events *common.StrSlice, userCert []byte, clientSign []byte, orgId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) { //todo   change params   return TxResponse
+	events *common.StrSlice, userCert []byte, clientSign []byte, orgId string,payLoad []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -235,6 +235,7 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 		"events":        eventsStr,
 		"report_hash":   string(reportHash),
 		"report_sign":   string(reportSign),
+		"payload"   :   string(payLoad),
 	})
 
 	payloadBytes, err := constructSystemContractPayload(
@@ -593,7 +594,7 @@ func (cc *ChainClient) GetQuote(quoteId string) ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
-func (cc *ChainClient) CheckCallerCertAuth(userCert, clientSign, payload, orgId string) (*common.TxResponse, error) {
+func (cc *ChainClient) CheckCallerCertAuth(userCert, clientSign, payload string) (*common.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to check caller cert auth  , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_CHECK_CALLER_CERT_AUTH.String(),
@@ -604,7 +605,6 @@ func (cc *ChainClient) CheckCallerCertAuth(userCert, clientSign, payload, orgId 
 		"user_cert":   userCert,
 		"client_sign": clientSign,
 		"payload":     payload,
-		"org_id":      orgId,
 	})
 
 	payloadBytes, err := constructQueryPayload(

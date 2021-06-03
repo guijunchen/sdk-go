@@ -516,7 +516,7 @@
 
 ### 11.4 隐私计算结果上链
 ```go
-    SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, reportSign []byte, events *common.StrSlice, userCert []byte, clientSign []byte, orgId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+    SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, reportSign []byte, events *common.StrSlice, userCert []byte, clientSign []byte, orgId string ,payLoad []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 ```
 
 ### 11.5 隐私计算结果查询
@@ -551,5 +551,5 @@
 
 ###  11.11 隐私计算调用者权限验证
 ```go
-    CheckCallerCertAuth(userCert, clientSign, payload, orgId string) (*common.TxResponse, error)
+    CheckCallerCertAuth(userCert, clientSign, payload string) (*common.TxResponse, error)
 ```
