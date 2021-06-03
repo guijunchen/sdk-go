@@ -58,6 +58,16 @@ func NewNodeConfig(opts ...NodeOption) *NodeConfig {
 	return config
 }
 
+//new add
+func NewChainConnPool(opts ...ChainClientOption) (*ConnectionPool, error) {
+	config, err := generateConfig(opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewConnPool(config)
+}
+
 func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	config, err := generateConfig(opts...)
 	if err != nil {
