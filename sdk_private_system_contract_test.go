@@ -867,3 +867,44 @@ func TestChainClient_GetEnclaveSignature(t *testing.T) {
 	}
 }
 
+
+
+func TestChainClient_GetEnclaveProof(t *testing.T) {
+
+	initEnclaveId(t)
+	initProof(t)
+
+	type args struct {
+		enclaveId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name:    "test1",
+			args:    args{
+				enclaveId: enclaveId,
+			},
+			want:    proof,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := createClient()
+			require.Nil(t, err)
+			got, err := cc.GetEnclaveSignature(tt.args.enclaveId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetQuote() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetQuote() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+

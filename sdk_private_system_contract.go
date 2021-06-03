@@ -821,3 +821,35 @@ func (cc *ChainClient) GetEnclaveSignature(enclaveId string) ([]byte, error) {
 
 	return resp.ContractResult.Result, nil
 }
+
+func (cc *ChainClient) GetEnclaveProof(enclaveId string) ([]byte, error) {
+	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_GET_ENCLAVE_VERIFICATION_PUB_KEY.String(),
+	)
+
+	// 构造Payload
+	pairs := paramsMap2KVPairs(map[string]string{
+		"enclave_id": enclaveId,
+	})
+
+	payloadBytes, err := constructQueryPayload(
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_GET_ENCLAVE_PROOF.String(),
+		pairs,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("marshal get data payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	return resp.ContractResult.Result, nil
+}
