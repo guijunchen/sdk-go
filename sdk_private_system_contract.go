@@ -449,7 +449,7 @@ func (cc *ChainClient) SaveCACert(enclaveCACert, txId string, withSyncResult boo
 		txId = GetRandTxId()
 	}
 
-	cc.logger.Infof("[SDK] begin to save cert , [contract:%s]/[method:%s]/[txId:%s]",
+	cc.logger.Infof("[SDK] begin to save ca cert , [contract:%s]/[method:%s]/[txId:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_SAVE_CA_CERT.String(),
 		txId,
@@ -507,7 +507,7 @@ func (cc *ChainClient) SaveCACert(enclaveCACert, txId string, withSyncResult boo
 
 
 func (cc *ChainClient) GetCACert() ([]byte, error) {
-	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
+	cc.logger.Infof("[SDK] begin to get ca cert , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_GET_CA_CERT.String(),
 	)
@@ -537,6 +537,67 @@ func (cc *ChainClient) GetCACert() ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
+func (cc *ChainClient) SaveEnclaveReport(enclaveId, report, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+	if txId == "" {
+		txId = GetRandTxId()
+	}
+
+	cc.logger.Infof("[SDK] begin to save enclave report , [contract:%s]/[method:%s]/[txId:%s]",
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_SAVE_ENCLAVE_REPORT.String(),
+		txId,
+	)
+
+	// 构造Payload
+	pairs := paramsMap2KVPairs(map[string]string{
+		"enclave_id": enclaveId,
+		"report": report,
+	})
+
+	payloadBytes, err := constructSystemContractPayload(
+		cc.chainId,
+		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+		common.PrivateComputeContractFunction_SAVE_ENCLAVE_REPORT.String(),
+		pairs,
+		defaultSequence,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("construct save cert payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, txId, payloadBytes, timeout)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if !withSyncResult {
+			resp.ContractResult = &common.ContractResult{
+				Code:    common.ContractResultCode_OK,
+				Message: common.ContractResultCode_OK.String(),
+				Result:  []byte(txId),
+			}
+		} else {
+			contractResult, err := cc.getSyncResult(txId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+
+			if contractResult.Code != common.ContractResultCode_OK {
+				resp.Code = common.TxStatusCode_CONTRACT_FAIL
+				resp.Message = contractResult.Message
+			}else {
+				resp.ContractResult = contractResult
+			}
+		}
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	return resp, nil
+}
 
 func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
@@ -590,6 +651,10 @@ func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncRe
 				resp.ContractResult = contractResult
 			}
 		}
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
 	}
 
 	return resp, nil
