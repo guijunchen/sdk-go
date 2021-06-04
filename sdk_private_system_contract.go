@@ -8,12 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"bytes"
-	"chainmaker.org/chainmaker-go/common/crypto"
-	"chainmaker.org/chainmaker-go/common/crypto/asym"
-	"chainmaker.org/chainmaker-go/common/crypto/asym/rsa"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
-	"encoding/binary"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 )
@@ -178,7 +173,7 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 		"events":        eventsStr,
 		"report_hash":   string(reportHash),
 		"report_sign":   string(reportSign),
-		"payload":       string(payLoad),
+		"payload"    :   string(payLoad),
 	})
 	// verify sign
 	pkPEM, err := cc.GetEnclaveVerificationPubKey("global_enclave_id")
@@ -491,7 +486,7 @@ func (cc *ChainClient) CheckCallerCertAuth(userCert, clientSign, payload string)
 	return resp, nil
 }
 
-func (cc *ChainClient) SaveCACert(enclaveCACert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+func (cc *ChainClient) SaveEnclaveCACert(enclaveCACert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -552,14 +547,16 @@ func (cc *ChainClient) SaveCACert(enclaveCACert, txId string, withSyncResult boo
 	return resp, nil
 }
 
-func (cc *ChainClient) GetCACert() ([]byte, error) {
+
+func (cc *ChainClient) GetEnclaveCACert() ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get ca cert , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_GET_CA_CERT.String(),
 	)
 
 	// 构造Payload
-	pairs := paramsMap2KVPairs(map[string]string{})
+	pairs := paramsMap2KVPairs(map[string]string{
+	})
 
 	payloadBytes, err := constructQueryPayload(
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
