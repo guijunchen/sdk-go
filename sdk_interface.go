@@ -557,8 +557,6 @@ type SDKInterface interface {
 	SaveRemoteAttestationProof(proof, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	//```
 
-	GetEnclaveProof(enclaveId string) ([]byte, error)
-
 	// ### 11.8 隐私计算证书查询
 	// ```go
 	GetEnclaveCACert() ([]byte, error)
@@ -578,4 +576,9 @@ type SDKInterface interface {
 	// ```go
 	CheckCallerCertAuth(userCert, clientSign, payload string) (*common.TxResponse, error)
 	// ```
+
+	// ### 11.12 获取隐私证明材料
+	// ```
+        GetEnclaveProof(enclaveId string) ([]byte, error)
+
 }
