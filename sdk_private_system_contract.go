@@ -445,7 +445,7 @@ func (cc *ChainClient) CheckCallerCertAuth(userCert, clientSign, payload string)
 	return resp, nil
 }
 
-func (cc *ChainClient) SaveCACert(enclaveCACert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+func (cc *ChainClient) SaveEnclaveCACert(enclaveCACert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -507,7 +507,7 @@ func (cc *ChainClient) SaveCACert(enclaveCACert, txId string, withSyncResult boo
 }
 
 
-func (cc *ChainClient) GetCACert() ([]byte, error) {
+func (cc *ChainClient) GetEnclaveCACert() ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get ca cert , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_GET_CA_CERT.String(),
