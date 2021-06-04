@@ -511,7 +511,7 @@ func TestChainClient_SaveCACert(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			got, err := cc.SaveCACert(tt.args.caCert, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
+			got, err := cc.SaveEnclaveCACert(tt.args.caCert, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
 			if err != nil {
 				t.Errorf("SaveCert() error = %v, response %v", err, got)
 				return
@@ -552,7 +552,7 @@ func TestChainClient_GetCACert(t *testing.T) { //
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
-			got, err := cc.GetCACert()
+			got, err := cc.GetEnclaveCACert()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetCert() error = %v, wantErr %v", err, tt.wantErr)
 				return
