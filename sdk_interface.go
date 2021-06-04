@@ -524,7 +524,7 @@ type SDKInterface interface {
 	// ## 11 系统隐私合约类接口
 	// ### 11.1 证书上链及验证
 	// ```go
-	SaveCACert(caCert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	SaveEnclaveCACert(caCert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	//```
 
 	// ### 11.2 隐私目录上链
@@ -557,9 +557,11 @@ type SDKInterface interface {
 	SaveRemoteAttestationProof(proof, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	//```
 
+	GetEnclaveProof(enclaveId string) ([]byte, error)
+
 	// ### 11.8 隐私计算证书查询
 	// ```go
-	GetCACert() ([]byte, error)
+	GetEnclaveCACert() ([]byte, error)
 	// ```
 
 	// ### 11.9 隐私计算隐私目录查询
