@@ -27,6 +27,15 @@ type nodesConfigModel struct {
 	TLSHostName string `mapstructure:"tls_host_name"`
 }
 
+type archiveConfigModel struct {
+	// 链外存储类型，已支持：mysql
+	Type 		string `mapstructure:"type"`
+	// 链外存储目标，格式：
+	// 	- mysql: user:pwd:host:port
+	Dest 		string `mapstructure:"dest"`
+	SecretKey	string `mapstructure:"secret_key"`
+}
+
 type chainClientConfigModel struct {
 	// 链ID
 	ChainId string `mapstructure:"chain_id"`
@@ -42,6 +51,8 @@ type chainClientConfigModel struct {
 	UserSignCrtFilePath string `mapstructure:"user_sign_crt_file_path"`
 	// 节点配置
 	NodesConfig []nodesConfigModel `mapstructure:"nodes"`
+	// 归档特性的配置
+	ArchiveConfig *archiveConfigModel `mapstructure:"archive,omitempty"`
 }
 
 type ChainClientConfigModel struct {
