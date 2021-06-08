@@ -37,3 +37,8 @@ chain_client:
         - "./testdata/crypto-config/wx-org2.chainmaker.org/ca"
       # TLS hostname
       tls_host_name: "chainmaker.org"
+  archive:
+    # 数据归档链外存储相关配置
+    type: "mysql"
+    dest: "root:123456:localhost:3306"
+    secret_key: xxx

@@ -47,6 +47,13 @@ type ChainClient struct {
 	// 用户压缩证书
 	enabledCrtHash bool
 	userCrtHash    []byte
+
+	// archive config
+	archiveConfig *ArchiveConfig
+}
+
+func (cc *ChainClient) CreateArchivePayload(method string, kvs []*common.KeyValuePair) ([]byte, error) {
+	panic("implement me")
 }
 
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
@@ -68,6 +75,15 @@ func NewChainConnPool(opts ...ChainClientOption) (*ConnectionPool, error) {
 	return NewConnPool(config)
 }
 
+func NewArchiveConfig(opts ...ArchiveOption) *ArchiveConfig {
+	config := &ArchiveConfig{}
+	for _, opt := range opts {
+		opt(config)
+	}
+
+	return config
+}
+
 func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	config, err := generateConfig(opts...)
 	if err != nil {
@@ -86,7 +102,7 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		orgId:        config.orgId,
 		userCrtBytes: config.userCrtBytes,
 		userCrt:      config.userCrt,
-		privateKey:   config.privateKey,
+		privateKey:   config.privateKey,archiveConfig: config.archiveConfig,
 	}, nil
 }
 

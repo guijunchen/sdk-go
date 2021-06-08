@@ -87,6 +87,22 @@ func WithNodeTLSHostName(tlsHostName string) NodeOption {
 	}
 }
 
+// Archive配置
+type ArchiveConfig struct {
+	// 非必填
+	// secret key
+	secretKey string
+}
+
+type ArchiveOption func(config *ArchiveConfig)
+
+// 设置Archive的secret key
+func WithSecretKey(key string) ArchiveOption {
+	return func(config *ArchiveConfig) {
+		config.secretKey = key
+	}
+}
+
 type ChainClientConfig struct {
 	// logger若不设置，将采用默认日志文件输出日志，建议设置，以便采用集成系统的统一日志输出
 	logger Logger
@@ -96,9 +112,9 @@ type ChainClientConfig struct {
 	confPath string
 
 	// 方式2：参数指定（方式1与方式2可以同时使用，参数指定的值会覆盖配置文件中的配置）
-	orgId               string
-	chainId             string
-	nodeList            []*NodeConfig
+	orgId    string
+	chainId  string
+	nodeList []*NodeConfig
 
 	// 以下xxxPath和xxxBytes同时指定的话，优先使用Bytes
 	userKeyFilePath     string
@@ -106,14 +122,17 @@ type ChainClientConfig struct {
 	userSignKeyFilePath string
 	userSignCrtFilePath string
 
-	userKeyBytes        []byte
-	userCrtBytes        []byte
-	userSignKeyBytes    []byte
-	userSignCrtBytes    []byte
+	userKeyBytes     []byte
+	userCrtBytes     []byte
+	userSignKeyBytes []byte
+	userSignCrtBytes []byte
 
 	// 以下字段为经过处理后的参数
-	privateKey          crypto.PrivateKey
-	userCrt             *bcx509.Certificate
+	privateKey crypto.PrivateKey
+	userCrt    *bcx509.Certificate
+
+	// 归档特性的配置
+	archiveConfig *ArchiveConfig
 }
 
 type ChainClientOption func(*ChainClientConfig)
@@ -209,6 +228,13 @@ func WithChainClientLogger(logger Logger) ChainClientOption {
 	}
 }
 
+// 设置Archive配置
+func WithArchiveConfig(conf *ArchiveConfig) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.archiveConfig = conf
+	}
+}
+
 // 生成SDK配置并校验合法性
 func generateConfig(opts ...ChainClientOption) (*ChainClientConfig, error) {
 	config := &ChainClientConfig{}
@@ -279,6 +305,17 @@ func setNodeList(config *ChainClientConfig) {
 	}
 }
 
+func setArchiveConfig(config *ChainClientConfig) {
+	if Config.ChainClientConfig.ArchiveConfig != nil && config.archiveConfig == nil {
+		archive := NewArchiveConfig(
+			// secret key
+			WithSecretKey(Config.ChainClientConfig.ArchiveConfig.SecretKey),
+		)
+
+		config.archiveConfig = archive
+	}
+}
+
 func readConfigFile(config *ChainClientConfig) error {
 	// 若没有配置配置文件
 	if config.confPath == "" {
@@ -294,6 +331,8 @@ func readConfigFile(config *ChainClientConfig) error {
 	setUserConfig(config)
 
 	setNodeList(config)
+
+	setArchiveConfig(config)
 
 	return nil
 }
@@ -326,6 +365,10 @@ func checkConfig(config *ChainClientConfig) error {
 		return err
 	}
 
+	if err = checkArchiveConfig(config); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -344,7 +387,7 @@ func checkNodeListConfig(config *ChainClientConfig) error {
 
 		if node.useTLS {
 			// 如果开启了TLS认证，CA路径必填
-			if len(node.caPaths) == 0 && len(node.caCerts) == 0{
+			if len(node.caPaths) == 0 && len(node.caCerts) == 0 {
 				return fmt.Errorf("if node useTLS is open, should set caPaths or caCerts")
 			}
 
@@ -383,6 +426,10 @@ func checkChainConfig(config *ChainClientConfig) error {
 		return fmt.Errorf("chainId cannot be empty")
 	}
 
+	return nil
+}
+
+func checkArchiveConfig(config *ChainClientConfig) error {
 	return nil
 }
 

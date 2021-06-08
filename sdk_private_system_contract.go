@@ -20,7 +20,7 @@ func (cc *ChainClient) SaveCert(enclaveCert, enclaveId, txId string, withSyncRes
 
 	cc.logger.Infof("[SDK] begin to save cert , [contract:%s]/[method:%s]/[txId:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_SAVE_CERT.String(),
+		common.PrivateComputeContractFunction_SAVE_CA_CERT.String(),
 		txId,
 	)
 
@@ -33,7 +33,7 @@ func (cc *ChainClient) SaveCert(enclaveCert, enclaveId, txId string, withSyncRes
 	payloadBytes, err := constructSystemContractPayload(
 		cc.chainId,
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_SAVE_CERT.String(),
+		common.PrivateComputeContractFunction_SAVE_CA_CERT.String(),
 		pairs,
 		defaultSequence,
 	)
@@ -376,7 +376,7 @@ func (cc *ChainClient) SaveQuote(enclaveId, quoteId, quote, sign, txId string, w
 
 	cc.logger.Infof("[SDK] begin to save contract code , [contract:%s]/[method:%s]/[txId:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_SAVE_QUOTE.String(),
+		//common.PrivateComputeContractFunction_SAVE_QUOTE.String(),
 		txId,
 	)
 
@@ -391,7 +391,8 @@ func (cc *ChainClient) SaveQuote(enclaveId, quoteId, quote, sign, txId string, w
 	payloadBytes, err := constructSystemContractPayload(
 		cc.chainId,
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_SAVE_QUOTE.String(),
+		"TODO",
+		//common.PrivateComputeContractFunction_SAVE_QUOTE.String(),
 		pairs,
 		defaultSequence,
 	)
@@ -433,7 +434,7 @@ func (cc *ChainClient) SaveQuote(enclaveId, quoteId, quote, sign, txId string, w
 func (cc *ChainClient) GetCert(enclaveId string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_GET_CERT.String(),
+		common.PrivateComputeContractFunction_GET_CA_CERT.String(),
 	)
 
 	// 构造Payload
@@ -443,7 +444,7 @@ func (cc *ChainClient) GetCert(enclaveId string) ([]byte, error) {
 
 	payloadBytes, err := constructQueryPayload(
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_GET_CERT.String(),
+		common.PrivateComputeContractFunction_GET_CA_CERT.String(),
 		pairs,
 	)
 	if err != nil {
@@ -498,7 +499,8 @@ func (cc *ChainClient) GetDir(orderId string) ([]byte, error) {
 func (cc *ChainClient) GetQuote(quoteId string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_GET_QUOTE.String(),
+		//common.PrivateComputeContractFunction_GET_QUOTE.String(),
+		"TODO",
 	)
 
 	// 构造Payload
@@ -508,7 +510,8 @@ func (cc *ChainClient) GetQuote(quoteId string) ([]byte, error) {
 
 	payloadBytes, err := constructQueryPayload(
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
-		common.PrivateComputeContractFunction_GET_QUOTE.String(),
+		//common.PrivateComputeContractFunction_GET_QUOTE.String(),
+		"TODO",
 		pairs,
 	)
 	if err != nil {
