@@ -71,7 +71,7 @@ func initEnclaveId(t *testing.T) {
 
 func initReport(t *testing.T) {
 	reportBytes := readFileData("testdata/remote_attestation/report.dat", t)
-	report = string(reportBytes)
+	report = hex.EncodeToString(reportBytes)
 }
 
 var priDir *common.StrSlice = &common.StrSlice{
