@@ -127,7 +127,7 @@ func (cc *ChainClient) GetContract(contractName, codeHash string) (*common.Priva
 }
 
 func (cc *ChainClient) SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, reportSign []byte,
-	events *common.StrSlice, userCert []byte, clientSign []byte, orgId string, payLoad []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+	events *common.StrSlice, privateReq []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -167,9 +167,9 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 	}
 
 	pairs := paramsMap2KVPairs(map[string]string{
-		"user_cert":     string(userCert),
-		"client_sign":   string(clientSign), //user request clientSign
-		"org_id":        orgId,
+		//"user_cert":     string(userCert),
+		//"client_sign":   string(clientSign), //user request clientSign
+		//"org_id":        orgId,
 		"result":        resultStr,
 		"contract_name": contractName,
 		"version":       contractVersion,
@@ -178,7 +178,9 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 		"events":        eventsStr,
 		"report_hash":   string(reportHash),
 		"report_sign":   string(reportSign),
-		"payload":       string(payLoad),
+		//"payload":       string(payLoad),
+		"private_req" :   string(privateReq),
+
 	})
 	// verify sign
 	pkPEM, err := cc.GetEnclaveVerificationPubKey("global_enclave_id")
@@ -207,10 +209,11 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 	evmResultBuffer.Write([]byte(contractVersion))
 	evmResultBuffer.Write(codeHash)
 	evmResultBuffer.Write(reportHash)
-	evmResultBuffer.Write(userCert)
-	evmResultBuffer.Write(clientSign)
-	evmResultBuffer.Write(payLoad)
-	evmResultBuffer.Write([]byte(orgId))
+	//evmResultBuffer.Write(userCert)
+	//evmResultBuffer.Write(clientSign)
+	//evmResultBuffer.Write(payLoad)
+	evmResultBuffer.Write(privateReq)
+	//evmResultBuffer.Write([]byte(orgId))
 	b, err := pk.VerifyWithOpts(evmResultBuffer.Bytes(), reportSign, &crypto.SignOpts{
 		Hash:         crypto.HASH_TYPE_SHA256,
 		UID:          "",
@@ -457,7 +460,7 @@ func (cc *ChainClient) GetDir(orderId string) ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
-func (cc *ChainClient) CheckCallerCertAuth(userCert, clientSign, payload string) (*common.TxResponse, error) {
+func (cc *ChainClient) CheckCallerCertAuth(privateComputeRequest string) (*common.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to check caller cert auth  , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_CHECK_CALLER_CERT_AUTH.String(),
@@ -465,9 +468,7 @@ func (cc *ChainClient) CheckCallerCertAuth(userCert, clientSign, payload string)
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string]string{
-		"user_cert":   userCert,
-		"client_sign": clientSign,
-		"payload":     payload,
+		"private_req":   privateComputeRequest,
 	})
 
 	payloadBytes, err := constructQueryPayload(

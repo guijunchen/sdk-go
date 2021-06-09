@@ -188,9 +188,9 @@ func TestChainClient_UpdateContract(t *testing.T) {
 func TestChainClient_SaveData(t *testing.T) {
 
 	type args struct {
-		userCert        []byte
-		signature       []byte
-		orgId           string
+		//userCert        []byte
+		//signature       []byte
+		//orgId           string
 		result          *common.ContractResult
 		contractName    string
 		contractVersion string
@@ -200,7 +200,8 @@ func TestChainClient_SaveData(t *testing.T) {
 		rwSet           *common.TxRWSet
 		sign            []byte
 		events          *common.StrSlice
-		payLoad         []byte
+		//payLoad         []byte
+		privateReq      []byte
 		withSyncResult  bool
 		timeout         int64
 	}
@@ -236,16 +237,17 @@ func TestChainClient_SaveData(t *testing.T) {
 					Message: "",
 					GasUsed: 0,
 				},
-				userCert:        []byte{},
-				signature:       []byte{},
-				orgId:           "",
+				//userCert:        []byte{},
+				//signature:       []byte{},
+				//orgId:           "",
 				contractName:    computeName,
 				contractVersion: version,
 				codeHash:        codeHash[:],
 				//reportHash:     reportHash[:],
 				rwSet: rwSet,
 				//sign:           sign
-				payLoad:         []byte(""),
+				//payLoad:         []byte(""),
+				privateReq:      []byte(""),
 				events:         nil,
 				withSyncResult: false,
 				timeout:        1,
@@ -259,8 +261,11 @@ func TestChainClient_SaveData(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cc, err := createClient()
 			require.Nil(t, err)
+			//res, err := cc.SaveData(tt.args.contractName, tt.args.contractVersion, tt.args.codeHash, tt.args.reportHash, tt.args.result,
+			//	tt.args.txId, tt.args.rwSet, tt.args.sign, tt.args.events,tt.args.userCert, tt.args.signature, tt.args.orgId, tt.args.payLoad, tt.args.withSyncResult, tt.args.timeout)
 			res, err := cc.SaveData(tt.args.contractName, tt.args.contractVersion, tt.args.codeHash, tt.args.reportHash, tt.args.result,
-				tt.args.txId, tt.args.rwSet, tt.args.sign, tt.args.events,tt.args.userCert, tt.args.signature, tt.args.orgId, tt.args.payLoad, tt.args.withSyncResult, tt.args.timeout)
+				tt.args.txId, tt.args.rwSet, tt.args.sign, tt.args.events,tt.args.privateReq, tt.args.withSyncResult, tt.args.timeout)
+
 
 			if res.ContractResult.Code != common.ContractResultCode_OK || err != nil || tt.wantErr != true { //todo check nil
 				t.Errorf("SaveData() error = %v, wantErr %v", err, tt.wantErr)
