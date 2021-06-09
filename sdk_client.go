@@ -10,17 +10,20 @@ package chainmaker_sdk_go
 import (
 	"chainmaker.org/chainmaker-go/common/crypto"
 	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
+	"chainmaker.org/chainmaker-go/common/evmutils"
 	"chainmaker.org/chainmaker-go/common/serialize"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"context"
 	"encoding/hex"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"io/ioutil"
 	"strings"
 	"time"
 )
@@ -33,20 +36,36 @@ const (
 var _ SDKInterface = (*ChainClient)(nil)
 
 type ChainClient struct {
-	logger     Logger
-	pool       *ConnectionPool
-	chainId    string
-	orgId      string
-	userCrtPEM []byte
-	userCrt    *bcx509.Certificate
-	privateKey crypto.PrivateKey
+	logger       Logger
+	pool         *ConnectionPool
+	chainId      string
+	orgId        string
+	userCrtBytes []byte
+	userCrt      *bcx509.Certificate
+	privateKey   crypto.PrivateKey
 	// 用户压缩证书
 	enabledCrtHash bool
 	userCrtHash    []byte
+
+	// archive config
+	archiveConfig *ArchiveConfig
+}
+
+func (cc *ChainClient) CreateArchivePayload(method string, kvs []*common.KeyValuePair) ([]byte, error) {
+	panic("implement me")
 }
 
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
 	config := &NodeConfig{}
+	for _, opt := range opts {
+		opt(config)
+	}
+
+	return config
+}
+
+func NewArchiveConfig(opts ...ArchiveOption) *ArchiveConfig {
+	config := &ArchiveConfig{}
 	for _, opt := range opts {
 		opt(config)
 	}
@@ -66,17 +85,18 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	}
 
 	return &ChainClient{
-		pool:       pool,
-		logger:     config.logger,
-		chainId:    config.chainId,
-		orgId:      config.orgId,
-		userCrtPEM: config.userCrtPEM,
-		userCrt:    config.userCrt,
-		privateKey: config.privateKey,
+		pool:          pool,
+		logger:        config.logger,
+		chainId:       config.chainId,
+		orgId:         config.orgId,
+		userCrtBytes:  config.userCrtBytes,
+		userCrt:       config.userCrt,
+		privateKey:    config.privateKey,
+		archiveConfig: config.archiveConfig,
 	}, nil
 }
 
-func (cc ChainClient) Stop() error {
+func (cc *ChainClient) Stop() error {
 	return cc.pool.Close()
 }
 
@@ -142,18 +162,17 @@ func (cc *ChainClient) EnableCertHash() error {
 	return nil
 }
 
-func (cc ChainClient) DisableCertHash() error {
+func (cc *ChainClient) DisableCertHash() error {
 	cc.enabledCrtHash = false
 	return nil
 }
 
-func (cc ChainClient) EasyCodecBytesToParamsMap(data []byte) map[string]string {
-	items := serialize.EasyUnmarshal(data)
+func (cc *ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string]string {
 	return serialize.EasyCodecItemToParamsMap(items)
 }
 
 // 检查证书是否成功上链
-func (cc ChainClient) checkUserCertOnChain() error {
+func (cc *ChainClient) checkUserCertOnChain() error {
 	err := retry.Retry(func(uint) error {
 		ok, err := cc.getCheckCertHash()
 		if err != nil {
@@ -180,7 +199,7 @@ func (cc ChainClient) checkUserCertOnChain() error {
 	return nil
 }
 
-func (cc ChainClient) getCheckCertHash() (bool, error) {
+func (cc *ChainClient) getCheckCertHash() (bool, error) {
 	// 根据已缓存证书Hash，查链上是否存在
 	certInfo, err := cc.QueryCert([]string{hex.EncodeToString(cc.userCrtHash)})
 	if err != nil {
@@ -217,7 +236,7 @@ func (cc ChainClient) getCheckCertHash() (bool, error) {
 	return false, nil
 }
 
-func (cc ChainClient) generateTxRequest(txId string, txType common.TxType, payloadBytes []byte) (*common.TxRequest, error) {
+func (cc *ChainClient) generateTxRequest(txId string, txType common.TxType, payloadBytes []byte) (*common.TxRequest, error) {
 	var (
 		sender *accesscontrol.SerializedMember
 	)
@@ -232,7 +251,7 @@ func (cc ChainClient) generateTxRequest(txId string, txType common.TxType, paylo
 	} else {
 		sender = &accesscontrol.SerializedMember{
 			OrgId:      cc.orgId,
-			MemberInfo: cc.userCrtPEM,
+			MemberInfo: cc.userCrtBytes,
 			IsFullCert: true,
 		}
 	}
@@ -269,33 +288,38 @@ func (cc ChainClient) generateTxRequest(txId string, txType common.TxType, paylo
 	return req, nil
 }
 
-func (cc ChainClient) proposalRequest(txType common.TxType, txId string, payloadBytes []byte) (*common.TxResponse, error) {
+func (cc *ChainClient) proposalRequest(txType common.TxType, txId string, payloadBytes []byte) (*common.TxResponse, error) {
 	return cc.proposalRequestWithTimeout(txType, txId, payloadBytes, -1)
 }
 
-func (cc ChainClient) proposalRequestWithTimeout(txType common.TxType, txId string, payloadBytes []byte, timeout int64) (*common.TxResponse, error) {
-	var (
-		errMsg string
-	)
-
+func (cc *ChainClient) proposalRequestWithTimeout(txType common.TxType, txId string, payloadBytes []byte, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
 	}
 
+	req, err := cc.generateTxRequest(txId, txType, payloadBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return cc.sendTxRequest(req, timeout)
+}
+
+func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64) (*common.TxResponse, error) {
+
+	var (
+		errMsg string
+	)
+
 	if timeout < 0 {
 		timeout = SendTxTimeout
-		if strings.HasPrefix(txType.String(), "QUERY") {
+		if strings.HasPrefix(txRequest.Header.TxType.String(), "QUERY") {
 			timeout = GetTxTimeout
 		}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
-
-	req, err := cc.generateTxRequest(txId, txType, payloadBytes)
-	if err != nil {
-		return nil, err
-	}
 
 	ignoreAddrs := make(map[string]struct{})
 	for {
@@ -305,16 +329,16 @@ func (cc ChainClient) proposalRequestWithTimeout(txType common.TxType, txId stri
 		}
 
 		if len(ignoreAddrs) > 0 {
-			cc.logger.Debugf("[SDK] begin try to connect node [%s]", client.nodeAddr)
+			cc.logger.Debugf("[SDK] begin try to connect node [%s]", client.ID)
 		}
 
-		resp, err := client.rpcNode.SendRequest(ctx, req)
+		resp, err := client.rpcNode.SendRequest(ctx, txRequest)
 		if err != nil {
 			resp := &common.TxResponse{
 				Message: err.Error(),
 				ContractResult: &common.ContractResult{
 					Code:    common.ContractResultCode_FAIL,
-					Result:  []byte(txId),
+					Result:  []byte(txRequest.Header.TxId),
 					Message: common.ContractResultCode_FAIL.String(),
 				},
 			}
@@ -326,10 +350,10 @@ func (cc ChainClient) proposalRequestWithTimeout(txType common.TxType, txId stri
 
 				resp.Code = common.TxStatusCode_TIMEOUT
 				errMsg = fmt.Sprintf("call [%s] meet network error, try to connect another node if has, %s",
-					client.nodeAddr, err.Error())
+					client.ID, err.Error())
 
 				cc.logger.Errorf(sdkErrStringFormat, errMsg)
-				ignoreAddrs[client.nodeAddr] = struct{}{}
+				ignoreAddrs[client.ID] = struct{}{}
 				continue
 			}
 
@@ -344,4 +368,35 @@ func (cc ChainClient) proposalRequestWithTimeout(txType common.TxType, txId stri
 		cc.logger.Debugf("[SDK] proposalRequest resp: %+v", resp)
 		return resp, nil
 	}
+}
+
+func (cc *ChainClient) GetEVMAddressFromCertPath(certFilePath string) (string, error) {
+	certBytes, err := ioutil.ReadFile(certFilePath)
+	if err != nil {
+		return "", fmt.Errorf("read cert file [%s] failed, %s", certFilePath, err)
+	}
+
+	return cc.GetEVMAddressFromCertBytes(certBytes)
+}
+
+func (cc *ChainClient) GetEVMAddressFromCertBytes(certBytes []byte) (string, error) {
+	block, _ := pem.Decode(certBytes)
+	cert, err := bcx509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return "", fmt.Errorf("ParseCertificate cert failed, %s", err)
+	}
+
+	ski := hex.EncodeToString(cert.SubjectKeyId)
+	addrInt, err := evmutils.MakeAddressFromHex(ski)
+	if err != nil {
+		return "", fmt.Errorf("make address from cert SKI failed, %s", err)
+	}
+
+	//return fmt.Sprintf("0x%x", addrInt.AsStringKey()), nil
+	//address := evmutils.BigToAddress(addrInt)
+	//address := evmutils.EVMIntToHashBytes(addrInt)
+	//return hex.EncodeToString([]byte(address)), nil
+	//return fmt.Sprintf("%s", address), nil
+
+	return addrInt.String(), nil
 }

@@ -11,15 +11,20 @@ import (
 	"bytes"
 	"chainmaker.org/chainmaker-go/common/crypto"
 	"chainmaker.org/chainmaker-go/common/crypto/hash"
+	localhibe "chainmaker.org/chainmaker-go/common/crypto/hibe"
 	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
 	"chainmaker.org/chainmaker-go/common/random/uuid"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
 	"github.com/golang/protobuf/proto"
+	"github.com/samkumar/hibe"
+	"io/ioutil"
 	"os"
 	"time"
 )
@@ -183,6 +188,20 @@ func constructSubscribeBlockPayload(startBlock, endBlock int64, withRwSet bool) 
 	return payloadBytes, nil
 }
 
+func constructSubscribeContractEventPayload(topic, contractName string) ([]byte, error) {
+	payload := &common.SubscribeContractEventPayload{
+		Topic:        topic,
+		ContractName: contractName,
+	}
+
+	payloadBytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return payloadBytes, nil
+}
+
 func constructSubscribeTxPayload(startBlock, endBlock int64, txType common.TxType, txIds []string) ([]byte, error) {
 	payload := &common.SubscribeTxPayload{
 		StartBlock: startBlock,
@@ -197,6 +216,24 @@ func constructSubscribeTxPayload(startBlock, endBlock int64, txType common.TxTyp
 	}
 
 	return payloadBytes, nil
+}
+
+func IsArchived(txStatusCode common.TxStatusCode) bool {
+	if txStatusCode == common.TxStatusCode_ARCHIVED_BLOCK || txStatusCode == common.TxStatusCode_ARCHIVED_TX {
+		return true
+	}
+
+	return false
+}
+
+func IsArchivedString(txStatusCode string) bool {
+	if txStatusCode == common.TxStatusCode_ARCHIVED_BLOCK.String() ||
+		txStatusCode == common.TxStatusCode_ARCHIVED_TX.String() {
+
+		return true
+	}
+
+	return false
 }
 
 func checkProposalRequestResp(resp *common.TxResponse, needContractResult bool) error {
@@ -214,6 +251,41 @@ func checkProposalRequestResp(resp *common.TxResponse, needContractResult bool) 
 
 	return nil
 }
+
+func (cc *ChainClient) signSystemContractPayload(payloadBytes []byte) ([]byte, error) {
+	payload := &common.SystemContractPayload{}
+	if err := proto.Unmarshal(payloadBytes, payload); err != nil {
+		return nil, fmt.Errorf("unmarshal system contract payload failed, %s", err)
+	}
+
+	signBytes, err := signPayload(cc.privateKey, cc.userCrt, payloadBytes)
+	if err != nil {
+		return nil, fmt.Errorf("SignPayload failed, %s", err)
+	}
+
+	sender := &accesscontrol.SerializedMember{
+		OrgId:      cc.orgId,
+		MemberInfo: cc.userCrtBytes,
+		IsFullCert: true,
+	}
+
+	entry := &common.EndorsementEntry{
+		Signer:    sender,
+		Signature: signBytes,
+	}
+
+	payload.Endorsement = []*common.EndorsementEntry{
+		entry,
+	}
+
+	signedPayloadBytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("marshal system contract sigend payload failed, %s", err)
+	}
+
+	return signedPayloadBytes, nil
+}
+
 
 func mergeSystemContractSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
 	if len(signedPayloadBytes) == 0 {
@@ -381,4 +453,57 @@ func Exists(path string) bool {
 		return false
 	}
 	return true
+}
+
+// Returns the serialized byte array of hibeParams
+func ReadHibeParamsWithFilePath(hibeParamsFilePath string) ([]byte, error) {
+	paramsBytes, err := ioutil.ReadFile(hibeParamsFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("open hibe params file failed, [err:%s]", err)
+	}
+
+	return paramsBytes, nil
+}
+
+// Returns the serialized byte array of hibePrvKey
+func ReadHibePrvKeysWithFilePath(hibePrvKeyFilePath string) ([]byte, error) {
+	prvKeyBytes, err := ioutil.ReadFile(hibePrvKeyFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("open hibe privateKey file failed, [err:%s]", err)
+	}
+
+	return prvKeyBytes, nil
+}
+
+func DecryptHibeTx(localId string, hibeParams []byte, hibePrvKey []byte, tx *common.Transaction, keyType crypto.KeyType) ([]byte, error) {
+	localParams, ok := new(hibe.Params).Unmarshal(hibeParams)
+	if !ok {
+		return nil, errors.New("hibe.Params.Unmarshal failed, please check your file")
+	}
+
+	prvKey, ok := new(hibe.PrivateKey).Unmarshal(hibePrvKey)
+	if !ok {
+		return nil, errors.New("hibe.PrivateKey.Unmarshal failed, please check your file")
+	}
+
+	// get hibe_msg from tx
+	requestPayload := &common.QueryPayload{}
+	err := proto.Unmarshal(tx.RequestPayload, requestPayload)
+	if err != nil {
+		return nil, err
+	}
+	hibeMsgMap := make(map[string]string)
+	for _, item := range requestPayload.Parameters {
+		if item.Key == HibeMsgKey {
+			err = json.Unmarshal([]byte(item.Value), &hibeMsgMap)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if hibeMsgMap == nil {
+		return nil, errors.New("no such message, please check transaction")
+	}
+	return localhibe.DecryptHibeMsg(localId, localParams, prvKey, hibeMsgMap, keyType)
 }

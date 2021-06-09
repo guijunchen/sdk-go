@@ -31,31 +31,35 @@ type networkClient struct {
 	nodeAddr    string
 	useTLS      bool
 	caPaths     []string
+	caCerts     []string
 	tlsHostName string
+	ID 			string
 }
 
 // 客户端连接池结构定义
 type ConnectionPool struct {
 	connections     []*networkClient
 	logger          Logger
-	userKeyFilePath string
-	userCrtFilePath string
+	userKeyBytes    []byte
+	userCrtBytes    []byte
 }
 
 // 创建连接池
 func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 	pool := &ConnectionPool{
 		logger:          config.logger,
-		userKeyFilePath: config.userKeyFilePath,
-		userCrtFilePath: config.userCrtFilePath,
+		userKeyBytes: config.userKeyBytes,
+		userCrtBytes: config.userCrtBytes,
 	}
 
-	for _, node := range config.nodeList {
+	for idx, node := range config.nodeList {
 		cli := &networkClient{
 			nodeAddr:    node.addr,
 			useTLS:      node.useTLS,
 			caPaths:     node.caPaths,
+			caCerts:     node.caCerts,
 			tlsHostName: node.tlsHostName,
+			ID: fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
 		}
 
 		for i := 0; i < node.connCnt; i++ {
@@ -70,14 +74,28 @@ func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 }
 
 // 初始化GPRC客户端连接
-func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths []string, tlsHostName string) (*grpc.ClientConn, error) {
+func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string, tlsHostName string) (*grpc.ClientConn, error) {
+	var tlsClient ca.CAClient
+
 	if useTLS {
-		tlsClient := ca.CAClient{
-			ServerName: tlsHostName,
-			CaPaths:    caPaths,
-			CertFile:   pool.userCrtFilePath,
-			KeyFile:    pool.userKeyFilePath,
+		if len(caCerts) != 0 {
+			tlsClient = ca.CAClient{
+				ServerName: tlsHostName,
+				CaCerts:    caCerts,
+				CertBytes:  pool.userCrtBytes,
+				KeyBytes:   pool.userKeyBytes,
+				Logger:     pool.logger,
+			}
+		} else {
+			tlsClient = ca.CAClient{
+				ServerName: tlsHostName,
+				CaPaths:    caPaths,
+				CertBytes:  pool.userCrtBytes,
+				KeyBytes:   pool.userKeyBytes,
+				Logger:     pool.logger,
+			}
 		}
+
 		c, err := tlsClient.GetCredentialsByCA()
 		if err != nil {
 			return nil, err
@@ -101,16 +119,16 @@ func (pool *ConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]stru
 		for _, cli := range pool.connections {
 
 			if ignoreAddrs != nil {
-				if _, ok := ignoreAddrs[cli.nodeAddr]; ok {
+				if _, ok := ignoreAddrs[cli.ID]; ok {
 					continue
 				}
 			}
 
 			if cli.conn == nil || cli.conn.GetState() == connectivity.Shutdown {
 
-				conn, err := pool.initGRPCConnect(cli.nodeAddr, cli.useTLS, cli.caPaths, cli.tlsHostName)
+				conn, err := pool.initGRPCConnect(cli.nodeAddr, cli.useTLS, cli.caPaths, cli.caCerts, cli.tlsHostName)
 				if err != nil {
-					pool.logger.Errorf("init grpc connection [nodeAddr:%s] failed, %s", cli.nodeAddr, err.Error())
+					pool.logger.Errorf("init grpc connection [nodeAddr:%s] failed, %s", cli.ID, err.Error())
 					continue
 				}
 

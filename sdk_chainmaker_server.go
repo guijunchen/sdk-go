@@ -13,7 +13,7 @@ import (
 	"fmt"
 )
 
-func (cc ChainClient) GetChainMakerServerVersion() (string, error) {
+func (cc *ChainClient) GetChainMakerServerVersion() (string, error) {
 	cc.logger.Debug("[SDK] begin to get chainmaker server version")
 	req := &config.ChainMakerVersionRequest{}
 	client, err := cc.pool.getClient()

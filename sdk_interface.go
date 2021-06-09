@@ -8,10 +8,13 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker-go/common/crypto"
+	"chainmaker.org/chainmaker-go/common/serialize"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/config"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/discovery"
+	"chainmaker.org/chainmaker-sdk-go/pb/protogo/store"
 	"context"
 )
 
@@ -91,7 +94,7 @@ type SDKInterface interface {
 	//   - contractName: 合约名称
 	//   - method: 合约方法
 	//   - txId: 交易ID
-	//           格式要求：长度为64bit，字符在a-z0-9
+	//           格式要求：长度为64字节，字符在a-z0-9
 	//           可为空，若为空字符串，将自动生成txId
 	//   - params: 合约参数
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
@@ -112,6 +115,29 @@ type SDKInterface interface {
 	QueryContract(contractName, method string, params map[string]string, timeout int64) (*common.TxResponse, error)
 	// ```
 
+	// ### 1.11 构造待发送交易体
+	// **参数说明**
+	//   - contractName: 合约名称
+	//   - method: 合约方法
+	//   - txId: 交易ID
+	//           格式要求：长度为64字节，字符在a-z0-9
+	//           可为空，若为空字符串，将自动生成txId
+	//   - params: 合约参数
+	// ```go
+	GetTxRequest(contractName, method, txId string, params map[string]string) (*common.TxRequest, error)
+	// ```
+
+	// ### 1.12 发送已构造好的交易体
+	// **参数说明**
+	//   - txRequest: 已构造好的交易体
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
+	// ```go
+	SendTxRequest(txRequest *common.TxRequest, timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	// ```
+
 	// ## 2 系统合约接口
 	// ### 2.1 根据交易Id查询交易
 	// **参数说明**
@@ -128,7 +154,15 @@ type SDKInterface interface {
 	GetBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.3 根据区块哈希查询区块
+	// ### 2.3 根据区块高度查询完整区块
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error)
+	// ```
+
+	// ### 2.4 根据区块哈希查询区块
 	// **参数说明**
 	//   - blockHash: 指定区块Hash
 	//   - withRWSet: 是否返回读写集
@@ -136,7 +170,7 @@ type SDKInterface interface {
 	GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.4 根据交易Id查询区块
+	// ### 2.5 根据交易Id查询区块
 	// **参数说明**
 	//   - txId: 交易ID
 	//   - withRWSet: 是否返回读写集
@@ -144,24 +178,58 @@ type SDKInterface interface {
 	GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.5 查询最新的配置块
+	// ### 2.6 查询最新的配置块
 	// **参数说明**
 	//   - withRWSet: 是否返回读写集
 	// ```go
 	GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.6 查询节点加入的链信息
+	// ### 2.7 查询最新区块
+	// **参数说明**
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetLastBlock(withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 2.8 查询节点加入的链信息
 	//    - 返回ChainId清单
 	// ```go
 	GetNodeChainList() (*discovery.ChainList, error)
 	// ```
 
-	// ### 2.7 查询链信息
+	// ### 2.9 查询链信息
 	//   - 包括：当前链最新高度，链节点信息
 	// ```go
 	GetChainInfo() (*discovery.ChainInfo, error)
 	// ```
+
+	// ### 2.10 根据交易Id获取区块高度
+	// **参数说明**
+	//   - txId: 交易ID
+	// ```go
+	GetBlockHeightByTxId(txId string) (int64, error)
+	// ```
+
+	// ### 2.11 根据区块Hash获取区块高度
+	// **参数说明**
+	//   - blockHash: 指定区块Hash
+	// ```go
+	GetBlockHeightByHash(blockHash string) (int64, error)
+	// ```
+
+	// ### 2.12 查询当前最新区块高度
+	// ```go
+	GetCurrentBlockHeight() (int64, error)
+	// ```
+
+	// ### 2.13 根据区块高度查询区块头
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块头
+	// ```go
+	GetBlockHeaderByHeight(blockHeight int64) (*common.BlockHeader, error)
+	// ```
+
 
 	// ## 3 链配置接口
 	// ### 3.1 查询最新链配置
@@ -267,42 +335,42 @@ type SDKInterface interface {
 	// ### 3.15 添加共识节点地址待签名payload生成
 	// **参数说明**
 	//   - nodeOrgId: 节点组织Id
-	//   - nodeAddresses: 节点地址
+	//   - nodeIds: 节点Id
 	// ```go
-	CreateChainConfigConsensusNodeAddrAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
+	CreateChainConfigConsensusNodeIdAddPayload(nodeOrgId string, nodeIds []string) ([]byte, error)
 	// ```
 
 	// ### 3.16 更新共识节点地址待签名payload生成
 	// **参数说明**
 	//   - nodeOrgId: 节点组织Id
-	//   - nodeOldAddress: 节点原地址
-	//   - nodeNewAddress: 节点新地址
+	//   - nodeOldNodeId: 节点原Id
+	//   - nodeNewNodeId: 节点新Id
 	// ```go
-	CreateChainConfigConsensusNodeAddrUpdatePayload(nodeOrgId, nodeOldAddress, nodeNewAddress string) ([]byte, error)
+	CreateChainConfigConsensusNodeIdUpdatePayload(nodeOrgId, nodeOldNodeId, nodeNewNodeId string) ([]byte, error)
 	// ```
 
 	// ### 3.17 删除共识节点地址待签名payload生成
 	// **参数说明**
 	//   - nodeOrgId: 节点组织Id
-	//   - nodeAddress: 节点地址
+	//   - nodeId: 节点Id
 	// ```go
-	CreateChainConfigConsensusNodeAddrDeletePayload(nodeOrgId, nodeAddress string) ([]byte, error)
+	CreateChainConfigConsensusNodeIdDeletePayload(nodeOrgId, nodeId string) ([]byte, error)
 	// ```
 
 	// ### 3.18 添加共识节点待签名payload生成
 	// **参数说明**
 	//   - nodeOrgId: 节点组织Id
-	//   - nodeAddresses: 节点地址
+	//   - nodeIds: 节点Id
 	// ```go
-	CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
+	CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId string, nodeIds []string) ([]byte, error)
 	// ```
 
 	// ### 3.19 更新共识节点待签名payload生成
 	// **参数说明**
 	//   - nodeOrgId: 节点组织Id
-	//   - nodeAddresses: 节点地址
+	//   - nodeIds: 节点Id
 	// ```go
-	CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeAddresses []string) ([]byte, error)
+	CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeIds []string) ([]byte, error)
 	// ```
 
 	// ### 3.20 删除共识节点待签名payload生成
@@ -417,7 +485,7 @@ type SDKInterface interface {
 	SendCertManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
-	// ## 5 在线多签接口
+	// ## 5 在线多签接口(该功能尚不支持)
 	// ### 5.1 待签payload签名
 	//  *一般需要使用具有管理员权限账号进行签名*
 	// **参数说明**
@@ -483,7 +551,15 @@ type SDKInterface interface {
 	SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType common.TxType, txIds []string) (<-chan interface{}, error)
 	// ```
 
-	// ### 6.3 多合一订阅
+	// ### 6.3 合约事件订阅
+	// **参数说明**
+	//   - topic ：指定订阅主题
+	//   - contractName ：指定订阅的合约名称
+	// ```go
+	SubscribeContractEvent(ctx context.Context, topic string, contractName string) (<-chan interface{}, error)
+	// ```
+
+	// ### 6.4 多合一订阅
 	// **参数说明**
 	//   - txType: 订阅交易类型，目前已支持：区块消息订阅(common.TxType_SUBSCRIBE_BLOCK_INFO)、交易消息订阅(common.TxType_SUBSCRIBE_TX_INFO)
 	//   - payloadBytes: 消息订阅参数payload
@@ -503,73 +579,180 @@ type SDKInterface interface {
 	DisableCertHash() error
 	// ```
 
-	// ## 9 编解码类
-	// ### 9.1 将EasyCodec编码解码成map
+	// ## 8 工具类
+	// ### 8.1 将EasyCodec编码解码成map
 	// ```go
-	EasyCodecBytesToParamsMap(data []byte) map[string]string
+	EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string]string
 	// ```
 
-	// ## 10 系统类接口
-	// ### 10.1 SDK停止接口
-	// *关闭连接池连接，释放资源*
+	// ### 8.2 根据X.509证书路径得到EVM地址
+	// **参数说明**
+	//   - certFilePath: 证书文件路径
 	// ```go
-	Stop() error
+	GetEVMAddressFromCertPath(certFilePath string) (string, error)
 	// ```
 
-	// ### 10.2 获取链版本
+	// ### 8.3 根据X.509证书内容得到EVM地址
+	// **参数说明**
+	//   - certBytes: 证书内容
 	// ```go
-	GetChainMakerServerVersion() (string, error)
+	GetEVMAddressFromCertBytes(certBytes []byte) (string, error)
 	// ```
 
-	// ## 11 系统隐私合约类接口
-	// ### 11.1 证书上链及验证
-	// ```go
 	SaveEnclaveCACert(caCert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
-	//```
-
-	// ### 11.2 隐私目录上链
+	// ## 9 层级属性加密类接口
+	// > 注意：层级属性加密模块 `Id` 使用 `/` 作为分隔符，例如： Org1/Ou1/Member1
+	// ### 9.1 生成层级属性参数初始化交易 payload
+	// **参数说明**
+	//   - orgId: 参与方组织 id
+	//   - hibeParams: 传入序列化后的hibeParams byte数组
 	// ```go
-	SaveDir(orderId, txId string, privateDir *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error)
-	//```
+	CreateHibeInitParamsTxPayloadParams(orgId string, hibeParams []byte) (map[string]string, error)
+	// ```
 
-	// ### 11.3 隐私合约代码查询
+	// ### 9.2 生成层级属性加密交易 payload，加密参数已知
+	// **参数说明**
+	//   - plaintext: 待加密交易消息明文
+	//   - receiverIds: 消息接收者 id 列表，需和 paramsList 一一对应
+	//   - paramsBytesList: 消息接收者对应的加密参数，需和 receiverIds 一一对应
+	//   - txId: 以交易 Id 作为链上存储 hibeMsg 的 Key, 如果不提供存储的信息可能被覆盖
+	//	 - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 	// ```go
-	GetContract(contractName, codeHash string) (*common.PrivateGetContract, error)
-	//```
+	CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, paramsBytesList [][]byte, txId string, keyType crypto.KeyType) (map[string]string, error)
+	// ```
 
-	// ### 11.4 隐私计算结果上链
+	// ### 9.3 生成层级属性加密交易 payload，参数由链上查询得出
+	// **参数说明**
+	//	 - contractName: 合约名
+	//	 - queryParamsMethod: 链上查询 hibe.Params 的合约方法
+	//   - plaintext: 待加密交易消息明文
+	//   - receiverIds: 消息接收者 id 列表，需和 paramsList 一一对应
+	//   - paramsList: 消息接收者对应的加密参数，需和 receiverIds 一一对应
+	//   - receiverOrgIds: 链上查询 hibe Params 的 Key 列表，需要和 receiverIds 一一对应
+	//   - txId: 以交易 Id 作为链上存储 hibeMsg 的 Key, 如果不提供存储的信息可能被覆盖
+	//	 - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
+	//	 - timeout: （内部查询 HibeParams 的）超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
-	SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, reportSign []byte, events *common.StrSlice, privateReq []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error)
-	//```
+	CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte, receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType, timeout int64) (map[string]string, error)
+	// ```
 
-	// ### 11.5 隐私计算结果查询
+	// ### 9.4 查询某一组织的加密公共参数，返回其序列化后的byte数组
+	// **参数说明**
+	//	 - contractName: 合约名
+	// 	 - method: 查询的合约方法名
+	//   - orgId: 参与方 id
+	//	 - timeout: 查询超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
-	GetData(contractName, key string) ([]byte, error)
-	//```
+	QueryHibeParamsWithOrgId(contractName, method, orgId string, timeout int64) ([]byte, error)
+	// ```
 
-	// ### 11.6 隐私合约代码上链
+	// ### 9.5 已知交易id，根据私钥解密密文交易
+	// **参数说明**
+	//   - localId: 本地层级属性加密 id
+	//   - hibeParams: hibeParams 序列化后的byte数组
+	//   - hibePrivKey: hibe私钥序列化后的byte数组
+	//   - txId: 层级属性加密交易 id
+	//	 - keyType: 对加密信息进行对称解密的方法，请和加密时使用的方法保持一致，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 	// ```go
-	SaveContract(codeBytes []byte, codeHash, contractName, version, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
-	//```
+	DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
+	// ```
 
-	// ### 11.7 enclave通过⽹关调⽤
+	// ## 10 数据归档接口
+	// ### 10.1 获取已归档区块高度
+	// **参数说明**
+	//   - 输出已归档的区块高度
 	// ```go
+	GetArchivedBlockHeight() (int64, error)
+	// ```
+
+	// ### 10.2 构造数据归档区块Payload
+	// **参数说明**
+	//   - targetBlockHeight: 归档目标区块高度
+	// ```go
+	CreateArchiveBlockPayload(targetBlockHeight int64) ([]byte, error)
+	// ```
+
+	// ### 10.3 构造归档归档数据恢复Payload
+	// **参数说明**
+	//   - fullBlock: 完整区块数据（对应结构：store.BlockWithRWSet）
+	// ```go
+	CreateRestoreBlockPayload(fullBlock []byte) ([]byte, error)
+	// ```
+
+	// ### 10.4 获取归档操作Payload签名
+	// **参数说明**
+	//   - payloadBytes: 待签名payload
+	// ```go
+	SignArchivePayload(payloadBytes []byte) ([]byte, error)
+	// ```
+
+
+
+	SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult,
+		txId string, rwSet *common.TxRWSet, reportSign []byte, events *common.StrSlice, privateReq []byte,
+		withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	//```
+	// ### 10.5 发送归档请求
+	// **参数说明**
+	//   - mergeSignedPayloadBytes: 签名结果
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
+	// ```go
+	SendArchiveBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error)
+	// ```
+
+	// ### 10.6 归档数据恢复
+	// **参数说明**
+	//   - mergeSignedPayloadBytes: 签名结果
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
+	// ```go
+	SendRestoreBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error)
+	// ```
+
+	// ### 10.7 根据交易Id查询已归档交易
+	// **参数说明**
+	//   - txId: 交易ID
+	// ```go
+	GetArchivedTxByTxId(txId string) (*common.TransactionInfo, error)
+	// ```
+
+	// ### 10.8 根据区块高度查询已归档区块
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
 	SaveRemoteAttestationProof(proof, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
-	//```
-
-	// ### 11.8 隐私计算证书查询
+	// ### 10.9 根据区块高度查询已归档完整区块(包含：区块数据、读写集、合约事件日志)
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
 	// ```go
+
+	GetArchivedFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error)
+	// ```
+
 	GetEnclaveCACert() ([]byte, error)
+	// ### 10.10 根据区块哈希查询已归档区块
+	// **参数说明**
+	//   - blockHash: 指定区块Hash
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 11.9 隐私计算隐私目录查询
+	// ### 10.11 根据交易Id查询已归档区块
+	// **参数说明**
+	//   - txId: 交易ID
+	//   - withRWSet: 是否返回读写集
 	// ```go
-	GetDir(orderId string) ([]byte, error)
-	// ```
-
-	// ### 11.10 隐私计算隐私目录查询
-	// ```go
-	GetEnclaveReport(enclaveId string) ([]byte, error)
+	GetArchivedBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
 	// ###  11.11 隐私计算调用者权限验证
@@ -577,8 +760,21 @@ type SDKInterface interface {
 	CheckCallerCertAuth(privateComputeRequest string) (*common.TxResponse, error)
 	// ```
 
+	// ```go
+	GetEnclaveReport(enclaveId string) ([]byte, error)
+	// ```
 	// ### 11.12 获取隐私证明材料
 	// ```
-        GetEnclaveProof(enclaveId string) ([]byte, error)
+	GetEnclaveProof(enclaveId string) ([]byte, error)
+	// ## 11 系统类接口
+	// ### 11.1 SDK停止接口
+	// *关闭连接池连接，释放资源*
+	// ```go
+	Stop() error
+	// ```
 
+	// ### 11.2 获取链版本
+	// ```go
+	GetChainMakerServerVersion() (string, error)
+	// ```
 }
