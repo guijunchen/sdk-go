@@ -38,6 +38,8 @@ type NodeConfig struct {
 	useTLS bool
 	// CA ROOT证书路径
 	caPaths []string
+	// CA ROOT证书内容（同时配置caPaths和caCerts以caCerts为准）
+	caCerts []string
 	// TLS hostname
 	tlsHostName string
 }
@@ -72,9 +74,32 @@ func WithNodeCAPaths(caPaths []string) NodeOption {
 	}
 }
 
+// 添加CA证书内容
+func WithNodeCACerts(caCerts []string) NodeOption {
+	return func(config *NodeConfig) {
+		config.caCerts = caCerts
+	}
+}
+
 func WithNodeTLSHostName(tlsHostName string) NodeOption {
 	return func(config *NodeConfig) {
 		config.tlsHostName = tlsHostName
+	}
+}
+
+// Archive配置
+type ArchiveConfig struct {
+	// 非必填
+	// secret key
+	secretKey string
+}
+
+type ArchiveOption func(config *ArchiveConfig)
+
+// 设置Archive的secret key
+func WithSecretKey(key string) ArchiveOption {
+	return func(config *ArchiveConfig) {
+		config.secretKey = key
 	}
 }
 
@@ -87,19 +112,27 @@ type ChainClientConfig struct {
 	confPath string
 
 	// 方式2：参数指定（方式1与方式2可以同时使用，参数指定的值会覆盖配置文件中的配置）
-	orgId               string
-	chainId             string
-	nodeList            []*NodeConfig
+	orgId    string
+	chainId  string
+	nodeList []*NodeConfig
+
+	// 以下xxxPath和xxxBytes同时指定的话，优先使用Bytes
 	userKeyFilePath     string
 	userCrtFilePath     string
 	userSignKeyFilePath string
 	userSignCrtFilePath string
 
-	// 以下字段为经过处理后的参数
-	privateKey       crypto.PrivateKey
-	userCrtPEM       []byte
-	userCrt          *bcx509.Certificate
+	userKeyBytes     []byte
+	userCrtBytes     []byte
 	userSignKeyBytes []byte
+	userSignCrtBytes []byte
+
+	// 以下字段为经过处理后的参数
+	privateKey crypto.PrivateKey
+	userCrt    *bcx509.Certificate
+
+	// 归档特性的配置
+	archiveConfig *ArchiveConfig
 }
 
 type ChainClientOption func(*ChainClientConfig)
@@ -146,6 +179,34 @@ func WithUserSingCrtFilePath(userSignCrtFilePath string) ChainClientOption {
 	}
 }
 
+// 添加用户私钥文件内容配置
+func WithUserKeyBytes(userKeyBytes []byte) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.userKeyBytes = userKeyBytes
+	}
+}
+
+// 添加用户证书文件内容配置
+func WithUserCrtBytes(userCrtBytes []byte) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.userCrtBytes = userCrtBytes
+	}
+}
+
+// 添加用户签名私钥文件内容配置
+func WithUserSignKeyBytes(userSignKeyBytes []byte) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.userSignKeyBytes = userSignKeyBytes
+	}
+}
+
+// 添加用户签名证书文件内容配置
+func WithUserSignCrtBytes(userSignCrtBytes []byte) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.userSignCrtBytes = userSignCrtBytes
+	}
+}
+
 // 添加OrgId
 func WithChainClientOrgId(orgId string) ChainClientOption {
 	return func(config *ChainClientConfig) {
@@ -164,6 +225,13 @@ func WithChainClientChainId(chainId string) ChainClientOption {
 func WithChainClientLogger(logger Logger) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.logger = logger
+	}
+}
+
+// 设置Archive配置
+func WithArchiveConfig(conf *ArchiveConfig) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.archiveConfig = conf
 	}
 }
 
@@ -197,20 +265,21 @@ func setChainConfig(config *ChainClientConfig) {
 	}
 }
 
+// 如果参数没有设置，便使用配置文件的配置
 func setUserConfig(config *ChainClientConfig) {
-	if Config.ChainClientConfig.UserKeyFilePath != "" && config.userKeyFilePath == "" {
+	if Config.ChainClientConfig.UserKeyFilePath != "" && config.userKeyFilePath == "" && config.userKeyBytes == nil {
 		config.userKeyFilePath = Config.ChainClientConfig.UserKeyFilePath
 	}
 
-	if Config.ChainClientConfig.UserCrtFilePath != "" && config.userCrtFilePath == "" {
+	if Config.ChainClientConfig.UserCrtFilePath != "" && config.userCrtFilePath == "" && config.userCrtBytes == nil {
 		config.userCrtFilePath = Config.ChainClientConfig.UserCrtFilePath
 	}
 
-	if Config.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyFilePath == "" {
+	if Config.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyFilePath == "" && config.userSignKeyBytes == nil {
 		config.userSignKeyFilePath = Config.ChainClientConfig.UserSignKeyFilePath
 	}
 
-	if Config.ChainClientConfig.UserSignCrtFilePath != "" && config.userSignCrtFilePath == "" {
+	if Config.ChainClientConfig.UserSignCrtFilePath != "" && config.userSignCrtFilePath == "" && config.userSignCrtBytes == nil {
 		config.userSignCrtFilePath = Config.ChainClientConfig.UserSignCrtFilePath
 	}
 }
@@ -236,6 +305,17 @@ func setNodeList(config *ChainClientConfig) {
 	}
 }
 
+func setArchiveConfig(config *ChainClientConfig) {
+	if Config.ChainClientConfig.ArchiveConfig != nil && config.archiveConfig == nil {
+		archive := NewArchiveConfig(
+			// secret key
+			WithSecretKey(Config.ChainClientConfig.ArchiveConfig.SecretKey),
+		)
+
+		config.archiveConfig = archive
+	}
+}
+
 func readConfigFile(config *ChainClientConfig) error {
 	// 若没有配置配置文件
 	if config.confPath == "" {
@@ -251,6 +331,8 @@ func readConfigFile(config *ChainClientConfig) error {
 	setUserConfig(config)
 
 	setNodeList(config)
+
+	setArchiveConfig(config)
 
 	return nil
 }
@@ -283,6 +365,10 @@ func checkConfig(config *ChainClientConfig) error {
 		return err
 	}
 
+	if err = checkArchiveConfig(config); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -301,8 +387,8 @@ func checkNodeListConfig(config *ChainClientConfig) error {
 
 		if node.useTLS {
 			// 如果开启了TLS认证，CA路径必填
-			if len(node.caPaths) == 0 {
-				return fmt.Errorf("if node useTLS is open, should set caPath")
+			if len(node.caPaths) == 0 && len(node.caCerts) == 0 {
+				return fmt.Errorf("if node useTLS is open, should set caPaths or caCerts")
 			}
 
 			// 如果开启了TLS认证，需配置TLS HostName
@@ -317,13 +403,13 @@ func checkNodeListConfig(config *ChainClientConfig) error {
 
 func checkUserConfig(config *ChainClientConfig) error {
 	// 用户私钥不可为空
-	if config.userKeyFilePath == "" {
-		return fmt.Errorf("user key file path cannot be empty")
+	if config.userKeyFilePath == "" && config.userKeyBytes == nil {
+		return fmt.Errorf("user key cannot be empty")
 	}
 
 	// 用户证书不可为空
-	if config.userCrtFilePath == "" {
-		return fmt.Errorf("user crt file path cannot be empty")
+	if config.userCrtFilePath == "" && config.userCrtBytes == nil {
+		return fmt.Errorf("user crt cannot be empty")
 	}
 
 	return nil
@@ -340,6 +426,10 @@ func checkChainConfig(config *ChainClientConfig) error {
 		return fmt.Errorf("chainId cannot be empty")
 	}
 
+	return nil
+}
+
+func checkArchiveConfig(config *ChainClientConfig) error {
 	return nil
 }
 
@@ -365,31 +455,35 @@ func dealConfig(config *ChainClientConfig) error {
 	return nil
 }
 
-func dealUserCrtConfig(config *ChainClientConfig) error {
-	var err error
-	// 读取用户证书
-	config.userCrtPEM, err = ioutil.ReadFile(config.userCrtFilePath)
-	if err != nil {
-		return fmt.Errorf("read user crt file failed, %s", err.Error())
+func dealUserCrtConfig(config *ChainClientConfig) (err error) {
+
+	if config.userCrtBytes == nil {
+		// 读取用户证书
+		config.userCrtBytes, err = ioutil.ReadFile(config.userCrtFilePath)
+		if err != nil {
+			return fmt.Errorf("read user crt file failed, %s", err.Error())
+		}
 	}
 
 	// 将证书转换为证书对象
-	if config.userCrt, err = ParseCert(config.userCrtPEM); err != nil {
+	if config.userCrt, err = ParseCert(config.userCrtBytes); err != nil {
 		return fmt.Errorf("ParseCert failed, %s", err.Error())
 	}
 
 	return nil
 }
 
-func dealUserKeyConfig(config *ChainClientConfig) error {
+func dealUserKeyConfig(config *ChainClientConfig) (err error) {
 
-	// 从私钥文件读取用户私钥，转换为privateKey对象
-	skBytes, err := ioutil.ReadFile(config.userKeyFilePath)
-	if err != nil {
-		return fmt.Errorf("read user key file failed, %s", err)
+	if config.userKeyBytes == nil {
+		// 从私钥文件读取用户私钥，转换为privateKey对象
+		config.userKeyBytes, err = ioutil.ReadFile(config.userKeyFilePath)
+		if err != nil {
+			return fmt.Errorf("read user key file failed, %s", err)
+		}
 	}
 
-	config.privateKey, err = asym.PrivateKeyFromPEM(skBytes, nil)
+	config.privateKey, err = asym.PrivateKeyFromPEM(config.userKeyBytes, nil)
 	if err != nil {
 		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
 	}
@@ -397,34 +491,47 @@ func dealUserKeyConfig(config *ChainClientConfig) error {
 	return nil
 }
 
-func dealUserSignCrtConfig(config *ChainClientConfig) error {
-	var err error
+func dealUserSignCrtConfig(config *ChainClientConfig) (err error) {
 
-	if config.userSignCrtFilePath != "" {
-		config.userCrtPEM, err = ioutil.ReadFile(config.userSignCrtFilePath)
+	if config.userSignCrtBytes == nil {
+		if config.userSignCrtFilePath == "" {
+			return nil
+		}
+
+		config.userCrtBytes, err = ioutil.ReadFile(config.userSignCrtFilePath)
 		if err != nil {
 			return fmt.Errorf("read user sign crt file failed, %s", err.Error())
 		}
-		if config.userCrt, err = ParseCert(config.userCrtPEM); err != nil {
-			return fmt.Errorf("ParseSignCert failed, %s", err.Error())
-		}
+
+	} else {
+		config.userCrtBytes = config.userSignCrtBytes
+	}
+
+	if config.userCrt, err = ParseCert(config.userCrtBytes); err != nil {
+		return fmt.Errorf("ParseSignCert failed, %s", err.Error())
 	}
 
 	return nil
 }
 
-func dealUserSignKeyConfig(config *ChainClientConfig) error {
-	var err error
+func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 
-	if config.userSignKeyFilePath != "" {
-		config.userSignKeyBytes, err = ioutil.ReadFile(config.userSignKeyFilePath)
+	if config.userSignKeyBytes == nil {
+		if config.userSignKeyFilePath == "" {
+			return nil
+		}
+
+		config.userKeyBytes, err = ioutil.ReadFile(config.userSignKeyFilePath)
 		if err != nil {
 			return fmt.Errorf("read user sign key file failed, %s", err.Error())
 		}
-		config.privateKey, err = asym.PrivateKeyFromPEM(config.userSignKeyBytes, nil)
-		if err != nil {
-			return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
-		}
+	} else {
+		config.userKeyBytes = config.userSignKeyBytes
+	}
+
+	config.privateKey, err = asym.PrivateKeyFromPEM(config.userKeyBytes, nil)
+	if err != nil {
+		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
 	}
 
 	return nil
