@@ -16,6 +16,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/golang/protobuf/proto"
+	"strconv"
 )
 
 func (cc *ChainClient) SaveDir(orderId, txId string,
@@ -126,8 +127,10 @@ func (cc *ChainClient) GetContract(contractName, codeHash string) (*common.Priva
 	return contractInfo, nil
 }
 
-func (cc *ChainClient) SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, reportSign []byte,
-	events *common.StrSlice, privateReq []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+func (cc *ChainClient) SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte,
+	reportHash []byte, result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet,
+	reportSign []byte, events *common.StrSlice, privateReq []byte, withSyncResult bool,
+	timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -166,13 +169,16 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 		resultStr = string(result)
 	}
 
+	deployStr := strconv.FormatBool(isDeployment)
 	pairs := paramsMap2KVPairs(map[string]string{
 		//"user_cert":     string(userCert),
 		//"client_sign":   string(clientSign), //user request clientSign
 		//"org_id":        orgId,
 		"result":        resultStr,
+		"code_header":   string(codeHeader),
 		"contract_name": contractName,
 		"version":       contractVersion,
+		"is_deploy":     deployStr,
 		"code_hash":     string(codeHash),
 		"rw_set":        rwSetStr,
 		"events":        eventsStr,
@@ -180,7 +186,6 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 		"report_sign":   string(reportSign),
 		//"payload":       string(payLoad),
 		"private_req" :   string(privateReq),
-
 	})
 	// verify sign
 	pkPEM, err := cc.GetEnclaveVerificationPubKey("global_enclave_id")

@@ -688,9 +688,9 @@ type SDKInterface interface {
 
 
 
-	SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult,
-		txId string, rwSet *common.TxRWSet, reportSign []byte, events *common.StrSlice, privateReq []byte,
-		withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte, reportHash []byte,
+		result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet, reportSign []byte,
+		events *common.StrSlice, privateReq []byte,	withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	//```
 	// ### 10.5 发送归档请求
 	// **参数说明**
