@@ -197,7 +197,7 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 	for i := 0; i < len(rwSet.TxReads); i++ {
 		evmResultBuffer.Write(rwSet.TxReads[i].Key)
 		evmResultBuffer.Write(rwSet.TxReads[i].Value)
-		evmResultBuffer.Write([]byte(rwSet.TxReads[i].Version.RefTxId))
+		//evmResultBuffer.Write([]byte(rwSet.TxReads[i].Version.RefTxId))
 	}
 	for i := 0; i < len(rwSet.TxWrites); i++ {
 		evmResultBuffer.Write(rwSet.TxWrites[i].Key)
@@ -209,8 +209,8 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 	evmResultBuffer.Write(reportHash)
 	evmResultBuffer.Write(userCert)
 	evmResultBuffer.Write(clientSign)
-	evmResultBuffer.Write(payLoad)
 	evmResultBuffer.Write([]byte(orgId))
+	evmResultBuffer.Write(payLoad)
 	b, err := pk.VerifyWithOpts(evmResultBuffer.Bytes(), reportSign, &crypto.SignOpts{
 		Hash:         crypto.HASH_TYPE_SHA256,
 		UID:          "",
