@@ -216,7 +216,7 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 	}
 
 	if resp.Code != common.TxStatusCode_SUCCESS || resp.Message != "OK" {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), resp.Message)
 	}
 
 	return resp, nil
