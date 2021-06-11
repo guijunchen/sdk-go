@@ -8,13 +8,14 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
+
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/config"
-	"fmt"
 	"github.com/golang/protobuf/proto"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -246,7 +247,7 @@ func (cc *ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify boo
 	return payload, nil
 }
 
-func (cc *ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId, trustRootCrt string) ([]byte, error) {
+func (cc *ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId string, trustRootCrt []string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [TrustRootAdd] to be signed payload")
 
 	seq, err := cc.GetChainConfigSequence()
@@ -261,7 +262,7 @@ func (cc *ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId, trus
 		},
 		{
 			Key:   "root",
-			Value: trustRootCrt,
+			Value: strings.Join(trustRootCrt, ","),
 		},
 	}
 
@@ -274,7 +275,7 @@ func (cc *ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId, trus
 	return payload, nil
 }
 
-func (cc *ChainClient) CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt string) ([]byte, error) {
+func (cc *ChainClient) CreateChainConfigTrustRootUpdatePayload(trustRootOrgId string, trustRootCrt []string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [TrustRootUpdate] to be signed payload")
 
 	seq, err := cc.GetChainConfigSequence()
@@ -289,7 +290,7 @@ func (cc *ChainClient) CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, t
 		},
 		{
 			Key:   "root",
-			Value: trustRootCrt,
+			Value: strings.Join(trustRootCrt, ","),
 		},
 	}
 
@@ -319,6 +320,101 @@ func (cc *ChainClient) CreateChainConfigTrustRootDeletePayload(trustRootOrgId st
 
 	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
 		common.ConfigFunction_TRUST_ROOT_DELETE.String(), pairs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
+	}
+
+	return payload, nil
+}
+
+func (cc *ChainClient) CreateChainConfigTrustMemberAddPayload(trustMemberOrgId, trustMemberNodeId, trustMemberRole, trustMemberInfo string) ([]byte, error) {
+	cc.logger.Debug("[SDK] begin to create [TrustRootAdd] to be signed payload")
+
+	seq, err := cc.GetChainConfigSequence()
+	if err != nil {
+		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
+	}
+
+	pairs := []*common.KeyValuePair{
+		{
+			Key:   orgId,
+			Value: trustMemberOrgId,
+		},
+		{
+			Key:   "member_info",
+			Value: trustMemberInfo,
+		},
+		{
+			Key:   "node_id",
+			Value: trustMemberNodeId,
+		},
+		{
+			Key:   "role",
+			Value: trustMemberRole,
+		},
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_TRUST_MEMBER_ADD.String(), pairs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
+	}
+
+	return payload, nil
+}
+
+func (cc *ChainClient) CreateChainConfigTrustMemberUpdatePayload(trustMemberOrgId, trustMemberNodeId, trustMemberRole, trustMemberInfo string) ([]byte, error) {
+	cc.logger.Debug("[SDK] begin to create [TrustRootUpdate] to be signed payload")
+
+	seq, err := cc.GetChainConfigSequence()
+	if err != nil {
+		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
+	}
+
+	pairs := []*common.KeyValuePair{
+		{
+			Key:   orgId,
+			Value: trustMemberOrgId,
+		},
+		{
+			Key:   "member_info",
+			Value: trustMemberInfo,
+		},
+		{
+			Key:   "node_id",
+			Value: trustMemberNodeId,
+		},
+		{
+			Key:   "role",
+			Value: trustMemberRole,
+		},
+	}
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_TRUST_MEMBER_UPDATE.String(), pairs, seq+1)
+	if err != nil {
+		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
+	}
+
+	return payload, nil
+}
+
+func (cc *ChainClient) CreateChainConfigTrustMemberDeletePayload(trustMemberOrgId string) ([]byte, error) {
+	cc.logger.Debug("[SDK] begin to create [TrustRootDelete] to be signed payload")
+
+	seq, err := cc.GetChainConfigSequence()
+	if err != nil {
+		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
+	}
+
+	pairs := []*common.KeyValuePair{
+		{
+			Key:   orgId,
+			Value: trustMemberOrgId,
+		},
+	}
+
+	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
+		common.ConfigFunction_TRUST_MEMBER_DELETE.String(), pairs, seq+1)
 	if err != nil {
 		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 	}
