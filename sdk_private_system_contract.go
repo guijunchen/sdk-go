@@ -8,12 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"bytes"
-	"chainmaker.org/chainmaker-go/common/crypto"
-	"chainmaker.org/chainmaker-go/common/crypto/asym"
-	"chainmaker.org/chainmaker-go/common/crypto/asym/rsa"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
-	"encoding/binary"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 )
@@ -126,8 +121,10 @@ func (cc *ChainClient) GetContract(contractName, codeHash string) (*common.Priva
 	return contractInfo, nil
 }
 
-func (cc *ChainClient) SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, reportSign []byte,
-	events *common.StrSlice, userCert []byte, clientSign []byte, orgId string, payLoad []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+func (cc *ChainClient) SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte,
+	result *common.ContractResult, txId string, rwSet *common.TxRWSet, reportSign []byte,
+	events *common.StrSlice, userCert []byte, clientSign []byte, orgId string, payLoad []byte,
+	withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
 	}
@@ -180,51 +177,6 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, cod
 		"report_sign":   string(reportSign),
 		"payload":       string(payLoad),
 	})
-	// verify sign
-	pkPEM, err := cc.GetEnclaveVerificationPubKey("global_enclave_id")
-	pk, err := asym.PublicKeyFromPEM(pkPEM)
-	if err != nil {
-		return nil, fmt.Errorf("get pk from PEM error: %s", err.Error())
-	}
-	evmResultBuffer := bytes.NewBuffer([]byte{})
-	if err := binary.Write(evmResultBuffer, binary.LittleEndian, result.Code); err != nil {
-		return nil, err
-	}
-	evmResultBuffer.Write(result.Result)
-	if err := binary.Write(evmResultBuffer, binary.LittleEndian, result.GasUsed); err != nil {
-		return nil, err
-	}
-	for i := 0; i < len(rwSet.TxReads); i++ {
-		evmResultBuffer.Write(rwSet.TxReads[i].Key)
-		evmResultBuffer.Write(rwSet.TxReads[i].Value)
-		//evmResultBuffer.Write([]byte(rwSet.TxReads[i].Version.RefTxId))
-	}
-	for i := 0; i < len(rwSet.TxWrites); i++ {
-		evmResultBuffer.Write(rwSet.TxWrites[i].Key)
-		evmResultBuffer.Write(rwSet.TxWrites[i].Value)
-	}
-	evmResultBuffer.Write([]byte(contractName))
-	evmResultBuffer.Write([]byte(contractVersion))
-	evmResultBuffer.Write(codeHash)
-	evmResultBuffer.Write(reportHash)
-	evmResultBuffer.Write(userCert)
-	evmResultBuffer.Write(clientSign)
-	evmResultBuffer.Write([]byte(orgId))
-	evmResultBuffer.Write(payLoad)
-	b, err := pk.VerifyWithOpts(evmResultBuffer.Bytes(), reportSign, &crypto.SignOpts{
-		Hash:         crypto.HASH_TYPE_SHA256,
-		UID:          "",
-		EncodingType: rsa.RSA_PSS,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if !b {
-		return nil, nil
-	}
-	fmt.Println("verify ContractResult success")
-
 	payloadBytes, err := constructSystemContractPayload(
 		cc.chainId,
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
