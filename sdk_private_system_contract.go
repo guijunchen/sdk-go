@@ -14,6 +14,7 @@ import (
 	"chainmaker.org/chainmaker-go/common/crypto/asym/rsa"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"strconv"
@@ -465,15 +466,26 @@ func (cc *ChainClient) GetDir(orderId string) ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
-func (cc *ChainClient) CheckCallerCertAuth(privateComputeRequest string) (*common.TxResponse, error) {
+func (cc *ChainClient) CheckCallerCertAuth(payload string, orgIds []string, signPairs []*common.SignInfo) (
+	*common.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to check caller cert auth  , [contract:%s]/[method:%s]",
 		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
 		common.PrivateComputeContractFunction_CHECK_CALLER_CERT_AUTH.String(),
 	)
 
+	orgIdsJson, err := json.Marshal(orgIds)
+	if err != nil {
+		return nil, fmt.Errorf("json marshal orgIds failed, err: %v", err)
+	}
+	signPairsJson, err := json.Marshal(signPairs)
+	if err != nil {
+		return nil, fmt.Errorf("json marshal signPairs failed, err: %v", err)
+	}
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string]string{
-		"private_req":   privateComputeRequest,
+		"payload":   payload,
+		"org_ids": 	string(orgIdsJson),
+		"sign_pairs": string(signPairsJson),
 	})
 
 	payloadBytes, err := constructQueryPayload(
@@ -496,6 +508,39 @@ func (cc *ChainClient) CheckCallerCertAuth(privateComputeRequest string) (*commo
 
 	return resp, nil
 }
+
+//
+//func (cc *ChainClient) CheckCallerCertAuth(privateComputeRequest string) (*common.TxResponse, error) {
+//	cc.logger.Infof("[SDK] begin to check caller cert auth  , [contract:%s]/[method:%s]",
+//		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+//		common.PrivateComputeContractFunction_CHECK_CALLER_CERT_AUTH.String(),
+//	)
+//
+//	// 构造Payload
+//	pairs := paramsMap2KVPairs(map[string]string{
+//		"private_req":   privateComputeRequest,
+//	})
+//
+//	payloadBytes, err := constructQueryPayload(
+//		common.ContractName_SYSTEM_CONTRACT_PRIVATE_COMPUTE.String(),
+//		common.PrivateComputeContractFunction_CHECK_CALLER_CERT_AUTH.String(),
+//		pairs,
+//	)
+//	if err != nil {
+//		return nil, fmt.Errorf("marshal get data payload failed, %s", err.Error())
+//	}
+//
+//	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
+//	if err != nil {
+//		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+//	}
+//
+//	if err = checkProposalRequestResp(resp, true); err != nil {
+//		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
+//	}
+//
+//	return resp, nil
+//}
 
 func (cc *ChainClient) SaveEnclaveCACert(enclaveCACert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
