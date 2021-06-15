@@ -757,7 +757,7 @@ type SDKInterface interface {
 
 	// ###  11.11 隐私计算调用者权限验证
 	// ```go
-	CheckCallerCertAuth(privateComputeRequest string) (*common.TxResponse, error)
+	CheckCallerCertAuth(payload string, orgIds []string, signPairs []*common.SignInfo) (*common.TxResponse, error)
 	// ```
 
 	// ```go
