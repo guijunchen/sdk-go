@@ -290,7 +290,7 @@ func testChainConfigTrustRootAdd(t *testing.T, client,
 	trustRootOrgId, trustRootCrt string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigTrustRootAddPayload(trustRootOrgId, trustRootCrt)
+	payloadBytes, err := client.CreateChainConfigTrustRootAddPayload(trustRootOrgId, []string{trustRootCrt})
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -301,7 +301,7 @@ func testChainConfigTrustRootUpdate(t *testing.T, client,
 	trustRootOrgId, trustRootCrt string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt)
+	payloadBytes, err := client.CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, []string{trustRootCrt})
 	require.Nil(t, err)
 
 	signAndSendRequest(t, client, admin1, admin2, admin3, admin4, payloadBytes)
