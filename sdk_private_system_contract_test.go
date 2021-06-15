@@ -192,7 +192,7 @@ func TestChainClient_SaveData(t *testing.T) {
 		//signature       []byte
 		//orgId           string
 		result          *common.ContractResult
-		codeHeader      string
+		codeHeader      []byte
 		contractName    string
 		contractVersion string
 		codeHash        []byte
@@ -239,7 +239,7 @@ func TestChainClient_SaveData(t *testing.T) {
 					Message: "",
 					GasUsed: 0,
 				},
-				codeHeader:      "",
+				codeHeader:      []byte(""),
 				//userCert:        []byte{},
 				//signature:       []byte{},
 				//orgId:           "",
@@ -484,7 +484,6 @@ func TestChainClient_GetDir(t *testing.T) {
 		})
 	}
 }
-
 
 func TestChainClient_SaveCACert(t *testing.T) {
 
