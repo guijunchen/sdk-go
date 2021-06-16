@@ -125,7 +125,7 @@ func (cc *ChainClient) GetContract(contractName, codeHash string) (*common.Priva
 
 func (cc *ChainClient) SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte,
 	reportHash []byte, result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet,
-	reportSign []byte, events *common.StrSlice, privateReq []byte, withSyncResult bool,
+	sign []byte, events *common.StrSlice, privateReq []byte, withSyncResult bool,
 	timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = GetRandTxId()
@@ -167,9 +167,6 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, isD
 
 	deployStr := strconv.FormatBool(isDeployment)
 	pairsMap := map[string]string {
-		//"user_cert":     string(userCert),
-		//"client_sign":   string(clientSign), //user request clientSign
-		//"org_id":        orgId,
 		"result":        resultStr,
 		"code_header":   string(codeHeader),
 		"contract_name": contractName,
@@ -179,8 +176,7 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, isD
 		"rw_set":        rwSetStr,
 		"events":        eventsStr,
 		"report_hash":   string(reportHash),
-		"report_sign":   string(reportSign),
-		//"payload":       string(payLoad),
+		"sign":          string(sign),
 	}
 	if isDeployment {
 		pairsMap["deploy_req"] = string(privateReq)
