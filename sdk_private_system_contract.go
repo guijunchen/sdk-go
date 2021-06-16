@@ -166,7 +166,7 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, isD
 	}
 
 	deployStr := strconv.FormatBool(isDeployment)
-	pairs := paramsMap2KVPairs(map[string]string{
+	pairsMap := map[string]string {
 		//"user_cert":     string(userCert),
 		//"client_sign":   string(clientSign), //user request clientSign
 		//"org_id":        orgId,
@@ -181,8 +181,13 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, isD
 		"report_hash":   string(reportHash),
 		"report_sign":   string(reportSign),
 		//"payload":       string(payLoad),
-		"private_req" :   string(privateReq),
-	})
+	}
+	if isDeployment {
+		pairsMap["deploy_req"] = string(privateReq)
+	} else {
+		pairsMap["private_req"] = string(privateReq)
+	}
+	pairs := paramsMap2KVPairs(pairsMap)
 
 	payloadBytes, err := constructSystemContractPayload(
 		cc.chainId,
