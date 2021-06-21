@@ -57,12 +57,7 @@ func initCaCert(t *testing.T) {
 }
 
 func initProof(t *testing.T) {
-	var err error
-	proofHex := readFileData("testdata/remote_attestation/proof.hex", t)
-	proof, err = hex.DecodeString(string(proofHex))
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
+	proof = readFileData("testdata/remote_attestation/proof.hex", t)
 }
 
 func initEnclaveId(t *testing.T) {
