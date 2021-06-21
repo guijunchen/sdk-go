@@ -1,8 +1,8 @@
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
-	"chainmaker.org/chainmaker-sdk-go/pb/protogo/store"
+	"chainmaker.org/chainmaker/pb-go/common"
+	"chainmaker.org/chainmaker/pb-go/store"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"database/sql"
