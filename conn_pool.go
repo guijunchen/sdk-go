@@ -47,7 +47,7 @@ type ConnectionPool struct {
 // 创建连接池
 func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 	pool := &ConnectionPool{
-		logger:          config.logger,
+		logger:       config.logger,
 		userKeyBytes: config.userKeyBytes,
 		userCrtBytes: config.userCrtBytes,
 	}
