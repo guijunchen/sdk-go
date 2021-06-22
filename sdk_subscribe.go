@@ -96,6 +96,7 @@ func (cc *ChainClient) Subscribe(ctx context.Context, txType common.TxType, payl
 						close(c)
 						return
 					}
+					ret = tx
 				case common.TxType_SUBSCRIBE_CONTRACT_EVENT_INFO:
 					events := &common.ContractEventInfoList{}
 					if err = proto.Unmarshal(result.Data, events); err != nil {
