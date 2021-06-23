@@ -598,7 +598,6 @@ type SDKInterface interface {
 	GetEVMAddressFromCertBytes(certBytes []byte) (string, error)
 	// ```
 
-	SaveEnclaveCACert(caCert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	// ## 9 层级属性加密类接口
 	// > 注意：层级属性加密模块 `Id` 使用 `/` 作为分隔符，例如： Org1/Ou1/Member1
 	// ### 9.1 生成层级属性参数初始化交易 payload
@@ -776,6 +775,16 @@ type SDKInterface interface {
 	//   - timeout: 交易发送超时时间
 	//```go
 	SaveRemoteAttestationProof(proof, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	//```
+
+	// ### 11.3 保存Encalve CA证书
+	// **参数说明**
+	//   - caCert: Enclave CA证书
+	//   - txId: 交易Id
+	//   - withSyncResult: 是否同步返回调用结果
+	//   - timeout: 交易发送超时时间
+	//```go
+	SaveEnclaveCACert(caCert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	//```
 
 	// ### 11.3 获取Encalve CA证书
