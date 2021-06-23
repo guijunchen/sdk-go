@@ -787,12 +787,12 @@ type SDKInterface interface {
 	SaveEnclaveCACert(caCert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	//```
 
-	// ### 11.3 获取Encalve CA证书
+	// ### 11.4 获取Encalve CA证书
 	//```go
 	GetEnclaveCACert() ([]byte, error)
 	//```
 
-	// ###  11.4 隐私计算调用者权限验证
+	// ###  11.5 隐私计算调用者权限验证
 	// **参数说明**
 	//	 - payload: 用户签名验证的payload内容
 	//   - orgIds: 组织Id的slice，注意和signPairs里面SignInfo的证书顺序一致
@@ -801,14 +801,14 @@ type SDKInterface interface {
 	CheckCallerCertAuth(payload string, orgIds []string, signPairs []*common.SignInfo) (*common.TxResponse, error)
 	// ```
 
-	// ###  11.5 获取Enclave的report
+	// ###  11.6 获取Enclave的report
 	// **参数说明**
 	//   - enclaveId: Enclave的Id，当前固定为
 	// ```go
 	GetEnclaveReport(enclaveId string) ([]byte, error)
 	// ```
 
-	// ### 11.6 获取隐私证明材
+	// ### 11.7 获取隐私证明材
 	// **参数说明**
 	//   - enclaveId: Enclave的Id，当前固定为
 	// ```go
