@@ -761,11 +761,11 @@ type SDKInterface interface {
 	//   - privateReq: 用户调用隐私计算请求时的request序列化字节数组
 	//   - withSyncResult: 是否同步返回调用结果
 	//   - timeout: 发送交易的超时时间
-	//```go
+	// ```go
 	SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte, reportHash []byte,
 		result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet, sign []byte,
 		events *common.StrSlice, privateReq []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error)
-	//```
+	// ```
 
 	// ### 11.2 保存远程证明
 	// **参数说明**
@@ -773,9 +773,9 @@ type SDKInterface interface {
 	//   - txId: 交易Id
 	//   - withSyncResult: 是否同步返回调用结果
 	//   - timeout: 交易发送超时时间
-	//```go
+	// ```go
 	SaveRemoteAttestationProof(proof, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
-	//```
+	// ```
 
 	// ### 11.3 保存Encalve CA证书
 	// **参数说明**
@@ -783,14 +783,14 @@ type SDKInterface interface {
 	//   - txId: 交易Id
 	//   - withSyncResult: 是否同步返回调用结果
 	//   - timeout: 交易发送超时时间
-	//```go
+	// ```go
 	SaveEnclaveCACert(caCert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
-	//```
+	// ```
 
 	// ### 11.4 获取Encalve CA证书
-	//```go
+	// ```go
 	GetEnclaveCACert() ([]byte, error)
-	//```
+	// ```
 
 	// ###  11.5 隐私计算调用者权限验证
 	// **参数说明**
@@ -813,12 +813,12 @@ type SDKInterface interface {
 	//   - enclaveId: Enclave的Id，当前固定为
 	// ```go
 	GetEnclaveProof(enclaveId string) ([]byte, error)
-	//```
+	// ```
 
 	// ### 11.8 获取隐私合约计算结果
 	// **参数说明**
 	//    - key: 计算结果对应的键值
-	 // ```go
+	// ```go
 	GetData(contractName, key string) ([]byte, error)
 	// ```
 
