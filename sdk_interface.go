@@ -503,9 +503,10 @@ type SDKInterface interface {
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	//  
 	// **返回值说明**
-	//   若成功调用，common.TxResponse.ContractResult.Result为txId
+	//   - 若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendMultiSignReq(txType common.TxType, payloadBytes []byte, endorsementEntry *common.EndorsementEntry, deadlineBlockHeight int, timeout int64) (*common.TxResponse, error)
+	SendMultiSignReq(txType common.TxType, payloadBytes []byte, endorsementEntry *common.EndorsementEntry, 
+		deadlineBlockHeight int, timeout int64) (*common.TxResponse, error)
 	// ```
 
 	// ### 5.3 多签投票
@@ -518,9 +519,10 @@ type SDKInterface interface {
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	//   
 	// **返回值说明**
-	//   若成功调用，common.TxResponse.ContractResult.Result为txId
+	//   - 若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendMultiSignVote(voteStatus common.VoteStatus, multiSignReqTxId, payloadHash string, endorsementEntry *common.EndorsementEntry, timeout int64) (*common.TxResponse, error)
+	SendMultiSignVote(voteStatus common.VoteStatus, multiSignReqTxId, payloadHash string, 
+		endorsementEntry *common.EndorsementEntry, timeout int64) (*common.TxResponse, error)
 	// ```
 
 	// ### 5.4 投票查询
@@ -617,7 +619,8 @@ type SDKInterface interface {
 	//   - txId: 以交易 Id 作为链上存储 hibeMsg 的 Key, 如果不提供存储的信息可能被覆盖
 	//   - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 	// ```go
-	CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, paramsBytesList [][]byte, txId string, keyType crypto.KeyType) (map[string]string, error)
+	CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, paramsBytesList [][]byte, txId string, 
+		keyType crypto.KeyType) (map[string]string, error)
 	// ```
 
 	// ### 9.3 生成层级属性加密交易 payload，参数由链上查询得出
@@ -632,7 +635,8 @@ type SDKInterface interface {
 	//   - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 	//   - timeout: （内部查询 HibeParams 的）超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
-	CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte, receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType, timeout int64) (map[string]string, error)
+	CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte, receiverIds []string, 
+		receiverOrgIds []string, txId string, keyType crypto.KeyType, timeout int64) (map[string]string, error)
 	// ```
 
 	// ### 9.4 查询某一组织的加密公共参数，返回其序列化后的byte数组
@@ -763,7 +767,9 @@ type SDKInterface interface {
 	//   - withSyncResult: 是否同步返回调用结果
 	//   - timeout: 发送交易的超时时间
 	// ```go
-	SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte, reportHash []byte, result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet, sign []byte, events *common.StrSlice, privateReq []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte, reportHash []byte, 
+		result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet, sign []byte, 
+		events *common.StrSlice, privateReq []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	// ```
 
 	// ### 11.2 保存远程证明
