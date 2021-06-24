@@ -28,7 +28,7 @@ const (
 	version        = "1.0.0"
 	upgradeVersion = "2.0.0"
 
-	nodeAddr1 = "192.168.12.192:12301"
+	nodeAddr1 = "127.0.0.1:12301"
 	connCnt1  = 5
 
 	nodeAddr2 = "127.0.0.1:12301"
