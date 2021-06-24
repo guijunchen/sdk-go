@@ -42,3 +42,7 @@ chain_client:
     type: "mysql"
     dest: "root:123456:localhost:3306"
     secret_key: xxx
+
+  rpc_client:
+    # grpc客户端最大接受容量(MB)
+    max_receive_message_size: 16

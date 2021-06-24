@@ -8,24 +8,25 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"context"
+	"encoding/hex"
+	"encoding/pem"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"strings"
+	"time"
+
 	"chainmaker.org/chainmaker-go/common/crypto"
 	bcx509 "chainmaker.org/chainmaker-go/common/crypto/x509"
 	"chainmaker.org/chainmaker-go/common/evmutils"
 	"chainmaker.org/chainmaker-go/common/serialize"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/accesscontrol"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
-	"context"
-	"encoding/hex"
-	"encoding/pem"
-	"errors"
-	"fmt"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"io/ioutil"
-	"strings"
-	"time"
 )
 
 const (
@@ -49,6 +50,9 @@ type ChainClient struct {
 
 	// archive config
 	archiveConfig *ArchiveConfig
+
+	//grpc client config
+	rpcClientConfig *RPCClientConfig
 }
 
 func (cc *ChainClient) CreateArchivePayload(method string, kvs []*common.KeyValuePair) ([]byte, error) {
@@ -73,6 +77,14 @@ func NewArchiveConfig(opts ...ArchiveOption) *ArchiveConfig {
 	return config
 }
 
+func NewRPCClientConfig(opts ...RPCClientOption) *RPCClientConfig {
+	config := &RPCClientConfig{}
+	for _, opt := range opts {
+		opt(config)
+	}
+	return config
+}
+
 func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	config, err := generateConfig(opts...)
 	if err != nil {
@@ -85,14 +97,15 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	}
 
 	return &ChainClient{
-		pool:          pool,
-		logger:        config.logger,
-		chainId:       config.chainId,
-		orgId:         config.orgId,
-		userCrtBytes:  config.userSignCrtBytes,
-		userCrt:       config.userCrt,
-		privateKey:    config.privateKey,
-		archiveConfig: config.archiveConfig,
+		pool:            pool,
+		logger:          config.logger,
+		chainId:         config.chainId,
+		orgId:           config.orgId,
+		userCrtBytes:    config.userSignCrtBytes,
+		userCrt:         config.userCrt,
+		privateKey:      config.privateKey,
+		archiveConfig:   config.archiveConfig,
+		rpcClientConfig: config.rpcClientConfig,
 	}, nil
 }
 

@@ -9,9 +9,10 @@ package chainmaker_sdk_go
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -51,7 +52,7 @@ var (
 		certPathPrefix + fmt.Sprintf(certPathFormat, orgId4),
 	}
 
-	caCerts = []string{"-----BEGIN CERTIFICATE-----\nMIICsDCCAlWgAwIBAgIDAuGKMAoGCCqBHM9VAYN1MIGKMQswCQYDVQQGEwJDTjEQ\nMA4GA1UECBMHQmVpamluZzEQMA4GA1UEBxMHQmVpamluZzEfMB0GA1UEChMWd3gt\nb3JnMS5jaGFpbm1ha2VyLm9yZzESMBAGA1UECxMJcm9vdC1jZXJ0MSIwIAYDVQQD\nExljYS53eC1vcmcxLmNoYWlubWFrZXIub3JnMB4XDTIxMDMyNTA2NDI1MVoXDTMx\nMDMyMzA2NDI1MVowgYoxCzAJBgNVBAYTAkNOMRAwDgYDVQQIEwdCZWlqaW5nMRAw\nDgYDVQQHEwdCZWlqaW5nMR8wHQYDVQQKExZ3eC1vcmcxLmNoYWlubWFrZXIub3Jn\nMRIwEAYDVQQLEwlyb290LWNlcnQxIjAgBgNVBAMTGWNhLnd4LW9yZzEuY2hhaW5t\nYWtlci5vcmcwWTATBgcqhkjOPQIBBggqgRzPVQGCLQNCAARIG6tdLNtG+eqwTK36\nS/AjzXh9Q0Zwrf7eqyCEQ4Ul7xfgKjCBNVboivH10ieYuh0MAoZj1Ke7z+P6ZUTy\naiuDo4GnMIGkMA4GA1UdDwEB/wQEAwIBpjAPBgNVHSUECDAGBgRVHSUAMA8GA1Ud\nEwEB/wQFMAMBAf8wKQYDVR0OBCIEIJDsy2L0fAK2V4YxOjVEjYj3YKSbX4F24eh0\nZQHoqCr1MEUGA1UdEQQ+MDyCDmNoYWlubWFrZXIub3Jngglsb2NhbGhvc3SCGWNh\nLnd4LW9yZzEuY2hhaW5tYWtlci5vcmeHBH8AAAEwCgYIKoEcz1UBg3UDSQAwRgIh\nAM1oJOU6l4tJVqrCJv5UnMaKLxu4V1dDwu0YsS5Tb1s9AiEA1D8NA3GGy9BEFryq\n5TS0uiqE3QEuDRvs1TrP9H53Sjk=\n-----END CERTIFICATE-----",}
+	caCerts = []string{"-----BEGIN CERTIFICATE-----\nMIICsDCCAlWgAwIBAgIDAuGKMAoGCCqBHM9VAYN1MIGKMQswCQYDVQQGEwJDTjEQ\nMA4GA1UECBMHQmVpamluZzEQMA4GA1UEBxMHQmVpamluZzEfMB0GA1UEChMWd3gt\nb3JnMS5jaGFpbm1ha2VyLm9yZzESMBAGA1UECxMJcm9vdC1jZXJ0MSIwIAYDVQQD\nExljYS53eC1vcmcxLmNoYWlubWFrZXIub3JnMB4XDTIxMDMyNTA2NDI1MVoXDTMx\nMDMyMzA2NDI1MVowgYoxCzAJBgNVBAYTAkNOMRAwDgYDVQQIEwdCZWlqaW5nMRAw\nDgYDVQQHEwdCZWlqaW5nMR8wHQYDVQQKExZ3eC1vcmcxLmNoYWlubWFrZXIub3Jn\nMRIwEAYDVQQLEwlyb290LWNlcnQxIjAgBgNVBAMTGWNhLnd4LW9yZzEuY2hhaW5t\nYWtlci5vcmcwWTATBgcqhkjOPQIBBggqgRzPVQGCLQNCAARIG6tdLNtG+eqwTK36\nS/AjzXh9Q0Zwrf7eqyCEQ4Ul7xfgKjCBNVboivH10ieYuh0MAoZj1Ke7z+P6ZUTy\naiuDo4GnMIGkMA4GA1UdDwEB/wQEAwIBpjAPBgNVHSUECDAGBgRVHSUAMA8GA1Ud\nEwEB/wQFMAMBAf8wKQYDVR0OBCIEIJDsy2L0fAK2V4YxOjVEjYj3YKSbX4F24eh0\nZQHoqCr1MEUGA1UdEQQ+MDyCDmNoYWlubWFrZXIub3Jngglsb2NhbGhvc3SCGWNh\nLnd4LW9yZzEuY2hhaW5tYWtlci5vcmeHBH8AAAEwCgYIKoEcz1UBg3UDSQAwRgIh\nAM1oJOU6l4tJVqrCJv5UnMaKLxu4V1dDwu0YsS5Tb1s9AiEA1D8NA3GGy9BEFryq\n5TS0uiqE3QEuDRvs1TrP9H53Sjk=\n-----END CERTIFICATE-----"}
 
 	userKeyPath = certPathPrefix + "/crypto-config/%s/user/client1/client1.tls.key"
 	userCrtPath = certPathPrefix + "/crypto-config/%s/user/client1/client1.tls.crt"
@@ -302,4 +303,37 @@ func TestChainClient_GetEVMAddressFromCertPath(t *testing.T) {
 	addr, err = client.GetEVMAddressFromCertPath(certFilePath)
 	require.Nil(t, err)
 	fmt.Printf("client2 address: %s\n", addr)
+}
+
+func TestSetRPCClientConf(t *testing.T) {
+	chainClient, err := NewChainClient(
+		WithConfPath("./testdata/sdk_config.yml"),
+	)
+	require.Nil(t, err)
+	fmt.Printf("[config] rpc client max receive message size: %d\n", chainClient.rpcClientConfig.rpcClientMaxReceiveMessageSize)
+	if node1 == nil {
+		// 创建节点1
+		node1 = createNode(nodeAddr1, connCnt1)
+	}
+	rpcClientConf := NewRPCClientConfig(
+		WithRPCClientMaxReceiveMessageSize(16),
+	)
+	chainClient, err = NewChainClient(
+		// 设置归属组织
+		WithChainClientOrgId(orgId1),
+		// 设置链ID
+		WithChainClientChainId(chainId),
+		// 设置logger句柄，若不设置，将采用默认日志文件输出日志
+		WithChainClientLogger(getDefaultLogger()),
+		// 设置客户端用户私钥路径
+		WithUserKeyFilePath(fmt.Sprintf(userKeyPath, orgId1)),
+		// 设置客户端用户证书
+		WithUserCrtFilePath(fmt.Sprintf(userCrtPath, orgId1)),
+		// 添加节点1
+		AddChainClientNodeConfig(node1),
+
+		WithRPCClientConfig(rpcClientConf),
+	)
+	require.Nil(t, err)
+	fmt.Printf("[set] rpc client max receive message size: %d\n", chainClient.rpcClientConfig.rpcClientMaxReceiveMessageSize)
 }
