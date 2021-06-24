@@ -110,7 +110,7 @@ func createClientWithOrgId(orgId string) (*ChainClient, error) {
 
 	if node2 == nil {
 		// 创建节点2
-		node2 = createNode(nodeAddr2, connCnt2)
+		//node2 = createNode(nodeAddr2, connCnt2)
 	}
 
 	chainClient, err := NewChainClient(
@@ -127,7 +127,7 @@ func createClientWithOrgId(orgId string) (*ChainClient, error) {
 		// 添加节点1
 		AddChainClientNodeConfig(node1),
 		// 添加节点2
-		AddChainClientNodeConfig(node2),
+		//AddChainClientNodeConfig(node2),
 	)
 
 	if err != nil {

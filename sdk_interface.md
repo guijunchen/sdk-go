@@ -588,6 +588,10 @@ GetEVMAddressFromCertBytes(certBytes []byte) (string, error)
 CreateHibeInitParamsTxPayloadParams(orgId string, hibeParams []byte) (map[string]string, error)
 ```
 
+```go
+    SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, reportSign []byte, events *common.StrSlice, userCert []byte, clientSign []byte, orgId string ,payLoad []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+```
+
 ### 9.2 生成层级属性加密交易 payload，加密参数已知
 **参数说明**
   - plaintext: 待加密交易消息明文
@@ -734,4 +738,9 @@ Stop() error
 ### 11.2 获取链版本
 ```go
 GetChainMakerServerVersion() (string, error)
+```
+
+###  11.11 隐私计算调用者权限验证
+```go
+    CheckCallerCertAuth(userCert, clientSign, payload string) (*common.TxResponse, error)
 ```

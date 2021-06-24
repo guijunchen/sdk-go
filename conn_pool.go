@@ -33,15 +33,15 @@ type networkClient struct {
 	caPaths     []string
 	caCerts     []string
 	tlsHostName string
-	ID 			string
+	ID          string
 }
 
 // 客户端连接池结构定义
 type ConnectionPool struct {
-	connections     []*networkClient
-	logger          Logger
-	userKeyBytes    []byte
-	userCrtBytes    []byte
+	connections  []*networkClient
+	logger       Logger
+	userKeyBytes []byte
+	userCrtBytes []byte
 }
 
 // 创建连接池
@@ -53,16 +53,15 @@ func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 	}
 
 	for idx, node := range config.nodeList {
-		cli := &networkClient{
-			nodeAddr:    node.addr,
-			useTLS:      node.useTLS,
-			caPaths:     node.caPaths,
-			caCerts:     node.caCerts,
-			tlsHostName: node.tlsHostName,
-			ID: fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
-		}
-
 		for i := 0; i < node.connCnt; i++ {
+			cli := &networkClient{
+				nodeAddr:    node.addr,
+				useTLS:      node.useTLS,
+				caPaths:     node.caPaths,
+				caCerts:     node.caCerts,
+				tlsHostName: node.tlsHostName,
+				ID:          fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
+			}
 			pool.connections = append(pool.connections, cli)
 		}
 	}
