@@ -418,7 +418,8 @@ type SDKInterface interface {
 	// ### 4.3 用户证书查询
 	// **参数说明**
 	//   - certHashes: 证书Hash列表
-	// 返回值说明：
+	//  
+	// **返回值说明**
 	//   - *common.CertInfos: 包含证书Hash和证书内容的列表
 	// ```go
 	QueryCert(certHashes []string) (*common.CertInfos, error)
@@ -500,11 +501,12 @@ type SDKInterface interface {
 	//   - endorsementEntry: 签名收集信息
 	//   - deadlineBlockHeight: 过期的区块高度，若设置为0，表示永不过期
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	// **返回值**
-	//   若成功调用，common.TxResponse.ContractResult.Result为txId
+	//  
+	// **返回值说明**
+	//   - 若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendMultiSignReq(txType common.TxType, payloadBytes []byte, endorsementEntry *common.EndorsementEntry, deadlineBlockHeight int,
-		timeout int64) (*common.TxResponse, error)
+	SendMultiSignReq(txType common.TxType, payloadBytes []byte, endorsementEntry *common.EndorsementEntry, 
+		deadlineBlockHeight int, timeout int64) (*common.TxResponse, error)
 	// ```
 
 	// ### 5.3 多签投票
@@ -515,10 +517,11 @@ type SDKInterface interface {
 	//   - payloadBytes: 待签名payload
 	//   - endorsementEntry: 签名收集信息
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	// **返回值**
-	//   若成功调用，common.TxResponse.ContractResult.Result为txId
+	//   
+	// **返回值说明**
+	//   - 若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendMultiSignVote(voteStatus common.VoteStatus, multiSignReqTxId, payloadHash string,
+	SendMultiSignVote(voteStatus common.VoteStatus, multiSignReqTxId, payloadHash string, 
 		endorsementEntry *common.EndorsementEntry, timeout int64) (*common.TxResponse, error)
 	// ```
 
@@ -614,32 +617,34 @@ type SDKInterface interface {
 	//   - receiverIds: 消息接收者 id 列表，需和 paramsList 一一对应
 	//   - paramsBytesList: 消息接收者对应的加密参数，需和 receiverIds 一一对应
 	//   - txId: 以交易 Id 作为链上存储 hibeMsg 的 Key, 如果不提供存储的信息可能被覆盖
-	//	 - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
+	//   - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 	// ```go
-	CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, paramsBytesList [][]byte, txId string, keyType crypto.KeyType) (map[string]string, error)
+	CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, paramsBytesList [][]byte, txId string, 
+		keyType crypto.KeyType) (map[string]string, error)
 	// ```
 
 	// ### 9.3 生成层级属性加密交易 payload，参数由链上查询得出
 	// **参数说明**
-	//	 - contractName: 合约名
-	//	 - queryParamsMethod: 链上查询 hibe.Params 的合约方法
+	//   - contractName: 合约名
+	//   - queryParamsMethod: 链上查询 hibe.Params 的合约方法
 	//   - plaintext: 待加密交易消息明文
 	//   - receiverIds: 消息接收者 id 列表，需和 paramsList 一一对应
 	//   - paramsList: 消息接收者对应的加密参数，需和 receiverIds 一一对应
 	//   - receiverOrgIds: 链上查询 hibe Params 的 Key 列表，需要和 receiverIds 一一对应
 	//   - txId: 以交易 Id 作为链上存储 hibeMsg 的 Key, 如果不提供存储的信息可能被覆盖
-	//	 - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
-	//	 - timeout: （内部查询 HibeParams 的）超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
+	//   - timeout: （内部查询 HibeParams 的）超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
-	CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte, receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType, timeout int64) (map[string]string, error)
+	CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte, receiverIds []string, 
+		receiverOrgIds []string, txId string, keyType crypto.KeyType, timeout int64) (map[string]string, error)
 	// ```
 
 	// ### 9.4 查询某一组织的加密公共参数，返回其序列化后的byte数组
 	// **参数说明**
-	//	 - contractName: 合约名
-	// 	 - method: 查询的合约方法名
+	//   - contractName: 合约名
+	//   - method: 查询的合约方法名
 	//   - orgId: 参与方 id
-	//	 - timeout: 查询超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - timeout: 查询超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
 	QueryHibeParamsWithOrgId(contractName, method, orgId string, timeout int64) ([]byte, error)
 	// ```
@@ -650,7 +655,7 @@ type SDKInterface interface {
 	//   - hibeParams: hibeParams 序列化后的byte数组
 	//   - hibePrivKey: hibe私钥序列化后的byte数组
 	//   - txId: 层级属性加密交易 id
-	//	 - keyType: 对加密信息进行对称解密的方法，请和加密时使用的方法保持一致，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
+	//   - keyType: 对加密信息进行对称解密的方法，请和加密时使用的方法保持一致，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 	// ```go
 	DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
 	// ```
@@ -761,11 +766,11 @@ type SDKInterface interface {
 	//   - privateReq: 用户调用隐私计算请求时的request序列化字节数组
 	//   - withSyncResult: 是否同步返回调用结果
 	//   - timeout: 发送交易的超时时间
-	//```go
-	SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte, reportHash []byte,
-		result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet, sign []byte,
-		events *common.StrSlice, privateReq []byte,	withSyncResult bool, timeout int64) (*common.TxResponse, error)
-	//```
+	// ```go
+	SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte, reportHash []byte, 
+		result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet, sign []byte, 
+		events *common.StrSlice, privateReq []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	// ```
 
 	// ### 11.2 保存远程证明
 	// **参数说明**
@@ -773,9 +778,9 @@ type SDKInterface interface {
 	//   - txId: 交易Id
 	//   - withSyncResult: 是否同步返回调用结果
 	//   - timeout: 交易发送超时时间
-	//```go
+	// ```go
 	SaveRemoteAttestationProof(proof, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
-	//```
+	// ```
 
 	// ### 11.3 保存Encalve CA证书
 	// **参数说明**
@@ -783,18 +788,18 @@ type SDKInterface interface {
 	//   - txId: 交易Id
 	//   - withSyncResult: 是否同步返回调用结果
 	//   - timeout: 交易发送超时时间
-	//```go
+	// ```go
 	SaveEnclaveCACert(caCert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
-	//```
+	// ```
 
 	// ### 11.4 获取Encalve CA证书
-	//```go
+	// ```go
 	GetEnclaveCACert() ([]byte, error)
-	//```
+	// ```
 
 	// ###  11.5 隐私计算调用者权限验证
 	// **参数说明**
-	//	 - payload: 用户签名验证的payload内容
+	//   - payload: 用户签名验证的payload内容
 	//   - orgIds: 组织Id的slice，注意和signPairs里面SignInfo的证书顺序一致
 	//   - signPairs: 用户多签的签名和证书slice
 	// ```go
@@ -813,12 +818,13 @@ type SDKInterface interface {
 	//   - enclaveId: Enclave的Id，当前固定为
 	// ```go
 	GetEnclaveProof(enclaveId string) ([]byte, error)
-	//```
+	// ```
 
 	// ### 11.8 获取隐私合约计算结果
 	// **参数说明**
-	//    - key: 计算结果对应的键值
-	 // ```go
+	//   - contractName: 合约名称
+	//   - key: 计算结果对应的键值
+	// ```go
 	GetData(contractName, key string) ([]byte, error)
 	// ```
 
@@ -880,14 +886,13 @@ type SDKInterface interface {
 	GetEnclaveChallenge(enclaveId string) ([]byte, error)
 	// ```
 
-	// ### 11.15 获取隐私证明材料中的Signature
+	// ### 11.16 获取隐私证明材料中的Signature
 	// **参数说明**
 	//   - enclaveId: 隐私计算环境的标识
 	// ```go
 	GetEnclaveSignature(enclaveId string) ([]byte, error)
 	// ```
 	
-
 	// ## 12 系统类接口
 	// ### 12.1 SDK停止接口
 	// *关闭连接池连接，释放资源*
