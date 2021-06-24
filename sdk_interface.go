@@ -418,7 +418,8 @@ type SDKInterface interface {
 	// ### 4.3 用户证书查询
 	// **参数说明**
 	//   - certHashes: 证书Hash列表
-	// 返回值说明：
+	//  
+	// **返回值说明**
 	//   - *common.CertInfos: 包含证书Hash和证书内容的列表
 	// ```go
 	QueryCert(certHashes []string) (*common.CertInfos, error)
@@ -500,11 +501,11 @@ type SDKInterface interface {
 	//   - endorsementEntry: 签名收集信息
 	//   - deadlineBlockHeight: 过期的区块高度，若设置为0，表示永不过期
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	// **返回值**
+	//  
+	// **返回值说明**
 	//   若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendMultiSignReq(txType common.TxType, payloadBytes []byte, endorsementEntry *common.EndorsementEntry, deadlineBlockHeight int,
-		timeout int64) (*common.TxResponse, error)
+	SendMultiSignReq(txType common.TxType, payloadBytes []byte, endorsementEntry *common.EndorsementEntry, deadlineBlockHeight int, timeout int64) (*common.TxResponse, error)
 	// ```
 
 	// ### 5.3 多签投票
@@ -515,11 +516,11 @@ type SDKInterface interface {
 	//   - payloadBytes: 待签名payload
 	//   - endorsementEntry: 签名收集信息
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	// **返回值**
+	//   
+	// **返回值说明**
 	//   若成功调用，common.TxResponse.ContractResult.Result为txId
 	// ```go
-	SendMultiSignVote(voteStatus common.VoteStatus, multiSignReqTxId, payloadHash string,
-		endorsementEntry *common.EndorsementEntry, timeout int64) (*common.TxResponse, error)
+	SendMultiSignVote(voteStatus common.VoteStatus, multiSignReqTxId, payloadHash string, endorsementEntry *common.EndorsementEntry, timeout int64) (*common.TxResponse, error)
 	// ```
 
 	// ### 5.4 投票查询
@@ -762,9 +763,7 @@ type SDKInterface interface {
 	//   - withSyncResult: 是否同步返回调用结果
 	//   - timeout: 发送交易的超时时间
 	// ```go
-	SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte, reportHash []byte,
-		result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet, sign []byte,
-		events *common.StrSlice, privateReq []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte, reportHash []byte, result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet, sign []byte, events *common.StrSlice, privateReq []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	// ```
 
 	// ### 11.2 保存远程证明
@@ -817,7 +816,8 @@ type SDKInterface interface {
 
 	// ### 11.8 获取隐私合约计算结果
 	// **参数说明**
-	//    - key: 计算结果对应的键值
+	//   - contractName: 合约名称
+	//   - key: 计算结果对应的键值
 	// ```go
 	GetData(contractName, key string) ([]byte, error)
 	// ```
@@ -887,7 +887,6 @@ type SDKInterface interface {
 	GetEnclaveSignature(enclaveId string) ([]byte, error)
 	// ```
 	
-
 	// ## 12 系统类接口
 	// ### 12.1 SDK停止接口
 	// *关闭连接池连接，释放资源*
