@@ -815,6 +815,79 @@ type SDKInterface interface {
 	GetEnclaveProof(enclaveId string) ([]byte, error)
 	//```
 
+	// ### 11.8 获取隐私合约计算结果
+	// **参数说明**
+	//    - key: 计算结果对应的键值
+	 // ```go
+	GetData(contractName, key string) ([]byte, error)
+	// ```
+
+	// ### 11.9 保存隐私目录
+	// **参数说明**
+	//   - orderId: 隐私目录的主键，供以后查询使用
+	//   - txId: 交易ID
+	//   - privateDir:
+	//   - withSyncResult: 是否同步等待交易结果
+	//   - timeout: 等待交易结果的超时时间
+	// ```go
+	SaveDir(orderId, txId string, privateDir *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	// ```
+
+	// ### 11.10 获取用户部署的隐私合约
+	// **参数说明**
+	//   - contractName: 合约名称
+	//   - codeHash: 代码哈希
+	// ```go
+	GetContract(contractName, codeHash string) (*common.PrivateGetContract, error)
+	// ```
+
+	// ### 11.11 获取用户的隐私目录
+	// **参数说明**
+	//   - orderId: 隐私目录的主键
+	// ```go
+	GetDir(orderId string) ([]byte, error)
+	// ```
+
+	// ### 11.12 上传隐私计算环境的report
+	// **参数说明**
+	//   - enclaveId: 隐私计算环境的标识
+	//   - report: 隐私计算环境的report
+	//   - txId: 交易ID
+	//   - withSyncResult: 是否同步等待交易结果
+	//   - timeout: 等待交易结果的超时时间
+	// ```go
+	SaveEnclaveReport(enclaveId, report, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	// ```
+
+	// ### 11.13 获取隐私计算环境的加密公钥
+	// **参数说明**
+	//   - enclaveId: 隐私计算环境的标识
+	// ```go
+	GetEnclaveEncryptPubKey(enclaveId string) ([]byte, error)
+	// ```
+
+	// ### 11.14 获取隐私计算环境的验签公钥
+	// **参数说明**
+	//   - enclaveId: 隐私计算环境的标识
+	// ```go
+	GetEnclaveVerificationPubKey(enclaveId string) ([]byte, error)
+	// ```
+
+	// ### 11.15 获取隐私证明材料中的Challenge
+	// **参数说明**
+	//   - enclaveId: 隐私计算环境的标识
+	// ```go
+	GetEnclaveChallenge(enclaveId string) ([]byte, error)
+	// ```
+
+	// ### 11.15 获取隐私证明材料中的Signature
+	// **参数说明**
+	//   - enclaveId: 隐私计算环境的标识
+	// ```go
+	GetEnclaveSignature(enclaveId string) ([]byte, error)
+	// ```
+	
+
 	// ## 12 系统类接口
 	// ### 12.1 SDK停止接口
 	// *关闭连接池连接，释放资源*
