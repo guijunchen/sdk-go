@@ -825,7 +825,7 @@ type SDKInterface interface {
 
 	// ### 11.9 保存隐私目录
 	// **参数说明**
-	//   - orderId: ？？？
+	//   - orderId: 隐私目录的主键，供以后查询使用
 	//   - txId: 交易ID
 	//   - privateDir:
 	//   - withSyncResult: 是否同步等待交易结果
@@ -844,7 +844,7 @@ type SDKInterface interface {
 
 	// ### 11.11 获取用户的隐私目录
 	// **参数说明**
-	//   - orderId: ???
+	//   - orderId: 隐私目录的主键
 	// ```go
 	GetDir(orderId string) ([]byte, error)
 	// ```
