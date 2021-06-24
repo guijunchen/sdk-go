@@ -483,7 +483,7 @@ func checkRPCClientConfig(config *ChainClientConfig) error {
 		)
 		config.rpcClientConfig = rpcClient
 	} else {
-		if config.rpcClientConfig.rpcClientMaxReceiveMessageSize == 0 {
+		if config.rpcClientConfig.rpcClientMaxReceiveMessageSize <= 0 || config.rpcClientConfig.rpcClientMaxReceiveMessageSize > 100 {
 			config.rpcClientConfig.rpcClientMaxReceiveMessageSize = DefaultRpcClientMaxReceiveMessageSize
 		}
 	}

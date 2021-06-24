@@ -78,7 +78,7 @@ func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 // 初始化GPRC客户端连接
 func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string, tlsHostName string) (*grpc.ClientConn, error) {
 	var tlsClient ca.CAClient
-
+	maxCallRecvMsgSize := pool.rpcClientMaxReceiveMessageSize * 1024 * 1024
 	if useTLS {
 		if len(caCerts) != 0 {
 			tlsClient = ca.CAClient{
@@ -102,10 +102,9 @@ func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPath
 		if err != nil {
 			return nil, err
 		}
-
-		return grpc.Dial(nodeAddr, grpc.WithTransportCredentials(*c), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcClientMaxReceiveMessageSize)))
+		return grpc.Dial(nodeAddr, grpc.WithTransportCredentials(*c), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)))
 	} else {
-		return grpc.Dial(nodeAddr, grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcClientMaxReceiveMessageSize)))
+		return grpc.Dial(nodeAddr, grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)))
 	}
 }
 
