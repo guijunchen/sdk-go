@@ -495,19 +495,18 @@ func dealUserSignCrtConfig(config *ChainClientConfig) (err error) {
 
 	if config.userSignCrtBytes == nil {
 		if config.userSignCrtFilePath == "" {
+			config.userSignCrtBytes = config.userCrtBytes
 			return nil
 		}
 
-		config.userCrtBytes, err = ioutil.ReadFile(config.userSignCrtFilePath)
+		config.userSignCrtBytes, err = ioutil.ReadFile(config.userSignCrtFilePath)
 		if err != nil {
 			return fmt.Errorf("read user sign crt file failed, %s", err.Error())
 		}
 
-	} else {
-		config.userCrtBytes = config.userSignCrtBytes
 	}
 
-	if config.userCrt, err = ParseCert(config.userCrtBytes); err != nil {
+	if config.userCrt, err = ParseCert(config.userSignCrtBytes); err != nil {
 		return fmt.Errorf("ParseSignCert failed, %s", err.Error())
 	}
 
@@ -518,18 +517,17 @@ func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 
 	if config.userSignKeyBytes == nil {
 		if config.userSignKeyFilePath == "" {
+			config.userSignKeyBytes = config.userKeyBytes
 			return nil
 		}
 
-		config.userKeyBytes, err = ioutil.ReadFile(config.userSignKeyFilePath)
+		config.userSignKeyBytes, err = ioutil.ReadFile(config.userSignKeyFilePath)
 		if err != nil {
 			return fmt.Errorf("read user sign key file failed, %s", err.Error())
 		}
-	} else {
-		config.userKeyBytes = config.userSignKeyBytes
 	}
 
-	config.privateKey, err = asym.PrivateKeyFromPEM(config.userKeyBytes, nil)
+	config.privateKey, err = asym.PrivateKeyFromPEM(config.userSignKeyBytes, nil)
 	if err != nil {
 		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
 	}
