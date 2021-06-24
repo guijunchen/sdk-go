@@ -101,7 +101,7 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		logger:          config.logger,
 		chainId:         config.chainId,
 		orgId:           config.orgId,
-		userCrtBytes:    config.userCrtBytes,
+		userCrtBytes:    config.userSignCrtBytes,
 		userCrt:         config.userCrt,
 		privateKey:      config.privateKey,
 		archiveConfig:   config.archiveConfig,
