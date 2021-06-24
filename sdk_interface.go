@@ -764,7 +764,7 @@ type SDKInterface interface {
 	//```go
 	SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte, reportHash []byte,
 		result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet, sign []byte,
-		events *common.StrSlice, privateReq []byte,	withSyncResult bool, timeout int64) (*common.TxResponse, error)
+		events *common.StrSlice, privateReq []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	//```
 
 	// ### 11.2 保存远程证明
@@ -794,7 +794,7 @@ type SDKInterface interface {
 
 	// ###  11.5 隐私计算调用者权限验证
 	// **参数说明**
-	//	 - payload: 用户签名验证的payload内容
+	//   - payload: 用户签名验证的payload内容
 	//   - orgIds: 组织Id的slice，注意和signPairs里面SignInfo的证书顺序一致
 	//   - signPairs: 用户多签的签名和证书slice
 	// ```go
@@ -880,7 +880,7 @@ type SDKInterface interface {
 	GetEnclaveChallenge(enclaveId string) ([]byte, error)
 	// ```
 
-	// ### 11.15 获取隐私证明材料中的Signature
+	// ### 11.16 获取隐私证明材料中的Signature
 	// **参数说明**
 	//   - enclaveId: 隐私计算环境的标识
 	// ```go
