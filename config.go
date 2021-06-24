@@ -9,6 +9,7 @@ package chainmaker_sdk_go
 
 import (
 	"fmt"
+
 	"github.com/spf13/viper"
 )
 
@@ -29,11 +30,15 @@ type nodesConfigModel struct {
 
 type archiveConfigModel struct {
 	// 链外存储类型，已支持：mysql
-	Type 		string `mapstructure:"type"`
+	Type string `mapstructure:"type"`
 	// 链外存储目标，格式：
 	// 	- mysql: user:pwd:host:port
-	Dest 		string `mapstructure:"dest"`
-	SecretKey	string `mapstructure:"secret_key"`
+	Dest      string `mapstructure:"dest"`
+	SecretKey string `mapstructure:"secret_key"`
+}
+
+type rpcClientConfigModel struct {
+	MaxRecvMsgSize int `mapstructure:"max_receive_message_size"`
 }
 
 type chainClientConfigModel struct {
@@ -53,6 +58,8 @@ type chainClientConfigModel struct {
 	NodesConfig []nodesConfigModel `mapstructure:"nodes"`
 	// 归档特性的配置
 	ArchiveConfig *archiveConfigModel `mapstructure:"archive,omitempty"`
+	// 设置grpc客户端配置
+	RPCClientConfig *rpcClientConfigModel `mapstructure:"rpc_client"`
 }
 
 type ChainClientConfigModel struct {

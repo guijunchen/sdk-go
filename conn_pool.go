@@ -8,15 +8,16 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"fmt"
+	"math/rand"
+	"time"
+
 	"chainmaker.org/chainmaker-go/common/ca"
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/api"
-	"fmt"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
-	"math/rand"
-	"time"
 )
 
 const (
@@ -38,18 +39,20 @@ type networkClient struct {
 
 // 客户端连接池结构定义
 type ConnectionPool struct {
-	connections  []*networkClient
-	logger       Logger
-	userKeyBytes []byte
-	userCrtBytes []byte
+	connections                    []*networkClient
+	logger                         Logger
+	userKeyBytes                   []byte
+	userCrtBytes                   []byte
+	rpcClientMaxReceiveMessageSize int
 }
 
 // 创建连接池
 func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 	pool := &ConnectionPool{
-		logger:       config.logger,
-		userKeyBytes: config.userKeyBytes,
-		userCrtBytes: config.userCrtBytes,
+		logger:                         config.logger,
+		userKeyBytes:                   config.userKeyBytes,
+		userCrtBytes:                   config.userCrtBytes,
+		rpcClientMaxReceiveMessageSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize,
 	}
 
 	for idx, node := range config.nodeList {
@@ -100,9 +103,9 @@ func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPath
 			return nil, err
 		}
 
-		return grpc.Dial(nodeAddr, grpc.WithTransportCredentials(*c))
+		return grpc.Dial(nodeAddr, grpc.WithTransportCredentials(*c), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcClientMaxReceiveMessageSize)))
 	} else {
-		return grpc.Dial(nodeAddr, grpc.WithInsecure())
+		return grpc.Dial(nodeAddr, grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcClientMaxReceiveMessageSize)))
 	}
 }
 
