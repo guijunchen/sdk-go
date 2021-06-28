@@ -600,7 +600,7 @@ func getDefaultLogger() *zap.SugaredLogger {
 		MaxAge:       30,
 		JsonFormat:   false,
 		ShowLine:     true,
-		LogInConsole: true,
+		LogInConsole: false,
 	}
 
 	logger, _ := log.InitSugarLogger(&config)
