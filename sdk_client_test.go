@@ -290,6 +290,26 @@ func createAdmin(orgId string) (*ChainClient, error) {
 	return adminClient, nil
 }
 
+func createAdminWithConfig(orgId string) (*ChainClient, error) {
+
+	adminClient, err := NewChainClient(
+		WithConfPath("./testdata/sdk_config.yml"),
+		WithUserKeyFilePath(fmt.Sprintf(adminKeyPath, orgId)),
+		WithUserCrtFilePath(fmt.Sprintf(adminCrtPath, orgId)),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	//启用证书压缩（开启证书压缩可以减小交易包大小，提升处理性能）
+	err = adminClient.EnableCertHash()
+	if err != nil {
+		return nil, err
+	}
+
+	return adminClient, nil
+}
+
 func TestChainClient_GetEVMAddressFromCertPath(t *testing.T) {
 	client, err := createClientWithConfig()
 	require.Nil(t, err)
