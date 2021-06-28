@@ -309,7 +309,6 @@ func (cc *ChainClient) proposalRequestWithTimeout(txType common.TxType, txId str
 	if txId == "" {
 		txId = GetRandTxId()
 	}
-
 	req, err := cc.generateTxRequest(txId, txType, payloadBytes)
 	if err != nil {
 		return nil, err
