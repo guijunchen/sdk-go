@@ -10,7 +10,7 @@ package chainmaker_sdk_go
 import (
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"context"
-	"github.com/golang/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 	"io"
 )
 
