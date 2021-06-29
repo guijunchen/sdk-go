@@ -11,7 +11,7 @@ import (
 	"chainmaker.org/chainmaker-sdk-go/pb/protogo/common"
 	"encoding/hex"
 	"fmt"
-	"github.com/golang/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/stretchr/testify/require"
 	"testing"
