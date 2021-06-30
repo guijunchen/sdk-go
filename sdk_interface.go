@@ -599,7 +599,7 @@ type SDKInterface interface {
 	GetEVMAddressFromCertBytes(certBytes []byte) (string, error)
 	// ```
 
-	// ## 9 层级属性加密类接口
+	//## 9 层级属性加密类接口
 	// > 注意：层级属性加密模块 `Id` 使用 `/` 作为分隔符，例如： Org1/Ou1/Member1
 	// ### 9.1 生成层级属性参数初始化交易 payload
 	// **参数说明**
@@ -745,14 +745,158 @@ type SDKInterface interface {
 	GetArchivedBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ## 11 系统类接口
-	// ### 11.1 SDK停止接口
+	// ## 11 隐私计算系统合约接口
+	// ### 11.1 保存隐私合约计算结果，包括合约部署
+	// **参数说明**
+	//   - contractName: 合约名称
+	//   - contractVersion: 合约版本号
+	//   - isDeployment: 是否是部署合约
+	//   - codeHash: 合约字节码hash值
+	//   - reportHash: Enclave report hash值
+	//   - result: 隐私合约执行结果
+	//   - codeHeader: solodity合部署合约时合约字节码的header数据
+	//   - txId: 交易Id
+	//   - rwSet: 隐私合约执行产生的读写集
+	//   - sign: Enclave对执行结果数据的结果签名
+	//   - events: 合约执行产生的事件
+	//   - privateReq: 用户调用隐私计算请求时的request序列化字节数组
+	//   - withSyncResult: 是否同步返回调用结果
+	//   - timeout: 发送交易的超时时间
+	//```go
+	SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte, reportHash []byte,
+		result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet, sign []byte,
+		events *common.StrSlice, privateReq []byte,	withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	//```
+
+	// ### 11.2 保存远程证明
+	// **参数说明**
+	//   - proof: 远程证明
+	//   - txId: 交易Id
+	//   - withSyncResult: 是否同步返回调用结果
+	//   - timeout: 交易发送超时时间
+	//```go
+	SaveRemoteAttestationProof(proof, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	//```
+
+	// ### 11.3 保存Encalve CA证书
+	// **参数说明**
+	//   - caCert: Enclave CA证书
+	//   - txId: 交易Id
+	//   - withSyncResult: 是否同步返回调用结果
+	//   - timeout: 交易发送超时时间
+	//```go
+	SaveEnclaveCACert(caCert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	//```
+
+	// ### 11.4 获取Encalve CA证书
+	//```go
+	GetEnclaveCACert() ([]byte, error)
+	//```
+
+	// ###  11.5 隐私计算调用者权限验证
+	// **参数说明**
+	//	 - payload: 用户签名验证的payload内容
+	//   - orgIds: 组织Id的slice，注意和signPairs里面SignInfo的证书顺序一致
+	//   - signPairs: 用户多签的签名和证书slice
+	// ```go
+	CheckCallerCertAuth(payload string, orgIds []string, signPairs []*common.SignInfo) (*common.TxResponse, error)
+	// ```
+
+	// ###  11.6 获取Enclave的report
+	// **参数说明**
+	//    - enclaveId: Enclave的Id，当前固定为"global_enclave_id"
+	// ```go
+	GetEnclaveReport(enclaveId string) ([]byte, error)
+	// ```
+
+	// ### 11.7 获取隐私证明材料
+	// **参数说明**
+	//   - enclaveId: Enclave的Id，当前固定为"global_enclave_id"
+	// ```go
+	GetEnclaveProof(enclaveId string) ([]byte, error)
+	//```
+
+	// ### 11.8 获取隐私合约计算结果
+	// **参数说明**
+	//    - key: 计算结果对应的键值
+	 // ```go
+	GetData(contractName, key string) ([]byte, error)
+	// ```
+
+	// ### 11.9 保存隐私目录
+	// **参数说明**
+	//   - orderId: 隐私目录的主键，供以后查询使用
+	//   - txId: 交易ID
+	//   - privateDir:
+	//   - withSyncResult: 是否同步等待交易结果
+	//   - timeout: 等待交易结果的超时时间
+	// ```go
+	SaveDir(orderId, txId string, privateDir *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	// ```
+
+	// ### 11.10 获取用户部署的隐私合约
+	// **参数说明**
+	//   - contractName: 合约名称
+	//   - codeHash: 代码哈希
+	// ```go
+	GetContract(contractName, codeHash string) (*common.PrivateGetContract, error)
+	// ```
+
+	// ### 11.11 获取用户的隐私目录
+	// **参数说明**
+	//   - orderId: 隐私目录的主键
+	// ```go
+	GetDir(orderId string) ([]byte, error)
+	// ```
+
+	// ### 11.12 上传隐私计算环境的report
+	// **参数说明**
+	//   - enclaveId: 隐私计算环境的标识
+	//   - report: 隐私计算环境的report
+	//   - txId: 交易ID
+	//   - withSyncResult: 是否同步等待交易结果
+	//   - timeout: 等待交易结果的超时时间
+	// ```go
+	SaveEnclaveReport(enclaveId, report, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	// ```
+
+	// ### 11.13 获取隐私计算环境的加密公钥
+	// **参数说明**
+	//   - enclaveId: 隐私计算环境的标识
+	// ```go
+	GetEnclaveEncryptPubKey(enclaveId string) ([]byte, error)
+	// ```
+
+	// ### 11.14 获取隐私计算环境的验签公钥
+	// **参数说明**
+	//   - enclaveId: 隐私计算环境的标识
+	// ```go
+	GetEnclaveVerificationPubKey(enclaveId string) ([]byte, error)
+	// ```
+
+	// ### 11.15 获取隐私证明材料中的Challenge
+	// **参数说明**
+	//   - enclaveId: 隐私计算环境的标识
+	// ```go
+	GetEnclaveChallenge(enclaveId string) ([]byte, error)
+	// ```
+
+	// ### 11.15 获取隐私证明材料中的Signature
+	// **参数说明**
+	//   - enclaveId: 隐私计算环境的标识
+	// ```go
+	GetEnclaveSignature(enclaveId string) ([]byte, error)
+	// ```
+
+
+	// ## 12 系统类接口
+	// ### 12.1 SDK停止接口
 	// *关闭连接池连接，释放资源*
 	// ```go
 	Stop() error
 	// ```
 
-	// ### 11.2 获取链版本
+	// ### 12.2 获取链版本
 	// ```go
 	GetChainMakerServerVersion() (string, error)
 	// ```

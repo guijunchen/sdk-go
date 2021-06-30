@@ -537,6 +537,10 @@
 	CreateHibeInitParamsTxPayloadParams(orgId string, hibeParams []byte) (map[string]string, error)
 ```
 
+```go
+    SaveData(contractName string, contractVersion string, codeHash []byte, reportHash []byte, result *common.ContractResult, txId string, rwSet *common.TxRWSet, reportSign []byte, events *common.StrSlice, userCert []byte, clientSign []byte, orgId string ,payLoad []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+```
+
 ### 9.2 生成层级属性加密交易 payload，加密参数已知
 **参数说明**
   - plaintext: 待加密交易消息明文
@@ -584,14 +588,247 @@
 	DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
 ```
 
-## 10 系统类接口
-### 10.1 SDK停止接口
-*关闭连接池连接，释放资源*
+## 10 数据归档接口
+### 10.1 获取已归档区块高度
+**参数说明**
+  - 输出已归档的区块高度
 ```go
-	Stop() error
+    GetArchivedBlockHeight() (int64, error)
 ```
 
-### 10.2 获取链版本
+### 10.2 构造数据归档区块Payload
+**参数说明**
+  - targetBlockHeight: 归档目标区块高度
 ```go
-	GetChainMakerServerVersion() (string, error)
+    CreateArchiveBlockPayload(targetBlockHeight int64) ([]byte, error)
+```
+
+### 10.3 构造归档归档数据恢复Payload
+**参数说明**
+  - fullBlock: 完整区块数据（对应结构：store.BlockWithRWSet）
+```go
+    CreateRestoreBlockPayload(fullBlock []byte) ([]byte, error)
+```
+
+### 10.4 获取归档操作Payload签名
+**参数说明**
+  - payloadBytes: 待签名payload
+```go
+    SignArchivePayload(payloadBytes []byte) ([]byte, error)
+```
+
+### 10.5 发送归档请求
+**参数说明**
+  - mergeSignedPayloadBytes: 签名结果
+  - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+  - withSyncResult: 是否同步获取交易执行结果
+           当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+           当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
+```go
+    SendArchiveBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error)
+```
+
+### 10.6 归档数据恢复
+**参数说明**
+  - mergeSignedPayloadBytes: 签名结果
+  - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+  - withSyncResult: 是否同步获取交易执行结果
+           当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+           当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
+```go
+    SendRestoreBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error)
+```
+
+### 10.7 根据交易Id查询已归档交易
+**参数说明**
+  - txId: 交易ID
+```go
+    GetArchivedTxByTxId(txId string) (*common.TransactionInfo, error)
+```
+
+### 10.8 根据区块高度查询已归档区块
+**参数说明**
+  - blockHeight: 指定区块高度，若为-1，将返回最新区块
+  - withRWSet: 是否返回读写集
+```go
+    GetArchivedBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error)
+```
+
+### 10.9 根据区块高度查询已归档完整区块(包含：区块数据、读写集、合约事件日志)
+**参数说明**
+  - blockHeight: 指定区块高度，若为-1，将返回最新区块
+```go
+    GetArchivedFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error)
+```
+
+### 10.10 根据区块哈希查询已归档区块
+**参数说明**
+  - blockHash: 指定区块Hash
+  - withRWSet: 是否返回读写集
+```go
+    GetArchivedBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
+```
+
+### 10.11 根据交易Id查询已归档区块
+**参数说明**
+  - txId: 交易ID
+  - withRWSet: 是否返回读写集
+```go
+    GetArchivedBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
+```
+
+## 11 隐私计算系统合约接口
+### 11.1 保存隐私合约计算结果，包括合约部署
+**参数说明**
+  - contractName: 合约名称
+  - contractVersion: 合约版本号
+  - isDeployment: 是否是部署合约
+  - codeHash: 合约字节码hash值
+  - reportHash: Enclave report hash值
+  - result: 隐私合约执行结果
+  - codeHeader: solodity合部署合约时合约字节码的header数据
+  - txId: 交易Id
+  - rwSet: 隐私合约执行产生的读写集
+  - sign: Enclave对执行结果数据的结果签名
+  - events: 合约执行产生的事件
+  - privateReq: 用户调用隐私计算请求时的request序列化字节数组
+  - withSyncResult: 是否同步返回调用结果
+  - timeout: 发送交易的超时时间
+```go
+  SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte, reportHash []byte,
+  result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet, sign []byte,
+  events *common.StrSlice, privateReq []byte,withSyncResult bool, timeout int64) (*common.TxResponse, error)
+```
+
+### 11.2 保存远程证明
+**参数说明**
+  - proof: 远程证明
+  - txId: 交易Id
+  - withSyncResult: 是否同步返回调用结果
+  - timeout: 交易发送超时时间
+```go
+  SaveRemoteAttestationProof(proof, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+```
+
+### 11.3 保存Encalve CA证书
+**参数说明**
+  - caCert: Enclave CA证书
+  - txId: 交易Id
+  - withSyncResult: 是否同步返回调用结果
+  - timeout: 交易发送超时时间
+```go
+  SaveEnclaveCACert(caCert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+```
+
+### 11.4 获取Encalve CA证书
+```go
+  GetEnclaveCACert() ([]byte, error)
+```
+
+###  11.5 隐私计算调用者权限验证
+**参数说明**
+  - payload: 用户签名验证的payload内容
+  - orgIds: 组织Id的slice，注意和signPairs里面SignInfo的证书顺序一致
+  - signPairs: 用户多签的签名和证书slice
+```go
+    CheckCallerCertAuth(payload string, orgIds []string, signPairs []*common.SignInfo) (*common.TxResponse, error)
+```
+
+###  11.6 获取Enclave的report
+**参数说明**
+   - enclaveId: Enclave的Id，当前固定为"global_enclave_id"
+```go
+    GetEnclaveReport(enclaveId string) ([]byte, error)
+```
+
+### 11.7 获取隐私证明材料
+**参数说明**
+  - enclaveId: Enclave的Id，当前固定为"global_enclave_id"
+```go
+    GetEnclaveProof(enclaveId string) ([]byte, error)
+```
+
+### 11.8 获取隐私合约计算结果
+**参数说明**
+   - key: 计算结果对应的键值
+ ```go
+GetData(contractName, key string) ([]byte, error)
+```
+
+### 11.9 保存隐私目录
+**参数说明**
+  - orderId: 隐私目录的主键，供以后查询使用
+  - txId: 交易ID
+  - privateDir:
+  - withSyncResult: 是否同步等待交易结果
+  - timeout: 等待交易结果的超时时间
+```go
+    SaveDir(orderId, txId string, privateDir *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+```
+
+### 11.10 获取用户部署的隐私合约
+**参数说明**
+  - contractName: 合约名称
+  - codeHash: 代码哈希
+```go
+    GetContract(contractName, codeHash string) (*common.PrivateGetContract, error)
+```
+
+### 11.11 获取用户的隐私目录
+**参数说明**
+  - orderId: 隐私目录的主键
+```go
+    GetDir(orderId string) ([]byte, error)
+```
+
+### 11.12 上传隐私计算环境的report
+**参数说明**
+  - enclaveId: 隐私计算环境的标识
+  - report: 隐私计算环境的report
+  - txId: 交易ID
+  - withSyncResult: 是否同步等待交易结果
+  - timeout: 等待交易结果的超时时间
+```go
+    SaveEnclaveReport(enclaveId, report, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+```
+
+### 11.13 获取隐私计算环境的加密公钥
+**参数说明**
+  - enclaveId: 隐私计算环境的标识
+```go
+    GetEnclaveEncryptPubKey(enclaveId string) ([]byte, error)
+```
+
+### 11.14 获取隐私计算环境的验签公钥
+**参数说明**
+  - enclaveId: 隐私计算环境的标识
+```go
+    GetEnclaveVerificationPubKey(enclaveId string) ([]byte, error)
+```
+
+### 11.15 获取隐私证明材料中的Challenge
+**参数说明**
+  - enclaveId: 隐私计算环境的标识
+```go
+    GetEnclaveChallenge(enclaveId string) ([]byte, error)
+```
+
+### 11.15 获取隐私证明材料中的Signature
+**参数说明**
+  - enclaveId: 隐私计算环境的标识
+```go
+    GetEnclaveSignature(enclaveId string) ([]byte, error)
+```
+
+
+## 12 系统类接口
+### 12.1 SDK停止接口
+*关闭连接池连接，释放资源*
+```go
+    Stop() error
+```
+
+### 12.2 获取链版本
+```go
+    GetChainMakerServerVersion() (string, error)
 ```
