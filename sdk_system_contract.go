@@ -25,6 +25,72 @@ const (
 	keyTxId        = "txId"
 )
 
+func (cc *ChainClient) InvokeSystemContract(contractName, method, txId string, params map[string]string, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+	if txId == "" {
+		txId = GetRandTxId()
+	}
+
+	cc.logger.Debugf("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
+		contractName, method, txId, params)
+
+	pairs := paramsMap2KVPairs(params)
+
+	payloadBytes, err := constructSystemContractPayload(cc.chainId, contractName, method, pairs, 1)
+	if err != nil {
+		return nil, fmt.Errorf("construct transact payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, txId, payloadBytes, timeout)
+	if err != nil {
+		return resp, fmt.Errorf("%s failed, %s", common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if !withSyncResult {
+			resp.ContractResult = &common.ContractResult{
+				Code:    common.ContractResultCode_OK,
+				Message: common.ContractResultCode_OK.String(),
+				Result:  []byte(txId),
+			}
+		} else {
+			contractResult, err := cc.getSyncResult(txId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+
+			if contractResult.Code != common.ContractResultCode_OK {
+				resp.Code = common.TxStatusCode_CONTRACT_FAIL
+				resp.Message = contractResult.Message
+			}
+
+			resp.ContractResult = contractResult
+		}
+	}
+
+	return resp, nil
+}
+
+func (cc *ChainClient) QuerySystemContract(contractName, method string, params map[string]string, timeout int64) (*common.TxResponse, error) {
+	txId := GetRandTxId()
+
+	cc.logger.Debugf("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
+		contractName, method, txId, params)
+
+	pairs := paramsMap2KVPairs(params)
+
+	payloadBytes, err := constructQueryPayload(contractName, method, pairs)
+	if err != nil {
+		return nil, fmt.Errorf("construct query payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_QUERY_SYSTEM_CONTRACT, txId, payloadBytes, timeout)
+	if err != nil {
+		return nil, fmt.Errorf("send %s failed, %s", common.TxType_QUERY_USER_CONTRACT.String(), err.Error())
+	}
+
+	return resp, nil
+}
+
 func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
 		common.QueryFunction_GET_TX_BY_TX_ID.String(), txId)
@@ -472,675 +538,4 @@ func (cc *ChainClient) GetBlockHeaderByHeight(blockHeight int64) (*common.BlockH
 	}
 
 	return blockHeader, nil
-}
-
-func (cc *ChainClient) ERC20Mint(address, amount string, withSyncResult bool) (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[address:%d]/[amount:%d]",
-		common.DPoSERC20ContractFunction_MINT.String(), address, amount)
-
-	payloadBytes, err := constructSystemContractPayload(
-		cc.chainId,
-		common.ContractName_SYSTEM_CONTRACT_DPOS_ERC20.String(),
-		common.DPoSERC20ContractFunction_MINT.String(),
-		[]*common.KeyValuePair{
-			{
-				Key:   "to",
-				Value: address,
-			},
-			{
-				Key:   "value",
-				Value: amount,
-			},
-		},
-		1,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-	txID := GetRandTxId()
-	resp, err := cc.proposalRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, txID, payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if !withSyncResult {
-			resp.ContractResult = &common.ContractResult{
-				Code:    common.ContractResultCode_OK,
-				Message: common.ContractResultCode_OK.String(),
-				Result:  []byte(txID),
-			}
-		} else {
-			contractResult, err := cc.getSyncResult(txID)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) ERC20Transfer(address, amount string, withSyncResult bool) (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[address:%d]/[amount:%d]",
-		common.DPoSERC20ContractFunction_TRANSFER.String(), address, amount)
-
-	payloadBytes, err := constructSystemContractPayload(
-		cc.chainId,
-		common.ContractName_SYSTEM_CONTRACT_DPOS_ERC20.String(),
-		common.DPoSERC20ContractFunction_TRANSFER.String(),
-		[]*common.KeyValuePair{
-			{
-				Key:   "to",
-				Value: address,
-			},
-			{
-				Key:   "value",
-				Value: amount,
-			},
-		},
-		1,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	txID := GetRandTxId()
-	resp, err := cc.proposalRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if !withSyncResult {
-			resp.ContractResult = &common.ContractResult{
-				Code:    common.ContractResultCode_OK,
-				Message: common.ContractResultCode_OK.String(),
-				Result:  []byte(txID),
-			}
-		} else {
-			contractResult, err := cc.getSyncResult(txID)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) ERC20BalanceOf(address string) (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[address:%d]",
-		common.DPoSERC20ContractFunction_GET_BALANCEOF.String(), address)
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_ERC20.String(),
-		common.DPoSERC20ContractFunction_GET_BALANCEOF.String(),
-		[]*common.KeyValuePair{
-			{
-				Key:   "owner",
-				Value: address,
-			},
-		},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) ERC20Owner() (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSERC20ContractFunction_GET_OWNER.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_ERC20.String(),
-		common.DPoSERC20ContractFunction_GET_OWNER.String(),
-		[]*common.KeyValuePair{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) ERC20Decimals() (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSERC20ContractFunction_GET_DECIMALS.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_ERC20.String(),
-		common.DPoSERC20ContractFunction_GET_DECIMALS.String(),
-		[]*common.KeyValuePair{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) ERC20Total() (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSERC20ContractFunction_GET_TOTAL_SUPPLY.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_ERC20.String(),
-		common.DPoSERC20ContractFunction_GET_TOTAL_SUPPLY.String(),
-		[]*common.KeyValuePair{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) GetAllCandidates() (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSStakeContractFunction_GET_ALL_CANDIDATES.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_GET_ALL_CANDIDATES.String(),
-		[]*common.KeyValuePair{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) GetValidatorByAddress(address string) (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSStakeContractFunction_GET_VALIDATOR_BY_ADDRESS.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_GET_VALIDATOR_BY_ADDRESS.String(),
-		[]*common.KeyValuePair{
-			{
-				Key:   "address",
-				Value: address,
-			},
-		},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) Delegate(address, amount string, withSyncResult bool) (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[address:%d]/[amount:%d]",
-		common.DPoSStakeContractFunction_DELEGATE.String(), address, amount)
-
-	payloadBytes, err := constructSystemContractPayload(
-		cc.chainId,
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_DELEGATE.String(),
-		[]*common.KeyValuePair{
-			{
-				Key:   "to",
-				Value: address,
-			},
-			{
-				Key:   "amount",
-				Value: amount,
-			},
-		},
-		1,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-	txID := GetRandTxId()
-	resp, err := cc.proposalRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, txID, payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if !withSyncResult {
-			resp.ContractResult = &common.ContractResult{
-				Code:    common.ContractResultCode_OK,
-				Message: common.ContractResultCode_OK.String(),
-				Result:  []byte(txID),
-			}
-		} else {
-			contractResult, err := cc.getSyncResult(txID)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) GetDelegationsByAddress(address string) (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSStakeContractFunction_GET_DELEGATIONS_BY_ADDRESS.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_GET_DELEGATIONS_BY_ADDRESS.String(),
-		[]*common.KeyValuePair{
-			{
-				Key:   "address",
-				Value: address,
-			},
-		},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) GetUserDelegationByValidator(delegatorAddress, validatorAddress string) (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSStakeContractFunction_GET_USER_DELEGATION_BY_VALIDATOR.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_GET_USER_DELEGATION_BY_VALIDATOR.String(),
-		[]*common.KeyValuePair{
-			{
-				Key:   "delegator_address",
-				Value: delegatorAddress,
-			},
-			{
-				Key:   "validator_address",
-				Value: validatorAddress,
-			},
-		},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) UnDelegate(address, amount string, withSyncResult bool) (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[address:%d]/[amount:%d]",
-		common.DPoSStakeContractFunction_UNDELEGATE.String(), address, amount)
-
-	payloadBytes, err := constructSystemContractPayload(
-		cc.chainId,
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_UNDELEGATE.String(),
-		[]*common.KeyValuePair{
-			{
-				Key:   "to",
-				Value: address,
-			},
-			{
-				Key:   "amount",
-				Value: amount,
-			},
-		},
-		1,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-	txID := GetRandTxId()
-	resp, err := cc.proposalRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, txID, payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if !withSyncResult {
-			resp.ContractResult = &common.ContractResult{
-				Code:    common.ContractResultCode_OK,
-				Message: common.ContractResultCode_OK.String(),
-				Result:  []byte(txID),
-			}
-		} else {
-			contractResult, err := cc.getSyncResult(txID)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) ReadEpochByID(epochID string) (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSStakeContractFunction_READ_EPOCH_BY_ID.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_READ_EPOCH_BY_ID.String(),
-		[]*common.KeyValuePair{
-			{
-				Key:   "epoch_id",
-				Value: epochID,
-			},
-		},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) ReadLatestEpoch() (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSStakeContractFunction_READ_LATEST_EPOCH.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_READ_LATEST_EPOCH.String(),
-		[]*common.KeyValuePair{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) SetNodeID(nodeID string, withSyncResult bool) (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[nodeID:%d]",
-		common.DPoSStakeContractFunction_SET_NODE_ID.String(), nodeID)
-
-	payloadBytes, err := constructSystemContractPayload(
-		cc.chainId,
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_SET_NODE_ID.String(),
-		[]*common.KeyValuePair{
-			{
-				Key:   "node_id",
-				Value: nodeID,
-			},
-		},
-		1,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-	txID := GetRandTxId()
-	resp, err := cc.proposalRequest(common.TxType_INVOKE_SYSTEM_CONTRACT, txID, payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if !withSyncResult {
-			resp.ContractResult = &common.ContractResult{
-				Code:    common.ContractResultCode_OK,
-				Message: common.ContractResultCode_OK.String(),
-				Result:  []byte(txID),
-			}
-		} else {
-			contractResult, err := cc.getSyncResult(txID)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) GetNodeID(address string) (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSStakeContractFunction_GET_NODE_ID.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_GET_NODE_ID.String(),
-		[]*common.KeyValuePair{
-			{
-				Key:   "address",
-				Value: address,
-			},
-		},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) ReadMinSelfDelegation() (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSStakeContractFunction_READ_MIN_SELF_DELEGATION.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_READ_MIN_SELF_DELEGATION.String(),
-		[]*common.KeyValuePair{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) ReadEpochValidatorNumber() (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSStakeContractFunction_READ_EPOCH_VALIDATOR_NUMBER.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_READ_EPOCH_VALIDATOR_NUMBER.String(),
-		[]*common.KeyValuePair{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) ReadEpochBlockNumber() (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSStakeContractFunction_READ_EPOCH_BLOCK_NUMBER.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_READ_EPOCH_BLOCK_NUMBER.String(),
-		[]*common.KeyValuePair{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) ReadSystemContractAddr() (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSStakeContractFunction_READ_SYSTEM_CONTRACT_ADDR.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_READ_SYSTEM_CONTRACT_ADDR.String(),
-		[]*common.KeyValuePair{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
-}
-
-func (cc *ChainClient) ReadCompleteUnBoundingEpochNumber() (*common.TxResponse, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
-		common.DPoSStakeContractFunction_READ_COMPLETE_UNBOUNDING_EPOCH_NUMBER.String())
-
-	payloadBytes, err := constructQueryPayload(
-		common.ContractName_SYSTEM_CONTRACT_DPOS_STAKE.String(),
-		common.DPoSStakeContractFunction_READ_COMPLETE_UNBOUNDING_EPOCH_NUMBER.String(),
-		[]*common.KeyValuePair{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marshal query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequest(common.TxType_QUERY_SYSTEM_CONTRACT, GetRandTxId(), payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	if err = checkProposalRequestResp(resp, true); err != nil {
-		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_SYSTEM_CONTRACT.String(), err.Error())
-	}
-
-	return resp, nil
 }
