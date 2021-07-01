@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	sdkConfigAdmin1Path  = "./sdk_config_admin1.yml"
-	sdkConfigClient1Path = "./sdk_config_client1.yml"
+	sdkConfigOrg1Admin1Path  = "./sdk_config_org1_admin1.yml"
+	sdkConfigOrg1Client1Path = "./sdk_config_org1_client1.yml"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 }
 
 func testArchive() {
-	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigAdmin1Path)
+	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
 	if err != nil {
 		panic(err)
 	}
@@ -42,12 +42,12 @@ func testArchive() {
 }
 
 func testRestore() {
-	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigAdmin1Path)
+	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
 	if err != nil {
 		panic(err)
 	}
 
-	client1, err := examples.CreateChainClientWithSDKConf(sdkConfigClient1Path)
+	client1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
@@ -70,7 +70,7 @@ func testRestore() {
 }
 
 func testGetFromArchiveStore() {
-	client, err := examples.CreateClientWithConfig()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
