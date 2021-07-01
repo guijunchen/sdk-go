@@ -16,7 +16,7 @@ import (
 )
 
 func TestInitConfig(t *testing.T) {
-	err := InitConfig("./testdata/sdk_config_for_ut.yml")
+	err := InitConfig(sdkConfigPathForUT)
 	require.Nil(t, err)
 
 	json, err := prettyjson.Marshal(Config)

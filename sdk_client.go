@@ -17,6 +17,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rican7/retry"
+	"github.com/Rican7/retry/strategy"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"chainmaker.org/chainmaker/common/crypto"
 	"chainmaker.org/chainmaker/common/crypto/asym"
 	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
@@ -24,10 +29,6 @@ import (
 	"chainmaker.org/chainmaker/common/serialize"
 	"chainmaker.org/chainmaker/pb-go/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/common"
-	"github.com/Rican7/retry"
-	"github.com/Rican7/retry/strategy"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 const (

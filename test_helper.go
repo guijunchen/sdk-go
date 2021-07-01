@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	sdkConfigForUtPath = "./testdata/sdk_config_for_ut.yml"
+	sdkConfigPathForUT = "./testdata/sdk_config.yml"
 )
 
 var _ ConnectionPool = (*mockConnectionPool)(nil)
