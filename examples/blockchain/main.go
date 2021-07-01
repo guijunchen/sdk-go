@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	sdkConfigOrg1Client1Path = "./sdk_config_org1_client1.yml"
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
 func main() {

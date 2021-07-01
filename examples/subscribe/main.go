@@ -21,6 +21,8 @@ import (
 const (
 	sendTxCount       = 5
 	claimContractName = "claim001"
+
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
 func main() {
@@ -31,7 +33,7 @@ func main() {
 }
 
 func testSubscribeBlock() {
-	client, err := examples.CreateClient()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
@@ -87,7 +89,7 @@ func testSubscribeBlock() {
 }
 
 func testSubscribeContractEvent() {
-	client, err := examples.CreateClient()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
@@ -139,7 +141,7 @@ func testSubscribeContractEvent() {
 }
 
 func testSubscribeTx() {
-	client, err := examples.CreateClient()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}

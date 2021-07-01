@@ -27,6 +27,13 @@ const (
 	testKey     = "key001"
 	nodePeerId1 = "QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
 	nodePeerId2 = "QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
+
+	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
+	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
+	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
+	sdkConfigOrg5Admin1Path  = "../sdk_configs/sdk_config_org5_admin1.yml"
 )
 
 func main() {
@@ -38,24 +45,24 @@ func testChainConfig() {
 		chainConfig *config.ChainConfig
 	)
 
-	client, err := examples.CreateClient()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
 
-	admin1, err := examples.CreateAdmin(examples.OrgId1)
+	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
 	if err != nil {
 		panic(err)
 	}
-	admin2, err := examples.CreateAdmin(examples.OrgId2)
+	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
 	if err != nil {
 		panic(err)
 	}
-	admin3, err := examples.CreateAdmin(examples.OrgId3)
+	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
 	if err != nil {
 		panic(err)
 	}
-	admin4, err := examples.CreateAdmin(examples.OrgId4)
+	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
 	if err != nil {
 		panic(err)
 	}
@@ -127,7 +134,7 @@ func testChainConfig() {
 	}
 
 	// 4) [TrustRootUpdate]
-	admin5, err := examples.CreateAdmin(examples.OrgId5)
+	admin5, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg5Admin1Path)
 	if err != nil {
 		panic(err)
 	}

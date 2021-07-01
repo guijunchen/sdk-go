@@ -29,6 +29,13 @@ const (
 	findParamsByOrgId = "find_params_by_org_id"
 
 	createContractTimeout = 5
+
+	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
+	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
+	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
+	sdkConfigOrg5Admin1Path  = "../sdk_configs/sdk_config_org5_admin1.yml"
 )
 
 // test data
@@ -67,24 +74,24 @@ func main() {
 func testHibeContractCounterGo() {
 
 	txId = sdk.GetRandTxId()
-	client, err := examples.CreateClientWithConfig()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
 
-	admin1, err := examples.CreateAdmin(examples.OrgId1)
+	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
 	if err != nil {
 		panic(err)
 	}
-	admin2, err := examples.CreateAdmin(examples.OrgId2)
+	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
 	if err != nil {
 		panic(err)
 	}
-	admin3, err := examples.CreateAdmin(examples.OrgId3)
+	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
 	if err != nil {
 		panic(err)
 	}
-	admin4, err := examples.CreateAdmin(examples.OrgId4)
+	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
 	if err != nil {
 		panic(err)
 	}

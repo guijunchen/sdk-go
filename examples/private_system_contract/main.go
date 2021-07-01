@@ -29,6 +29,8 @@ const (
 	quoteId = "quote_id"
 	quote   = "quote_content"
 	orderId = "order_id"
+
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
 var (
@@ -120,7 +122,7 @@ func testChainClientSaveData() {
 	var reportHash []byte
 	var reportSign []byte
 
-	cc, err := examples.CreateClient()
+	cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
@@ -137,7 +139,7 @@ func testChainClientSaveData() {
 func testChainClientSaveDir() {
 	txid := sdk.GetRandTxId()
 
-	cc, err := examples.CreateClient()
+	cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
@@ -194,7 +196,7 @@ func testChainClientGetContract() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			panic(err)
 		}
@@ -261,7 +263,7 @@ func testChainClientGetData() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			panic(err)
 		}
@@ -297,7 +299,7 @@ func testChainClientGetDir() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			panic(err)
 		}
@@ -341,7 +343,7 @@ func testChainClientSaveCACert() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			panic(err)
 		}
@@ -380,7 +382,7 @@ func testChainClientGetCACert() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			panic(err)
 		}
@@ -427,7 +429,7 @@ func testChainClientSaveEnclaveReport() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			panic(err)
 		}
@@ -473,7 +475,7 @@ func testChainClientSaveRemoteAttestationProof() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			panic(err)
 		}
@@ -508,7 +510,7 @@ func testChainClientGetEnclaveEncryptPubKey() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			panic(err)
 		}
@@ -543,7 +545,7 @@ func testChainClientGetEnclaveVerificationPubKey() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			panic(err)
 		}
@@ -579,7 +581,7 @@ func testChainClientGetEnclaveReport() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			panic(err)
 		}
@@ -614,7 +616,7 @@ func testChainClientGetEnclaveChallenge() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			panic(err)
 		}
@@ -649,7 +651,7 @@ func testChainClientGetEnclaveSignature() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			panic(err)
 		}
@@ -687,7 +689,7 @@ func testChainClientGetEnclaveProof() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			panic(err)
 		}

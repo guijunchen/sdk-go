@@ -19,6 +19,13 @@ import (
 const (
 	queryAddr             = "query_address"
 	createContractTimeout = 5
+
+	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
+	sdkConfigOrg2Client1Path = "../sdk_configs/sdk_config_org2_client1.yml"
+	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
+	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
 )
 
 var (
@@ -33,12 +40,12 @@ func main() {
 }
 
 func testUserContractAssetBalanceOf() {
-	client, err := examples.CreateClientWithConfig()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
 
-	client2, err := examples.CreateClientWithOrgId(examples.OrgId2)
+	client2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Client1Path)
 	if err != nil {
 		panic(err)
 	}
@@ -55,29 +62,29 @@ func testUserContractAssetBalanceOf() {
 }
 
 func testUserContractAsset() {
-	client, err := examples.CreateClientWithConfig()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
 
-	client2, err := examples.CreateClientWithOrgId(examples.OrgId2)
+	client2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Client1Path)
 	if err != nil {
 		panic(err)
 	}
 
-	admin1, err := examples.CreateAdmin(examples.OrgId1)
+	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
 	if err != nil {
 		panic(err)
 	}
-	admin2, err := examples.CreateAdmin(examples.OrgId2)
+	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
 	if err != nil {
 		panic(err)
 	}
-	admin3, err := examples.CreateAdmin(examples.OrgId3)
+	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
 	if err != nil {
 		panic(err)
 	}
-	admin4, err := examples.CreateAdmin(examples.OrgId4)
+	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
 	if err != nil {
 		panic(err)
 	}

@@ -21,6 +21,10 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/examples"
 )
 
+const (
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+)
+
 func main() {
 	testSystemContract()
 	testSystemContractArchive()
@@ -29,7 +33,7 @@ func main() {
 // [系统合约]
 func testSystemContract() {
 	//client, err := createClientWithConfig()
-	client, err := examples.CreateClient()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
@@ -42,7 +46,7 @@ func testSystemContract() {
 	testSystemContractGetLastBlock(client)
 	testSystemContractGetChainInfo(client)
 
-	systemChainClient, err := examples.CreateClient()
+	systemChainClient, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
@@ -51,7 +55,7 @@ func testSystemContract() {
 }
 
 func testSystemContractArchive() {
-	client, err := examples.CreateClient()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}

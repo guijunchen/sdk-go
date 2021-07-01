@@ -18,10 +18,9 @@ import (
 )
 
 const (
-	sdkConfigOrg1Admin1Path  = "./sdk_config_org1_admin1.yml"
-	sdkConfigOrg1Client1Path = "./sdk_config_org1_client1.yml"
-
-	sdkConfigOrg2Client1Path = "./sdk_config_org2_client1.yml"
+	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+	sdkConfigOrg2Client1Path = "../sdk_configs/sdk_config_org2_client1.yml"
 )
 
 func main() {

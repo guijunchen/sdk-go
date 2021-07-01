@@ -13,12 +13,16 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/examples"
 )
 
+const (
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+)
+
 func main() {
 	testChainClientGetChainMakerServerVersion()
 }
 
 func testChainClientGetChainMakerServerVersion() {
-	client, err := examples.CreateClient()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
