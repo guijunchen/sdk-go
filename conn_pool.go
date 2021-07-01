@@ -25,10 +25,13 @@ const (
 	retryLimit    = 5   // 获取可用客户端连接对象最大重试次数
 )
 
+var _ ConnectionPool = (*ClientConnectionPool)(nil)
+
 type ConnectionPool interface {
 	initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string, tlsHostName string) (*grpc.ClientConn, error)
 	getClient() (*networkClient, error)
 	getClientWithIgnoreAddrs(ignoreAddrs map[string]struct{}) (*networkClient, error)
+	getLogger() Logger
 	Close() error
 }
 
@@ -162,6 +165,10 @@ func (pool *ClientConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[strin
 	}
 
 	return nc, nil
+}
+
+func (pool *ClientConnectionPool) getLogger() Logger {
+	return pool.logger
 }
 
 // 关闭连接池

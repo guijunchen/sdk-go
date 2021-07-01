@@ -28,6 +28,8 @@ const (
 	sdkConfigForUtPath = "./testdata/sdk_config_for_ut.yml"
 )
 
+var _ ConnectionPool = (*mockConnectionPool)(nil)
+
 type mockConnectionPool struct {
 	connections                    []*networkClient
 	logger                         Logger
@@ -141,6 +143,10 @@ func (pool *mockConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]
 	}
 
 	return nc, nil
+}
+
+func (pool *mockConnectionPool) getLogger() Logger {
+	return pool.logger
 }
 
 // Close 关闭连接池
