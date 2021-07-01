@@ -17,13 +17,20 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/examples"
 )
 
+const (
+	sdkConfigOrg1Admin1Path  = "./sdk_config_org1_admin1.yml"
+	sdkConfigOrg1Client1Path = "./sdk_config_org1_client1.yml"
+
+	sdkConfigOrg2Client1Path = "./sdk_config_org2_client1.yml"
+)
+
 func main() {
 	testCertHash()
 	testCertManage()
 }
 
 func testCertHash() {
-	client, err := examples.CreateClient()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
@@ -62,12 +69,12 @@ func testCertManage() {
 		certCrl = "-----BEGIN CRL-----\nMIIBXTCCAQMCAQEwCgYIKoZIzj0EAwIwgYoxCzAJBgNVBAYTAkNOMRAwDgYDVQQI\nEwdCZWlqaW5nMRAwDgYDVQQHEwdCZWlqaW5nMR8wHQYDVQQKExZ3eC1vcmcyLmNo\nYWlubWFrZXIub3JnMRIwEAYDVQQLEwlyb290LWNlcnQxIjAgBgNVBAMTGWNhLnd4\nLW9yZzIuY2hhaW5tYWtlci5vcmcXDTIxMDEyMTA2NDYwM1oXDTIxMDEyMTEwNDYw\nM1owFjAUAgMK5JMXDTI0MDMyMzE1MDMwNVqgLzAtMCsGA1UdIwQkMCKAIJmXK7WF\nqU8zeeiw2Xaoh2od3xucNJD2i6BAbcgvBn2hMAoGCCqGSM49BAMCA0gAMEUCIEgb\nQsHoMkKAKAurOUUfAJpb++DYyxXS3zhvSWPxIUPWAiEAyLSd4TgB9PbSgHyGzS5D\nU1knUTu/4HKTol6GuzmV0Kg=\n-----END CRL-----"
 	)
 
-	client1, err = examples.CreateClientWithOrgId(examples.OrgId1)
+	client1, err = examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		panic(err)
 	}
 
-	admin1, err = examples.CreateAdmin(examples.OrgId1)
+	admin1, err = examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
 	if err != nil {
 		panic(err)
 	}
@@ -91,7 +98,7 @@ func testCertManage() {
 }
 
 func testCertIsAvailable(isAvailable bool) {
-	_, err := examples.CreateClientWithOrgId(examples.OrgId2)
+	_, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Client1Path)
 	if isAvailable {
 		if err != nil {
 			panic(err)
