@@ -1,5 +1,4 @@
 /*
-Copyright (C) BABEC. All rights reserved.
 Copyright (C) THL A29 Limited, a Tencent company. All rights reserved.
 
 SPDX-License-Identifier: Apache-2.0
@@ -8,138 +7,93 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker/pb-go/common"
-	"encoding/hex"
-	"fmt"
-	"github.com/gogo/protobuf/proto"
-	"github.com/hokaccha/go-prettyjson"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"chainmaker.org/chainmaker/pb-go/common"
 )
 
-func TestArchive(t *testing.T) {
+func TestSendArchiveBlockRequest(t *testing.T) {
+	tests := []struct {
+		name   string
+		height int64
+		res    *common.TxResponse
+		err    error
+	}{
+		{
+			"valid request",
+			100,
+			&common.TxResponse{Code: common.TxStatusCode_SUCCESS},
+			nil,
+		},
+	}
 
-	admin1, err := createAdmin(orgId1)
-	//admin1, err := createClientWithOrgId(orgId1)
-	//admin1, err := createClientWithOrgId(orgId2)
-	require.Nil(t, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cli, err := newMockChainClient(WithConfPath(sdkConfigForUtPath))
+			require.Nil(t, err)
+			defer cli.Stop()
 
-	fmt.Println("====================== 数据归档 ======================")
-	var targetBlockHeight int64 = 3
-	testArchiveBlock(t, admin1, targetBlockHeight)
+			var (
+				payload            []byte
+				signedPayloadBytes []byte
+				resp               *common.TxResponse
+			)
+
+			payload, err = cli.CreateArchiveBlockPayload(tt.height)
+			require.Nil(t, err)
+
+			signedPayloadBytes = payload
+
+			resp, err = cli.SendArchiveBlockRequest(signedPayloadBytes, -1)
+			require.Nil(t, err)
+
+			if resp.Code != tt.res.Code {
+				t.Error("error: expected", tt.res, "received", resp)
+			}
+		})
+	}
 }
 
-func TestRestore(t *testing.T) {
-	admin1, err := createAdmin(orgId1)
-	require.Nil(t, err)
+func TestSendRestoreBlockRequest(t *testing.T) {
+	tests := []struct {
+		name      string
+		fullblock []byte
+		res       *common.TxResponse
+		err       error
+	}{
+		{
+			"valid request",
+			[]byte("fullblock"),
+			&common.TxResponse{Code: common.TxStatusCode_SUCCESS},
+			nil,
+		},
+	}
 
-	client, err := createClientWithConfig()
-	require.Nil(t, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cli, err := newMockChainClient(WithConfPath(sdkConfigForUtPath))
+			require.Nil(t, err)
+			defer cli.Stop()
 
-	fmt.Println("====================== 归档恢复 ======================")
-	var blockHeight int64 = 2
+			var (
+				payload            []byte
+				signedPayloadBytes []byte
+				resp               *common.TxResponse
+			)
 
-	fullBlock, err := client.GetArchivedFullBlockByHeight(blockHeight)
-	require.Nil(t, err)
-	prettyJsonShow(t, "GetArchivedFullBlockByHeight fullBlock", fullBlock)
+			payload, err = cli.CreateRestoreBlockPayload(tt.fullblock)
+			require.Nil(t, err)
 
-	fullBlockBytes, err := proto.Marshal(fullBlock)
-	require.Nil(t, err)
+			signedPayloadBytes = payload
 
-	testRestoreBlock(t, admin1, fullBlockBytes)
-}
+			resp, err = cli.SendRestoreBlockRequest(signedPayloadBytes, -1)
+			require.Nil(t, err)
 
-func TestGetFromArchiveStore(t *testing.T) {
-	client, err := createClientWithConfig()
-	require.Nil(t, err)
-
-	fmt.Println("====================== 归档查询 ======================")
-	var blockHeight int64 = 8
-	fullBlockInfo, err := client.GetFromArchiveStore(blockHeight)
-	require.Nil(t, err)
-	prettyJsonShow(t, "GetFromArchiveStore fullBlockInfo", fullBlockInfo)
-
-	fullBlockInfo, err = client.GetArchivedFullBlockByHeight(blockHeight)
-	require.Nil(t, err)
-	prettyJsonShow(t, "GetArchivedFullBlockByHeight fullBlockInfo", fullBlockInfo)
-
-	blockInfo, err := client.GetArchivedBlockByHeight(blockHeight, true)
-	require.Nil(t, err)
-	prettyJsonShow(t, "GetArchivedBlockByHeight with rwset", blockInfo)
-
-	blockInfo, err = client.GetArchivedBlockByHeight(blockHeight, false)
-	require.Nil(t, err)
-	prettyJsonShow(t, "GetArchivedBlockByHeight without rwset", blockInfo)
-
-	blockInfo, err = client.GetArchivedBlockByHash(hex.EncodeToString(blockInfo.Block.Header.BlockHash), true)
-	require.Nil(t, err)
-	prettyJsonShow(t, "GetArchivedBlockByHash with rwset", blockInfo)
-
-	blockInfo, err = client.GetArchivedBlockByHash(hex.EncodeToString(blockInfo.Block.Header.BlockHash), false)
-	require.Nil(t, err)
-	prettyJsonShow(t, "GetArchivedBlockByHash without rwset", blockInfo)
-
-	txId := blockInfo.Block.Txs[0].Header.TxId
-	txInfo, err := client.GetArchivedTxByTxId(txId)
-	require.Nil(t, err)
-	prettyJsonShow(t, "GetArchivedTxByTxId", txInfo)
-}
-
-func prettyJsonShow(t *testing.T, name string, v interface{}) {
-	marshal, err := prettyjson.Marshal(v)
-	require.Nil(t, err)
-	fmt.Printf("\n\n\n====== %s ======\n%s\n==========================\n", name, marshal)
-}
-
-func testArchiveBlock(t *testing.T, admin1 *ChainClient, targetBlockHeight int64) {
-	var (
-		err                error
-		payload            []byte
-		signedPayloadBytes []byte
-		resp               *common.TxResponse
-		result             string
-	)
-
-	payload, err = admin1.CreateArchiveBlockPayload(targetBlockHeight)
-	require.Nil(t, err)
-
-	signedPayloadBytes, err = admin1.SignArchivePayload(payload)
-	require.Nil(t, err)
-
-	resp, err = admin1.SendArchiveBlockRequest(signedPayloadBytes, -1)
-	require.Nil(t, err)
-
-	err = checkProposalRequestResp(resp, false)
-	require.Nil(t, err)
-
-	result = string(resp.ContractResult.Result)
-
-	fmt.Printf("resp: %+v, result:%+s\n", resp, result)
-}
-
-
-func testRestoreBlock(t *testing.T, admin1 *ChainClient, fullBlock []byte) {
-	var (
-		err                error
-		payload            []byte
-		signedPayloadBytes []byte
-		resp               *common.TxResponse
-		result             string
-	)
-
-	payload, err = admin1.CreateRestoreBlockPayload(fullBlock)
-	require.Nil(t, err)
-
-	signedPayloadBytes, err = admin1.SignArchivePayload(payload)
-	require.Nil(t, err)
-
-	resp, err = admin1.SendRestoreBlockRequest(signedPayloadBytes, -1)
-	require.Nil(t, err)
-
-	err = checkProposalRequestResp(resp, false)
-	require.Nil(t, err)
-
-	result = string(resp.ContractResult.Result)
-
-	fmt.Printf("resp: %+v, result:%+s\n", resp, result)
+			if resp.Code != tt.res.Code {
+				t.Error("error: expected", tt.res, "received", resp)
+			}
+		})
+	}
 }

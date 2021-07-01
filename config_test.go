@@ -9,9 +9,10 @@ package chainmaker_sdk_go
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestInitConfig(t *testing.T) {
