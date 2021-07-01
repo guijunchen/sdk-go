@@ -24,20 +24,22 @@ var (
 
 func TestUserContractClaim(t *testing.T) {
 	fmt.Println("====================== create client ======================")
-	client, err := createClientWithCertBytes()
+	client, err := createClientWithConfig()
+	//client, err := createClientWithCertBytes()
+	//client, err := createClient()
 	require.Nil(t, err)
 
 	fmt.Println("====================== create admin1 ======================")
-	admin1, err := createAdmin(orgId1)
+	admin1, err := createAdminWithConfig(orgId1)
 	require.Nil(t, err)
 	fmt.Println("====================== create admin2 ======================")
-	admin2, err := createAdmin(orgId2)
+	admin2, err := createAdminWithConfig(orgId2)
 	require.Nil(t, err)
 	fmt.Println("====================== create admin3 ======================")
-	admin3, err := createAdmin(orgId3)
+	admin3, err := createAdminWithConfig(orgId3)
 	require.Nil(t, err)
 	fmt.Println("====================== create admin4 ======================")
-	admin4, err := createAdmin(orgId4)
+	admin4, err := createAdminWithConfig(orgId4)
 	require.Nil(t, err)
 
 	fmt.Println("====================== 创建合约 ======================")

@@ -16,7 +16,7 @@ import (
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/backoff"
 	"github.com/Rican7/retry/strategy"
-	"github.com/golang/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 	"io/ioutil"
 	"strings"
 	"time"

@@ -8,13 +8,14 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"fmt"
+	"io/ioutil"
+
 	"chainmaker.org/chainmaker/common/crypto"
 	"chainmaker.org/chainmaker/common/crypto/asym"
 	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
 	"chainmaker.org/chainmaker/common/log"
-	"fmt"
 	"go.uber.org/zap"
-	"io/ioutil"
 )
 
 const (
@@ -24,6 +25,8 @@ const (
 	GetTxTimeout = 10
 	// 发送交易超时时间
 	SendTxTimeout = 10
+	// 默认grpc客户端接受最大值 4M
+	DefaultRpcClientMaxReceiveMessageSize = 4
 )
 
 // 节点配置
@@ -103,6 +106,22 @@ func WithSecretKey(key string) ArchiveOption {
 	}
 }
 
+// RPC Client 链接配置
+type RPCClientConfig struct {
+
+	//pc客户端最大接受大小 (MB)
+	rpcClientMaxReceiveMessageSize int
+}
+
+type RPCClientOption func(config *RPCClientConfig)
+
+// 设置RPC Client的Max Receive Message Size
+func WithRPCClientMaxReceiveMessageSize(size int) RPCClientOption {
+	return func(config *RPCClientConfig) {
+		config.rpcClientMaxReceiveMessageSize = size
+	}
+}
+
 type ChainClientConfig struct {
 	// logger若不设置，将采用默认日志文件输出日志，建议设置，以便采用集成系统的统一日志输出
 	logger Logger
@@ -133,6 +152,9 @@ type ChainClientConfig struct {
 
 	// 归档特性的配置
 	archiveConfig *ArchiveConfig
+
+	// rpc客户端设置
+	rpcClientConfig *RPCClientConfig
 }
 
 type ChainClientOption func(*ChainClientConfig)
@@ -235,6 +257,13 @@ func WithArchiveConfig(conf *ArchiveConfig) ChainClientOption {
 	}
 }
 
+//设置grpc客户端配置
+func WithRPCClientConfig(conf *RPCClientConfig) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.rpcClientConfig = conf
+	}
+}
+
 // 生成SDK配置并校验合法性
 func generateConfig(opts ...ChainClientOption) (*ChainClientConfig, error) {
 	config := &ChainClientConfig{}
@@ -316,6 +345,15 @@ func setArchiveConfig(config *ChainClientConfig) {
 	}
 }
 
+func setRPCClientConfig(config *ChainClientConfig) {
+	if Config.ChainClientConfig.RPCClientConfig != nil && config.rpcClientConfig == nil {
+		rpcClient := NewRPCClientConfig(
+			WithRPCClientMaxReceiveMessageSize(Config.ChainClientConfig.RPCClientConfig.MaxRecvMsgSize),
+		)
+		config.rpcClientConfig = rpcClient
+	}
+}
+
 func readConfigFile(config *ChainClientConfig) error {
 	// 若没有配置配置文件
 	if config.confPath == "" {
@@ -333,6 +371,8 @@ func readConfigFile(config *ChainClientConfig) error {
 	setNodeList(config)
 
 	setArchiveConfig(config)
+
+	setRPCClientConfig(config)
 
 	return nil
 }
@@ -369,6 +409,9 @@ func checkConfig(config *ChainClientConfig) error {
 		return err
 	}
 
+	if err = checkRPCClientConfig(config); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -430,6 +473,20 @@ func checkChainConfig(config *ChainClientConfig) error {
 }
 
 func checkArchiveConfig(config *ChainClientConfig) error {
+	return nil
+}
+
+func checkRPCClientConfig(config *ChainClientConfig) error {
+	if config.rpcClientConfig == nil {
+		rpcClient := NewRPCClientConfig(
+			WithRPCClientMaxReceiveMessageSize(DefaultRpcClientMaxReceiveMessageSize),
+		)
+		config.rpcClientConfig = rpcClient
+	} else {
+		if config.rpcClientConfig.rpcClientMaxReceiveMessageSize <= 0 || config.rpcClientConfig.rpcClientMaxReceiveMessageSize > 100 {
+			config.rpcClientConfig.rpcClientMaxReceiveMessageSize = DefaultRpcClientMaxReceiveMessageSize
+		}
+	}
 	return nil
 }
 
@@ -543,7 +600,7 @@ func getDefaultLogger() *zap.SugaredLogger {
 		MaxAge:       30,
 		JsonFormat:   false,
 		ShowLine:     true,
-		LogInConsole: true,
+		LogInConsole: false,
 	}
 
 	logger, _ := log.InitSugarLogger(&config)

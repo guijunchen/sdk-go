@@ -22,7 +22,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/golang/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 	"github.com/samkumar/hibe"
 	"io/ioutil"
 	"os"

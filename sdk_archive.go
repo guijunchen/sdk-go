@@ -1,25 +1,33 @@
+/*
+Copyright (C) BABEC. All rights reserved.
+Copyright (C) THL A29 Limited, a Tencent company. All rights reserved.
+
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package chainmaker_sdk_go
 
 import (
+	"database/sql"
+	"fmt"
+	"strings"
+
 	"chainmaker.org/chainmaker/pb-go/common"
 	"chainmaker.org/chainmaker/pb-go/store"
-	"fmt"
-	"github.com/golang/protobuf/proto"
-	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"strings"
+	"github.com/gogo/protobuf/proto"
 )
 
 const (
-	mysqlDBNamePrefix = "cm_archived_chain"
-	mysqlTableNamePrefix = "t_block_info"
+	mysqlDBNamePrefix     = "cm_archived_chain"
+	mysqlTableNamePrefix  = "t_block_info"
 	rowsPerBlockInfoTable = 100000
 )
 
 func (cc *ChainClient) CreateArchiveBlockPayload(targetBlockHeight int64) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [Archive] to be signed payload")
 
-	payload := &common.ArchiveBlockPayload {
+	payload := &common.ArchiveBlockPayload{
 		BlockHeight: targetBlockHeight,
 	}
 
@@ -34,7 +42,7 @@ func (cc *ChainClient) CreateArchiveBlockPayload(targetBlockHeight int64) ([]byt
 func (cc *ChainClient) CreateRestoreBlockPayload(fullBlock []byte) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [restore] to be signed payload")
 
-	payload := &common.RestoreBlockPayload {
+	payload := &common.RestoreBlockPayload{
 		FullBlock: fullBlock,
 	}
 
@@ -130,7 +138,7 @@ func (cc *ChainClient) GetArchivedTxByTxId(txId string) (*common.TransactionInfo
 
 func (cc *ChainClient) GetFromArchiveStore(blockHeight int64) (*store.BlockWithRWSet, error) {
 	archiveType := Config.ChainClientConfig.ArchiveConfig.Type
-	if  archiveType == "mysql" {
+	if archiveType == "mysql" {
 		return cc.GetArchivedBlockFromMySQL(blockHeight)
 	}
 
@@ -141,9 +149,8 @@ func (cc *ChainClient) GetArchivedBlockFromMySQL(blockHeight int64) (*store.Bloc
 
 	var (
 		blockWithRWSetBytes []byte
-		hmac string
-		blockWithRWSet store.BlockWithRWSet
-
+		hmac                string
+		blockWithRWSet      store.BlockWithRWSet
 	)
 
 	dest := Config.ChainClientConfig.ArchiveConfig.Dest

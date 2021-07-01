@@ -12,7 +12,7 @@ import (
 	"chainmaker.org/chainmaker/pb-go/common"
 	"encoding/hex"
 	"fmt"
-	"github.com/golang/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 	"strconv"
 )
 

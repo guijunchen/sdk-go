@@ -8,15 +8,16 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"fmt"
+	"math/rand"
+	"time"
+
 	"chainmaker.org/chainmaker/common/ca"
 	"chainmaker.org/chainmaker/pb-go/api"
-	"fmt"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
-	"math/rand"
-	"time"
 )
 
 const (
@@ -33,15 +34,16 @@ type networkClient struct {
 	caPaths     []string
 	caCerts     []string
 	tlsHostName string
-	ID 			string
+	ID          string
 }
 
 // 客户端连接池结构定义
 type ConnectionPool struct {
-	connections     []*networkClient
-	logger          Logger
-	userKeyBytes    []byte
-	userCrtBytes    []byte
+	connections                    []*networkClient
+	logger                         Logger
+	userKeyBytes                   []byte
+	userCrtBytes                   []byte
+	rpcClientMaxReceiveMessageSize int
 }
 
 // 创建连接池
@@ -49,20 +51,19 @@ func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 	pool := &ConnectionPool{
 		logger:       config.logger,
 		userKeyBytes: config.userKeyBytes,
-		userCrtBytes: config.userCrtBytes,
+		userCrtBytes: config.userCrtBytes,rpcClientMaxReceiveMessageSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize,
 	}
 
 	for idx, node := range config.nodeList {
-		cli := &networkClient{
-			nodeAddr:    node.addr,
-			useTLS:      node.useTLS,
-			caPaths:     node.caPaths,
-			caCerts:     node.caCerts,
-			tlsHostName: node.tlsHostName,
-			ID: fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
-		}
-
 		for i := 0; i < node.connCnt; i++ {
+			cli := &networkClient{
+				nodeAddr:    node.addr,
+				useTLS:      node.useTLS,
+				caPaths:     node.caPaths,
+				caCerts:     node.caCerts,
+				tlsHostName: node.tlsHostName,
+				ID:          fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
+			}
 			pool.connections = append(pool.connections, cli)
 		}
 	}
@@ -76,7 +77,7 @@ func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 // 初始化GPRC客户端连接
 func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string, tlsHostName string) (*grpc.ClientConn, error) {
 	var tlsClient ca.CAClient
-
+	maxCallRecvMsgSize := pool.rpcClientMaxReceiveMessageSize * 1024 * 1024
 	if useTLS {
 		if len(caCerts) != 0 {
 			tlsClient = ca.CAClient{
@@ -100,10 +101,9 @@ func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPath
 		if err != nil {
 			return nil, err
 		}
-
-		return grpc.Dial(nodeAddr, grpc.WithTransportCredentials(*c))
+		return grpc.Dial(nodeAddr, grpc.WithTransportCredentials(*c), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)))
 	} else {
-		return grpc.Dial(nodeAddr, grpc.WithInsecure())
+		return grpc.Dial(nodeAddr, grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)))
 	}
 }
 
