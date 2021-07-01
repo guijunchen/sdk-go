@@ -108,13 +108,15 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	}
 
 	return &ChainClient{
-		pool:         pool,
-		logger:       config.logger,
-		chainId:      config.chainId,
-		orgId:        config.orgId,
-		userCrtBytes: config.userSignCrtBytes,
-		userCrt:      config.userCrt,
-		privateKey:   config.privateKey,archiveConfig: config.archiveConfig,rpcClientConfig: config.rpcClientConfig,
+		pool:            pool,
+		logger:          config.logger,
+		chainId:         config.chainId,
+		orgId:           config.orgId,
+		userCrtBytes:    config.userSignCrtBytes,
+		userCrt:         config.userCrt,
+		privateKey:      config.privateKey,
+		archiveConfig:   config.archiveConfig,
+		rpcClientConfig: config.rpcClientConfig,
 	}, nil
 }
 
