@@ -22,19 +22,6 @@ chain_client:
       # 信任证书池路径
       trust_root_paths:
         - "../../testdata/crypto-config/wx-org1.chainmaker.org/ca"
-        - "../../testdata/crypto-config/wx-org2.chainmaker.org/ca"
-      # TLS hostname
-      tls_host_name: "chainmaker.org"
-    - # 节点地址，格式为：IP:端口:连接数
-      node_addr: "127.0.0.1:12302"
-      # 节点连接数
-      conn_cnt: 10
-      # RPC连接是否启用双向TLS认证
-      enable_tls: true
-      # 信任证书池路径
-      trust_root_paths:
-        - "../../testdata/crypto-config/wx-org1.chainmaker.org/ca"
-        - "../../testdata/crypto-config/wx-org2.chainmaker.org/ca"
       # TLS hostname
       tls_host_name: "chainmaker.org"
   archive:

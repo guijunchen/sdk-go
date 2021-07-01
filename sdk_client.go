@@ -39,7 +39,7 @@ var _ SDKInterface = (*ChainClient)(nil)
 
 type ChainClient struct {
 	logger       Logger
-	pool         *ConnectionPool
+	pool         ConnectionPool
 	chainId      string
 	orgId        string
 	userCrtBytes []byte
@@ -70,7 +70,7 @@ func NewNodeConfig(opts ...NodeOption) *NodeConfig {
 }
 
 //new add
-func NewChainConnPool(opts ...ChainClientOption) (*ConnectionPool, error) {
+func NewConnPoolWithOptions(opts ...ChainClientOption) (*ClientConnectionPool, error) {
 	config, err := generateConfig(opts...)
 	if err != nil {
 		return nil, err
@@ -108,13 +108,15 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	}
 
 	return &ChainClient{
-		pool:         pool,
-		logger:       config.logger,
-		chainId:      config.chainId,
-		orgId:        config.orgId,
-		userCrtBytes: config.userSignCrtBytes,
-		userCrt:      config.userCrt,
-		privateKey:   config.privateKey,archiveConfig: config.archiveConfig,rpcClientConfig: config.rpcClientConfig,
+		pool:            pool,
+		logger:          config.logger,
+		chainId:         config.chainId,
+		orgId:           config.orgId,
+		userCrtBytes:    config.userSignCrtBytes,
+		userCrt:         config.userCrt,
+		privateKey:      config.privateKey,
+		archiveConfig:   config.archiveConfig,
+		rpcClientConfig: config.rpcClientConfig,
 	}, nil
 }
 
@@ -198,7 +200,7 @@ func (cc *ChainClient) GetUserCrtHash() []byte {
 }
 
 //new add
-func CreateChainClient(pool *ConnectionPool, userCrtBytes, privKey, userCrtHash []byte, orgId, chainId string, enabledCrtHash int) (*ChainClient, error) {
+func CreateChainClient(pool ConnectionPool, userCrtBytes, privKey, userCrtHash []byte, orgId, chainId string, enabledCrtHash int) (*ChainClient, error) {
 	cert, err := ParseCert(userCrtBytes)
 	if err != nil {
 		return nil, err
@@ -211,7 +213,7 @@ func CreateChainClient(pool *ConnectionPool, userCrtBytes, privKey, userCrtHash 
 
 	chain := &ChainClient{
 		pool:         pool,
-		logger:       pool.logger,
+		logger:       pool.getLogger(),
 		chainId:      chainId,
 		orgId:        orgId,
 		userCrtBytes: userCrtBytes,

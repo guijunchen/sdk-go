@@ -9,13 +9,14 @@ package chainmaker_sdk_go
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestInitConfig(t *testing.T) {
-	err := InitConfig("./testdata/sdk_config.yml")
+	err := InitConfig("./testdata/sdk_config_for_ut.yml")
 	require.Nil(t, err)
 
 	json, err := prettyjson.Marshal(Config)

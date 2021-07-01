@@ -25,6 +25,16 @@ const (
 	retryLimit    = 5   // 获取可用客户端连接对象最大重试次数
 )
 
+var _ ConnectionPool = (*ClientConnectionPool)(nil)
+
+type ConnectionPool interface {
+	initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string, tlsHostName string) (*grpc.ClientConn, error)
+	getClient() (*networkClient, error)
+	getClientWithIgnoreAddrs(ignoreAddrs map[string]struct{}) (*networkClient, error)
+	getLogger() Logger
+	Close() error
+}
+
 // 客户端连接结构定义
 type networkClient struct {
 	rpcNode     api.RpcNodeClient
@@ -38,7 +48,7 @@ type networkClient struct {
 }
 
 // 客户端连接池结构定义
-type ConnectionPool struct {
+type ClientConnectionPool struct {
 	connections                    []*networkClient
 	logger                         Logger
 	userKeyBytes                   []byte
@@ -47,11 +57,12 @@ type ConnectionPool struct {
 }
 
 // 创建连接池
-func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
-	pool := &ConnectionPool{
-		logger:       config.logger,
-		userKeyBytes: config.userKeyBytes,
-		userCrtBytes: config.userCrtBytes,rpcClientMaxReceiveMessageSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize,
+func NewConnPool(config *ChainClientConfig) (*ClientConnectionPool, error) {
+	pool := &ClientConnectionPool{
+		logger:                         config.logger,
+		userKeyBytes:                   config.userKeyBytes,
+		userCrtBytes:                   config.userCrtBytes,
+		rpcClientMaxReceiveMessageSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize,
 	}
 
 	for idx, node := range config.nodeList {
@@ -75,7 +86,7 @@ func NewConnPool(config *ChainClientConfig) (*ConnectionPool, error) {
 }
 
 // 初始化GPRC客户端连接
-func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string, tlsHostName string) (*grpc.ClientConn, error) {
+func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string, tlsHostName string) (*grpc.ClientConn, error) {
 	var tlsClient ca.CAClient
 	maxCallRecvMsgSize := pool.rpcClientMaxReceiveMessageSize * 1024 * 1024
 	if useTLS {
@@ -108,11 +119,11 @@ func (pool *ConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPath
 }
 
 // 获取空闲的可用客户端连接对象
-func (pool *ConnectionPool) getClient() (*networkClient, error) {
+func (pool *ClientConnectionPool) getClient() (*networkClient, error) {
 	return pool.getClientWithIgnoreAddrs(nil)
 }
 
-func (pool *ConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]struct{}) (*networkClient, error) {
+func (pool *ClientConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]struct{}) (*networkClient, error) {
 	var nc *networkClient
 
 	err := retry.Retry(func(uint) error {
@@ -156,8 +167,12 @@ func (pool *ConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]stru
 	return nc, nil
 }
 
+func (pool *ClientConnectionPool) getLogger() Logger {
+	return pool.logger
+}
+
 // 关闭连接池
-func (pool *ConnectionPool) Close() error {
+func (pool *ClientConnectionPool) Close() error {
 	for _, c := range pool.connections {
 		if c.conn == nil {
 			continue
