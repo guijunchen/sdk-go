@@ -9,6 +9,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"chainmaker.org/chainmaker/common/crypto"
@@ -76,24 +77,24 @@ func testHibeContractCounterGo() {
 	txId = sdk.GetRandTxId()
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Println("====================== 创建合约（异步）======================")
@@ -122,7 +123,7 @@ func testUserHibeContractCounterGoCreate(client *sdk.ChainClient, admin1, admin2
 	resp, err := createUserHibeContract(client, admin1, admin2, admin3, admin4,
 		hibeContractName, examples.Version, hibeContractByteCodePath, common.RuntimeType_GASM, []*common.KeyValuePair{}, withSyncResult)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Printf("CREATE contract-hibe-1 contract resp: %+v\n", resp)
@@ -133,7 +134,7 @@ func testUserHibeContractCounterGoCreate(client *sdk.ChainClient, admin1, admin2
 func testUserHibeContractParamsGoInvoke(client *sdk.ChainClient, method string, withSyncResult bool) {
 	err := invokeUserHibeContractParams(client, hibeContractName, method, "", withSyncResult)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 }
 
@@ -141,7 +142,7 @@ func testUserHibeContractParamsGoInvoke(client *sdk.ChainClient, method string, 
 func testUserHibeContractParamsGoQuery(client *sdk.ChainClient, method string, params map[string]string) {
 	hibeParams, err := client.QueryHibeParamsWithOrgId(hibeContractName, findParamsByOrgId, examples.OrgId1, -1)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("QUERY %s contract resp -> hibeParams:%s\n", hibeContractName, hibeParams)
 }
@@ -150,7 +151,7 @@ func testUserHibeContractParamsGoQuery(client *sdk.ChainClient, method string, p
 func testUserHibeContractMsgGoInvoke(client *sdk.ChainClient, method string, withSyncResult bool) {
 	err := invokeUserHibeContractMsg(client, hibeContractName, method, txId, withSyncResult)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 }
 
@@ -161,29 +162,29 @@ func testUserHibeContractMsgGoQuery(client *sdk.ChainClient) {
 
 	localParams, err := sdk.ReadHibeParamsWithFilePath(localHibeParamsFilePath)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	topHibePrvKey, err := sdk.ReadHibePrvKeysWithFilePath(localTopLevelHibePrvKeyFilePath)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	msgBytes1, err := client.DecryptHibeTxByTxId(localTopLevelId, localParams, topHibePrvKey, txId, keyType)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("QUERY hibe-contract-go-1 contract resp DecryptHibeTxByBizId [Decrypt Msg By TopLevel privateKey] message: %s\n", string(msgBytes1))
 
 	msgBytes2, err := client.DecryptHibeTxByTxId(localTopLevelId, localParams, topHibePrvKey, txId, keyType)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("QUERY hibe-contract-go-1 contract resp DecryptHibeTxByBizId [Decrypt Msg By SecondLevel privateKey] message: %s\n", string(msgBytes2))
 
 	msgBytes3, err := client.DecryptHibeTxByTxId(localTopLevelId, localParams, topHibePrvKey, txId, keyType)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("QUERY hibe-contract-go-1 contract resp DecryptHibeTxByBizId [Decrypt Msg By ThirdLevel privateKey] message: %s\n", string(msgBytes3))
 

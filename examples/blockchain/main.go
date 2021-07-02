@@ -9,6 +9,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"chainmaker.org/chainmaker/sdk-go/examples"
 )
@@ -24,11 +25,11 @@ func main() {
 func testChainClientCheckNewBlockChainConfig() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	err = client.CheckNewBlockChainConfig()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Println("check new block chain config: ok")
 }

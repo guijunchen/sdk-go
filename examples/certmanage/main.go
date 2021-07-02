@@ -10,6 +10,7 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
+	"log"
 	"time"
 
 	"chainmaker.org/chainmaker/pb-go/common"
@@ -31,7 +32,7 @@ func main() {
 func testCertHash() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	certHash := testCertAdd(client)
@@ -39,7 +40,7 @@ func testCertHash() {
 
 	certInfos := testQueryCert(client, []string{certHash})
 	if len(certInfos.CertInfos) != 1 {
-		panic("require len(certInfos.CertInfos) == 1")
+		log.Fatalln("require len(certInfos.CertInfos) == 1")
 	}
 
 	testDeleteCert(client, []string{certHash})
@@ -47,10 +48,10 @@ func testCertHash() {
 
 	certInfos = testQueryCert(client, []string{certHash})
 	if len(certInfos.CertInfos) != 1 {
-		panic("require len(certInfos.CertInfos) == 1")
+		log.Fatalln("require len(certInfos.CertInfos) == 1")
 	}
 	if certInfos.CertInfos[0].Cert != nil {
-		panic("require certInfos.CertInfos[0].Cert == nil")
+		log.Fatalln("require certInfos.CertInfos[0].Cert == nil")
 	}
 }
 
@@ -70,12 +71,12 @@ func testCertManage() {
 
 	client1, err = examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	admin1, err = examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Println("====================== 证书冻结 ======================")
@@ -100,11 +101,11 @@ func testCertIsAvailable(isAvailable bool) {
 	_, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Client1Path)
 	if isAvailable {
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 	} else {
 		if err == nil {
-			panic("require err != nil")
+			log.Fatalln("require err != nil")
 		}
 	}
 }
@@ -120,17 +121,17 @@ func testCertManageFrozen(client1, admin1 *sdk.ChainClient, certs []string) {
 
 	payload, err = client1.CreateCertManageFrozenPayload(certs)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes, err = admin1.SignCertManagePayload(payload)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	resp, err = client1.SendCertManageRequest(signedPayloadBytes, -1, true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	result = string(resp.ContractResult.Result)
@@ -149,17 +150,17 @@ func testCertManageUnfrozen(client1, admin1 *sdk.ChainClient, certs []string) {
 
 	payload, err = client1.CreateCertManageUnfrozenPayload(certs)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes, err = admin1.SignCertManagePayload(payload)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	resp, err = client1.SendCertManageRequest(signedPayloadBytes, -1, true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	result = string(resp.ContractResult.Result)
@@ -178,17 +179,17 @@ func testCertManageRevoke(client1, admin1 *sdk.ChainClient, certCrl string) {
 
 	payload, err = client1.CreateCertManageRevocationPayload(certCrl)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes, err = admin1.SignCertManagePayload(payload)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	resp, err = client1.SendCertManageRequest(signedPayloadBytes, -1, true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	result = string(resp.ContractResult.Result)
@@ -199,7 +200,7 @@ func testCertManageRevoke(client1, admin1 *sdk.ChainClient, certCrl string) {
 func testCertAdd(client *sdk.ChainClient) string {
 	resp, err := client.AddCert()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	return hex.EncodeToString(resp.ContractResult.Result)
 }
@@ -207,7 +208,7 @@ func testCertAdd(client *sdk.ChainClient) string {
 func testQueryCert(client *sdk.ChainClient, certHashes []string) *common.CertInfos {
 	certInfos, err := client.QueryCert(certHashes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	return certInfos
 }
@@ -215,6 +216,6 @@ func testQueryCert(client *sdk.ChainClient, certHashes []string) *common.CertInf
 func testDeleteCert(client *sdk.ChainClient, certHashes []string) {
 	_, err := client.DeleteCert(certHashes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 }

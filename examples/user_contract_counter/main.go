@@ -9,6 +9,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"chainmaker.org/chainmaker/pb-go/common"
@@ -38,24 +39,24 @@ func main() {
 func testUserContractCounterGo() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Println("====================== 创建合约（异步）======================")
@@ -114,7 +115,7 @@ func testUserContractCounterGoCreate(client, admin1, admin2, admin3, admin4 *sdk
 	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
 		contractName, version, byteCodePath, common.RuntimeType_WASMER, []*common.KeyValuePair{}, withSyncResult)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Printf("CREATE counter-go contract resp: %+v\n", resp)
@@ -124,46 +125,46 @@ func testUserContractCounterGoCreate(client, admin1, admin2, admin3, admin4 *sdk
 func testUserContractCounterGoUpgrade(client, admin1, admin2, admin3, admin4 *sdk.ChainClient) {
 	payloadBytes, err := client.CreateContractUpgradePayload(contractName, upgradeVersion, upgradeByteCodePath, common.RuntimeType_GASM, []*common.KeyValuePair{})
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 各组织Admin权限用户签名
 	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 收集并合并签名
 	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
 		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 发送创建合约请求
 	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, -1, false)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	err = examples.CheckProposalRequestResp(resp, true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Printf("UPGRADE counter-go contract resp: %+v\n", resp)
@@ -174,47 +175,47 @@ func testUserContractCounterGoFreeze(client, admin1, admin2, admin3, admin4 *sdk
 	withSyncResult bool) {
 	payloadBytes, err := client.CreateContractFreezePayload(contractName)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 各组织Admin权限用户签名
 	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 收集并合并签名
 	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
 		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 发送创建合约请求
 	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
 	fmt.Printf("resp: %+v\n", resp)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	err = examples.CheckProposalRequestResp(resp, true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Printf("Freeze counter-go contract resp: %+v\n", resp)
@@ -225,47 +226,47 @@ func testUserContractCounterGoUnfreeze(client, admin1, admin2, admin3, admin4 *s
 	withSyncResult bool) {
 	payloadBytes, err := client.CreateContractUnfreezePayload(contractName)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 各组织Admin权限用户签名
 	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 收集并合并签名
 	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
 		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 发送创建合约请求
 	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
 	fmt.Printf("unfreeze resp: %+v\n", resp)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	err = examples.CheckProposalRequestResp(resp, true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Printf("Unfreeze counter-go contract resp: %+v\n", resp)
@@ -276,47 +277,47 @@ func testUserContractCounterGoRevoke(client, admin1, admin2, admin3, admin4 *sdk
 	withSyncResult bool) {
 	payloadBytes, err := client.CreateContractRevokePayload(contractName)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 各组织Admin权限用户签名
 	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 收集并合并签名
 	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
 		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 发送创建合约请求
 	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
 	fmt.Printf("revoke resp: %+v\n", resp)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	err = examples.CheckProposalRequestResp(resp, true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Printf("revoke counter-go contract resp: %+v\n", resp)
@@ -327,14 +328,14 @@ func testUserContractCounterGoInvoke(client *sdk.ChainClient, method string, par
 
 	err := invokeUserContract(client, contractName, method, "", params, withSyncResult)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 }
 
 func testUserContractCounterGoQuery(client *sdk.ChainClient, method string, params map[string]string) {
 	resp, err := client.QueryContract(contractName, method, params, -1)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("QUERY counter-go contract resp: %+v\n", resp)
 }

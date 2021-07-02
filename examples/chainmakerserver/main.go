@@ -9,6 +9,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"chainmaker.org/chainmaker/sdk-go/examples"
 )
@@ -24,11 +25,11 @@ func main() {
 func testChainClientGetChainMakerServerVersion() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	version, err := client.GetChainMakerServerVersion()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Println("get chainmaker server version:", version)
 }

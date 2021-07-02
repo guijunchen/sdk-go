@@ -10,6 +10,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"chainmaker.org/chainmaker/common/random/uuid"
@@ -35,7 +36,7 @@ func main() {
 func testSubscribeBlock() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -46,14 +47,14 @@ func testSubscribeBlock() {
 	//c, err := client.SubscribeBlock(ctx, 0, -1, false)
 	//c, err := client.SubscribeBlock(ctx, 10, -1, false)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	go func() {
 		for i := 0; i < sendTxCount; i++ {
 			_, err := testUserContractClaimInvoke(client, "save", false)
 			if err != nil {
-				panic(err)
+				log.Fatalln(err)
 			}
 			time.Sleep(2 * time.Second)
 		}
@@ -68,12 +69,12 @@ func testSubscribeBlock() {
 			}
 
 			if block == nil {
-				panic("require not nil")
+				log.Fatalln("require not nil")
 			}
 
 			blockInfo, ok := block.(*common.BlockInfo)
 			if !ok {
-				panic("require true")
+				log.Fatalln("require true")
 			}
 
 			fmt.Printf("recv block [%d] => %+v\n", blockInfo.Block.Header.BlockHeight, blockInfo)
@@ -91,7 +92,7 @@ func testSubscribeBlock() {
 func testSubscribeContractEvent() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -101,14 +102,14 @@ func testSubscribeContractEvent() {
 	c, err := client.SubscribeContractEvent(ctx, "topic_vx", "claim001")
 
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	go func() {
 		for i := 0; i < sendTxCount; i++ {
 			_, err := testUserContractClaimInvoke(client, "save", false)
 			if err != nil {
-				panic(err)
+				log.Fatalln(err)
 			}
 			time.Sleep(2 * time.Second)
 		}
@@ -122,11 +123,11 @@ func testSubscribeContractEvent() {
 				return
 			}
 			if event == nil {
-				panic("require not nil")
+				log.Fatalln("require not nil")
 			}
 			contractEventInfo, ok := event.(*common.ContractEventInfo)
 			if !ok {
-				panic("require true")
+				log.Fatalln("require true")
 			}
 			fmt.Printf("recv contract event [%d] => %+v\n", contractEventInfo.BlockHeight, contractEventInfo)
 
@@ -143,7 +144,7 @@ func testSubscribeContractEvent() {
 func testSubscribeTx() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -155,14 +156,14 @@ func testSubscribeTx() {
 	//c, err := client.SubscribeTx(ctx, 0, 0, -1, []string{"04e98331c02d423c91e5b0bb9b9f8519112d6cee26d94620a3c9773a5ce19147"})
 	//c, err := client.SubscribeTx(ctx, -1, -1, common.TxType_INVOKE_USER_CONTRACT, nil)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	go func() {
 		for i := 0; i < sendTxCount; i++ {
 			_, err := testUserContractClaimInvoke(client, "save", false)
 			if err != nil {
-				panic(err)
+				log.Fatalln(err)
 			}
 			time.Sleep(2 * time.Second)
 		}
@@ -177,12 +178,12 @@ func testSubscribeTx() {
 			}
 
 			if txI == nil {
-				panic("require not nil")
+				log.Fatalln("require not nil")
 			}
 
 			tx, ok := txI.(*common.Transaction)
 			if !ok {
-				panic("require true")
+				log.Fatalln("require true")
 			}
 
 			fmt.Printf("recv tx [%s] => %+v\n", tx.Header.TxId, tx)

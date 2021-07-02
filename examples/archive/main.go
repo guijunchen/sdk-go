@@ -10,6 +10,7 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
+	"log"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hokaccha/go-prettyjson"
@@ -33,7 +34,7 @@ func main() {
 func testArchive() {
 	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Println("====================== 数据归档 ======================")
@@ -44,12 +45,12 @@ func testArchive() {
 func testRestore() {
 	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	client1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Println("====================== 归档恢复 ======================")
@@ -57,13 +58,13 @@ func testRestore() {
 
 	fullBlock, err := client1.GetArchivedFullBlockByHeight(blockHeight)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	prettyJsonShow("GetArchivedFullBlockByHeight fullBlock", fullBlock)
 
 	fullBlockBytes, err := proto.Marshal(fullBlock)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	testRestoreBlock(admin1, fullBlockBytes)
@@ -72,51 +73,51 @@ func testRestore() {
 func testGetFromArchiveStore() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Println("====================== 归档查询 ======================")
 	var blockHeight int64 = 8
 	fullBlockInfo, err := client.GetFromArchiveStore(blockHeight)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	prettyJsonShow("GetFromArchiveStore fullBlockInfo", fullBlockInfo)
 
 	fullBlockInfo, err = client.GetArchivedFullBlockByHeight(blockHeight)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	prettyJsonShow("GetArchivedFullBlockByHeight fullBlockInfo", fullBlockInfo)
 
 	blockInfo, err := client.GetArchivedBlockByHeight(blockHeight, true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	prettyJsonShow("GetArchivedBlockByHeight with rwset", blockInfo)
 
 	blockInfo, err = client.GetArchivedBlockByHeight(blockHeight, false)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	prettyJsonShow("GetArchivedBlockByHeight without rwset", blockInfo)
 
 	blockInfo, err = client.GetArchivedBlockByHash(hex.EncodeToString(blockInfo.Block.Header.BlockHash), true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	prettyJsonShow("GetArchivedBlockByHash with rwset", blockInfo)
 
 	blockInfo, err = client.GetArchivedBlockByHash(hex.EncodeToString(blockInfo.Block.Header.BlockHash), false)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	prettyJsonShow("GetArchivedBlockByHash without rwset", blockInfo)
 
 	txId := blockInfo.Block.Txs[0].Header.TxId
 	txInfo, err := client.GetArchivedTxByTxId(txId)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	prettyJsonShow("GetArchivedTxByTxId", txInfo)
 }
@@ -124,7 +125,7 @@ func testGetFromArchiveStore() {
 func prettyJsonShow(name string, v interface{}) {
 	marshal, err := prettyjson.Marshal(v)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("\n\n\n====== %s ======\n%s\n==========================\n", name, marshal)
 }
@@ -140,22 +141,22 @@ func testArchiveBlock(admin1 *sdk.ChainClient, targetBlockHeight int64) {
 
 	payload, err = admin1.CreateArchiveBlockPayload(targetBlockHeight)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes, err = admin1.SignArchivePayload(payload)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	resp, err = admin1.SendArchiveBlockRequest(signedPayloadBytes, -1)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	err = examples.CheckProposalRequestResp(resp, false)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	result = string(resp.ContractResult.Result)
@@ -174,22 +175,22 @@ func testRestoreBlock(admin1 *sdk.ChainClient, fullBlock []byte) {
 
 	payload, err = admin1.CreateRestoreBlockPayload(fullBlock)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes, err = admin1.SignArchivePayload(payload)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	resp, err = admin1.SendRestoreBlockRequest(signedPayloadBytes, -1)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	err = examples.CheckProposalRequestResp(resp, false)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	result = string(resp.ContractResult.Result)

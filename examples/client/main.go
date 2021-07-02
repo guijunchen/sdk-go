@@ -9,6 +9,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"chainmaker.org/chainmaker/sdk-go/examples"
 )
@@ -24,20 +25,20 @@ func main() {
 func testChainClientGetEVMAddressFromCertPath() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	certFilePath := fmt.Sprintf(examples.UserCrtPath, examples.OrgId1)
 	addr, err := client.GetEVMAddressFromCertPath(certFilePath)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("client1 address: %s\n", addr)
 
 	certFilePath = fmt.Sprintf(examples.UserCrtPath, examples.OrgId2)
 	addr, err = client.GetEVMAddressFromCertPath(certFilePath)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("client2 address: %s\n", addr)
 }

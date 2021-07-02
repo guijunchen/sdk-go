@@ -10,6 +10,7 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"log"
 
 	"chainmaker.org/chainmaker/pb-go/common"
 	sdk "chainmaker.org/chainmaker/sdk-go"
@@ -42,12 +43,12 @@ func main() {
 func testUserContractAssetBalanceOf() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	client2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Println("====================== 1)查询钱包地址 ======================")
@@ -64,29 +65,29 @@ func testUserContractAssetBalanceOf() {
 func testUserContractAsset() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	client2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Println("====================== 1)安装钱包合约 ======================")
@@ -136,7 +137,7 @@ func testUserContractAssetCreate(client, admin1, admin2, admin3, admin4 *sdk.Cha
 		assetContractName, assetVersion, assetByteCodePath, common.RuntimeType_WASMER, kvs, withSyncResult)
 	if !isIgnoreSameContract {
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 	}
 
@@ -146,20 +147,20 @@ func testUserContractAssetCreate(client, admin1, admin2, admin3, admin4 *sdk.Cha
 func testUserContractAssetInvokeRegister(client *sdk.ChainClient, method string, withSyncResult bool) {
 	err := invokeUserContract(client, assetContractName, method, "", nil, withSyncResult)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 }
 
 func testUserContractAssetQuery(client *sdk.ChainClient, method string, params map[string]string) string {
 	resp, err := client.QueryContract(assetContractName, method, params, -1)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("QUERY asset contract [%s] resp: %+v\n", method, resp)
 
 	err = examples.CheckProposalRequestResp(resp, true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	return string(resp.ContractResult.Result)
 }
@@ -171,7 +172,7 @@ func testUserContractAssetInvoke(client *sdk.ChainClient, method string, amount,
 	}
 	err := invokeUserContract(client, assetContractName, method, "", params, withSyncResult)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 }
 
@@ -182,7 +183,7 @@ func getBalance(client *sdk.ChainClient, addr string) {
 	balance := testUserContractAssetQuery(client, "balance_of", params)
 	val, err := sdk.BytesToInt([]byte(balance), binary.LittleEndian)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("client [%s] balance: %d\n", addr, val)
 }
