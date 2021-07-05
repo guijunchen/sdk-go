@@ -24,10 +24,10 @@ import (
 
 const (
 	createContractTimeout = 5
-	storageContractName = "storage001"
-	storageVersion      = "1.0.0"
-	storageByteCodePath = "../../testdata/storage-evm-demo/storage.bin"
-	storageABIPath      = "../../testdata/storage-evm-demo/storage.abi"
+	storageContractName   = "storage001"
+	storageVersion        = "1.0.0"
+	storageByteCodePath   = "../../testdata/storage-evm-demo/storage.bin"
+	storageABIPath        = "../../testdata/storage-evm-demo/storage.abi"
 
 	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
@@ -74,7 +74,7 @@ func testUserContractStorageEVM() {
 	testUserContractStorageEVMGet(client, true)
 }
 
-func testUserContractStorageEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, 
+func testUserContractStorageEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
 	withSyncResult bool, isIgnoreSameContract bool) {
 
 	codeBytes, err := ioutil.ReadFile(storageByteCodePath)
