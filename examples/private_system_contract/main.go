@@ -12,6 +12,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"reflect"
 
@@ -29,6 +30,8 @@ const (
 	quoteId = "quote_id"
 	quote   = "quote_content"
 	orderId = "order_id"
+
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
 var (
@@ -59,12 +62,12 @@ func main() {
 func readFileData(filename string) []byte {
 	file, err := os.Open(filename)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	return data
@@ -79,7 +82,7 @@ func initProof() {
 	proofHex := readFileData("../../testdata/remote_attestation/proof.hex")
 	proof, err = hex.DecodeString(string(proofHex))
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 }
 
@@ -120,33 +123,33 @@ func testChainClientSaveData() {
 	var reportHash []byte
 	var reportSign []byte
 
-	cc, err := examples.CreateClient()
+	cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	res, err := cc.SaveData(computeName, examples.Version, false, codeHash[:], reportHash, result, []byte(""), txid, rwSet,
 		reportSign, nil, []byte(""), false, 1)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	if res.ContractResult.Code != common.ContractResultCode_OK {
-		panic("res.ContractResult.Code != common.ContractResultCode_OK")
+		log.Fatalln("res.ContractResult.Code != common.ContractResultCode_OK")
 	}
 }
 
 func testChainClientSaveDir() {
 	txid := sdk.GetRandTxId()
 
-	cc, err := examples.CreateClient()
+	cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	got, err := cc.SaveDir(orderId, txid, priDir, false, 1)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	if got.ContractResult.Code != common.ContractResultCode_OK {
-		panic("got.ContractResult.Code != common.ContractResultCode_OK")
+		log.Fatalln("got.ContractResult.Code != common.ContractResultCode_OK")
 	}
 }
 
@@ -194,16 +197,16 @@ func testChainClientGetContract() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		got, err := cc.GetContract(tt.args.contractName, tt.args.codeHash)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		if !reflect.DeepEqual(got, tt.want) {
-			panic("!reflect.DeepEqual(got, tt.want)")
+			log.Fatalln("!reflect.DeepEqual(got, tt.want)")
 		}
 	}
 }
@@ -261,16 +264,16 @@ func testChainClientGetData() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		got, err := cc.GetData(tt.args.contractName, tt.args.key)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		if !reflect.DeepEqual(got, tt.want) {
-			panic("!reflect.DeepEqual(got, tt.want)")
+			log.Fatalln("!reflect.DeepEqual(got, tt.want)")
 		}
 	}
 }
@@ -297,16 +300,16 @@ func testChainClientGetDir() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		got, err := cc.GetDir(tt.args.orderId)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		if !reflect.DeepEqual(got, tt.want) {
-			panic("!reflect.DeepEqual(got, tt.want)")
+			log.Fatalln("!reflect.DeepEqual(got, tt.want)")
 		}
 	}
 }
@@ -341,13 +344,13 @@ func testChainClientSaveCACert() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		got, err := cc.SaveEnclaveCACert(tt.args.caCert, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		fmt.Printf("testChainClientSaveCACert got %+v\n", got)
 	}
@@ -380,16 +383,16 @@ func testChainClientGetCACert() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		got, err := cc.GetEnclaveCACert()
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		if !reflect.DeepEqual(got, tt.want) {
-			panic("!reflect.DeepEqual(got, tt.want)")
+			log.Fatalln("!reflect.DeepEqual(got, tt.want)")
 		}
 	}
 }
@@ -427,13 +430,13 @@ func testChainClientSaveEnclaveReport() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		got, err := cc.SaveEnclaveReport(tt.args.enclaveId, tt.args.report, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		fmt.Printf("testChainClientSaveEnclaveReport got %+v\n", got)
 	}
@@ -473,13 +476,13 @@ func testChainClientSaveRemoteAttestationProof() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		got, err := cc.SaveRemoteAttestationProof(tt.args.proof, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		fmt.Printf("enclaveId = 0x%x \n", got.ContractResult.Result)
 	}
@@ -508,13 +511,13 @@ func testChainClientGetEnclaveEncryptPubKey() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		got, err := cc.GetEnclaveEncryptPubKey(tt.args.enclaveId)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		fmt.Printf("encrypt pub key => %s \n", got)
 	}
@@ -543,13 +546,13 @@ func testChainClientGetEnclaveVerificationPubKey() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		got, err := cc.GetEnclaveVerificationPubKey(tt.args.enclaveId)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		fmt.Printf("verification pub key => %s \n", got)
 	}
@@ -579,13 +582,13 @@ func testChainClientGetEnclaveReport() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		got, err := cc.GetEnclaveReport(tt.args.enclaveId)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		fmt.Printf("testChainClientGetEnclaveReport got %+v\n", got)
 	}
@@ -614,13 +617,13 @@ func testChainClientGetEnclaveChallenge() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		got, err := cc.GetEnclaveChallenge(tt.args.enclaveId)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		fmt.Printf("challenge => %s \n", got)
 	}
@@ -649,16 +652,16 @@ func testChainClientGetEnclaveSignature() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		got, err := cc.GetEnclaveSignature(tt.args.enclaveId)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		if !reflect.DeepEqual(got, tt.want) {
-			panic("!reflect.DeepEqual(got, tt.want)")
+			log.Fatalln("!reflect.DeepEqual(got, tt.want)")
 		}
 	}
 }
@@ -687,16 +690,16 @@ func testChainClientGetEnclaveProof() {
 		},
 	}
 	for _, tt := range tests {
-		cc, err := examples.CreateClient()
+		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		got, err := cc.GetEnclaveSignature(tt.args.enclaveId)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 		if !reflect.DeepEqual(got, tt.want) {
-			panic("!reflect.DeepEqual(got, tt.want)")
+			log.Fatalln("!reflect.DeepEqual(got, tt.want)")
 		}
 	}
 }

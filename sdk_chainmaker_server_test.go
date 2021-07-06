@@ -27,7 +27,7 @@ func TestGetChainMakerServerVersion(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cli, err := newMockChainClient(WithConfPath(sdkConfigForUtPath))
+			cli, err := newMockChainClient(WithConfPath(sdkConfigPathForUT))
 			require.Nil(t, err)
 			defer cli.Stop()
 

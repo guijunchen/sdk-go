@@ -10,6 +10,7 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
+	"log"
 
 	"github.com/hokaccha/go-prettyjson"
 
@@ -21,6 +22,10 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/examples"
 )
 
+const (
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+)
+
 func main() {
 	testSystemContract()
 	testSystemContractArchive()
@@ -29,9 +34,9 @@ func main() {
 // [系统合约]
 func testSystemContract() {
 	//client, err := createClientWithConfig()
-	client, err := examples.CreateClient()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	blockInfo := testSystemContractGetBlockByHeight(client, -1)
@@ -42,29 +47,29 @@ func testSystemContract() {
 	testSystemContractGetLastBlock(client)
 	testSystemContractGetChainInfo(client)
 
-	systemChainClient, err := examples.CreateClient()
+	systemChainClient, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	testSystemContractGetNodeChainList(systemChainClient)
 }
 
 func testSystemContractArchive() {
-	client, err := examples.CreateClient()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	var blockHeight int64 = 4
 	fullBlock := testSystemContractGetFullBlockByHeight(client, blockHeight)
 	heightByTxId := testSystemContractGetBlockHeightByTxId(client, fullBlock.Block.Txs[0].Header.TxId)
 	if blockHeight != heightByTxId {
-		panic("blockHeight != heightByTxId")
+		log.Fatalln("blockHeight != heightByTxId")
 	}
 	heightByHash := testSystemContractGetBlockHeightByHash(client, hex.EncodeToString(fullBlock.Block.Header.BlockHash))
 	if blockHeight != heightByHash {
-		panic("blockHeight != heightByHash")
+		log.Fatalln("blockHeight != heightByHash")
 	}
 
 	testSystemContractGetCurrentBlockHeight(client)
@@ -75,7 +80,7 @@ func testSystemContractArchive() {
 func testSystemContractGetTxByTxId(client *sdk.ChainClient, txId string) *common.TransactionInfo {
 	transactionInfo, err := client.GetTxByTxId(txId)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	return transactionInfo
 }
@@ -83,7 +88,7 @@ func testSystemContractGetTxByTxId(client *sdk.ChainClient, txId string) *common
 func testSystemContractGetBlockByHeight(client *sdk.ChainClient, blockHeight int64) *common.BlockInfo {
 	blockInfo, err := client.GetBlockByHeight(blockHeight, true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	return blockInfo
 }
@@ -91,7 +96,7 @@ func testSystemContractGetBlockByHeight(client *sdk.ChainClient, blockHeight int
 func testSystemContractGetBlockByHash(client *sdk.ChainClient, blockHash string) *common.BlockInfo {
 	blockInfo, err := client.GetBlockByHash(blockHash, true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	return blockInfo
 }
@@ -99,7 +104,7 @@ func testSystemContractGetBlockByHash(client *sdk.ChainClient, blockHash string)
 func testSystemContractGetBlockByTxId(client *sdk.ChainClient, txId string) *common.BlockInfo {
 	blockInfo, err := client.GetBlockByTxId(txId, true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	return blockInfo
 }
@@ -107,7 +112,7 @@ func testSystemContractGetBlockByTxId(client *sdk.ChainClient, txId string) *com
 func testSystemContractGetLastConfigBlock(client *sdk.ChainClient) *common.BlockInfo {
 	blockInfo, err := client.GetLastConfigBlock(true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	return blockInfo
 }
@@ -115,12 +120,12 @@ func testSystemContractGetLastConfigBlock(client *sdk.ChainClient) *common.Block
 func testSystemContractGetLastBlock(client *sdk.ChainClient) *common.BlockInfo {
 	blockInfo, err := client.GetLastBlock(true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("last block height: %d\n", blockInfo.Block.Header.BlockHeight)
 	marshal, err := prettyjson.Marshal(blockInfo)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("blockInfo: %s\n", marshal)
 	return blockInfo
@@ -129,7 +134,7 @@ func testSystemContractGetLastBlock(client *sdk.ChainClient) *common.BlockInfo {
 func testSystemContractGetCurrentBlockHeight(client *sdk.ChainClient) int64 {
 	height, err := client.GetCurrentBlockHeight()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("current block height: %d\n", height)
 	return height
@@ -138,7 +143,7 @@ func testSystemContractGetCurrentBlockHeight(client *sdk.ChainClient) int64 {
 func testSystemContractGetArchivedBlockHeight(client *sdk.ChainClient) int64 {
 	height, err := client.GetArchivedBlockHeight()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("archived block height: %d\n", height)
 	return height
@@ -147,7 +152,7 @@ func testSystemContractGetArchivedBlockHeight(client *sdk.ChainClient) int64 {
 func testSystemContractGetBlockHeightByTxId(client *sdk.ChainClient, txId string) int64 {
 	height, err := client.GetBlockHeightByTxId(txId)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("txId [%s] => block height: %d\n", txId, height)
 	return height
@@ -156,7 +161,7 @@ func testSystemContractGetBlockHeightByTxId(client *sdk.ChainClient, txId string
 func testSystemContractGetBlockHeightByHash(client *sdk.ChainClient, blockHash string) int64 {
 	height, err := client.GetBlockHeightByHash(blockHash)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("blockHash [%s] => block height: %d\n", blockHash, height)
 	return height
@@ -165,14 +170,14 @@ func testSystemContractGetBlockHeightByHash(client *sdk.ChainClient, blockHash s
 func testSystemContractGetChainInfo(client *sdk.ChainClient) *discovery.ChainInfo {
 	chainConfig, err := client.GetChainConfig()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	chainInfo := &discovery.ChainInfo{}
 	if chainConfig.Consensus.Type != consensus.ConsensusType_SOLO {
 		var err error
 		chainInfo, err = client.GetChainInfo()
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 	}
 	return chainInfo
@@ -181,7 +186,7 @@ func testSystemContractGetChainInfo(client *sdk.ChainClient) *discovery.ChainInf
 func testSystemContractGetNodeChainList(client *sdk.ChainClient) *discovery.ChainList {
 	chainList, err := client.GetNodeChainList()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	return chainList
 }
@@ -194,11 +199,11 @@ func testSystemContractGetFullBlockByHeight(client *sdk.ChainClient, blockHeight
 		}
 	}
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	marshal, err := prettyjson.Marshal(fullBlockInfo)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("fullBlockInfo: %s\n", marshal)
 	return fullBlockInfo
@@ -207,16 +212,16 @@ func testSystemContractGetFullBlockByHeight(client *sdk.ChainClient, blockHeight
 func testSystemContractGetBlockHeaderByHeight(client *sdk.ChainClient) {
 	_, err := client.GetBlockHeaderByHeight(0)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	_, err = client.GetBlockHeaderByHeight(5)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	_, err = client.GetBlockHeaderByHeight(-2)
 	if err == nil {
-		panic("require err not nil")
+		log.Fatalln("require err not nil")
 	}
 }

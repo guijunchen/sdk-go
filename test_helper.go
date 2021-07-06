@@ -19,13 +19,17 @@ import (
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/test/bufconn"
 
+	"chainmaker.org/chainmaker/common/ca"
 	apipb "chainmaker.org/chainmaker/pb-go/api"
 	cmnpb "chainmaker.org/chainmaker/pb-go/common"
 	confpb "chainmaker.org/chainmaker/pb-go/config"
 )
 
 const (
-	sdkConfigForUtPath = "./testdata/sdk_config_for_ut.yml"
+	sdkConfigPathForUT = "./testdata/sdk_config.yml"
+
+	rpcServerTlsCertFile    = "./testdata/crypto-config/wx-org1.chainmaker.org/node/consensus1/consensus1.tls.crt"
+	rpcServerTlsPrivKeyFile = "./testdata/crypto-config/wx-org1.chainmaker.org/node/consensus1/consensus1.tls.key"
 )
 
 var _ ConnectionPool = (*mockConnectionPool)(nil)
@@ -90,10 +94,36 @@ func newMockConnPool(config *ChainClientConfig) (*mockConnectionPool, error) {
 	return pool, nil
 }
 
-// TODO add tls support
 func (pool *mockConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string, tlsHostName string) (*grpc.ClientConn, error) {
+	var tlsClient ca.CAClient
 	maxCallRecvMsgSize := pool.rpcClientMaxReceiveMessageSize * 1024 * 1024
-	return grpc.Dial("", grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)), grpc.WithContextDialer(dialer()))
+	if useTLS {
+		if len(caCerts) != 0 {
+			tlsClient = ca.CAClient{
+				ServerName: tlsHostName,
+				CaCerts:    caCerts,
+				CertBytes:  pool.userCrtBytes,
+				KeyBytes:   pool.userKeyBytes,
+				Logger:     pool.logger,
+			}
+		} else {
+			tlsClient = ca.CAClient{
+				ServerName: tlsHostName,
+				CaPaths:    caPaths,
+				CertBytes:  pool.userCrtBytes,
+				KeyBytes:   pool.userKeyBytes,
+				Logger:     pool.logger,
+			}
+		}
+
+		c, err := tlsClient.GetCredentialsByCA()
+		if err != nil {
+			return nil, err
+		}
+		return grpc.Dial("", grpc.WithTransportCredentials(*c), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)), grpc.WithContextDialer(dialer(useTLS, caPaths, caCerts)))
+	} else {
+		return grpc.Dial("", grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)), grpc.WithContextDialer(dialer(useTLS, caPaths, caCerts)))
+	}
 }
 
 // 获取空闲的可用客户端连接对象
@@ -227,10 +257,35 @@ func (s *mockRpcNodeServer) CheckNewBlockChainConfig(ctx context.Context,
 	}, nil
 }
 
-func dialer() func(context.Context, string) (net.Conn, error) {
-	listener := bufconn.Listen(1024 * 1024)
+func dialer(useTLS bool, caPaths, caCerts []string) func(context.Context, string) (net.Conn, error) {
+	var opts []grpc.ServerOption
+	var tlsRPCServer ca.CAServer
 
-	server := grpc.NewServer()
+	if useTLS {
+		if len(caCerts) != 0 {
+			tlsRPCServer = ca.CAServer{
+				CaCerts:  caCerts,
+				CertFile: rpcServerTlsCertFile,
+				KeyFile:  rpcServerTlsPrivKeyFile,
+			}
+		} else {
+			tlsRPCServer = ca.CAServer{
+				CaPaths:  caPaths,
+				CertFile: rpcServerTlsCertFile,
+				KeyFile:  rpcServerTlsPrivKeyFile,
+			}
+		}
+
+		c, err := tlsRPCServer.GetCredentialsByCA(true)
+		if err != nil {
+			log.Fatalf("new gRPC failed, GetTLSCredentialsByCA err: %v\n", err)
+		}
+
+		opts = append(opts, grpc.Creds(*c))
+	}
+
+	server := grpc.NewServer(opts...)
+	listener := bufconn.Listen(1024 * 1024)
 
 	apipb.RegisterRpcNodeServer(server, &mockRpcNodeServer{})
 

@@ -10,6 +10,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"strconv"
 	"time"
@@ -27,6 +28,13 @@ const (
 	testKey     = "key001"
 	nodePeerId1 = "QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
 	nodePeerId2 = "QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
+
+	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
+	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
+	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
+	sdkConfigOrg5Admin1Path  = "../sdk_configs/sdk_config_org5_admin1.yml"
 )
 
 func main() {
@@ -38,26 +46,26 @@ func testChainConfig() {
 		chainConfig *config.ChainConfig
 	)
 
-	client, err := examples.CreateClient()
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
-	admin1, err := examples.CreateAdmin(examples.OrgId1)
+	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
-	admin2, err := examples.CreateAdmin(examples.OrgId2)
+	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
-	admin3, err := examples.CreateAdmin(examples.OrgId3)
+	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
-	admin4, err := examples.CreateAdmin(examples.OrgId4)
+	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 1) [CoreUpdate]
@@ -71,10 +79,10 @@ func testChainConfig() {
 	fmt.Printf("chainConfig txSchedulerTimeout: %d, txSchedulerValidateTimeout: %d\n",
 		chainConfig.Core.TxSchedulerTimeout, chainConfig.Core.TxSchedulerValidateTimeout)
 	if txSchedulerTimeout != int(chainConfig.Core.TxSchedulerTimeout) {
-		panic("require txSchedulerTimeout == int(chainConfig.Core.TxSchedulerTimeout)")
+		log.Fatalln("require txSchedulerTimeout == int(chainConfig.Core.TxSchedulerTimeout)")
 	}
 	if txSchedulerValidateTimeout != int(chainConfig.Core.TxSchedulerValidateTimeout) {
-		panic("require txSchedulerValidateTimeout == int(chainConfig.Core.TxSchedulerValidateTimeout)")
+		log.Fatalln("require txSchedulerValidateTimeout == int(chainConfig.Core.TxSchedulerValidateTimeout)")
 	}
 
 	// 2) [BlockUpdate]
@@ -90,26 +98,26 @@ func testChainConfig() {
 	fmt.Printf("chainConfig txSchedulerTimeout: tx_timestamp_verify: %s, txTimeout: %d, blockTxCapacity: %d, blockSize: %d, blockInterval: %d\n",
 		strconv.FormatBool(chainConfig.Block.TxTimestampVerify), chainConfig.Block.TxTimeout, chainConfig.Block.BlockTxCapacity, chainConfig.Block.BlockSize, chainConfig.Block.BlockInterval)
 	if chainConfig.Block.TxTimestampVerify != txTimestampVerify {
-		panic("require chainConfig.Block.TxTimestampVerify == txTimestampVerify")
+		log.Fatalln("require chainConfig.Block.TxTimestampVerify == txTimestampVerify")
 	}
 	if txTimeout != int(chainConfig.Block.TxTimeout) {
-		panic("require txTimeout == int(chainConfig.Block.TxTimeout)")
+		log.Fatalln("require txTimeout == int(chainConfig.Block.TxTimeout)")
 	}
 	if blockTxCapacity != int(chainConfig.Block.BlockTxCapacity) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if blockSize != int(chainConfig.Block.BlockSize) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if blockInterval != int(chainConfig.Block.BlockInterval) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 
 	// 3) [TrustRootAdd]
 	trustCount := len(testGetChainConfig(client).TrustRoots)
 	raw, err := ioutil.ReadFile("../../testdata/crypto-config/wx-org5.chainmaker.org/ca/ca.crt")
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	trustRootOrgId := examples.OrgId5
 	trustRootCrt := string(raw)
@@ -117,23 +125,23 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if trustCount+1 != len(chainConfig.TrustRoots) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if trustRootOrgId != chainConfig.TrustRoots[trustCount].OrgId {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if trustRootCrt != chainConfig.TrustRoots[trustCount].Root {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 
 	// 4) [TrustRootUpdate]
-	admin5, err := examples.CreateAdmin(examples.OrgId5)
+	admin5, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg5Admin1Path)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	raw, err = ioutil.ReadFile("../../testdata/crypto-config/wx-org6.chainmaker.org/ca/ca.crt")
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	trustRootOrgId = examples.OrgId5
 	trustRootCrt = string(raw)
@@ -141,13 +149,13 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if trustCount+1 != len(chainConfig.TrustRoots) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if trustRootOrgId != chainConfig.TrustRoots[trustCount].OrgId {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if trustRootCrt != chainConfig.TrustRoots[trustCount].Root {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 
 	// 5) [TrustRootDelete]
@@ -157,7 +165,7 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if trustCount != len(chainConfig.TrustRoots) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 
 	// 6) [PermissionAdd]
@@ -170,10 +178,10 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if permissionCount+1 != len(chainConfig.ResourcePolicies) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if !proto.Equal(policy, chainConfig.ResourcePolicies[permissionCount].Policy) {
-		panic("require true")
+		log.Fatalln("require true")
 	}
 
 	// 7) [PermissionUpdate]
@@ -185,10 +193,10 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if permissionCount+1 != len(chainConfig.ResourcePolicies) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if !proto.Equal(policy, chainConfig.ResourcePolicies[permissionCount].Policy) {
-		panic("require true")
+		log.Fatalln("require true")
 	}
 
 	// 8) [PermissionDelete]
@@ -196,7 +204,7 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if permissionCount != len(chainConfig.ResourcePolicies) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 
 	// 9) [ConsensusNodeAddrAdd]
@@ -206,13 +214,13 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if nodeOrgId != chainConfig.Consensus.Nodes[3].OrgId {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if 2 != len(chainConfig.Consensus.Nodes[3].NodeId) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if nodeIds[0] != chainConfig.Consensus.Nodes[3].NodeId[1] {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 
 	// 10) [ConsensusNodeAddrUpdate]
@@ -223,13 +231,13 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if nodeOrgId != chainConfig.Consensus.Nodes[3].OrgId {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if 2 != len(chainConfig.Consensus.Nodes[3].NodeId) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if nodeNewId != chainConfig.Consensus.Nodes[3].NodeId[1] {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 
 	// 11) [ConsensusNodeAddrDelete]
@@ -238,16 +246,16 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if nodeOrgId != chainConfig.Consensus.Nodes[3].OrgId {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if 1 != len(chainConfig.Consensus.Nodes[3].NodeId) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 
 	// 12) [ConsensusNodeOrgAdd]
 	raw, err = ioutil.ReadFile("../../testdata/crypto-config/wx-org5.chainmaker.org/ca/ca.crt")
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	trustRootOrgId = examples.OrgId5
 	trustRootCrt = string(raw)
@@ -255,13 +263,13 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 5 != len(chainConfig.TrustRoots) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if trustRootOrgId != chainConfig.TrustRoots[4].OrgId {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if trustRootCrt != chainConfig.TrustRoots[4].Root {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	nodeOrgId = examples.OrgId5
 	nodeIds = []string{nodePeerId1}
@@ -269,16 +277,16 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 5 != len(chainConfig.Consensus.Nodes) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if nodeOrgId != chainConfig.Consensus.Nodes[4].OrgId {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if 1 != len(chainConfig.Consensus.Nodes[4].NodeId) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if nodeIds[0] != chainConfig.Consensus.Nodes[4].NodeId[0] {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 
 	// 13) [ConsensusNodeOrgUpdate]
@@ -288,16 +296,16 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 5 != len(chainConfig.Consensus.Nodes) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if nodeOrgId != chainConfig.Consensus.Nodes[4].OrgId {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if 1 != len(chainConfig.Consensus.Nodes[4].NodeId) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if nodeIds[0] != chainConfig.Consensus.Nodes[4].NodeId[0] {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 
 	// 14) [ConsensusNodeOrgDelete]
@@ -306,7 +314,7 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 4 != len(chainConfig.Consensus.Nodes) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 
 	// 15) [ConsensusExtAdd]
@@ -320,10 +328,10 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 2 != len(chainConfig.Consensus.ExtConfig) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if !proto.Equal(kvs[0], chainConfig.Consensus.ExtConfig[1]) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 
 	// 16) [ConsensusExtUpdate]
@@ -337,10 +345,10 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 2 != len(chainConfig.Consensus.ExtConfig) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 	if !proto.Equal(kvs[0], chainConfig.Consensus.ExtConfig[1]) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 
 	// 16) [ConsensusExtDelete]
@@ -349,14 +357,14 @@ func testChainConfig() {
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 1 != len(chainConfig.Consensus.ExtConfig) {
-		panic("require equal")
+		log.Fatalln("require equal")
 	}
 }
 
 func testGetChainConfig(client *sdk.ChainClient) *config.ChainConfig {
 	resp, err := client.GetChainConfig()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("GetChainConfig resp: %+v\n", resp)
 	return resp
@@ -365,7 +373,7 @@ func testGetChainConfig(client *sdk.ChainClient) *config.ChainConfig {
 func testGetChainConfigByBlockHeight(client *sdk.ChainClient) {
 	resp, err := client.GetChainConfigByBlockHeight(1)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("GetChainConfig resp: %+v\n", resp)
 }
@@ -373,7 +381,7 @@ func testGetChainConfigByBlockHeight(client *sdk.ChainClient) {
 func testGetChainConfigSeq(client *sdk.ChainClient) {
 	seq, err := client.GetChainConfigSequence()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("chainconfig seq: %d\n", seq)
 }
@@ -385,7 +393,7 @@ func testChainConfigCoreUpdate(client, admin1, admin2, admin3, admin4 *sdk.Chain
 	payloadBytes, err := client.CreateChainConfigCoreUpdatePayload(
 		txSchedulerTimeout, txSchedulerValidateTimeout)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -398,7 +406,7 @@ func testChainConfigBlockUpdate(client, admin1, admin2, admin3, admin4 *sdk.Chai
 	payloadBytes, err := client.CreateChainConfigBlockUpdatePayload(
 		txTimestampVerify, txTimeout, blockTxCapacity, blockSize, blockInterval)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -410,7 +418,7 @@ func testChainConfigTrustRootAdd(client, admin1, admin2, admin3, admin4 *sdk.Cha
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigTrustRootAddPayload(trustRootOrgId, trustRootCrt)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -422,7 +430,7 @@ func testChainConfigTrustRootUpdate(client, admin1, admin2, admin3, admin4 *sdk.
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -433,7 +441,7 @@ func testChainConfigTrustRootDelete(client, admin1, admin2, admin3, admin4 *sdk.
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigTrustRootDeletePayload(trustRootOrgId)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -445,7 +453,7 @@ func testChainConfigPermissionAdd(client, admin1, admin2, admin3, admin4 *sdk.Ch
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigPermissionAddPayload(permissionResourceName, policy)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -457,7 +465,7 @@ func testChainConfigPermissionUpdate(client, admin1, admin2, admin3, admin4 *sdk
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigPermissionUpdatePayload(permissionResourceName, policy)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -469,7 +477,7 @@ func testChainConfigPermissionDelete(client, admin1, admin2, admin3, admin4 *sdk
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigPermissionDeletePayload(permissionResourceName)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -481,7 +489,7 @@ func testChainConfigConsensusNodeIdAdd(client, admin1, admin2, admin3, admin4 *s
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigConsensusNodeIdAddPayload(nodeAddrOrgId, nodeIds)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -493,7 +501,7 @@ func testChainConfigConsensusNodeIdUpdate(client, admin1, admin2, admin3, admin4
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigConsensusNodeIdUpdatePayload(nodeAddrOrgId, nodeOldIds, nodeNewIds)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -505,7 +513,7 @@ func testChainConfigConsensusNodeIdDelete(client, admin1, admin2, admin3, admin4
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigConsensusNodeIdDeletePayload(nodeAddrOrgId, nodeId)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -517,7 +525,7 @@ func testChainConfigConsensusNodeOrgAdd(client, admin1, admin2, admin3, admin4 *
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigConsensusNodeOrgAddPayload(nodeAddrOrgId, nodeIds)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -529,7 +537,7 @@ func testChainConfigConsensusNodeOrgUpdate(client, admin1, admin2, admin3, admin
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigConsensusNodeOrgUpdatePayload(nodeAddrOrgId, nodeIds)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -541,7 +549,7 @@ func testChainConfigConsensusNodeOrgDelete(client, admin1, admin2, admin3, admin
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigConsensusNodeOrgDeletePayload(nodeAddrOrgId)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -553,7 +561,7 @@ func testChainConfigConsensusExtAdd(client, admin1, admin2, admin3, admin4 *sdk.
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigConsensusExtAddPayload(kvs)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -565,7 +573,7 @@ func testChainConfigConsensusExtUpdate(client, admin1, admin2, admin3, admin4 *s
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigConsensusExtUpdatePayload(kvs)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -577,7 +585,7 @@ func testChainConfigConsensusExtDelete(client, admin1, admin2, admin3, admin4 *s
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigConsensusExtDeletePayload(keys)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
@@ -587,40 +595,40 @@ func signAndSendRequest(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
 	// 各组织Admin权限用户签名
 	signedPayloadBytes1, err := admin1.SignChainConfigPayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes2, err := admin2.SignChainConfigPayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes3, err := admin3.SignChainConfigPayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	signedPayloadBytes4, err := admin4.SignChainConfigPayload(payloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 收集并合并签名
 	mergeSignedPayloadBytes, err := client.MergeChainConfigSignedPayload([][]byte{signedPayloadBytes1,
 		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	// 发送配置更新请求
 	resp, err := client.SendChainConfigUpdateRequest(mergeSignedPayloadBytes)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	err = examples.CheckProposalRequestResp(resp, true)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Printf("chain config [CoreUpdate] resp: %+v", resp)
