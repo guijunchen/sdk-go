@@ -195,7 +195,7 @@ func WithUserSignKeyFilePath(userSignKeyFilePath string) ChainClientOption {
 }
 
 // 添加用户签名证书文件路径配置
-func WithUserSingCrtFilePath(userSignCrtFilePath string) ChainClientOption {
+func WithUserSignCrtFilePath(userSignCrtFilePath string) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.userSignCrtFilePath = userSignCrtFilePath
 	}
