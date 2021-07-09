@@ -246,7 +246,7 @@ type SDKInterface interface {
 	InvokeSystemContract(contractName, method, txId string, params map[string]string, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
-	// ### 1.10 系统合约查询接口调用
+	// ### 2.15 系统合约查询接口调用
 	// **参数说明**
 	//   - contractName: 合约名称
 	//   - method: 合约方法
