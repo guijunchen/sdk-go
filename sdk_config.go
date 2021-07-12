@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker/sdk-go/utils"
 	"fmt"
 	"io/ioutil"
 
@@ -124,7 +125,7 @@ func WithRPCClientMaxReceiveMessageSize(size int) RPCClientOption {
 
 type ChainClientConfig struct {
 	// logger若不设置，将采用默认日志文件输出日志，建议设置，以便采用集成系统的统一日志输出
-	logger Logger
+	logger utils.Logger
 
 	// 链客户端相关配置
 	// 方式1：配置文件指定（方式1与方式2可以同时使用，参数指定的值会覆盖配置文件中的配置）
@@ -244,7 +245,7 @@ func WithChainClientChainId(chainId string) ChainClientOption {
 }
 
 // 设置Logger对象，便于日志打印
-func WithChainClientLogger(logger Logger) ChainClientOption {
+func WithChainClientLogger(logger utils.Logger) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.logger = logger
 	}
@@ -285,37 +286,37 @@ func generateConfig(opts ...ChainClientOption) (*ChainClientConfig, error) {
 }
 
 func setChainConfig(config *ChainClientConfig) {
-	if Config.ChainClientConfig.ChainId != "" && config.chainId == "" {
-		config.chainId = Config.ChainClientConfig.ChainId
+	if utils.Config.ChainClientConfig.ChainId != "" && config.chainId == "" {
+		config.chainId = utils.Config.ChainClientConfig.ChainId
 	}
 
-	if Config.ChainClientConfig.OrgId != "" && config.orgId == "" {
-		config.orgId = Config.ChainClientConfig.OrgId
+	if utils.Config.ChainClientConfig.OrgId != "" && config.orgId == "" {
+		config.orgId = utils.Config.ChainClientConfig.OrgId
 	}
 }
 
 // 如果参数没有设置，便使用配置文件的配置
 func setUserConfig(config *ChainClientConfig) {
-	if Config.ChainClientConfig.UserKeyFilePath != "" && config.userKeyFilePath == "" && config.userKeyBytes == nil {
-		config.userKeyFilePath = Config.ChainClientConfig.UserKeyFilePath
+	if utils.Config.ChainClientConfig.UserKeyFilePath != "" && config.userKeyFilePath == "" && config.userKeyBytes == nil {
+		config.userKeyFilePath = utils.Config.ChainClientConfig.UserKeyFilePath
 	}
 
-	if Config.ChainClientConfig.UserCrtFilePath != "" && config.userCrtFilePath == "" && config.userCrtBytes == nil {
-		config.userCrtFilePath = Config.ChainClientConfig.UserCrtFilePath
+	if utils.Config.ChainClientConfig.UserCrtFilePath != "" && config.userCrtFilePath == "" && config.userCrtBytes == nil {
+		config.userCrtFilePath = utils.Config.ChainClientConfig.UserCrtFilePath
 	}
 
-	if Config.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyFilePath == "" && config.userSignKeyBytes == nil {
-		config.userSignKeyFilePath = Config.ChainClientConfig.UserSignKeyFilePath
+	if utils.Config.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyFilePath == "" && config.userSignKeyBytes == nil {
+		config.userSignKeyFilePath = utils.Config.ChainClientConfig.UserSignKeyFilePath
 	}
 
-	if Config.ChainClientConfig.UserSignCrtFilePath != "" && config.userSignCrtFilePath == "" && config.userSignCrtBytes == nil {
-		config.userSignCrtFilePath = Config.ChainClientConfig.UserSignCrtFilePath
+	if utils.Config.ChainClientConfig.UserSignCrtFilePath != "" && config.userSignCrtFilePath == "" && config.userSignCrtBytes == nil {
+		config.userSignCrtFilePath = utils.Config.ChainClientConfig.UserSignCrtFilePath
 	}
 }
 
 func setNodeList(config *ChainClientConfig) {
-	if len(Config.ChainClientConfig.NodesConfig) > 0 && len(config.nodeList) == 0 {
-		for _, conf := range Config.ChainClientConfig.NodesConfig {
+	if len(utils.Config.ChainClientConfig.NodesConfig) > 0 && len(config.nodeList) == 0 {
+		for _, conf := range utils.Config.ChainClientConfig.NodesConfig {
 			node := NewNodeConfig(
 				// 节点地址，格式：127.0.0.1:12301
 				WithNodeAddr(conf.NodeAddr),
@@ -335,10 +336,10 @@ func setNodeList(config *ChainClientConfig) {
 }
 
 func setArchiveConfig(config *ChainClientConfig) {
-	if Config.ChainClientConfig.ArchiveConfig != nil && config.archiveConfig == nil {
+	if utils.Config.ChainClientConfig.ArchiveConfig != nil && config.archiveConfig == nil {
 		archive := NewArchiveConfig(
 			// secret key
-			WithSecretKey(Config.ChainClientConfig.ArchiveConfig.SecretKey),
+			WithSecretKey(utils.Config.ChainClientConfig.ArchiveConfig.SecretKey),
 		)
 
 		config.archiveConfig = archive
@@ -346,9 +347,9 @@ func setArchiveConfig(config *ChainClientConfig) {
 }
 
 func setRPCClientConfig(config *ChainClientConfig) {
-	if Config.ChainClientConfig.RPCClientConfig != nil && config.rpcClientConfig == nil {
+	if utils.Config.ChainClientConfig.RPCClientConfig != nil && config.rpcClientConfig == nil {
 		rpcClient := NewRPCClientConfig(
-			WithRPCClientMaxReceiveMessageSize(Config.ChainClientConfig.RPCClientConfig.MaxRecvMsgSize),
+			WithRPCClientMaxReceiveMessageSize(utils.Config.ChainClientConfig.RPCClientConfig.MaxRecvMsgSize),
 		)
 		config.rpcClientConfig = rpcClient
 	}
@@ -360,7 +361,7 @@ func readConfigFile(config *ChainClientConfig) error {
 		return nil
 	}
 
-	if err := InitConfig(config.confPath); err != nil {
+	if err := utils.InitConfig(config.confPath); err != nil {
 		return fmt.Errorf("init config failed, %s", err.Error())
 	}
 
@@ -523,7 +524,7 @@ func dealUserCrtConfig(config *ChainClientConfig) (err error) {
 	}
 
 	// 将证书转换为证书对象
-	if config.userCrt, err = ParseCert(config.userCrtBytes); err != nil {
+	if config.userCrt, err = utils.ParseCert(config.userCrtBytes); err != nil {
 		return fmt.Errorf("ParseCert failed, %s", err.Error())
 	}
 
@@ -563,7 +564,7 @@ func dealUserSignCrtConfig(config *ChainClientConfig) (err error) {
 
 	}
 
-	if config.userCrt, err = ParseCert(config.userSignCrtBytes); err != nil {
+	if config.userCrt, err = utils.ParseCert(config.userSignCrtBytes); err != nil {
 		return fmt.Errorf("ParseSignCert failed, %s", err.Error())
 	}
 

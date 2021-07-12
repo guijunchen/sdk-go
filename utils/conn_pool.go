@@ -5,9 +5,10 @@ Copyright (C) THL A29 Limited, a Tencent company. All rights reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package chainmaker_sdk_go
+package utils
 
 import (
+	"chainmaker.org/chainmaker/sdk-go"
 	"fmt"
 	"math/rand"
 	"time"
@@ -57,7 +58,7 @@ type ClientConnectionPool struct {
 }
 
 // 创建连接池
-func NewConnPool(config *ChainClientConfig) (*ClientConnectionPool, error) {
+func NewConnPool(config *chainmaker_sdk_go.ChainClientConfig) (*ClientConnectionPool, error) {
 	pool := &ClientConnectionPool{
 		logger:                         config.logger,
 		userKeyBytes:                   config.userKeyBytes,

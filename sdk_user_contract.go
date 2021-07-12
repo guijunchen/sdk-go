@@ -8,58 +8,58 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker/pb-go/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/common"
+	"chainmaker.org/chainmaker/pb-go/consts"
+	"chainmaker.org/chainmaker/sdk-go/utils"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"github.com/Rican7/retry"
-	"github.com/Rican7/retry/backoff"
-	"github.com/Rican7/retry/strategy"
-	"github.com/gogo/protobuf/proto"
 	"io/ioutil"
 	"strings"
 	"time"
 )
 
-const (
-	// 轮训交易结果最大次数
-	retryCnt = 10
-)
+func (cc *ChainClient) CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType,
+	kvs []*common.KeyValuePair) (*common.Payload, error) {
 
-func (cc *ChainClient) CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType, kvs []*common.KeyValuePair) ([]byte, error) {
 	cc.logger.Debugf("[SDK] create [ContractCreate] to be signed payload")
-	return cc.createContractManagePayload(contractName, common.ManageUserContractFunction_INIT_CONTRACT.String(), version, byteCode, runtime, kvs)
+	return cc.createContractManageWithByteCodePayload(contractName, consts.ContractManager_INIT_CONTRACT.String(), version, byteCode, runtime, kvs)
 }
 
-func (cc *ChainClient) CreateContractUpgradePayload(contractName, version, byteCode string, runtime common.RuntimeType, kvs []*common.KeyValuePair) ([]byte, error) {
+func (cc *ChainClient) CreateContractUpgradePayload(contractName, version, byteCode string, runtime common.RuntimeType,
+	kvs []*common.KeyValuePair) (*common.Payload, error) {
+
 	cc.logger.Debugf("[SDK] create [ContractUpgrade] to be signed payload")
-	return cc.createContractManagePayload(contractName, common.ManageUserContractFunction_UPGRADE_CONTRACT.String(), version, byteCode, runtime, kvs)
+	return cc.createContractManageWithByteCodePayload(contractName, consts.ContractManager_UPGRADE_CONTRACT.String(), version, byteCode, runtime, kvs)
 }
 
-func (cc *ChainClient) CreateContractFreezePayload(contractName string) ([]byte, error) {
+func (cc *ChainClient) CreateContractFreezePayload(contractName string) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [ContractFreeze] to be signed payload")
-	return cc.createContractOpPayload(contractName, common.ManageUserContractFunction_FREEZE_CONTRACT.String())
+	return cc.createContractManagePayload(contractName, consts.ContractManager_FREEZE_CONTRACT.String())
 }
 
-func (cc *ChainClient) CreateContractUnfreezePayload(contractName string) ([]byte, error) {
+func (cc *ChainClient) CreateContractUnfreezePayload(contractName string) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [ContractUnfreeze] to be signed payload")
-	return cc.createContractOpPayload(contractName, common.ManageUserContractFunction_UNFREEZE_CONTRACT.String())
+	return cc.createContractManagePayload(contractName, consts.ContractManager_UNFREEZE_CONTRACT.String())
 }
 
-func (cc *ChainClient) CreateContractRevokePayload(contractName string) ([]byte, error) {
+func (cc *ChainClient) CreateContractRevokePayload(contractName string) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [ContractRevoke] to be signed payload")
-	return cc.createContractOpPayload(contractName, common.ManageUserContractFunction_REVOKE_CONTRACT.String())
+	return cc.createContractManagePayload(contractName, consts.ContractManager_REVOKE_CONTRACT.String())
 }
 
-func (cc *ChainClient) createContractManagePayload(contractName, method, version, byteCode string, runtime common.RuntimeType, kvs []*common.KeyValuePair) ([]byte, error) {
+func (cc *ChainClient) createContractManagePayload(contractName, method string) (*common.Payload, error) {
+	return cc.createPayload(common.TxType_INVOKE_CONTRACT, contractName, method, nil), nil
+}
+
+func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, method, version, byteCode string,
+	runtime common.RuntimeType, kvs []*common.KeyValuePair) (*common.Payload, error) {
 	var (
 		err       error
 		codeBytes []byte
 	)
-	cc.logger.Debugf("[SDK] create [ContractManage] to be signed payload")
 
-	exists := Exists(byteCode)
+	exists := utils.Exists(byteCode)
 	if exists {
 		codeBytes, err = ioutil.ReadFile(byteCode)
 		if err != nil {
@@ -83,221 +83,124 @@ func (cc *ChainClient) createContractManagePayload(contractName, method, version
 		}
 	}
 
-	payload := &common.ContractMgmtPayload{
-		ChainId: cc.chainId,
-		ContractId: &common.ContractId{
-			ContractName:    contractName,
-			ContractVersion: version,
-			RuntimeType:     runtime,
-		},
-		Method:     method,
-		Parameters: kvs,
-		ByteCode:   codeBytes,
+	if !cc.checkKeyValuePair(kvs) {
+		return nil, fmt.Errorf("use reserved word")
 	}
 
-	bytes, err := proto.Marshal(payload)
-	if err != nil {
-		return nil, fmt.Errorf("construct contract manage payload failed, %s", err)
-	}
+	payload := cc.createPayload(common.TxType_INVOKE_CONTRACT, common.SystemContract_CONTRACT_MANAGE.String(), method, kvs)
 
-	return bytes, nil
+	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
+		Key: consts.ContractManager_Install_CONTRACT_NAME.String(),
+		Value: []byte(contractName),
+	})
+
+	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
+		Key: consts.ContractManager_Install_CONTRACT_VERSION.String(),
+		Value: []byte(version),
+	})
+
+	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
+		Key: consts.ContractManager_Install_CONTRACT_RUNTIME_TYPE.String(),
+		Value: []byte(runtime.String()),
+	})
+
+	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
+		Key: consts.ContractManager_Install_CONTRACT_BYTE_CODE.String(),
+		Value: codeBytes,
+	})
+
+	return payload, nil
 }
 
-func (cc *ChainClient) createContractOpPayload(contractName, method string) ([]byte, error) {
-	payload := &common.ContractMgmtPayload{
-		ChainId: cc.chainId,
-		ContractId: &common.ContractId{
-			ContractName: contractName,
-		},
-		Method: method,
-	}
-
-	bytes, err := proto.Marshal(payload)
-	if err != nil {
-		return nil, fmt.Errorf("construct contract manage payload failed, %s", err)
-	}
-
-	return bytes, nil
-}
-
-func (cc *ChainClient) SignContractManagePayload(payloadBytes []byte) ([]byte, error) {
-	payload := &common.ContractMgmtPayload{}
-	if err := proto.Unmarshal(payloadBytes, payload); err != nil {
-		return nil, fmt.Errorf("unmarshal contract manage payload failed, %s", err)
-	}
-
-	signBytes, err := signPayload(cc.privateKey, cc.userCrt, payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf("SignPayload failed, %s", err)
-	}
-
-	sender := &accesscontrol.SerializedMember{
-		OrgId:      cc.orgId,
-		MemberInfo: cc.userCrtBytes,
-		IsFullCert: true,
-	}
-
-	entry := &common.EndorsementEntry{
-		Signer:    sender,
-		Signature: signBytes,
-	}
-
-	payload.Endorsement = []*common.EndorsementEntry{
-		entry,
-	}
-
-	signedPayloadBytes, err := proto.Marshal(payload)
-	if err != nil {
-		return nil, fmt.Errorf("marshal contract manage sigend payload failed, %s", err)
-	}
-
-	return signedPayloadBytes, nil
-}
-
-func (cc *ChainClient) MergeContractManageSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
-	return mergeContractManageSignedPayload(signedPayloadBytes)
-}
-
-func (cc *ChainClient) SendContractManageRequest(mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
-	return cc.sendContractRequest(common.TxType_MANAGE_USER_CONTRACT, mergeSignedPayloadBytes, timeout, withSyncResult)
-}
-
-func (cc *ChainClient) sendContractRequest(txType common.TxType, mergeSignedPayloadBytes []byte, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
-	txId := GetRandTxId()
-
-	resp, err := cc.proposalRequestWithTimeout(txType, txId, mergeSignedPayloadBytes, timeout)
-	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", txType.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if !withSyncResult {
-			resp.ContractResult = &common.ContractResult{
-				Code:    common.ContractResultCode_OK,
-				Message: common.ContractResultCode_OK.String(),
-				Result:  []byte(txId),
-			}
-		} else {
-			contractResult, err := cc.getSyncResult(txId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
+func (cc *ChainClient) checkKeyValuePair(kvs []*common.KeyValuePair) bool {
+	for _, kv := range kvs {
+		if kv.Key == consts.ContractManager_Install_CONTRACT_NAME.String() ||
+			kv.Key == consts.ContractManager_Install_CONTRACT_RUNTIME_TYPE.String() ||
+			kv.Key == consts.ContractManager_Install_CONTRACT_VERSION.String() ||
+			kv.Key == consts.ContractManager_Install_CONTRACT_BYTE_CODE.String() ||
+			kv.Key == consts.ContractManager_Upgrade_CONTRACT_NAME.String() ||
+			kv.Key == consts.ContractManager_Upgrade_CONTRACT_RUNTIME_TYPE.String() ||
+			kv.Key == consts.ContractManager_Upgrade_CONTRACT_VERSION.String() ||
+			kv.Key == consts.ContractManager_Upgrade_CONTRACT_BYTE_CODE.String() {
+			return false
 		}
 	}
 
-	return resp, nil
+	return true
 }
 
-func (cc *ChainClient) InvokeContract(contractName, method, txId string, params map[string]string, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+func (cc *ChainClient) SignContractManagePayload(payload *common.Payload) (*common.EndorsementEntry, error) {
+	return cc.SignPayload(payload)
+}
+
+func (cc *ChainClient) SendContractManageRequest(payload *common.Payload, endosers []*common.EndorsementEntry, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+	return cc.sendContractRequest(payload, endosers, timeout, withSyncResult)
+}
+
+func (cc *ChainClient) InvokeContract(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	if txId == "" {
-		txId = GetRandTxId()
+		txId = utils.GetRandTxId()
 	}
 
 	cc.logger.Debugf("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
-		contractName, method, txId, params)
+		contractName, method, txId, kvs)
 
-	pairs := paramsMap2KVPairs(params)
+	payload := utils.NewPayload(
+		utils.WithChainId(cc.chainId),
+		utils.WithTxType(common.TxType_INVOKE_CONTRACT),
+		utils.WithTxId(txId),
+		utils.WithTimestamp(time.Now().Unix()),
+		utils.WithContractName(contractName),
+		utils.WithMethod(method),
+		utils.WithParameters(kvs),
+	)
 
-	payloadBytes, err := constructTransactPayload(contractName, method, pairs)
-	if err != nil {
-		return nil, fmt.Errorf("construct transact payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_USER_CONTRACT, txId, payloadBytes, timeout)
-	if err != nil {
-		return resp, fmt.Errorf("%s failed, %s", common.TxType_INVOKE_USER_CONTRACT.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if !withSyncResult {
-			resp.ContractResult = &common.ContractResult{
-				Code:    common.ContractResultCode_OK,
-				Message: common.ContractResultCode_OK.String(),
-				Result:  []byte(txId),
-			}
-		} else {
-			contractResult, err := cc.getSyncResult(txId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-
-			if contractResult.Code != common.ContractResultCode_OK {
-				resp.Code = common.TxStatusCode_CONTRACT_FAIL
-				resp.Message = contractResult.Message
-			}
-
-			resp.ContractResult = contractResult
-		}
-	}
-
-	return resp, nil
+	return cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 }
 
-func (cc *ChainClient) QueryContract(contractName, method string, params map[string]string, timeout int64) (*common.TxResponse, error) {
-	txId := GetRandTxId()
+func (cc *ChainClient) QueryContract(contractName, method string, kvs []*common.KeyValuePair, timeout int64) (*common.TxResponse, error) {
+	txId := utils.GetRandTxId()
 
 	cc.logger.Debugf("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
-		contractName, method, txId, params)
+		contractName, method, txId, kvs)
 
-	pairs := paramsMap2KVPairs(params)
+	payload := utils.NewPayload(
+		utils.WithChainId(cc.chainId),
+		utils.WithTxType(common.TxType_INVOKE_CONTRACT),
+		utils.WithTxId(txId),
+		utils.WithTimestamp(time.Now().Unix()),
+		utils.WithContractName(contractName),
+		utils.WithMethod(method),
+		utils.WithParameters(kvs),
+	)
 
-	payloadBytes, err := constructQueryPayload(contractName, method, pairs)
+	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {
-		return nil, fmt.Errorf("construct query payload failed, %s", err.Error())
-	}
-
-	resp, err := cc.proposalRequestWithTimeout(common.TxType_QUERY_USER_CONTRACT, txId, payloadBytes, timeout)
-	if err != nil {
-		return nil, fmt.Errorf("send %s failed, %s", common.TxType_QUERY_USER_CONTRACT.String(), err.Error())
+		return nil, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
 	}
 
 	return resp, nil
 }
 
-func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error) {
-	var (
-		txInfo *common.TransactionInfo
-		err    error
-	)
-
-	err = retry.Retry(func(uint) error {
-		txInfo, err = cc.GetTxByTxId(txId)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	},
-		strategy.Limit(retryCnt),
-		strategy.Backoff(backoff.Fibonacci(retryInterval*time.Millisecond)),
-	)
-
-	if err != nil {
-		return nil, fmt.Errorf("get tx by txId [%s] failed, %s", txId, err.Error())
-	}
-	if txInfo == nil || txInfo.Transaction == nil || txInfo.Transaction.Result == nil {
-		return nil, fmt.Errorf("get result by txId [%s] failed, %+v", txId, txInfo)
-	}
-	return txInfo.Transaction.Result.ContractResult, nil
-}
-
-func (cc *ChainClient) GetTxRequest(contractName, method, txId string, params map[string]string) (*common.TxRequest, error) {
+func (cc *ChainClient) GetTxRequest(contractName, method, txId string, kvs []*common.KeyValuePair) (*common.TxRequest, error) {
 	if txId == "" {
-		txId = GetRandTxId()
+		txId = utils.GetRandTxId()
 	}
 
 	cc.logger.Debugf("[SDK] begin to create TxRequest, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
-		contractName, method, txId, params)
+		contractName, method, txId, kvs)
 
-	pairs := paramsMap2KVPairs(params)
+	payload := utils.NewPayload(
+		utils.WithChainId(cc.chainId),
+		utils.WithTxType(common.TxType_INVOKE_CONTRACT),
+		utils.WithTxId(txId),
+		utils.WithTimestamp(time.Now().Unix()),
+		utils.WithContractName(contractName),
+		utils.WithMethod(method),
+		utils.WithParameters(kvs),
+	)
 
-	payloadBytes, err := constructTransactPayload(contractName, method, pairs)
-	if err != nil {
-		return nil, fmt.Errorf("construct transact payload failed, %s", err.Error())
-	}
-
-	req, err := cc.generateTxRequest(txId, common.TxType_INVOKE_USER_CONTRACT, payloadBytes)
+	req, err := cc.generateTxRequest(payload, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -309,23 +212,19 @@ func (cc *ChainClient) SendTxRequest(txRequest *common.TxRequest, timeout int64,
 
 	resp, err := cc.sendTxRequest(txRequest, timeout)
 	if err != nil {
-		return resp, fmt.Errorf("%s failed, %s", common.TxType_INVOKE_USER_CONTRACT.String(), err.Error())
+		return resp, fmt.Errorf("%s failed, %s", txRequest.Payload.TxType.String(), err.Error())
 	}
 
 	if resp.Code == common.TxStatusCode_SUCCESS {
 		if !withSyncResult {
-			resp.ContractResult = &common.ContractResult{
-				Code:    common.ContractResultCode_OK,
-				Message: common.ContractResultCode_OK.String(),
-				Result:  []byte(txRequest.Header.TxId),
-			}
+			resp.TxId = txRequest.Payload.TxId
 		} else {
-			contractResult, err := cc.getSyncResult(txRequest.Header.TxId)
+			contractResult, err := cc.getSyncResult(txRequest.Payload.TxId)
 			if err != nil {
 				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
 			}
 
-			if contractResult.Code != common.ContractResultCode_OK {
+			if contractResult.Code != utils.SUCCESS {
 				resp.Code = common.TxStatusCode_CONTRACT_FAIL
 				resp.Message = contractResult.Message
 			}
