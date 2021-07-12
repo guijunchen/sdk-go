@@ -13,7 +13,6 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/utils"
 	"fmt"
 	"github.com/gogo/protobuf/proto"
-	"time"
 )
 
 const (
@@ -29,15 +28,8 @@ const (
 func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 	cc.logger.Debug("[SDK] begin to get chain config")
 
-	payload := utils.NewPayload(
-		utils.WithChainId(cc.chainId),
-		utils.WithTxType(common.TxType_QUERY_CONTRACT),
-		utils.WithTxId(utils.GetRandTxId()),
-		utils.WithTimestamp(time.Now().Unix()),
-		utils.WithExpirationTime(0),
-		utils.WithContractName(common.SystemContract_CHAIN_CONFIG.String()),
-		utils.WithMethod(common.ConfigFunction_GET_CHAIN_CONFIG.String()),
-	)
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, common.SystemContract_CHAIN_CONFIG.String(),
+		common.ConfigFunction_GET_CHAIN_CONFIG.String(), nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
