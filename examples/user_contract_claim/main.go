@@ -24,8 +24,9 @@ const (
 	claimVersion          = "1.0.0"
 	claimByteCodePath     = "../../testdata/claim-wasm-demo/rust-fact-1.0.0.wasm"
 
-	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+
+	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
 	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
 	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
 	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
@@ -71,10 +72,13 @@ func testUserContractClaim() {
 	fmt.Println("====================== 执行合约查询接口 ======================")
 	//txId := "1cbdbe6106cc4132b464185ea8275d0a53c0261b7b1a470fb0c3f10bd4a57ba6"
 	//fileHash = txId[len(txId)/2:]
-	params := map[string]string{
-		"file_hash": fileHash,
+	kvs := []*common.KeyValuePair {
+		{
+			Key: "file_hash",
+			Value: []byte(fileHash),
+		},
 	}
-	testUserContractClaimQuery(client, "find_by_file_hash", params)
+	testUserContractClaimQuery(client, "find_by_file_hash", kvs)
 }
 
 func testUserContractClaimCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
@@ -94,41 +98,40 @@ func testUserContractClaimCreate(client, admin1, admin2, admin3, admin4 *sdk.Cha
 func createUserContract(client *sdk.ChainClient, admin1, admin2, admin3, admin4 *sdk.ChainClient,
 	contractName, version, byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool) (*common.TxResponse, error) {
 
-	payloadBytes, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
+	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
 		return nil, err
 	}
 
 	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
+	signedPayload1, err := admin1.SignContractManagePayload(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
+	signedPayload2, err := admin2.SignContractManagePayload(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
+	signedPayload3, err := admin3.SignContractManagePayload(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
+	signedPayload4, err := admin4.SignContractManagePayload(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
-		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
-	if err != nil {
-		return nil, err
-	}
+	var endosers []*common.EndorsementEntry
+	endosers = append(endosers, signedPayload1)
+	endosers = append(endosers, signedPayload2)
+	endosers = append(endosers, signedPayload3)
+	endosers = append(endosers, signedPayload4)
 
 	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endosers, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}
@@ -148,14 +151,22 @@ func testUserContractClaimInvoke(client *sdk.ChainClient,
 	curTime := time.Now().Format("2006-01-02 15:04:05")
 
 	fileHash := uuid.GetUUID()
-	params := map[string]string{
-		"time":      curTime,
-		"file_hash": fileHash,
-		"file_name": fmt.Sprintf("file_%s", curTime),
+	kvs := []*common.KeyValuePair {
+		{
+			Key: "time",
+			Value: []byte(curTime),
+		},
+		{
+			Key: "file_hash",
+			Value: []byte(fileHash),
+		},
+		{
+			Key: "file_name",
+			Value: []byte(fmt.Sprintf("file_%s", curTime)),
+		},
 	}
 
-	err := invokeUserContract(client, claimContractName, method, "", params, withSyncResult)
-	//err := invokeUserContractStepByStep(client, claimContractName, method, "", params, withSyncResult)
+	err := invokeUserContract(client, claimContractName, method, "", kvs, withSyncResult)
 	if err != nil {
 		return "", err
 	}
@@ -164,9 +175,9 @@ func testUserContractClaimInvoke(client *sdk.ChainClient,
 }
 
 func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string,
-	params map[string]string, withSyncResult bool) error {
+	kvs []*common.KeyValuePair, withSyncResult bool) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
 		return err
 	}
@@ -184,10 +195,11 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 	return nil
 }
 
-func testUserContractClaimQuery(client *sdk.ChainClient, method string, params map[string]string) {
-	resp, err := client.QueryContract(claimContractName, method, params, -1)
+func testUserContractClaimQuery(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair) {
+	resp, err := client.QueryContract(claimContractName, method, kvs, -1)
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	fmt.Printf("QUERY claim contract resp: %+v\n", resp)
 }
