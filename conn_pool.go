@@ -5,10 +5,10 @@ Copyright (C) THL A29 Limited, a Tencent company. All rights reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package utils
+package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker/sdk-go"
+	"chainmaker.org/chainmaker/sdk-go/utils"
 	"fmt"
 	"math/rand"
 	"time"
@@ -32,7 +32,7 @@ type ConnectionPool interface {
 	initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string, tlsHostName string) (*grpc.ClientConn, error)
 	getClient() (*networkClient, error)
 	getClientWithIgnoreAddrs(ignoreAddrs map[string]struct{}) (*networkClient, error)
-	getLogger() Logger
+	getLogger() utils.Logger
 	Close() error
 }
 
@@ -51,14 +51,14 @@ type networkClient struct {
 // 客户端连接池结构定义
 type ClientConnectionPool struct {
 	connections                    []*networkClient
-	logger                         Logger
+	logger                         utils.Logger
 	userKeyBytes                   []byte
 	userCrtBytes                   []byte
 	rpcClientMaxReceiveMessageSize int
 }
 
 // 创建连接池
-func NewConnPool(config *chainmaker_sdk_go.ChainClientConfig) (*ClientConnectionPool, error) {
+func NewConnPool(config *ChainClientConfig) (*ClientConnectionPool, error) {
 	pool := &ClientConnectionPool{
 		logger:                         config.logger,
 		userKeyBytes:                   config.userKeyBytes,
@@ -168,7 +168,7 @@ func (pool *ClientConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[strin
 	return nc, nil
 }
 
-func (pool *ClientConnectionPool) getLogger() Logger {
+func (pool *ClientConnectionPool) getLogger() utils.Logger {
 	return pool.logger
 }
 

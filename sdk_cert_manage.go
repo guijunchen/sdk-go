@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"github.com/gogo/protobuf/proto"
 	"strings"
-	"time"
 )
 
 func (cc *ChainClient) GetCertHash() ([]byte, error) {
@@ -42,7 +41,8 @@ func (cc *ChainClient) QueryCert(certHashes []string) (*common.CertInfos, error)
 		},
 	}
 
-	payload := cc.CreateCertManagePayload(common.CertManageFunction_CERTS_QUERY.String(), pairs)
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, common.SystemContract_CERT_MANAGE.String(),
+		common.CertManageFunction_CERTS_QUERY.String(), pairs)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -116,17 +116,7 @@ func (cc *ChainClient) DeleteCert(certHashes []string) (*common.TxResponse, erro
 
 func (cc *ChainClient) CreateCertManagePayload(method string, kvs []*common.KeyValuePair) *common.Payload {
 	cc.logger.Debugf("[SDK] create CertManagePayload, method: %s", method)
-
-	payload := utils.NewPayload(
-		utils.WithChainId(cc.chainId),
-		utils.WithTxType(common.TxType_INVOKE_CONTRACT),
-		utils.WithTxId(utils.GetRandTxId()),
-		utils.WithTimestamp(time.Now().Unix()),
-		utils.WithContractName(common.SystemContract_CERT_MANAGE.String()),
-		utils.WithMethod(method),
-		utils.WithParameters(kvs),
-	)
-
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, common.SystemContract_CERT_MANAGE.String(), method, kvs)
 	return payload
 }
 

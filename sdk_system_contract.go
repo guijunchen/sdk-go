@@ -27,7 +27,7 @@ func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error)
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
 		common.QueryFunction_GET_TX_BY_TX_ID.String(), txId)
 
-	payload := cc.createPayload(common.TxType_QUERY_CONTRACT, common.SystemContract_CHAIN_QUERY.String(),
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, common.SystemContract_CHAIN_QUERY.String(),
 		common.QueryFunction_GET_TX_BY_TX_ID.String(), []*common.KeyValuePair{
 			{
 				Key:   keyTxId,

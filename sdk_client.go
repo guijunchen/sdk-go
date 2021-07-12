@@ -42,7 +42,7 @@ var _ SDKInterface = (*ChainClient)(nil)
 type ChainClient struct {
 	// common config
 	logger       utils.Logger
-	pool         utils.ConnectionPool
+	pool         ConnectionPool
 	chainId      string
 	orgId        string
 	userCrtBytes []byte
@@ -69,13 +69,13 @@ func NewNodeConfig(opts ...NodeOption) *NodeConfig {
 	return config
 }
 
-func NewConnPoolWithOptions(opts ...ChainClientOption) (*utils.ClientConnectionPool, error) {
+func NewConnPoolWithOptions(opts ...ChainClientOption) (*ClientConnectionPool, error) {
        config, err := generateConfig(opts...)
        if err != nil {
                return nil, err
        }
 
-       return utils.NewConnPool(config)
+       return NewConnPool(config)
 }
 
 func NewArchiveConfig(opts ...ArchiveOption) *ArchiveConfig {
@@ -101,7 +101,7 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		return nil, err
 	}
 
-	pool, err := utils.NewConnPool(config)
+	pool, err := NewConnPool(config)
 	if err != nil {
 		return nil, err
 	}
@@ -204,10 +204,10 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 		}
 
 		resp, err := client.rpcNode.SendRequest(ctx, txRequest)
+		resp.TxId = txRequest.Payload.TxId
 		if err != nil {
 			resp := &common.TxResponse{
 				Message: err.Error(),
-				TxId: txRequest.Payload.TxId,
 			}
 
 			statusErr, ok := status.FromError(err)
@@ -378,7 +378,7 @@ func (cc *ChainClient) getCheckCertHash() (bool, error) {
 	return false, nil
 }
 
-func CreateChainClient(pool utils.ConnectionPool, userCrtBytes, privKey, userCrtHash []byte, orgId, chainId string, enabledCrtHash int) (*ChainClient, error) {
+func CreateChainClient(pool ConnectionPool, userCrtBytes, privKey, userCrtHash []byte, orgId, chainId string, enabledCrtHash int) (*ChainClient, error) {
 	cert, err := utils.ParseCert(userCrtBytes)
 	if err != nil {
 		return nil, err

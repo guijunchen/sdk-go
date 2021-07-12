@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
-	"time"
 )
 
 func (cc *ChainClient) CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType,
@@ -49,7 +48,7 @@ func (cc *ChainClient) CreateContractRevokePayload(contractName string) (*common
 }
 
 func (cc *ChainClient) createContractManagePayload(contractName, method string) (*common.Payload, error) {
-	return cc.createPayload(common.TxType_INVOKE_CONTRACT, contractName, method, nil), nil
+	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, contractName, method, nil), nil
 }
 
 func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, method, version, byteCode string,
@@ -87,7 +86,7 @@ func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, met
 		return nil, fmt.Errorf("use reserved word")
 	}
 
-	payload := cc.createPayload(common.TxType_INVOKE_CONTRACT, common.SystemContract_CONTRACT_MANAGE.String(), method, kvs)
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, common.SystemContract_CONTRACT_MANAGE.String(), method, kvs)
 
 	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
 		Key: consts.ContractManager_Install_CONTRACT_NAME.String(),
@@ -145,34 +144,17 @@ func (cc *ChainClient) InvokeContract(contractName, method, txId string, kvs []*
 	cc.logger.Debugf("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, kvs)
 
-	payload := utils.NewPayload(
-		utils.WithChainId(cc.chainId),
-		utils.WithTxType(common.TxType_INVOKE_CONTRACT),
-		utils.WithTxId(txId),
-		utils.WithTimestamp(time.Now().Unix()),
-		utils.WithContractName(contractName),
-		utils.WithMethod(method),
-		utils.WithParameters(kvs),
-	)
+	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs)
 
 	return cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 }
 
 func (cc *ChainClient) QueryContract(contractName, method string, kvs []*common.KeyValuePair, timeout int64) (*common.TxResponse, error) {
-	txId := utils.GetRandTxId()
 
-	cc.logger.Debugf("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
-		contractName, method, txId, kvs)
+	cc.logger.Debugf("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[params:%+v]",
+		contractName, method, kvs)
 
-	payload := utils.NewPayload(
-		utils.WithChainId(cc.chainId),
-		utils.WithTxType(common.TxType_INVOKE_CONTRACT),
-		utils.WithTxId(txId),
-		utils.WithTimestamp(time.Now().Unix()),
-		utils.WithContractName(contractName),
-		utils.WithMethod(method),
-		utils.WithParameters(kvs),
-	)
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, contractName, method, kvs)
 
 	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {
@@ -190,15 +172,7 @@ func (cc *ChainClient) GetTxRequest(contractName, method, txId string, kvs []*co
 	cc.logger.Debugf("[SDK] begin to create TxRequest, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, kvs)
 
-	payload := utils.NewPayload(
-		utils.WithChainId(cc.chainId),
-		utils.WithTxType(common.TxType_INVOKE_CONTRACT),
-		utils.WithTxId(txId),
-		utils.WithTimestamp(time.Now().Unix()),
-		utils.WithContractName(contractName),
-		utils.WithMethod(method),
-		utils.WithParameters(kvs),
-	)
+	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs)
 
 	req, err := cc.generateTxRequest(payload, nil)
 	if err != nil {

@@ -36,7 +36,7 @@ func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error
 		return nil
 	},
 		strategy.Limit(retryCnt),
-		strategy.Backoff(backoff.Fibonacci(utils.retryInterval*time.Millisecond)),
+		strategy.Backoff(backoff.Fibonacci(retryInterval * time.Millisecond)),
 	)
 
 	if err != nil {
@@ -73,11 +73,15 @@ func (cc *ChainClient) sendContractRequest(payload *common.Payload, endosers []*
 	return resp, nil
 }
 
-func (cc *ChainClient) createPayload(txType common.TxType, contractName, method string, kvs []*common.KeyValuePair) *common.Payload {
+func (cc *ChainClient) createPayload(txId string, txType common.TxType, contractName, method string, kvs []*common.KeyValuePair) *common.Payload {
+	if txId == "" {
+		txId = utils.GetRandTxId()
+	}
+
 	payload := utils.NewPayload(
 		utils.WithChainId(cc.chainId),
 		utils.WithTxType(txType),
-		utils.WithTxId(utils.GetRandTxId()),
+		utils.WithTxId(txId),
 		utils.WithTimestamp(time.Now().Unix()),
 		utils.WithContractName(contractName),
 		utils.WithMethod(method),
