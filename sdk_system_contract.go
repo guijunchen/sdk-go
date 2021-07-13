@@ -25,6 +25,72 @@ const (
 	keyTxId        = "txId"
 )
 
+func (cc *ChainClient) InvokeSystemContract(contractName, method, txId string, params map[string]string, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+	if txId == "" {
+		txId = GetRandTxId()
+	}
+
+	cc.logger.Debugf("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
+		contractName, method, txId, params)
+
+	pairs := paramsMap2KVPairs(params)
+
+	payloadBytes, err := constructSystemContractPayload(cc.chainId, contractName, method, pairs, 1)
+	if err != nil {
+		return nil, fmt.Errorf("construct transact payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_INVOKE_SYSTEM_CONTRACT, txId, payloadBytes, timeout)
+	if err != nil {
+		return resp, fmt.Errorf("%s failed, %s", common.TxType_INVOKE_SYSTEM_CONTRACT.String(), err.Error())
+	}
+
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if !withSyncResult {
+			resp.ContractResult = &common.ContractResult{
+				Code:    common.ContractResultCode_OK,
+				Message: common.ContractResultCode_OK.String(),
+				Result:  []byte(txId),
+			}
+		} else {
+			contractResult, err := cc.getSyncResult(txId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+
+			if contractResult.Code != common.ContractResultCode_OK {
+				resp.Code = common.TxStatusCode_CONTRACT_FAIL
+				resp.Message = contractResult.Message
+			}
+
+			resp.ContractResult = contractResult
+		}
+	}
+
+	return resp, nil
+}
+
+func (cc *ChainClient) QuerySystemContract(contractName, method string, params map[string]string, timeout int64) (*common.TxResponse, error) {
+	txId := GetRandTxId()
+
+	cc.logger.Debugf("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
+		contractName, method, txId, params)
+
+	pairs := paramsMap2KVPairs(params)
+
+	payloadBytes, err := constructQueryPayload(contractName, method, pairs)
+	if err != nil {
+		return nil, fmt.Errorf("construct query payload failed, %s", err.Error())
+	}
+
+	resp, err := cc.proposalRequestWithTimeout(common.TxType_QUERY_SYSTEM_CONTRACT, txId, payloadBytes, timeout)
+	if err != nil {
+		return nil, fmt.Errorf("send %s failed, %s", common.TxType_QUERY_USER_CONTRACT.String(), err.Error())
+	}
+
+	return resp, nil
+}
+
 func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
 		common.QueryFunction_GET_TX_BY_TX_ID.String(), txId)
