@@ -29,7 +29,7 @@ const (
 
 func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
-		common.QueryFunction_GET_TX_BY_TX_ID.String(), txId)
+		common.QueryFunction_GET_TX_BY_TX_ID, txId)
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, common.SystemContract_CHAIN_QUERY.String(),
 		common.QueryFunction_GET_TX_BY_TX_ID.String(), []*common.KeyValuePair{
@@ -42,19 +42,19 @@ func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, payload.TxType.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
 	}
 
 	if err = utils.CheckProposalRequestResp(resp, true); err != nil {
 		if utils.IsArchived(resp.Code) {
 			return nil, errors.New(resp.Code.String())
 		}
-		return nil, fmt.Errorf(errStringFormat, payload.TxType.String(), err.Error())
+		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
 	}
 
 	transactionInfo := &common.TransactionInfo{}
 	if err = proto.Unmarshal(resp.ContractResult.Result, transactionInfo); err != nil {
-		return nil, fmt.Errorf("unmarshal transaction info payload failed, %s", err.Error())
+		return nil, fmt.Errorf("GetTxByTxId unmarshal transaction info payload failed, %s", err)
 	}
 
 	return transactionInfo, nil
@@ -62,7 +62,7 @@ func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error)
 
 func (cc *ChainClient) GetBlockByHeight(blockHeight uint64, withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%s]",
-		common.QueryFunction_GET_BLOCK_BY_HEIGHT, blockHeight, strconv.FormatBool(withRWSet))
+		common.QueryFunction_GET_BLOCK_BY_HEIGHT, blockHeight, withRWSet)
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, common.SystemContract_CHAIN_QUERY.String(),
 		common.QueryFunction_GET_BLOCK_BY_HEIGHT.String(), []*common.KeyValuePair{
