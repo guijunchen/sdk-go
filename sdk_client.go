@@ -139,18 +139,18 @@ func (cc *ChainClient) proposalRequestWithTimeout(payload *common.Payload, endor
 
 func (cc *ChainClient) generateTxRequest(payload *common.Payload, endorsers []*common.EndorsementEntry) (*common.TxRequest, error) {
 	var (
-		signer *accesscontrol.SerializedMember
+		signer *accesscontrol.Member
 	)
 
 	// 构造Sender
 	if cc.enabledCrtHash && len(cc.userCrtHash) > 0 {
-		signer = &accesscontrol.SerializedMember{
+		signer = &accesscontrol.Member{
 			OrgId:      cc.orgId,
 			MemberInfo: cc.userCrtHash,
 			MemberType: accesscontrol.MemberType_CERT_HASH,
 		}
 	} else {
-		signer = &accesscontrol.SerializedMember{
+		signer = &accesscontrol.Member{
 			OrgId:      cc.orgId,
 			MemberInfo: cc.userCrtBytes,
 			MemberType: accesscontrol.MemberType_CERT,
@@ -204,10 +204,10 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 		}
 
 		resp, err := client.rpcNode.SendRequest(ctx, txRequest)
-		resp.TxId = txRequest.Payload.TxId
 		if err != nil {
 			resp := &common.TxResponse{
 				Message: err.Error(),
+				TxId: txRequest.Payload.TxId,
 			}
 
 			statusErr, ok := status.FromError(err)
@@ -232,6 +232,7 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 			return resp, fmt.Errorf(errMsg)
 		}
 
+		resp.TxId = txRequest.Payload.TxId
 		cc.logger.Debugf("[SDK] proposalRequest resp: %+v", resp)
 		return resp, nil
 	}

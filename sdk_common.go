@@ -98,7 +98,7 @@ func (cc *ChainClient) SignPayload(payload *common.Payload) (*common.Endorsement
 		return nil, fmt.Errorf("SignPayload failed, %s", err)
 	}
 
-	sender := &accesscontrol.SerializedMember{
+	sender := &accesscontrol.Member{
 		OrgId:      cc.orgId,
 		MemberInfo: cc.userCrtBytes,
 		MemberType: accesscontrol.MemberType_CERT,
