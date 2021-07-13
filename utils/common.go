@@ -112,11 +112,7 @@ func Exists(path string) bool {
 }
 
 func IsArchived(txStatusCode common.TxStatusCode) bool {
-	if txStatusCode == common.TxStatusCode_ARCHIVED_BLOCK || txStatusCode == common.TxStatusCode_ARCHIVED_TX {
-		return true
-	}
-
-	return false
+	return txStatusCode == common.TxStatusCode_ARCHIVED_BLOCK || txStatusCode == common.TxStatusCode_ARCHIVED_TX
 }
 
 func IsArchivedString(txStatusCode string) bool {
