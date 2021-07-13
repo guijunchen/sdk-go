@@ -9,6 +9,7 @@ package chainmaker_sdk_go
 
 import (
 	"chainmaker.org/chainmaker/pb-go/common"
+	"chainmaker.org/chainmaker/pb-go/consts"
 	"chainmaker.org/chainmaker/sdk-go/utils"
 	"fmt"
 	"github.com/gogo/protobuf/proto"
@@ -32,7 +33,7 @@ func (cc *ChainClient) GetCertHash() ([]byte, error) {
 
 func (cc *ChainClient) QueryCert(certHashes []string) (*common.CertInfos, error) {
 	cc.logger.Infof("[SDK] begin to query cert, [contract:%s]/[method:%s]",
-		common.SystemContract_CERT_MANAGE.String(), common.CertManageFunction_CERTS_QUERY.String())
+		common.SystemContract_CERT_MANAGE.String(), consts.CertManage_CERTS_QUERY.String())
 
 	pairs := []*common.KeyValuePair{
 		{
@@ -42,7 +43,7 @@ func (cc *ChainClient) QueryCert(certHashes []string) (*common.CertInfos, error)
 	}
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, common.SystemContract_CERT_MANAGE.String(),
-		common.CertManageFunction_CERTS_QUERY.String(), pairs)
+		consts.CertManage_CERTS_QUERY.String(), pairs)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -63,14 +64,14 @@ func (cc *ChainClient) QueryCert(certHashes []string) (*common.CertInfos, error)
 
 func (cc *ChainClient) AddCert() (*common.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to add cert, [contract:%s]/[method:%s]",
-		common.SystemContract_CERT_MANAGE.String(), common.CertManageFunction_CERT_ADD.String())
+		common.SystemContract_CERT_MANAGE.String(), consts.CertManage_CERT_ADD.String())
 
 	certHash, err := cc.GetCertHash()
 	if err != nil {
 		return nil, fmt.Errorf("get cert hash in hex failed, %s", err.Error())
 	}
 
-	payload := cc.CreateCertManagePayload(common.CertManageFunction_CERT_ADD.String(), nil)
+	payload := cc.CreateCertManagePayload(consts.CertManage_CERT_ADD.String(), nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -82,8 +83,8 @@ func (cc *ChainClient) AddCert() (*common.TxResponse, error) {
 	}
 
 	resp.ContractResult = &common.ContractResult{
-		Code:    utils.SUCCESS,
-		Result:  certHash,
+		Code:   utils.SUCCESS,
+		Result: certHash,
 	}
 
 	return resp, nil
@@ -91,7 +92,7 @@ func (cc *ChainClient) AddCert() (*common.TxResponse, error) {
 
 func (cc *ChainClient) DeleteCert(certHashes []string) (*common.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to delete cert, [contract:%s]/[method:%s]",
-		common.SystemContract_CERT_MANAGE.String(), common.CertManageFunction_CERTS_DELETE.String())
+		common.SystemContract_CERT_MANAGE.String(), consts.CertManage_CERTS_DELETE.String())
 
 	pairs := []*common.KeyValuePair{
 		{
@@ -100,7 +101,7 @@ func (cc *ChainClient) DeleteCert(certHashes []string) (*common.TxResponse, erro
 		},
 	}
 
-	payload := cc.CreateCertManagePayload(common.CertManageFunction_CERTS_DELETE.String(), pairs)
+	payload := cc.CreateCertManagePayload(consts.CertManage_CERTS_DELETE.String(), pairs)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -128,7 +129,7 @@ func (cc *ChainClient) CreateCertManageFrozenPayload(certs []string) *common.Pay
 		},
 	}
 
-	return cc.CreateCertManagePayload(common.CertManageFunction_CERTS_FREEZE.String(), pairs)
+	return cc.CreateCertManagePayload(consts.CertManage_CERTS_FREEZE.String(), pairs)
 }
 
 func (cc *ChainClient) CreateCertManageUnfrozenPayload(certs []string) *common.Payload {
@@ -139,7 +140,7 @@ func (cc *ChainClient) CreateCertManageUnfrozenPayload(certs []string) *common.P
 		},
 	}
 
-	return cc.CreateCertManagePayload(common.CertManageFunction_CERTS_UNFREEZE.String(), pairs)
+	return cc.CreateCertManagePayload(consts.CertManage_CERTS_UNFREEZE.String(), pairs)
 }
 
 func (cc *ChainClient) CreateCertManageRevocationPayload(certCrl string) *common.Payload {
@@ -150,7 +151,7 @@ func (cc *ChainClient) CreateCertManageRevocationPayload(certCrl string) *common
 		},
 	}
 
-	return cc.CreateCertManagePayload(common.CertManageFunction_CERTS_REVOKE.String(), pairs)
+	return cc.CreateCertManagePayload(consts.CertManage_CERTS_REVOKE.String(), pairs)
 }
 
 func (cc *ChainClient) SignCertManagePayload(payload *common.Payload) (*common.EndorsementEntry, error) {

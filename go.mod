@@ -4,7 +4,8 @@ go 1.15
 
 require (
 	chainmaker.org/chainmaker/common v0.0.0-20210709154839-e2c8e4fc62b4
-	chainmaker.org/chainmaker/pb-go v0.0.0-20210713015752-33fec271c90a
+	chainmaker.org/chainmaker/pb-go v0.0.0-20210713083111-ba49f19e233a
+	chainmaker.org/chainmaker/protocol v0.0.0-20210713085720-581ac111fb8c // indirect
 	github.com/Rican7/retry v0.1.0
 	github.com/ethereum/go-ethereum v1.10.4
 	github.com/go-sql-driver/mysql v1.4.1
