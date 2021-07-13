@@ -70,12 +70,12 @@ func NewNodeConfig(opts ...NodeOption) *NodeConfig {
 }
 
 func NewConnPoolWithOptions(opts ...ChainClientOption) (*ClientConnectionPool, error) {
-       config, err := generateConfig(opts...)
-       if err != nil {
-               return nil, err
-       }
+	config, err := generateConfig(opts...)
+	if err != nil {
+		return nil, err
+	}
 
-       return NewConnPool(config)
+	return NewConnPool(config)
 }
 
 func NewArchiveConfig(opts ...ArchiveOption) *ArchiveConfig {
@@ -158,9 +158,9 @@ func (cc *ChainClient) generateTxRequest(payload *common.Payload, endorsers []*c
 	}
 
 	req := &common.TxRequest{
-		Payload:   payload,
-		Sender:    &common.EndorsementEntry{
-			Signer: signer,
+		Payload: payload,
+		Sender: &common.EndorsementEntry{
+			Signer:    signer,
 			Signature: nil,
 		},
 		Endorsers: endorsers,
@@ -207,7 +207,7 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 		if err != nil {
 			resp := &common.TxResponse{
 				Message: err.Error(),
-				TxId: txRequest.Payload.TxId,
+				TxId:    txRequest.Payload.TxId,
 			}
 
 			statusErr, ok := status.FromError(err)
@@ -403,7 +403,7 @@ func CreateChainClient(pool ConnectionPool, userCrtBytes, privKey, userCrtHash [
 	return chain, nil
 }
 
-func (cc *ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string]string {
+func (cc *ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string][]byte {
 	return serialize.EasyCodecItemToParamsMap(items)
 }
 
