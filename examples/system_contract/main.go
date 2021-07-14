@@ -40,7 +40,7 @@ func testSystemContract() {
 		log.Fatalln(err)
 	}
 
-	genesisBlockInfo := testSystemContractGetBlockByHeight(client, 0)
+	genesisBlockInfo := testSystemContractGetBlockByHeight(client, 1)
 	testSystemContractGetTxByTxId(client, genesisBlockInfo.Block.Txs[0].Payload.TxId)
 	testSystemContractGetBlockByHash(client, hex.EncodeToString(genesisBlockInfo.Block.Header.BlockHash))
 	testSystemContractGetBlockByTxId(client, genesisBlockInfo.Block.Txs[0].Payload.TxId)
