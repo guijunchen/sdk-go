@@ -89,22 +89,22 @@ func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, met
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, common.SystemContract_CONTRACT_MANAGE.String(), method, kvs)
 
 	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
-		Key: consts.ContractManager_Install_CONTRACT_NAME.String(),
+		Key: consts.ContractManager_Init_CONTRACT_NAME.String(),
 		Value: []byte(contractName),
 	})
 
 	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
-		Key: consts.ContractManager_Install_CONTRACT_VERSION.String(),
+		Key: consts.ContractManager_Init_CONTRACT_VERSION.String(),
 		Value: []byte(version),
 	})
 
 	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
-		Key: consts.ContractManager_Install_CONTRACT_RUNTIME_TYPE.String(),
+		Key: consts.ContractManager_Init_CONTRACT_RUNTIME_TYPE.String(),
 		Value: []byte(runtime.String()),
 	})
 
 	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
-		Key: consts.ContractManager_Install_CONTRACT_BYTE_CODE.String(),
+		Key: consts.ContractManager_Init_CONTRACT_BYTECODE.String(),
 		Value: codeBytes,
 	})
 
@@ -113,14 +113,14 @@ func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, met
 
 func (cc *ChainClient) checkKeyValuePair(kvs []*common.KeyValuePair) bool {
 	for _, kv := range kvs {
-		if kv.Key == consts.ContractManager_Install_CONTRACT_NAME.String() ||
-			kv.Key == consts.ContractManager_Install_CONTRACT_RUNTIME_TYPE.String() ||
-			kv.Key == consts.ContractManager_Install_CONTRACT_VERSION.String() ||
-			kv.Key == consts.ContractManager_Install_CONTRACT_BYTE_CODE.String() ||
+		if kv.Key == consts.ContractManager_Init_CONTRACT_NAME.String() ||
+			kv.Key == consts.ContractManager_Init_CONTRACT_RUNTIME_TYPE.String() ||
+			kv.Key == consts.ContractManager_Init_CONTRACT_VERSION.String() ||
+			kv.Key == consts.ContractManager_Init_CONTRACT_BYTECODE.String() ||
 			kv.Key == consts.ContractManager_Upgrade_CONTRACT_NAME.String() ||
 			kv.Key == consts.ContractManager_Upgrade_CONTRACT_RUNTIME_TYPE.String() ||
 			kv.Key == consts.ContractManager_Upgrade_CONTRACT_VERSION.String() ||
-			kv.Key == consts.ContractManager_Upgrade_CONTRACT_BYTE_CODE.String() {
+			kv.Key == consts.ContractManager_Upgrade_CONTRACT_BYTECODE.String() {
 			return false
 		}
 	}
