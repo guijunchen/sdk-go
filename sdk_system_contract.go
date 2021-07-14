@@ -61,7 +61,7 @@ func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error)
 }
 
 func (cc *ChainClient) GetBlockByHeight(blockHeight uint64, withRWSet bool) (*common.BlockInfo, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%t]",
 		common.QueryFunction_GET_BLOCK_BY_HEIGHT, blockHeight, withRWSet)
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, common.SystemContract_CHAIN_QUERY.String(),
@@ -94,7 +94,7 @@ func (cc *ChainClient) GetBlockByHeight(blockHeight uint64, withRWSet bool) (*co
 }
 
 func (cc *ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHash:%s]/[withRWSet:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHash:%s]/[withRWSet:%t]",
 		common.QueryFunction_GET_BLOCK_BY_HASH, blockHash, withRWSet)
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, common.SystemContract_CHAIN_QUERY.String(),
@@ -131,7 +131,7 @@ func (cc *ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*common
 }
 
 func (cc *ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]/[withRWSet:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]/[withRWSet:%t]",
 		common.QueryFunction_GET_BLOCK_BY_TX_ID, txId, withRWSet)
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, common.SystemContract_CHAIN_QUERY.String(),
@@ -168,7 +168,7 @@ func (cc *ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*common.Bloc
 }
 
 func (cc *ChainClient) GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[withRWSet:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[withRWSet:%t]",
 		common.QueryFunction_GET_LAST_CONFIG_BLOCK, withRWSet)
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, common.SystemContract_CHAIN_QUERY.String(),
@@ -349,7 +349,7 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (uint64, error) {
 }
 
 func (cc *ChainClient) GetLastBlock(withRWSet bool) (*common.BlockInfo, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[withRWSet:%s]",
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[withRWSet:%t]",
 		common.QueryFunction_GET_LAST_BLOCK, withRWSet)
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, common.SystemContract_CHAIN_QUERY.String(),
