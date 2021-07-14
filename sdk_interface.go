@@ -7,7 +7,11 @@ SPDX-License-Identifier: Apache-2.0
 
 package chainmaker_sdk_go
 
-import "chainmaker.org/chainmaker/pb-go/common"
+import (
+	"chainmaker.org/chainmaker/pb-go/common"
+	"chainmaker.org/chainmaker/pb-go/discovery"
+	"chainmaker.org/chainmaker/pb-go/store"
+)
 
 // # ChainMaker Go SDK 接口说明
 type SDKInterface interface {
@@ -128,90 +132,90 @@ type SDKInterface interface {
 	//   - txId: 交易ID
 	// ```go
 	GetTxByTxId(txId string) (*common.TransactionInfo, error)
-	//// ```
-	//
-	//// ### 2.2 根据区块高度查询区块
-	//// **参数说明**
-	////   - blockHeight: 指定区块高度，若为-1，将返回最新区块
-	////   - withRWSet: 是否返回读写集
-	//// ```go
-	//GetBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error)
-	//// ```
-	//
-	//// ### 2.3 根据区块高度查询完整区块
-	//// **参数说明**
-	////   - blockHeight: 指定区块高度，若为-1，将返回最新区块
-	////   - withRWSet: 是否返回读写集
-	//// ```go
-	//GetFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error)
-	//// ```
-	//
-	//// ### 2.4 根据区块哈希查询区块
-	//// **参数说明**
-	////   - blockHash: 指定区块Hash
-	////   - withRWSet: 是否返回读写集
-	//// ```go
-	//GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
-	//// ```
-	//
-	//// ### 2.5 根据交易Id查询区块
-	//// **参数说明**
-	////   - txId: 交易ID
-	////   - withRWSet: 是否返回读写集
-	//// ```go
-	//GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
-	//// ```
-	//
-	//// ### 2.6 查询最新的配置块
-	//// **参数说明**
-	////   - withRWSet: 是否返回读写集
-	//// ```go
-	//GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error)
-	//// ```
-	//
-	//// ### 2.7 查询最新区块
-	//// **参数说明**
-	////   - withRWSet: 是否返回读写集
-	//// ```go
-	//GetLastBlock(withRWSet bool) (*common.BlockInfo, error)
-	//// ```
-	//
-	//// ### 2.8 查询节点加入的链信息
-	////    - 返回ChainId清单
-	//// ```go
-	//GetNodeChainList() (*discovery.ChainList, error)
-	//// ```
-	//
-	//// ### 2.9 查询链信息
-	////   - 包括：当前链最新高度，链节点信息
-	//// ```go
-	//GetChainInfo() (*discovery.ChainInfo, error)
-	//// ```
-	//
-	//// ### 2.10 根据交易Id获取区块高度
-	//// **参数说明**
-	////   - txId: 交易ID
-	//// ```go
-	//GetBlockHeightByTxId(txId string) (int64, error)
-	//// ```
-	//
-	//// ### 2.11 根据区块Hash获取区块高度
-	//// **参数说明**
-	////   - blockHash: 指定区块Hash
-	//// ```go
-	//GetBlockHeightByHash(blockHash string) (int64, error)
-	//// ```
-	//
-	//// ### 2.12 查询当前最新区块高度
-	//// ```go
-	//GetCurrentBlockHeight() (int64, error)
-	//// ```
-	//
-	//// ### 2.13 根据区块高度查询区块头
-	//// **参数说明**
-	////   - blockHeight: 指定区块高度，若为-1，将返回最新区块头
-	//// ```go
-	//GetBlockHeaderByHeight(blockHeight int64) (*common.BlockHeader, error)
+	// ```
+
+	// ### 2.2 根据区块高度查询区块
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetBlockByHeight(blockHeight uint64, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 2.3 根据区块高度查询完整区块
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetFullBlockByHeight(blockHeight uint64) (*store.BlockWithRWSet, error)
+	// ```
+
+	// ### 2.4 根据区块哈希查询区块
+	// **参数说明**
+	//   - blockHash: 指定区块Hash
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 2.5 根据交易Id查询区块
+	// **参数说明**
+	//   - txId: 交易ID
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 2.6 查询最新的配置块
+	// **参数说明**
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 2.7 查询最新区块
+	// **参数说明**
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetLastBlock(withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 2.8 查询节点加入的链信息
+	//    - 返回ChainId清单
+	// ```go
+	GetNodeChainList() (*discovery.ChainList, error)
+	// ```
+
+	// ### 2.9 查询链信息
+	//   - 包括：当前链最新高度，链节点信息
+	// ```go
+	GetChainInfo() (*discovery.ChainInfo, error)
+	// ```
+
+	// ### 2.10 根据交易Id获取区块高度
+	// **参数说明**
+	//   - txId: 交易ID
+	// ```go
+	GetBlockHeightByTxId(txId string) (uint64, error)
+	// ```
+
+	// ### 2.11 根据区块Hash获取区块高度
+	// **参数说明**
+	//   - blockHash: 指定区块Hash
+	// ```go
+	GetBlockHeightByHash(blockHash string) (uint64, error)
+	// ```
+
+	// ### 2.12 查询当前最新区块高度
+	// ```go
+	GetCurrentBlockHeight() (uint64, error)
+	// ```
+
+	// ### 2.13 根据区块高度查询区块头
+	// **参数说明**
+	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块头
+	// ```go
+	GetBlockHeaderByHeight(blockHeight uint64) (*common.BlockHeader, error)
 	//// ```
 	//
 	//// ## 3 链配置接口

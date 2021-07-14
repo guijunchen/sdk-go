@@ -20,6 +20,7 @@ import (
 	"chainmaker.org/chainmaker/pb-go/store"
 	sdk "chainmaker.org/chainmaker/sdk-go"
 	"chainmaker.org/chainmaker/sdk-go/examples"
+	sdkutils "chainmaker.org/chainmaker/sdk-go/utils"
 )
 
 const (
@@ -39,10 +40,10 @@ func testSystemContract() {
 		log.Fatalln(err)
 	}
 
-	blockInfo := testSystemContractGetBlockByHeight(client, -1)
-	testSystemContractGetTxByTxId(client, blockInfo.Block.Txs[0].Header.TxId)
-	testSystemContractGetBlockByHash(client, hex.EncodeToString(blockInfo.Block.Header.BlockHash))
-	testSystemContractGetBlockByTxId(client, blockInfo.Block.Txs[0].Header.TxId)
+	genesisBlockInfo := testSystemContractGetBlockByHeight(client, 1)
+	testSystemContractGetTxByTxId(client, genesisBlockInfo.Block.Txs[0].Payload.TxId)
+	testSystemContractGetBlockByHash(client, hex.EncodeToString(genesisBlockInfo.Block.Header.BlockHash))
+	testSystemContractGetBlockByTxId(client, genesisBlockInfo.Block.Txs[0].Payload.TxId)
 	testSystemContractGetLastConfigBlock(client)
 	testSystemContractGetLastBlock(client)
 	testSystemContractGetChainInfo(client)
@@ -61,9 +62,9 @@ func testSystemContractArchive() {
 		log.Fatalln(err)
 	}
 
-	var blockHeight int64 = 4
+	var blockHeight uint64 = 4
 	fullBlock := testSystemContractGetFullBlockByHeight(client, blockHeight)
-	heightByTxId := testSystemContractGetBlockHeightByTxId(client, fullBlock.Block.Txs[0].Header.TxId)
+	heightByTxId := testSystemContractGetBlockHeightByTxId(client, fullBlock.Block.Txs[0].Payload.TxId)
 	if blockHeight != heightByTxId {
 		log.Fatalln("blockHeight != heightByTxId")
 	}
@@ -85,7 +86,7 @@ func testSystemContractGetTxByTxId(client *sdk.ChainClient, txId string) *common
 	return transactionInfo
 }
 
-func testSystemContractGetBlockByHeight(client *sdk.ChainClient, blockHeight int64) *common.BlockInfo {
+func testSystemContractGetBlockByHeight(client *sdk.ChainClient, blockHeight uint64) *common.BlockInfo {
 	blockInfo, err := client.GetBlockByHeight(blockHeight, true)
 	if err != nil {
 		log.Fatalln(err)
@@ -131,7 +132,7 @@ func testSystemContractGetLastBlock(client *sdk.ChainClient) *common.BlockInfo {
 	return blockInfo
 }
 
-func testSystemContractGetCurrentBlockHeight(client *sdk.ChainClient) int64 {
+func testSystemContractGetCurrentBlockHeight(client *sdk.ChainClient) uint64 {
 	height, err := client.GetCurrentBlockHeight()
 	if err != nil {
 		log.Fatalln(err)
@@ -140,7 +141,7 @@ func testSystemContractGetCurrentBlockHeight(client *sdk.ChainClient) int64 {
 	return height
 }
 
-func testSystemContractGetArchivedBlockHeight(client *sdk.ChainClient) int64 {
+func testSystemContractGetArchivedBlockHeight(client *sdk.ChainClient) uint64 {
 	height, err := client.GetArchivedBlockHeight()
 	if err != nil {
 		log.Fatalln(err)
@@ -149,7 +150,7 @@ func testSystemContractGetArchivedBlockHeight(client *sdk.ChainClient) int64 {
 	return height
 }
 
-func testSystemContractGetBlockHeightByTxId(client *sdk.ChainClient, txId string) int64 {
+func testSystemContractGetBlockHeightByTxId(client *sdk.ChainClient, txId string) uint64 {
 	height, err := client.GetBlockHeightByTxId(txId)
 	if err != nil {
 		log.Fatalln(err)
@@ -158,7 +159,7 @@ func testSystemContractGetBlockHeightByTxId(client *sdk.ChainClient, txId string
 	return height
 }
 
-func testSystemContractGetBlockHeightByHash(client *sdk.ChainClient, blockHash string) int64 {
+func testSystemContractGetBlockHeightByHash(client *sdk.ChainClient, blockHash string) uint64 {
 	height, err := client.GetBlockHeightByHash(blockHash)
 	if err != nil {
 		log.Fatalln(err)
@@ -191,10 +192,10 @@ func testSystemContractGetNodeChainList(client *sdk.ChainClient) *discovery.Chai
 	return chainList
 }
 
-func testSystemContractGetFullBlockByHeight(client *sdk.ChainClient, blockHeight int64) *store.BlockWithRWSet {
+func testSystemContractGetFullBlockByHeight(client *sdk.ChainClient, blockHeight uint64) *store.BlockWithRWSet {
 	fullBlockInfo, err := client.GetFullBlockByHeight(blockHeight)
 	if err != nil {
-		if sdk.IsArchivedString(err.Error()) {
+		if sdkutils.IsArchivedString(err.Error()) {
 			fmt.Println("Is archived...")
 		}
 	}
