@@ -9,7 +9,7 @@ package chainmaker_sdk_go
 
 import (
 	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/pb-go/consts"
+	"chainmaker.org/chainmaker/pb-go/syscontract"
 	"chainmaker.org/chainmaker/sdk-go/utils"
 	"encoding/base64"
 	"encoding/hex"
@@ -22,29 +22,29 @@ func (cc *ChainClient) CreateContractCreatePayload(contractName, version, byteCo
 	kvs []*common.KeyValuePair) (*common.Payload, error) {
 
 	cc.logger.Debugf("[SDK] create [ContractCreate] to be signed payload")
-	return cc.createContractManageWithByteCodePayload(contractName, consts.ContractManager_INIT_CONTRACT.String(), version, byteCode, runtime, kvs)
+	return cc.createContractManageWithByteCodePayload(contractName, syscontract.ContractManageFunction_INIT_CONTRACT.String(), version, byteCode, runtime, kvs)
 }
 
 func (cc *ChainClient) CreateContractUpgradePayload(contractName, version, byteCode string, runtime common.RuntimeType,
 	kvs []*common.KeyValuePair) (*common.Payload, error) {
 
 	cc.logger.Debugf("[SDK] create [ContractUpgrade] to be signed payload")
-	return cc.createContractManageWithByteCodePayload(contractName, consts.ContractManager_UPGRADE_CONTRACT.String(), version, byteCode, runtime, kvs)
+	return cc.createContractManageWithByteCodePayload(contractName, syscontract.ContractManageFunction_UPGRADE_CONTRACT.String(), version, byteCode, runtime, kvs)
 }
 
 func (cc *ChainClient) CreateContractFreezePayload(contractName string) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [ContractFreeze] to be signed payload")
-	return cc.createContractManagePayload(contractName, consts.ContractManager_FREEZE_CONTRACT.String())
+	return cc.createContractManagePayload(contractName, syscontract.ContractManageFunction_FREEZE_CONTRACT.String())
 }
 
 func (cc *ChainClient) CreateContractUnfreezePayload(contractName string) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [ContractUnfreeze] to be signed payload")
-	return cc.createContractManagePayload(contractName, consts.ContractManager_UNFREEZE_CONTRACT.String())
+	return cc.createContractManagePayload(contractName, syscontract.ContractManageFunction_UNFREEZE_CONTRACT.String())
 }
 
 func (cc *ChainClient) CreateContractRevokePayload(contractName string) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [ContractRevoke] to be signed payload")
-	return cc.createContractManagePayload(contractName, consts.ContractManager_REVOKE_CONTRACT.String())
+	return cc.createContractManagePayload(contractName, syscontract.ContractManageFunction_REVOKE_CONTRACT.String())
 }
 
 func (cc *ChainClient) createContractManagePayload(contractName, method string) (*common.Payload, error) {
@@ -86,25 +86,25 @@ func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, met
 		return nil, fmt.Errorf("use reserved word")
 	}
 
-	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, common.SystemContract_CONTRACT_MANAGE.String(), method, kvs)
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(), method, kvs)
 
 	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
-		Key: consts.ContractManager_Init_CONTRACT_NAME.String(),
+		Key:   syscontract.InitContract_CONTRACT_NAME.String(),
 		Value: []byte(contractName),
 	})
 
 	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
-		Key: consts.ContractManager_Init_CONTRACT_VERSION.String(),
+		Key:   syscontract.InitContract_CONTRACT_VERSION.String(),
 		Value: []byte(version),
 	})
 
 	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
-		Key: consts.ContractManager_Init_CONTRACT_RUNTIME_TYPE.String(),
+		Key:   syscontract.InitContract_CONTRACT_RUNTIME_TYPE.String(),
 		Value: []byte(runtime.String()),
 	})
 
 	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
-		Key: consts.ContractManager_Init_CONTRACT_BYTECODE.String(),
+		Key:   syscontract.InitContract_CONTRACT_BYTECODE.String(),
 		Value: codeBytes,
 	})
 
@@ -113,14 +113,14 @@ func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, met
 
 func (cc *ChainClient) checkKeyValuePair(kvs []*common.KeyValuePair) bool {
 	for _, kv := range kvs {
-		if kv.Key == consts.ContractManager_Init_CONTRACT_NAME.String() ||
-			kv.Key == consts.ContractManager_Init_CONTRACT_RUNTIME_TYPE.String() ||
-			kv.Key == consts.ContractManager_Init_CONTRACT_VERSION.String() ||
-			kv.Key == consts.ContractManager_Init_CONTRACT_BYTECODE.String() ||
-			kv.Key == consts.ContractManager_Upgrade_CONTRACT_NAME.String() ||
-			kv.Key == consts.ContractManager_Upgrade_CONTRACT_RUNTIME_TYPE.String() ||
-			kv.Key == consts.ContractManager_Upgrade_CONTRACT_VERSION.String() ||
-			kv.Key == consts.ContractManager_Upgrade_CONTRACT_BYTECODE.String() {
+		if kv.Key == syscontract.InitContract_CONTRACT_NAME.String() ||
+			kv.Key == syscontract.InitContract_CONTRACT_RUNTIME_TYPE.String() ||
+			kv.Key == syscontract.InitContract_CONTRACT_VERSION.String() ||
+			kv.Key == syscontract.InitContract_CONTRACT_BYTECODE.String() ||
+			kv.Key == syscontract.UpgradeContract_CONTRACT_NAME.String() ||
+			kv.Key == syscontract.UpgradeContract_CONTRACT_RUNTIME_TYPE.String() ||
+			kv.Key == syscontract.UpgradeContract_CONTRACT_VERSION.String() ||
+			kv.Key == syscontract.UpgradeContract_CONTRACT_BYTECODE.String() {
 			return false
 		}
 	}
