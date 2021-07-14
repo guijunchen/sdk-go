@@ -59,15 +59,13 @@ func (cc *ChainClient) sendContractRequest(payload *common.Payload, endosers []*
 	}
 
 	if resp.Code == common.TxStatusCode_SUCCESS {
-		if !withSyncResult {
-			resp.TxId = payload.TxId
+		if withSyncResult {
+			contractResult, err := cc.getSyncResult(payload.TxId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+			resp.ContractResult = contractResult
 		}
-	} else {
-		contractResult, err := cc.getSyncResult(payload.TxId)
-		if err != nil {
-			return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-		}
-		resp.ContractResult = contractResult
 	}
 
 	return resp, nil
