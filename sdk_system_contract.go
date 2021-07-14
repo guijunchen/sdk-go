@@ -417,3 +417,28 @@ func (cc *ChainClient) GetBlockHeaderByHeight(blockHeight uint64) (*common.Block
 
 	return blockHeader, nil
 }
+
+func (cc *ChainClient) InvokeSystemContract(contractName, method, txId string, params []*common.KeyValuePair,
+	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+	cc.logger.Debugf("[SDK] begin to INVOKE system contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
+		contractName, method, txId, params)
+
+	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, params)
+
+	return cc.sendContractRequest(payload, nil, timeout, withSyncResult)
+}
+
+func (cc *ChainClient) QuerySystemContract(contractName, method string, params []*common.KeyValuePair,
+	timeout int64) (*common.TxResponse, error) {
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [contractName:%s]/[method:%s]/[params:%+v]",
+		contractName, method, params)
+
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, contractName, method, params)
+
+	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
+	}
+
+	return resp, nil
+}
