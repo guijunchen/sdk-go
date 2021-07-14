@@ -116,11 +116,6 @@ func IsArchived(txStatusCode common.TxStatusCode) bool {
 }
 
 func IsArchivedString(txStatusCode string) bool {
-	if txStatusCode == common.TxStatusCode_ARCHIVED_BLOCK.String() ||
-		txStatusCode == common.TxStatusCode_ARCHIVED_TX.String() {
-
-		return true
-	}
-
-	return false
+	return txStatusCode == common.TxStatusCode_ARCHIVED_BLOCK.String() ||
+		txStatusCode == common.TxStatusCode_ARCHIVED_TX.String()
 }
