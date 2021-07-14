@@ -216,6 +216,32 @@ type SDKInterface interface {
 	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块头
 	// ```go
 	GetBlockHeaderByHeight(blockHeight uint64) (*common.BlockHeader, error)
+	// ```
+
+	// ### 2.14 系统合约调用
+	// **参数说明**
+	//   - contractName: 合约名称
+	//   - method: 合约方法
+	//   - txId: 交易ID
+	//           格式要求：长度为64字节，字符在a-z0-9
+	//           可为空，若为空字符串，将自动生成txId
+	//   - params: 合约参数
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
+	// ```go
+	InvokeSystemContract(contractName, method, txId string, params []*common.KeyValuePair, timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	// ```
+
+	// ### 2.15 系统合约查询接口调用
+	// **参数说明**
+	//   - contractName: 合约名称
+	//   - method: 合约方法
+	//   - params: 合约参数
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	// ```go
+	QuerySystemContract(contractName, method string, params []*common.KeyValuePair, timeout int64) (*common.TxResponse, error)
 	//// ```
 	//
 	//// ## 3 链配置接口
