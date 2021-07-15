@@ -10,7 +10,7 @@ package chainmaker_sdk_go
 import (
 	"chainmaker.org/chainmaker/pb-go/common"
 	"chainmaker.org/chainmaker/pb-go/config"
-	"chainmaker.org/chainmaker/pb-go/consts"
+	"chainmaker.org/chainmaker/pb-go/syscontract"
 	"chainmaker.org/chainmaker/sdk-go/utils"
 	"fmt"
 	"github.com/gogo/protobuf/proto"
@@ -29,8 +29,8 @@ const (
 func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 	cc.logger.Debug("[SDK] begin to get chain config")
 
-	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, common.SystemContract_CHAIN_CONFIG.String(),
-		consts.ChainConfigManager_GET_CHAIN_CONFIG.String(), nil)
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
+		syscontract.ChainConfigFunction_GET_CHAIN_CONFIG.String(), nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -62,7 +62,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	})
 //
 //	payloadBytes, err := constructQueryPayload(common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_GET_CHAIN_CONFIG_AT.String(), pairs)
+//		syscontract.ChainConfigManager_GET_CHAIN_CONFIG_AT.String(), pairs)
 //	if err != nil {
 //		return nil, fmt.Errorf("construct query payload failed, %s", err.Error())
 //	}
@@ -170,7 +170,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_CORE_UPDATE.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_CORE_UPDATE.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -235,7 +235,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_BLOCK_UPDATE.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_BLOCK_UPDATE.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -263,7 +263,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_TRUST_ROOT_ADD.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_TRUST_ROOT_ADD.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -291,7 +291,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_TRUST_ROOT_UPDATE.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_TRUST_ROOT_UPDATE.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -315,7 +315,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_TRUST_ROOT_DELETE.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_TRUST_ROOT_DELETE.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -344,7 +344,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_PERMISSION_ADD.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_PERMISSION_ADD.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -373,7 +373,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_PERMISSION_UPDATE.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_PERMISSION_UPDATE.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -396,7 +396,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_PERMISSION_DELETE.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_PERMISSION_DELETE.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -424,7 +424,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_NODE_ID_ADD.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_NODE_ID_ADD.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -456,7 +456,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_NODE_ID_UPDATE.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_NODE_ID_UPDATE.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -484,7 +484,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_NODE_ID_DELETE.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_NODE_ID_DELETE.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -512,7 +512,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_NODE_ORG_ADD.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_NODE_ORG_ADD.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -540,7 +540,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_NODE_ORG_UPDATE.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_NODE_ORG_UPDATE.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -564,7 +564,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_NODE_ORG_DELETE.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_NODE_ORG_DELETE.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -581,7 +581,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_CONSENSUS_EXT_ADD.String(), kvs, seq+1)
+//		syscontract.ChainConfigManager_CONSENSUS_EXT_ADD.String(), kvs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -598,7 +598,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_CONSENSUS_EXT_UPDATE.String(), kvs, seq+1)
+//		syscontract.ChainConfigManager_CONSENSUS_EXT_UPDATE.String(), kvs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
@@ -622,7 +622,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 //	}
 //
 //	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-//		consts.ChainConfigManager_CONSENSUS_EXT_DELETE.String(), pairs, seq+1)
+//		syscontract.ChainConfigManager_CONSENSUS_EXT_DELETE.String(), pairs, seq+1)
 //	if err != nil {
 //		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
 //	}
