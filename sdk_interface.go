@@ -556,10 +556,10 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
 	//   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
-	//   - txType: 订阅交易类型,若为common.TxType(-1)，表示订阅所有交易类型
+	//   - contractName ：指定订阅指定合约的交易，可以传用户合约名称或系统合约名称，若为空，表示订阅所有合约的交易
 	//   - txIds: 订阅txId列表，若为空，表示订阅所有txId
 	// ```go
-	SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType common.TxType, txIds []string) (<-chan interface{}, error)
+	SubscribeTx(ctx context.Context, startBlock, endBlock int64, contractName string, txIds []string) (<-chan interface{}, error)
 	// ```
 
 	// ### 6.3 合约事件订阅
