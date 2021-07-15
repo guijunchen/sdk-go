@@ -28,8 +28,8 @@ const (
 
 func main() {
 	go testSubscribeBlock()
-	go testSubscribeContractEvent()
 	go testSubscribeTx()
+	go testSubscribeContractEvent()
 	select {}
 }
 
@@ -42,7 +42,7 @@ func testSubscribeBlock() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	c, err := client.SubscribeBlock(ctx, 0, 10, true)
+	c, err := client.SubscribeBlock(ctx, 0, 10, true, false)
 	//c, err := client.SubscribeBlock(ctx, 5, 16, false)
 	//c, err := client.SubscribeBlock(ctx, 0, -1, false)
 	//c, err := client.SubscribeBlock(ctx, 10, -1, false)
@@ -78,6 +78,59 @@ func testSubscribeBlock() {
 			}
 
 			fmt.Printf("recv block [%d] => %+v\n", blockInfo.Block.Header.BlockHeight, blockInfo)
+
+			//if err := client.Stop(); err != nil {
+			//	return
+			//}
+			//return
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func testSubscribeTx() {
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	c, err := client.SubscribeTx(ctx, -1, -1, "", nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	go func() {
+		for i := 0; i < sendTxCount; i++ {
+			_, err := testUserContractClaimInvoke(client, "save", false)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			time.Sleep(2 * time.Second)
+		}
+	}()
+
+	for {
+		select {
+		case txI, ok := <-c:
+			if !ok {
+				fmt.Println("chan is close!")
+				return
+			}
+
+			if txI == nil {
+				log.Fatalln("require not nil")
+			}
+
+			tx, ok := txI.(*common.Transaction)
+			if !ok {
+				log.Fatalln("require true")
+			}
+
+			fmt.Printf("recv tx [%s] => %+v\n", tx.Payload.TxId, tx)
 
 			//if err := client.Stop(); err != nil {
 			//	return
@@ -141,75 +194,28 @@ func testSubscribeContractEvent() {
 	}
 }
 
-func testSubscribeTx() {
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	c, err := client.SubscribeTx(ctx, -1, -1, -1, nil)
-	//c, err := client.SubscribeTx(ctx, 0, 18, -1, nil)
-	//c, err := client.SubscribeTx(ctx, 50, -1, -1, nil)
-	//c, err := client.SubscribeTx(ctx, 0, 0, -1, []string{"04e98331c02d423c91e5b0bb9b9f8519112d6cee26d94620a3c9773a5ce19147"})
-	//c, err := client.SubscribeTx(ctx, -1, -1, common.TxType_INVOKE_USER_CONTRACT, nil)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	go func() {
-		for i := 0; i < sendTxCount; i++ {
-			_, err := testUserContractClaimInvoke(client, "save", false)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			time.Sleep(2 * time.Second)
-		}
-	}()
-
-	for {
-		select {
-		case txI, ok := <-c:
-			if !ok {
-				fmt.Println("chan is close!")
-				return
-			}
-
-			if txI == nil {
-				log.Fatalln("require not nil")
-			}
-
-			tx, ok := txI.(*common.Transaction)
-			if !ok {
-				log.Fatalln("require true")
-			}
-
-			fmt.Printf("recv tx [%s] => %+v\n", tx.Header.TxId, tx)
-
-			//if err := client.Stop(); err != nil {
-			//	return
-			//}
-			//return
-		case <-ctx.Done():
-			return
-		}
-	}
-}
 
 func testUserContractClaimInvoke(client *sdk.ChainClient, method string, withSyncResult bool) (string, error) {
-	//curTime := fmt.Sprintf("%d", CurrentTimeMillisSeconds())
 	curTime := time.Now().Format("2006-01-02 15:04:05")
 
 	fileHash := uuid.GetUUID()
-	params := map[string]string{
-		"time":      curTime,
-		"file_hash": fileHash,
-		"file_name": fmt.Sprintf("file_%s", curTime),
+
+	kvs := []*common.KeyValuePair{
+		{
+			Key: "time",
+			Value: []byte(curTime),
+		},
+		{
+			Key: "file_hash",
+			Value: []byte(fileHash),
+		},
+		{
+			Key: "file_name",
+			Value: []byte(fmt.Sprintf("file_%s", curTime)),
+		},
 	}
 
-	err := invokeUserContract(client, claimContractName, method, "", params, withSyncResult)
+	err := invokeUserContract(client, claimContractName, method, "", kvs, withSyncResult)
 	//err := invokeUserContractStepByStep(client, claimContractName, method, "", params, withSyncResult)
 	if err != nil {
 		return "", err
@@ -218,10 +224,10 @@ func testUserContractClaimInvoke(client *sdk.ChainClient, method string, withSyn
 	return fileHash, nil
 }
 
-func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, params map[string]string,
+func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, kvs []*common.KeyValuePair,
 	withSyncResult bool) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
 		return err
 	}
