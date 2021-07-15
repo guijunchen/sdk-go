@@ -11,6 +11,7 @@ import (
 	"chainmaker.org/chainmaker/pb-go/common"
 	"chainmaker.org/chainmaker/pb-go/discovery"
 	"chainmaker.org/chainmaker/pb-go/store"
+	"context"
 )
 
 // # ChainMaker Go SDK 接口说明
@@ -539,55 +540,56 @@ type SDKInterface interface {
 	//// ```go
 	//QueryMultiSignResult(multiSignReqTxId, payloadHash string) (*common.TxResponse, error)
 	//// ```
-	//
-	//// ## 6 消息订阅接口
-	//// ### 6.1 区块订阅
-	//// **参数说明**
-	////   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
-	////   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
-	////   - withRwSet: 是否返回读写集
-	//// ```go
-	//SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRwSet bool) (<-chan interface{}, error)
-	//// ```
-	//
-	//// ### 6.2 交易订阅
-	//// **参数说明**
-	////   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
-	////   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
-	////   - txType: 订阅交易类型,若为common.TxType(-1)，表示订阅所有交易类型
-	////   - txIds: 订阅txId列表，若为空，表示订阅所有txId
-	//// ```go
-	//SubscribeTx(ctx context.Context, startBlock, endBlock int64, txType common.TxType, txIds []string) (<-chan interface{}, error)
-	//// ```
-	//
-	//// ### 6.3 合约事件订阅
-	//// **参数说明**
-	////   - topic ：指定订阅主题
-	////   - contractName ：指定订阅的合约名称
-	//// ```go
-	//SubscribeContractEvent(ctx context.Context, topic string, contractName string) (<-chan interface{}, error)
-	//// ```
-	//
-	//// ### 6.4 多合一订阅
-	//// **参数说明**
-	////   - txType: 订阅交易类型，目前已支持：区块消息订阅(common.TxType_SUBSCRIBE_BLOCK_INFO)、交易消息订阅(common.TxType_SUBSCRIBE_TX_INFO)
-	////   - payloadBytes: 消息订阅参数payload
-	//// ```go
-	//Subscribe(ctx context.Context, txType common.TxType, payloadBytes []byte) (<-chan interface{}, error)
-	//// ```
-	//
-	//// ## 7 证书压缩
-	//// *开启证书压缩可以减小交易包大小，提升处理性能*
-	//// ### 7.1 启用压缩证书功能
-	//// ```go
-	//EnableCertHash() error
-	//// ```
-	//
-	//// ### 7.2 停用压缩证书功能
-	//// ```go
-	//DisableCertHash() error
-	//// ```
-	//
+
+	// ## 6 消息订阅接口
+	// ### 6.1 区块订阅
+	// **参数说明**
+	//   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
+	//   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
+	//   - withRwSet: 是否返回读写集
+	//   - onlyHeader: 若设置为true，将忽略withRwSet选项，仅返回区块头（common.BlockHeader）,若设置为false，将返回common.BlockInfo
+	// ```go
+	SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRWSet, onlyHeader bool) (<-chan interface{}, error)
+	// ```
+
+	// ### 6.2 交易订阅
+	// **参数说明**
+	//   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
+	//   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
+	//   - contractName ：指定订阅指定合约的交易，可以传用户合约名称或系统合约名称，若为空，表示订阅所有合约的交易
+	//   - txIds: 订阅txId列表，若为空，表示订阅所有txId
+	// ```go
+	SubscribeTx(ctx context.Context, startBlock, endBlock int64, contractName string, txIds []string) (<-chan interface{}, error)
+	// ```
+
+	// ### 6.3 合约事件订阅
+	// **参数说明**
+	//   - topic ：指定订阅主题
+	//   - contractName ：指定订阅的合约名称
+	// ```go
+	SubscribeContractEvent(ctx context.Context, topic string, contractName string) (<-chan interface{}, error)
+	// ```
+
+	// ### 6.4 多合一订阅
+	// **参数说明**
+	//   - txType: 订阅交易类型，目前已支持：区块消息订阅(common.TxType_SUBSCRIBE_BLOCK_INFO)、交易消息订阅(common.TxType_SUBSCRIBE_TX_INFO)
+	//   - payloadBytes: 消息订阅参数payload
+	// ```go
+	Subscribe(ctx context.Context, txType common.TxType, payloadBytes []byte) (<-chan interface{}, error)
+	// ```
+
+	// ## 7 证书压缩
+	// *开启证书压缩可以减小交易包大小，提升处理性能*
+	// ### 7.1 启用压缩证书功能
+	// ```go
+	EnableCertHash() error
+	// ```
+
+	// ### 7.2 停用压缩证书功能
+	// ```go
+	DisableCertHash() error
+	// ```
+
 	//// ## 8 工具类
 	//// ### 8.1 将EasyCodec编码解码成map
 	//// ```go
