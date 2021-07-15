@@ -21,13 +21,6 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/utils"
 )
 
-const (
-	keyWithRWSet   = "withRWSet"
-	keyBlockHash   = "blockHash"
-	keyBlockHeight = "blockHeight"
-	keyTxId        = "txId"
-)
-
 func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
 		consts.BlockQuery_GET_TX_BY_TX_ID, txId)
