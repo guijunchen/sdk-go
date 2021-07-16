@@ -363,7 +363,7 @@ func (cc *ChainClient) CreateChainConfigTrustMemberAddPayload(trustMemberOrgId, 
 	return payload, nil
 }
 
-func (cc *ChainClient) CreateChainConfigTrustMemberDeletePayload(trustMemberNodeId string) ([]byte, error) {
+func (cc *ChainClient) CreateChainConfigTrustMemberDeletePayload(trustMemberInfo string) ([]byte, error) {
 	cc.logger.Debug("[SDK] begin to create [TrustRootDelete] to be signed payload")
 
 	seq, err := cc.GetChainConfigSequence()
@@ -373,8 +373,8 @@ func (cc *ChainClient) CreateChainConfigTrustMemberDeletePayload(trustMemberNode
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   "node_id",
-			Value: trustMemberNodeId,
+			Key:   "member_info",
+			Value: trustMemberInfo,
 		},
 	}
 
