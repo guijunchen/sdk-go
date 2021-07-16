@@ -669,95 +669,89 @@ type SDKInterface interface {
 	////   - keyType: 对加密信息进行对称解密的方法，请和加密时使用的方法保持一致，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 	//// ```go
 	//DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
-	//// ```
-	//
-	//// ## 10 数据归档接口
-	//// ### 10.1 获取已归档区块高度
-	//// **参数说明**
-	////   - 输出已归档的区块高度
-	//// ```go
-	//GetArchivedBlockHeight() (int64, error)
-	//// ```
-	//
-	//// ### 10.2 构造数据归档区块Payload
-	//// **参数说明**
-	////   - targetBlockHeight: 归档目标区块高度
-	//// ```go
-	//CreateArchiveBlockPayload(targetBlockHeight int64) ([]byte, error)
-	//// ```
-	//
-	//// ### 10.3 构造归档归档数据恢复Payload
-	//// **参数说明**
-	////   - fullBlock: 完整区块数据（对应结构：store.BlockWithRWSet）
-	//// ```go
-	//CreateRestoreBlockPayload(fullBlock []byte) ([]byte, error)
-	//// ```
-	//
-	//// ### 10.4 获取归档操作Payload签名
-	//// **参数说明**
-	////   - payloadBytes: 待签名payload
-	//// ```go
-	//SignArchivePayload(payloadBytes []byte) ([]byte, error)
-	//// ```
-	//
-	//// ### 10.5 发送归档请求
-	//// **参数说明**
-	////   - mergeSignedPayloadBytes: 签名结果
-	////   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	////   - withSyncResult: 是否同步获取交易执行结果
-	////            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
-	////            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
-	//// ```go
-	//SendArchiveBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error)
-	//// ```
-	//
-	//// ### 10.6 归档数据恢复
-	//// **参数说明**
-	////   - mergeSignedPayloadBytes: 签名结果
-	////   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	////   - withSyncResult: 是否同步获取交易执行结果
-	////            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
-	////            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
-	//// ```go
-	//SendRestoreBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error)
-	//// ```
-	//
-	//// ### 10.7 根据交易Id查询已归档交易
-	//// **参数说明**
-	////   - txId: 交易ID
-	//// ```go
-	//GetArchivedTxByTxId(txId string) (*common.TransactionInfo, error)
-	//// ```
-	//
-	//// ### 10.8 根据区块高度查询已归档区块
-	//// **参数说明**
-	////   - blockHeight: 指定区块高度，若为-1，将返回最新区块
-	////   - withRWSet: 是否返回读写集
-	//// ```go
-	//GetArchivedBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error)
-	//// ```
-	//
-	//// ### 10.9 根据区块高度查询已归档完整区块(包含：区块数据、读写集、合约事件日志)
-	//// **参数说明**
-	////   - blockHeight: 指定区块高度，若为-1，将返回最新区块
-	//// ```go
-	//GetArchivedFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error)
-	//// ```
-	//
-	//// ### 10.10 根据区块哈希查询已归档区块
-	//// **参数说明**
-	////   - blockHash: 指定区块Hash
-	////   - withRWSet: 是否返回读写集
-	//// ```go
-	//GetArchivedBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
-	//// ```
-	//
-	//// ### 10.11 根据交易Id查询已归档区块
-	//// **参数说明**
-	////   - txId: 交易ID
-	////   - withRWSet: 是否返回读写集
-	//// ```go
-	//GetArchivedBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ## 10 数据归档接口
+	// ### 10.1 获取已归档区块高度
+	// **参数说明**
+	//   - 输出已归档的区块高度
+	// ```go
+	GetArchivedBlockHeight() (uint64, error)
+	// ```
+
+	// ### 10.2 构造数据归档区块Payload
+	// **参数说明**
+	//   - targetBlockHeight: 归档目标区块高度
+	// ```go
+	CreateArchiveBlockPayload(targetBlockHeight uint64) (*common.Payload, error)
+	// ```
+
+	// ### 10.3 构造归档归档数据恢复Payload
+	// **参数说明**
+	//   - fullBlock: 完整区块数据（对应结构：store.BlockWithRWSet）
+	// ```go
+	CreateRestoreBlockPayload(fullBlock []byte) (*common.Payload, error)
+	// ```
+
+	// ### 10.4 获取归档操作Payload签名
+	// **参数说明**
+	//   - payload: 指向payload对象的指针
+	// ```go
+	SignArchivePayload(payload *common.Payload) (*common.Payload, error)
+	// ```
+
+	// ### 10.5 发送归档请求
+	// **参数说明**
+	//   - payload: 指向payload对象的指针
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	// ```go
+	SendArchiveBlockRequest(payload *common.Payload, timeout int64) (*common.TxResponse, error)
+	// ```
+
+	// ### 10.6 归档数据恢复
+	// **参数说明**
+	//   - payload: 指向payload对象的指针
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	// ```go
+	SendRestoreBlockRequest(payload *common.Payload, timeout int64) (*common.TxResponse, error)
+	// ```
+
+	// ### 10.7 根据交易Id查询已归档交易
+	// **参数说明**
+	//   - txId: 交易ID
+	// ```go
+	GetArchivedTxByTxId(txId string) (*common.TransactionInfo, error)
+	// ```
+
+	// ### 10.8 根据区块高度查询已归档区块
+	// **参数说明**
+	//   - blockHeight: 指定区块高度
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByHeight(blockHeight uint64, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 10.9 根据区块高度查询已归档完整区块(包含：区块数据、读写集、合约事件日志)
+	// **参数说明**
+	//   - blockHeight: 指定区块高度
+	// ```go
+	GetArchivedFullBlockByHeight(blockHeight uint64) (*store.BlockWithRWSet, error)
+	// ```
+
+	// ### 10.10 根据区块哈希查询已归档区块
+	// **参数说明**
+	//   - blockHash: 指定区块Hash
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 10.11 根据交易Id查询已归档区块
+	// **参数说明**
+	//   - txId: 交易ID
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
 	//// ```
 	//
 	//// ## 11 隐私计算系统合约接口

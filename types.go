@@ -10,4 +10,9 @@ const (
 	keyNodeId    = "node_id"
 	keyNewNodeId = "new_node_id"
 	keyNodeIds   = "node_ids"
+
+	// archive consts
+	mysqlDBNamePrefix     = "cm_archived_chain"
+	mysqlTableNamePrefix  = "t_block_info"
+	rowsPerBlockInfoTable = 100000
 )
