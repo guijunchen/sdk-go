@@ -103,7 +103,7 @@ func (cc *ChainClient) SignChainConfigPayload(payloadBytes []byte) ([]byte, erro
 //	return mergeSystemContractSignedPayload(signedPayloadBytes)
 //}
 
-func (cc *ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int) (*common.Payload, error) {
+func (cc *ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int64) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [CoreUpdate] to be signed payload")
 
 	if txSchedulerTimeout > 60 {
@@ -118,14 +118,14 @@ func (cc *ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, tx
 	if txSchedulerTimeout > 0 {
 		pairs = append(pairs, &common.KeyValuePair{
 			Key:   "tx_scheduler_timeout",
-			Value: utils.IntToBytes(txSchedulerTimeout),
+			Value: utils.I64ToBytes(txSchedulerTimeout),
 		})
 	}
 
 	if txSchedulerValidateTimeout > 0 {
 		pairs = append(pairs, &common.KeyValuePair{
 			Key:   "tx_scheduler_validate_timeout",
-			Value: utils.IntToBytes(txSchedulerValidateTimeout),
+			Value: utils.I64ToBytes(txSchedulerValidateTimeout),
 		})
 	}
 
@@ -145,7 +145,7 @@ func (cc *ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, tx
 }
 
 func (cc *ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity,
-	blockSize, blockInterval int) (*common.Payload, error) {
+	blockSize, blockInterval int64) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [BlockUpdate] to be signed payload")
 
 	pairs := []*common.KeyValuePair{
@@ -174,25 +174,25 @@ func (cc *ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify boo
 	if txTimeout > 0 {
 		pairs = append(pairs, &common.KeyValuePair{
 			Key:   "tx_timeout",
-			Value: utils.IntToBytes(txTimeout),
+			Value: utils.I64ToBytes(txTimeout),
 		})
 	}
 	if blockTxCapacity > 0 {
 		pairs = append(pairs, &common.KeyValuePair{
 			Key:   "block_tx_capacity",
-			Value: utils.IntToBytes(blockTxCapacity),
+			Value: utils.I64ToBytes(blockTxCapacity),
 		})
 	}
 	if blockSize > 0 {
 		pairs = append(pairs, &common.KeyValuePair{
 			Key:   "block_size",
-			Value: utils.IntToBytes(blockSize),
+			Value: utils.I64ToBytes(blockSize),
 		})
 	}
 	if blockInterval > 0 {
 		pairs = append(pairs, &common.KeyValuePair{
 			Key:   "block_interval",
-			Value: utils.IntToBytes(blockInterval),
+			Value: utils.I64ToBytes(blockInterval),
 		})
 	}
 
