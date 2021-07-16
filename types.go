@@ -5,4 +5,9 @@ const (
 	keyBlockHash   = "block_hash"
 	keyBlockHeight = "block_height"
 	keyTxId        = "tx_id"
+
+	keyOrgId     = "org_id"
+	keyNodeId    = "node_id"
+	keyNewNodeId = "new_node_id"
+	keyNodeIds   = "node_ids"
 )

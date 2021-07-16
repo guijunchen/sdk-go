@@ -43,7 +43,7 @@ func (cc *ChainClient) QueryCert(certHashes []string) (*common.CertInfos, error)
 	}
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CERT_MANAGE.String(),
-		syscontract.CertManageFunction_CERTS_QUERY.String(), pairs)
+		syscontract.CertManageFunction_CERTS_QUERY.String(), pairs, 0)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -117,7 +117,7 @@ func (cc *ChainClient) DeleteCert(certHashes []string) (*common.TxResponse, erro
 
 func (cc *ChainClient) CreateCertManagePayload(method string, kvs []*common.KeyValuePair) *common.Payload {
 	cc.logger.Debugf("[SDK] create CertManagePayload, method: %s", method)
-	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CERT_MANAGE.String(), method, kvs)
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CERT_MANAGE.String(), method, kvs, 0)
 	return payload
 }
 
@@ -158,7 +158,7 @@ func (cc *ChainClient) SignCertManagePayload(payload *common.Payload) (*common.E
 	return cc.SignPayload(payload)
 }
 
-func (cc *ChainClient) SendCertManageRequest(payload *common.Payload, endosers []*common.EndorsementEntry,
+func (cc *ChainClient) SendCertManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
-	return cc.sendContractRequest(payload, endosers, timeout, withSyncResult)
+	return cc.sendContractRequest(payload, endorsers, timeout, withSyncResult)
 }
