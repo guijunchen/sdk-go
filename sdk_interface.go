@@ -575,7 +575,7 @@ type SDKInterface interface {
 	//   - txType: 订阅交易类型，目前已支持：区块消息订阅(common.TxType_SUBSCRIBE_BLOCK_INFO)、交易消息订阅(common.TxType_SUBSCRIBE_TX_INFO)
 	//   - payloadBytes: 消息订阅参数payload
 	// ```go
-	Subscribe(ctx context.Context, txType common.TxType, payloadBytes []byte) (<-chan interface{}, error)
+	Subscribe(ctx context.Context, payloadBytes *common.Payload) (<-chan interface{}, error)
 	// ```
 
 	// ## 7 证书压缩
