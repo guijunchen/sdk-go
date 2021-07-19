@@ -8,7 +8,9 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker/pb-go/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/common"
+	"chainmaker.org/chainmaker/pb-go/config"
 	"chainmaker.org/chainmaker/pb-go/discovery"
 	"chainmaker.org/chainmaker/pb-go/store"
 	"context"
@@ -243,177 +245,177 @@ type SDKInterface interface {
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
 	QuerySystemContract(contractName, method string, params []*common.KeyValuePair, timeout int64) (*common.TxResponse, error)
-	//// ```
-	//
-	//// ## 3 链配置接口
-	//// ### 3.1 查询最新链配置
-	//// ```go
-	//GetChainConfig() (*config.ChainConfig, error)
-	//// ```
-	//
-	//// ### 3.2 根据指定区块高度查询最近链配置
-	////   - 如果当前区块就是配置块，直接返回当前区块的链配置
-	//// ```go
-	//GetChainConfigByBlockHeight(blockHeight int) (*config.ChainConfig, error)
-	//// ```
-	//
-	//// ### 3.3 查询最新链配置序号Sequence
-	////   - 用于链配置更新
-	//// ```go
-	//GetChainConfigSequence() (int, error)
-	//// ```
-	//
-	//// ### 3.4 链配置更新获取Payload签名
-	//// ```go
-	//SignChainConfigPayload(payloadBytes []byte) ([]byte, error)
+	// ```
+
+	// ## 3 链配置接口
+	// ### 3.1 查询最新链配置
+	// ```go
+	GetChainConfig() (*config.ChainConfig, error)
+	// ```
+
+	// ### 3.2 根据指定区块高度查询最近链配置
+	//   - 如果当前区块就是配置块，直接返回当前区块的链配置
+	// ```go
+	GetChainConfigByBlockHeight(blockHeight uint64) (*config.ChainConfig, error)
+	// ```
+
+	// ### 3.3 查询最新链配置序号Sequence
+	//   - 用于链配置更新
+	// ```go
+	GetChainConfigSequence() (uint64, error)
+	// ```
+
+	// ### 3.4 链配置更新获取Payload签名
+	// ```go
+	SignChainConfigPayload(payloadBytes []byte) ([]byte, error)
 	//// ```
 	//
 	//// ### 3.5 链配置更新Payload签名收集&合并
 	//// ```go
 	//MergeChainConfigSignedPayload(signedPayloadBytes [][]byte) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.6 发送链配置更新请求
-	//// ```go
-	//SendChainConfigUpdateRequest(mergeSignedPayloadBytes []byte) (*common.TxResponse, error)
-	//// ```
-	//
-	//// > 以下CreateChainConfigXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
-	//
-	//// ### 3.7 更新Core模块待签名payload生成
-	//// **参数说明**
-	////   - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]，若无需修改，请置为-1
-	////   - txSchedulerValidateTimeout: 交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60]，若无需修改，请置为-1
-	//// ```go
-	//CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.8 更新Core模块待签名payload生成
-	//// **参数说明**
-	////   - txTimestampVerify: 是否需要开启交易时间戳校验
-	////   - (以下参数，若无需修改，请置为-1)
-	////   - txTimeout: 交易时间戳的过期时间(秒)，其值范围为[600, +∞)
-	////   - blockTxCapacity: 区块中最大交易数，其值范围为(0, +∞]
-	////   - blockSize: 区块最大限制，单位MB，其值范围为(0, +∞]
-	////   - blockInterval: 出块间隔，单位:ms，其值范围为[10, +∞]
-	//// ```go
-	//CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize, blockInterval int) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.9 添加信任组织根证书待签名payload生成
-	//// **参数说明**
-	////   - trustRootOrgId: 组织Id
-	////   - trustRootCrt: 根证书
-	//// ```go
-	//CreateChainConfigTrustRootAddPayload(trustRootOrgId, trustRootCrt string) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.10 更新信任组织根证书待签名payload生成
-	//// **参数说明**
-	////   - trustRootOrgId: 组织Id
-	////   - trustRootCrt: 根证书
-	//// ```go
-	//CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt string) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.11 删除信任组织根证书待签名payload生成
-	//// **参数说明**
-	////   - trustRootOrgId: 组织Id
-	//// ```go
-	//CreateChainConfigTrustRootDeletePayload(trustRootOrgId string) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.12 添加权限配置待签名payload生成
-	//// **参数说明**
-	////   - permissionResourceName: 权限名
-	////   - policy: 权限规则
-	//// ```go
-	//CreateChainConfigPermissionAddPayload(permissionResourceName string, policy *accesscontrol.Policy) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.13 更新权限配置待签名payload生成
-	//// **参数说明**
-	////   - permissionResourceName: 权限名
-	////   - policy: 权限规则
-	//// ```go
-	//CreateChainConfigPermissionUpdatePayload(permissionResourceName string, policy *accesscontrol.Policy) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.14 删除权限配置待签名payload生成
-	//// **参数说明**
-	////   - permissionResourceName: 权限名
-	//// ```go
-	//CreateChainConfigPermissionDeletePayload(permissionResourceName string) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.15 添加共识节点地址待签名payload生成
-	//// **参数说明**
-	////   - nodeOrgId: 节点组织Id
-	////   - nodeIds: 节点Id
-	//// ```go
-	//CreateChainConfigConsensusNodeIdAddPayload(nodeOrgId string, nodeIds []string) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.16 更新共识节点地址待签名payload生成
-	//// **参数说明**
-	////   - nodeOrgId: 节点组织Id
-	////   - nodeOldNodeId: 节点原Id
-	////   - nodeNewNodeId: 节点新Id
-	//// ```go
-	//CreateChainConfigConsensusNodeIdUpdatePayload(nodeOrgId, nodeOldNodeId, nodeNewNodeId string) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.17 删除共识节点地址待签名payload生成
-	//// **参数说明**
-	////   - nodeOrgId: 节点组织Id
-	////   - nodeId: 节点Id
-	//// ```go
-	//CreateChainConfigConsensusNodeIdDeletePayload(nodeOrgId, nodeId string) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.18 添加共识节点待签名payload生成
-	//// **参数说明**
-	////   - nodeOrgId: 节点组织Id
-	////   - nodeIds: 节点Id
-	//// ```go
-	//CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId string, nodeIds []string) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.19 更新共识节点待签名payload生成
-	//// **参数说明**
-	////   - nodeOrgId: 节点组织Id
-	////   - nodeIds: 节点Id
-	//// ```go
-	//CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeIds []string) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.20 删除共识节点待签名payload生成
-	//// **参数说明**
-	////   - nodeOrgId: 节点组织Id
-	//// ```go
-	//CreateChainConfigConsensusNodeOrgDeletePayload(nodeOrgId string) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.21 添加共识扩展字段待签名payload生成
-	//// **参数说明**
-	////   - kvs: 字段key、value对
-	//// ```go
-	//CreateChainConfigConsensusExtAddPayload(kvs []*common.KeyValuePair) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.22 添加共识扩展字段待签名payload生成
-	//// **参数说明**
-	////   - kvs: 字段key、value对
-	//// ```go
-	//CreateChainConfigConsensusExtUpdatePayload(kvs []*common.KeyValuePair) ([]byte, error)
-	//// ```
-	//
-	//// ### 3.23 添加共识扩展字段待签名payload生成
-	//// **参数说明**
-	////   - keys: 待删除字段
-	//// ```go
-	//CreateChainConfigConsensusExtDeletePayload(keys []string) ([]byte, error)
-	//// ```
+	// ```
+
+	// ### 3.6 发送链配置更新请求
+	// ```go
+	SendChainConfigUpdateRequest(payload *common.Payload, endorers []*common.EndorsementEntry, timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	// ```
+
+	// > 以下CreateChainConfigXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
+
+	// ### 3.7 更新Core模块待签名payload生成
+	// **参数说明**
+	//   - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]，若无需修改，请置为-1
+	//   - txSchedulerValidateTimeout: 交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60]，若无需修改，请置为-1
+	// ```go
+	CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int64) (*common.Payload, error)
+	// ```
+
+	// ### 3.8 更新Core模块待签名payload生成
+	// **参数说明**
+	//   - txTimestampVerify: 是否需要开启交易时间戳校验
+	//   - (以下参数，若无需修改，请置为-1)
+	//   - txTimeout: 交易时间戳的过期时间(秒)，其值范围为[600, +∞)
+	//   - blockTxCapacity: 区块中最大交易数，其值范围为(0, +∞]
+	//   - blockSize: 区块最大限制，单位MB，其值范围为(0, +∞]
+	//   - blockInterval: 出块间隔，单位:ms，其值范围为[10, +∞]
+	// ```go
+	CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize, blockInterval int64) (*common.Payload, error)
+	// ```
+
+	// ### 3.9 添加信任组织根证书待签名payload生成
+	// **参数说明**
+	//   - trustRootOrgId: 组织Id
+	//   - trustRootCrt: 根证书
+	// ```go
+	CreateChainConfigTrustRootAddPayload(trustRootOrgId, trustRootCrt string) (*common.Payload, error)
+	// ```
+
+	// ### 3.10 更新信任组织根证书待签名payload生成
+	// **参数说明**
+	//   - trustRootOrgId: 组织Id
+	//   - trustRootCrt: 根证书
+	// ```go
+	CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt string) (*common.Payload, error)
+	// ```
+
+	// ### 3.11 删除信任组织根证书待签名payload生成
+	// **参数说明**
+	//   - trustRootOrgId: 组织Id
+	// ```go
+	CreateChainConfigTrustRootDeletePayload(trustRootOrgId string) (*common.Payload, error)
+	// ```
+
+	// ### 3.12 添加权限配置待签名payload生成
+	// **参数说明**
+	//   - permissionResourceName: 权限名
+	//   - policy: 权限规则
+	// ```go
+	CreateChainConfigPermissionAddPayload(permissionResourceName string, policy *accesscontrol.Policy) (*common.Payload, error)
+	// ```
+
+	// ### 3.13 更新权限配置待签名payload生成
+	// **参数说明**
+	//   - permissionResourceName: 权限名
+	//   - policy: 权限规则
+	// ```go
+	CreateChainConfigPermissionUpdatePayload(permissionResourceName string, policy *accesscontrol.Policy) (*common.Payload, error)
+	// ```
+
+	// ### 3.14 删除权限配置待签名payload生成
+	// **参数说明**
+	//   - permissionResourceName: 权限名
+	// ```go
+	CreateChainConfigPermissionDeletePayload(permissionResourceName string) (*common.Payload, error)
+	// ```
+
+	// ### 3.15 添加共识节点地址待签名payload生成
+	// **参数说明**
+	//   - nodeOrgId: 节点组织Id
+	//   - nodeIds: 节点Id
+	// ```go
+	CreateChainConfigConsensusNodeIdAddPayload(nodeOrgId string, nodeIds []string) (*common.Payload, error)
+	// ```
+
+	// ### 3.16 更新共识节点地址待签名payload生成
+	// **参数说明**
+	//   - nodeOrgId: 节点组织Id
+	//   - nodeOldNodeId: 节点原Id
+	//   - nodeNewNodeId: 节点新Id
+	// ```go
+	CreateChainConfigConsensusNodeIdUpdatePayload(nodeOrgId, nodeOldNodeId, nodeNewNodeId string) (*common.Payload, error)
+	// ```
+
+	// ### 3.17 删除共识节点地址待签名payload生成
+	// **参数说明**
+	//   - nodeOrgId: 节点组织Id
+	//   - nodeId: 节点Id
+	// ```go
+	CreateChainConfigConsensusNodeIdDeletePayload(nodeOrgId, nodeId string) (*common.Payload, error)
+	// ```
+
+	// ### 3.18 添加共识节点待签名payload生成
+	// **参数说明**
+	//   - nodeOrgId: 节点组织Id
+	//   - nodeIds: 节点Id
+	// ```go
+	CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId string, nodeIds []string) (*common.Payload, error)
+	// ```
+
+	// ### 3.19 更新共识节点待签名payload生成
+	// **参数说明**
+	//   - nodeOrgId: 节点组织Id
+	//   - nodeIds: 节点Id
+	// ```go
+	CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeIds []string) (*common.Payload, error)
+	// ```
+
+	// ### 3.20 删除共识节点待签名payload生成
+	// **参数说明**
+	//   - nodeOrgId: 节点组织Id
+	// ```go
+	CreateChainConfigConsensusNodeOrgDeletePayload(nodeOrgId string) (*common.Payload, error)
+	// ```
+
+	// ### 3.21 添加共识扩展字段待签名payload生成
+	// **参数说明**
+	//   - kvs: 字段key、value对
+	// ```go
+	CreateChainConfigConsensusExtAddPayload(kvs []*common.KeyValuePair) (*common.Payload, error)
+	// ```
+
+	// ### 3.22 添加共识扩展字段待签名payload生成
+	// **参数说明**
+	//   - kvs: 字段key、value对
+	// ```go
+	CreateChainConfigConsensusExtUpdatePayload(kvs []*common.KeyValuePair) (*common.Payload, error)
+	// ```
+
+	// ### 3.23 添加共识扩展字段待签名payload生成
+	// **参数说明**
+	//   - keys: 待删除字段
+	// ```go
+	CreateChainConfigConsensusExtDeletePayload(keys []string) (*common.Payload, error)
+	// ```
 
 	// ## 4 证书管理接口
 	// ### 4.1 用户证书添加
@@ -667,95 +669,89 @@ type SDKInterface interface {
 	////   - keyType: 对加密信息进行对称解密的方法，请和加密时使用的方法保持一致，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 	//// ```go
 	//DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
-	//// ```
-	//
-	//// ## 10 数据归档接口
-	//// ### 10.1 获取已归档区块高度
-	//// **参数说明**
-	////   - 输出已归档的区块高度
-	//// ```go
-	//GetArchivedBlockHeight() (int64, error)
-	//// ```
-	//
-	//// ### 10.2 构造数据归档区块Payload
-	//// **参数说明**
-	////   - targetBlockHeight: 归档目标区块高度
-	//// ```go
-	//CreateArchiveBlockPayload(targetBlockHeight int64) ([]byte, error)
-	//// ```
-	//
-	//// ### 10.3 构造归档归档数据恢复Payload
-	//// **参数说明**
-	////   - fullBlock: 完整区块数据（对应结构：store.BlockWithRWSet）
-	//// ```go
-	//CreateRestoreBlockPayload(fullBlock []byte) ([]byte, error)
-	//// ```
-	//
-	//// ### 10.4 获取归档操作Payload签名
-	//// **参数说明**
-	////   - payloadBytes: 待签名payload
-	//// ```go
-	//SignArchivePayload(payloadBytes []byte) ([]byte, error)
-	//// ```
-	//
-	//// ### 10.5 发送归档请求
-	//// **参数说明**
-	////   - mergeSignedPayloadBytes: 签名结果
-	////   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	////   - withSyncResult: 是否同步获取交易执行结果
-	////            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
-	////            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
-	//// ```go
-	//SendArchiveBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error)
-	//// ```
-	//
-	//// ### 10.6 归档数据恢复
-	//// **参数说明**
-	////   - mergeSignedPayloadBytes: 签名结果
-	////   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	////   - withSyncResult: 是否同步获取交易执行结果
-	////            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
-	////            当为false时，若成功调用，common.TxResponse.ContractResult.Result为txId
-	//// ```go
-	//SendRestoreBlockRequest(mergeSignedPayloadBytes []byte, timeout int64) (*common.TxResponse, error)
-	//// ```
-	//
-	//// ### 10.7 根据交易Id查询已归档交易
-	//// **参数说明**
-	////   - txId: 交易ID
-	//// ```go
-	//GetArchivedTxByTxId(txId string) (*common.TransactionInfo, error)
-	//// ```
-	//
-	//// ### 10.8 根据区块高度查询已归档区块
-	//// **参数说明**
-	////   - blockHeight: 指定区块高度，若为-1，将返回最新区块
-	////   - withRWSet: 是否返回读写集
-	//// ```go
-	//GetArchivedBlockByHeight(blockHeight int64, withRWSet bool) (*common.BlockInfo, error)
-	//// ```
-	//
-	//// ### 10.9 根据区块高度查询已归档完整区块(包含：区块数据、读写集、合约事件日志)
-	//// **参数说明**
-	////   - blockHeight: 指定区块高度，若为-1，将返回最新区块
-	//// ```go
-	//GetArchivedFullBlockByHeight(blockHeight int64) (*store.BlockWithRWSet, error)
-	//// ```
-	//
-	//// ### 10.10 根据区块哈希查询已归档区块
-	//// **参数说明**
-	////   - blockHash: 指定区块Hash
-	////   - withRWSet: 是否返回读写集
-	//// ```go
-	//GetArchivedBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
-	//// ```
-	//
-	//// ### 10.11 根据交易Id查询已归档区块
-	//// **参数说明**
-	////   - txId: 交易ID
-	////   - withRWSet: 是否返回读写集
-	//// ```go
-	//GetArchivedBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ## 10 数据归档接口
+	// ### 10.1 获取已归档区块高度
+	// **参数说明**
+	//   - 输出已归档的区块高度
+	// ```go
+	GetArchivedBlockHeight() (uint64, error)
+	// ```
+
+	// ### 10.2 构造数据归档区块Payload
+	// **参数说明**
+	//   - targetBlockHeight: 归档目标区块高度
+	// ```go
+	CreateArchiveBlockPayload(targetBlockHeight uint64) (*common.Payload, error)
+	// ```
+
+	// ### 10.3 构造归档归档数据恢复Payload
+	// **参数说明**
+	//   - fullBlock: 完整区块数据（对应结构：store.BlockWithRWSet）
+	// ```go
+	CreateRestoreBlockPayload(fullBlock []byte) (*common.Payload, error)
+	// ```
+
+	// ### 10.4 获取归档操作Payload签名
+	// **参数说明**
+	//   - payload: 指向payload对象的指针
+	// ```go
+	SignArchivePayload(payload *common.Payload) (*common.Payload, error)
+	// ```
+
+	// ### 10.5 发送归档请求
+	// **参数说明**
+	//   - payload: 指向payload对象的指针
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	// ```go
+	SendArchiveBlockRequest(payload *common.Payload, timeout int64) (*common.TxResponse, error)
+	// ```
+
+	// ### 10.6 归档数据恢复
+	// **参数说明**
+	//   - payload: 指向payload对象的指针
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	// ```go
+	SendRestoreBlockRequest(payload *common.Payload, timeout int64) (*common.TxResponse, error)
+	// ```
+
+	// ### 10.7 根据交易Id查询已归档交易
+	// **参数说明**
+	//   - txId: 交易ID
+	// ```go
+	GetArchivedTxByTxId(txId string) (*common.TransactionInfo, error)
+	// ```
+
+	// ### 10.8 根据区块高度查询已归档区块
+	// **参数说明**
+	//   - blockHeight: 指定区块高度
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByHeight(blockHeight uint64, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 10.9 根据区块高度查询已归档完整区块(包含：区块数据、读写集、合约事件日志)
+	// **参数说明**
+	//   - blockHeight: 指定区块高度
+	// ```go
+	GetArchivedFullBlockByHeight(blockHeight uint64) (*store.BlockWithRWSet, error)
+	// ```
+
+	// ### 10.10 根据区块哈希查询已归档区块
+	// **参数说明**
+	//   - blockHash: 指定区块Hash
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
+	// ```
+
+	// ### 10.11 根据交易Id查询已归档区块
+	// **参数说明**
+	//   - txId: 交易ID
+	//   - withRWSet: 是否返回读写集
+	// ```go
+	GetArchivedBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
 	//// ```
 	//
 	//// ## 11 隐私计算系统合约接口

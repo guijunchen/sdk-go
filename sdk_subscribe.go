@@ -38,7 +38,7 @@ func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock 
 				Key:   syscontract.SubscribeBlock_ONLY_HEADER.String(),
 				Value: []byte(strconv.FormatBool(onlyHeader)),
 			},
-		},
+		}, 0,
 	)
 
 	return cc.Subscribe(ctx, payload)
@@ -64,12 +64,11 @@ func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int
 				Key:   syscontract.SubscribeTx_TX_IDS.String(),
 				Value: []byte(strings.Join(txIds, ",")),
 			},
-		},
+		}, 0,
 	)
 
 	return cc.Subscribe(ctx, payload)
 }
-
 
 func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, topic string, contractName string) (<-chan interface{}, error) {
 
@@ -83,13 +82,13 @@ func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, topic string,
 				Key:   syscontract.SubscribeContractEvent_CONTRACT_NAME.String(),
 				Value: []byte(contractName),
 			},
-		},
+		}, 0,
 	)
 
 	return cc.Subscribe(ctx, payload)
 }
 
-func (cc *ChainClient) Subscribe(ctx context.Context, payload*common.Payload) (<-chan interface{}, error) {
+func (cc *ChainClient) Subscribe(ctx context.Context, payload *common.Payload) (<-chan interface{}, error) {
 
 	req, err := cc.generateTxRequest(payload, nil)
 	if err != nil {
