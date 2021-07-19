@@ -1,10 +1,10 @@
 package utils
 
 const (
-	KeyWithRWSet   = "with_rwset"
-	KeyBlockHash   = "block_hash"
-	KeyBlockHeight = "block_height"
-	KeyTxId        = "tx_id"
+	KeyWithRWSet   = "withRWSet"
+	KeyBlockHash   = "blockHash"
+	KeyBlockHeight = "blockHeight"
+	KeyTxId        = "txId"
 
 	KeyOrgId     = "org_id"
 	KeyNodeId    = "node_id"

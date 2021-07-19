@@ -8,11 +8,11 @@ SPDX-License-Identifier: Apache-2.0
 package examples
 
 import (
-	"chainmaker.org/chainmaker/common/log"
-	"chainmaker.org/chainmaker/pb-go/common"
-	sdk "chainmaker.org/chainmaker/sdk-go"
 	"errors"
 	"fmt"
+
+	"chainmaker.org/chainmaker/pb-go/common"
+	sdk "chainmaker.org/chainmaker/sdk-go"
 )
 
 const (
@@ -51,24 +51,8 @@ func CheckProposalRequestResp(resp *common.TxResponse, needContractResult bool) 
 
 // CreateChainClientWithSDKConf create a chain client with sdk config file path
 func CreateChainClientWithSDKConf(sdkConfPath string) (*sdk.ChainClient, error) {
-	logger, _ := log.InitSugarLogger(&log.LogConfig{
-		Module:       "[SDK]",
-		LogPath:      "./sdk.log",
-		LogLevel:     log.LEVEL_ERROR,
-		MaxAge:       30,
-		JsonFormat:   false,
-		ShowLine:     true,
-		LogInConsole: true,
-	})
-
-	var (
-		cc  *sdk.ChainClient
-		err error
-	)
-
-	cc, err = sdk.NewChainClient(
+	cc, err := sdk.NewChainClient(
 		sdk.WithConfPath(sdkConfPath),
-		sdk.WithChainClientLogger(logger),
 	)
 	if err != nil {
 		return nil, err
