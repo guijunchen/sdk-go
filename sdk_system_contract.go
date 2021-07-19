@@ -28,7 +28,7 @@ func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error)
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID.String(), []*common.KeyValuePair{
 			{
-				Key:   keyTxId,
+				Key:   utils.KeyTxId,
 				Value: []byte(txId),
 			},
 		}, 0,
@@ -61,7 +61,7 @@ func (cc *ChainClient) GetBlockByHeight(blockHeight uint64, withRWSet bool) (*co
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_BLOCK_BY_HEIGHT.String(), []*common.KeyValuePair{
 			{
-				Key:   keyBlockHeight,
+				Key:   utils.KeyBlockHeight,
 				Value: utils.U64ToBytes(blockHeight),
 			},
 		}, 0,
@@ -94,11 +94,11 @@ func (cc *ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*common
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_BLOCK_BY_HASH.String(), []*common.KeyValuePair{
 			{
-				Key:   keyBlockHash,
+				Key:   utils.KeyBlockHash,
 				Value: []byte(blockHash),
 			},
 			{
-				Key:   keyWithRWSet,
+				Key:   utils.KeyWithRWSet,
 				Value: []byte(strconv.FormatBool(withRWSet)),
 			},
 		}, 0,
@@ -131,11 +131,11 @@ func (cc *ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*common.Bloc
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_BLOCK_BY_TX_ID.String(), []*common.KeyValuePair{
 			{
-				Key:   keyTxId,
+				Key:   utils.KeyTxId,
 				Value: []byte(txId),
 			},
 			{
-				Key:   keyWithRWSet,
+				Key:   utils.KeyWithRWSet,
 				Value: []byte(strconv.FormatBool(withRWSet)),
 			},
 		}, 0,
@@ -168,7 +168,7 @@ func (cc *ChainClient) GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, er
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_LAST_CONFIG_BLOCK.String(), []*common.KeyValuePair{
 			{
-				Key:   keyWithRWSet,
+				Key:   utils.KeyWithRWSet,
 				Value: []byte(strconv.FormatBool(withRWSet)),
 			},
 		}, 0,
@@ -250,7 +250,7 @@ func (cc *ChainClient) GetFullBlockByHeight(blockHeight uint64) (*store.BlockWit
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_FULL_BLOCK_BY_HEIGHT.String(), []*common.KeyValuePair{
 			{
-				Key:   keyBlockHeight,
+				Key:   utils.KeyBlockHeight,
 				Value: utils.U64ToBytes(blockHeight),
 			},
 		}, 0,
@@ -300,7 +300,7 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (uint64, error) {
 		method = syscontract.ChainQueryFunction_GET_BLOCK_HEIGHT_BY_TX_ID.String()
 		pairs = []*common.KeyValuePair{
 			{
-				Key:   keyTxId,
+				Key:   utils.KeyTxId,
 				Value: []byte(txId),
 			},
 		}
@@ -310,7 +310,7 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (uint64, error) {
 		method = syscontract.ChainQueryFunction_GET_BLOCK_HEIGHT_BY_HASH.String()
 		pairs = []*common.KeyValuePair{
 			{
-				Key:   keyBlockHash,
+				Key:   utils.KeyBlockHash,
 				Value: []byte(blockHash),
 			},
 		}
@@ -349,7 +349,7 @@ func (cc *ChainClient) GetLastBlock(withRWSet bool) (*common.BlockInfo, error) {
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_LAST_BLOCK.String(), []*common.KeyValuePair{
 			{
-				Key:   keyWithRWSet,
+				Key:   utils.KeyWithRWSet,
 				Value: []byte(strconv.FormatBool(withRWSet)),
 			},
 		}, 0,
@@ -388,7 +388,7 @@ func (cc *ChainClient) GetBlockHeaderByHeight(blockHeight uint64) (*common.Block
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_BLOCK_HEADER_BY_HEIGHT.String(), []*common.KeyValuePair{
 			{
-				Key:   keyBlockHeight,
+				Key:   utils.KeyBlockHeight,
 				Value: utils.U64ToBytes(blockHeight),
 			},
 		}, 0,

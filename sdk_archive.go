@@ -159,14 +159,14 @@ func (cc *ChainClient) GetArchivedBlockFromMySQL(blockHeight uint64) (*store.Blo
 
 	user, pwd, host, port := destList[0], destList[1], destList[2], destList[3]
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s_%s?charset=utf8mb4",
-		user, pwd, host, port, mysqlDBNamePrefix, cc.chainId))
+		user, pwd, host, port, utils.MysqlDBNamePrefix, cc.chainId))
 	if err != nil {
 		return nil, fmt.Errorf("mysql init failed, %s", err.Error())
 	}
 	defer db.Close()
 
 	err = db.QueryRow(fmt.Sprintf("SELECT Fblock_with_rwset, Fhmac from %s_%d WHERE Fblock_height=?",
-		mysqlTableNamePrefix, blockHeight/rowsPerBlockInfoTable+1), blockHeight).Scan(&blockWithRWSetBytes, &hmac)
+		utils.MysqlTableNamePrefix, blockHeight/utils.RowsPerBlockInfoTable+1), blockHeight).Scan(&blockWithRWSetBytes, &hmac)
 	if err != nil {
 		return nil, fmt.Errorf("select from mysql failed, %s", err.Error())
 	}

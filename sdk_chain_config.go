@@ -54,7 +54,7 @@ func (cc *ChainClient) GetChainConfigByBlockHeight(blockHeight uint64) (*config.
 	cc.logger.Debugf("[SDK] begin to get chain config by block height [%d]", blockHeight)
 
 	var pairs = []*common.KeyValuePair{{
-		Key:   keyBlockHeight,
+		Key:   utils.KeyBlockHeight,
 		Value: utils.U64ToBytes(blockHeight),
 	}}
 
@@ -212,7 +212,7 @@ func (cc *ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId, trus
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   keyOrgId,
+			Key:   utils.KeyOrgId,
 			Value: []byte(trustRootOrgId),
 		},
 		{
@@ -237,7 +237,7 @@ func (cc *ChainClient) CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, t
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   keyOrgId,
+			Key:   utils.KeyOrgId,
 			Value: []byte(trustRootOrgId),
 		},
 		{
@@ -262,7 +262,7 @@ func (cc *ChainClient) CreateChainConfigTrustRootDeletePayload(trustRootOrgId st
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   keyOrgId,
+			Key:   utils.KeyOrgId,
 			Value: []byte(trustRootOrgId),
 		},
 	}
@@ -355,11 +355,11 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeIdAddPayload(nodeOrgId stri
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   keyOrgId,
+			Key:   utils.KeyOrgId,
 			Value: []byte(nodeOrgId),
 		},
 		{
-			Key:   keyNodeIds,
+			Key:   utils.KeyNodeIds,
 			Value: []byte(strings.Join(nodeIds, ",")),
 		},
 	}
@@ -380,15 +380,15 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeIdUpdatePayload(nodeOrgId, 
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   keyOrgId,
+			Key:   utils.KeyOrgId,
 			Value: []byte(nodeOrgId),
 		},
 		{
-			Key:   keyNodeId,
+			Key:   utils.KeyNodeId,
 			Value: []byte(nodeOldIds),
 		},
 		{
-			Key:   keyNewNodeId,
+			Key:   utils.KeyNewNodeId,
 			Value: []byte(nodeNewIds),
 		},
 	}
@@ -409,11 +409,11 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeIdDeletePayload(nodeOrgId, 
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   keyOrgId,
+			Key:   utils.KeyOrgId,
 			Value: []byte(nodeOrgId),
 		},
 		{
-			Key:   keyNodeId,
+			Key:   utils.KeyNodeId,
 			Value: []byte(nodeId),
 		},
 	}
@@ -434,11 +434,11 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId str
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   keyOrgId,
+			Key:   utils.KeyOrgId,
 			Value: []byte(nodeOrgId),
 		},
 		{
-			Key:   keyNodeIds,
+			Key:   utils.KeyNodeIds,
 			Value: []byte(strings.Join(nodeIds, ",")),
 		},
 	}
@@ -459,11 +459,11 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId 
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   keyOrgId,
+			Key:   utils.KeyOrgId,
 			Value: []byte(nodeOrgId),
 		},
 		{
-			Key:   keyNodeIds,
+			Key:   utils.KeyNodeIds,
 			Value: []byte(strings.Join(nodeIds, ",")),
 		},
 	}
@@ -484,7 +484,7 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeOrgDeletePayload(nodeOrgId 
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   keyOrgId,
+			Key:   utils.KeyOrgId,
 			Value: []byte(nodeOrgId),
 		},
 	}
