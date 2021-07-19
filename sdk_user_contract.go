@@ -48,7 +48,7 @@ func (cc *ChainClient) CreateContractRevokePayload(contractName string) (*common
 }
 
 func (cc *ChainClient) createContractManagePayload(contractName, method string) (*common.Payload, error) {
-	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, contractName, method, nil), nil
+	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, contractName, method, nil, 0), nil
 }
 
 func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, method, version, byteCode string,
@@ -86,7 +86,8 @@ func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, met
 		return nil, fmt.Errorf("use reserved word")
 	}
 
-	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(), method, kvs)
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT,
+		syscontract.SystemContract_CONTRACT_MANAGE.String(), method, kvs, 0)
 
 	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
 		Key:   syscontract.InitContract_CONTRACT_NAME.String(),
@@ -132,8 +133,8 @@ func (cc *ChainClient) SignContractManagePayload(payload *common.Payload) (*comm
 	return cc.SignPayload(payload)
 }
 
-func (cc *ChainClient) SendContractManageRequest(payload *common.Payload, endosers []*common.EndorsementEntry, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
-	return cc.sendContractRequest(payload, endosers, timeout, withSyncResult)
+func (cc *ChainClient) SendContractManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+	return cc.sendContractRequest(payload, endorsers, timeout, withSyncResult)
 }
 
 func (cc *ChainClient) InvokeContract(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
@@ -144,7 +145,7 @@ func (cc *ChainClient) InvokeContract(contractName, method, txId string, kvs []*
 	cc.logger.Debugf("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, kvs)
 
-	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs)
+	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, 0)
 
 	return cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 }
@@ -154,7 +155,7 @@ func (cc *ChainClient) QueryContract(contractName, method string, kvs []*common.
 	cc.logger.Debugf("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[params:%+v]",
 		contractName, method, kvs)
 
-	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, contractName, method, kvs)
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, contractName, method, kvs, 0)
 
 	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {
@@ -172,7 +173,7 @@ func (cc *ChainClient) GetTxRequest(contractName, method, txId string, kvs []*co
 	cc.logger.Debugf("[SDK] begin to create TxRequest, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, kvs)
 
-	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs)
+	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, 0)
 
 	req, err := cc.generateTxRequest(payload, nil)
 	if err != nil {
