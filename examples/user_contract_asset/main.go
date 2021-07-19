@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"encoding/binary"
 	"fmt"
 	"log"
 
@@ -20,46 +19,27 @@ import (
 const (
 	queryAddr             = "query_address"
 	createContractTimeout = 5
+	issueLimit            = "100000000"
+	issueSupply           = "100000000"
+
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+	sdkConfigOrg2Client1Path = "../sdk_configs/sdk_config_org2_client1.yml"
 
 	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
-	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
-	sdkConfigOrg2Client1Path = "../sdk_configs/sdk_config_org2_client1.yml"
 	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
 	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
 )
 
 var (
 	assetContractName = "asset001"
-	assetVersion      = "1.0.0"
-	assetByteCodePath = "../../testdata/asset-wasm-demo/rust-asset-management-1.0.0.wasm"
+	assetVersion      = "2.0.0"
+	assetByteCodePath = "../../testdata/asset-wasm-demo/rust-asset-2.0.0.wasm"
 )
 
 func main() {
 	testUserContractAsset()
 	testUserContractAssetBalanceOf()
-}
-
-func testUserContractAssetBalanceOf() {
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	client2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Client1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	fmt.Println("====================== 1)查询钱包地址 ======================")
-	addr1 := testUserContractAssetQuery(client, queryAddr, nil)
-	fmt.Printf("client1 address: %s\n", addr1)
-	addr2 := testUserContractAssetQuery(client2, queryAddr, nil)
-	fmt.Printf("client2 address: %s\n", addr2)
-
-	fmt.Println("====================== 2)查询钱包余额 ======================")
-	getBalance(client, addr1)
-	getBalance(client, addr2)
 }
 
 func testUserContractAsset() {
@@ -94,13 +74,14 @@ func testUserContractAsset() {
 	pairs := []*common.KeyValuePair{
 		{
 			Key:   "issue_limit",
-			Value: "100000000",
+			Value: []byte(issueLimit),
 		},
 		{
 			Key:   "total_supply",
-			Value: "100000000",
+			Value: []byte(issueSupply),
 		},
 	}
+
 	testUserContractAssetCreate(client, admin1, admin2, admin3, admin4, pairs, true, false)
 
 	fmt.Println("====================== 2)注册另一个用户 ======================")
@@ -130,6 +111,28 @@ func testUserContractAsset() {
 	getBalance(client, addr2)
 }
 
+func testUserContractAssetBalanceOf() {
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	client2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Client1Path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("====================== 1)查询钱包地址 ======================")
+	addr1 := testUserContractAssetQuery(client, queryAddr, nil)
+	fmt.Printf("client1 address: %s\n", addr1)
+	addr2 := testUserContractAssetQuery(client2, queryAddr, nil)
+	fmt.Printf("client2 address: %s\n", addr2)
+
+	fmt.Println("====================== 2)查询钱包余额 ======================")
+	getBalance(client, addr1)
+	getBalance(client, addr2)
+}
+
 func testUserContractAssetCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
 	kvs []*common.KeyValuePair, withSyncResult bool, isIgnoreSameContract bool) {
 
@@ -151,8 +154,8 @@ func testUserContractAssetInvokeRegister(client *sdk.ChainClient, method string,
 	}
 }
 
-func testUserContractAssetQuery(client *sdk.ChainClient, method string, params map[string]string) string {
-	resp, err := client.QueryContract(assetContractName, method, params, -1)
+func testUserContractAssetQuery(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair) string {
+	resp, err := client.QueryContract(assetContractName, method, kvs, -1)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -166,32 +169,40 @@ func testUserContractAssetQuery(client *sdk.ChainClient, method string, params m
 }
 
 func testUserContractAssetInvoke(client *sdk.ChainClient, method string, amount, addr string, withSyncResult bool) {
-	params := map[string]string{
-		"amount": amount,
-		"to":     addr,
+	kvs := []*common.KeyValuePair {
+		{
+			Key: "amount",
+			Value: []byte(amount),
+		},
+		{
+			Key: "to",
+			Value: []byte(addr),
+		},
 	}
-	err := invokeUserContract(client, assetContractName, method, "", params, withSyncResult)
+
+	err := invokeUserContract(client, assetContractName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
 }
 
 func getBalance(client *sdk.ChainClient, addr string) {
-	params := map[string]string{
-		"owner": addr,
+	kvs := []*common.KeyValuePair {
+		{
+			Key: "owner",
+			Value: []byte(addr),
+		},
 	}
-	balance := testUserContractAssetQuery(client, "balance_of", params)
-	val, err := sdk.BytesToInt([]byte(balance), binary.LittleEndian)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	fmt.Printf("client [%s] balance: %d\n", addr, val)
+
+	balance := testUserContractAssetQuery(client, "balance_of", kvs)
+
+	fmt.Printf("client [%s] balance: %s\n", addr, balance)
 }
 
 func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string,
-	params map[string]string, withSyncResult bool) error {
+	kvs []*common.KeyValuePair, withSyncResult bool) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
 		return err
 	}
@@ -213,41 +224,40 @@ func createUserContract(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
 	byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair,
 	withSyncResult bool) (*common.TxResponse, error) {
 
-	payloadBytes, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
+	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
 		return nil, err
 	}
 
 	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
+	signedPayload1, err := admin1.SignContractManagePayload(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
+	signedPayload2, err := admin2.SignContractManagePayload(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
+	signedPayload3, err := admin3.SignContractManagePayload(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
+	signedPayload4, err := admin4.SignContractManagePayload(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
-		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
-	if err != nil {
-		return nil, err
-	}
+	var endosers []*common.EndorsementEntry
+	endosers = append(endosers, signedPayload1)
+	endosers = append(endosers, signedPayload2)
+	endosers = append(endosers, signedPayload3)
+	endosers = append(endosers, signedPayload4)
 
 	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endosers, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}
