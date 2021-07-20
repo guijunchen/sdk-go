@@ -82,6 +82,13 @@ func testUserContractClaim() {
 		},
 	}
 	testUserContractClaimQuery(client, "find_by_file_hash", kvs)
+
+	//====================== 创建合约 ======================
+	//CREATE claim contract resp: message:"OK" contract_result:<result:"\n\010claim001\022\0052.0.0\030\002*<\n\026wx-org1.chainmaker.org\020\001\032 $p^\215Q\366\236\2120\007\233eW\210\220\3746\250\027\331h\212\024\253\370Ecl\214J'\322" message:"OK" > tx_id:"e40e126cf093472bbb1c80cbd9e6c18ef64e0f8e276046a38f7cc98df1d0cba7"
+	//====================== 调用合约 ======================
+	//invoke contract success, resp: [code:0]/[msg:OK]/[contractResult:gas_used:14538222 ]
+	//====================== 执行合约查询接口 ======================
+	//QUERY claim contract resp: message:"SUCCESS" contract_result:<result:"{\"file_hash\":\"8f4c3500833040919ea63bfe1059e117\",\"file_name\":\"file_2021-07-20 19:47:24\",\"time\":\"2021-07-20 19:47:24\"}" gas_used:24597022 > tx_id:"154d3f1bb53d432098de1664b5dbdbfa1e1420cdb4634bd3ba92431ce037ca29"
 }
 
 func testUserContractClaimCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
@@ -106,35 +113,12 @@ func createUserContract(client *sdk.ChainClient, admin1, admin2, admin3, admin4 
 		return nil, err
 	}
 
-	// 各组织Admin权限用户签名
-	signedPayload1, err := admin1.SignContractManagePayload(payload)
+	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
 	if err != nil {
 		return nil, err
 	}
 
-	signedPayload2, err := admin2.SignContractManagePayload(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	signedPayload3, err := admin3.SignContractManagePayload(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	signedPayload4, err := admin4.SignContractManagePayload(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	var endosers []*common.EndorsementEntry
-	endosers = append(endosers, signedPayload1)
-	endosers = append(endosers, signedPayload2)
-	endosers = append(endosers, signedPayload3)
-	endosers = append(endosers, signedPayload4)
-
-	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(payload, endosers, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}
