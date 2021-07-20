@@ -21,8 +21,8 @@ import (
 const (
 	createContractTimeout = 5
 	claimContractName     = "claim001"
-	claimVersion          = "1.0.0"
-	claimByteCodePath     = "../../testdata/claim-wasm-demo/rust-fact-1.0.0.wasm"
+	claimVersion          = "2.0.0"
+	claimByteCodePath     = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 
@@ -47,14 +47,17 @@ func testUserContractClaim() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
 	if err != nil {
 		log.Fatalln(err)
