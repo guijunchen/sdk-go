@@ -72,6 +72,13 @@ func testUserContractStorageEVM() {
 
 	fmt.Println("====================== 查看数值 ======================")
 	testUserContractStorageEVMGet(client, true)
+
+	//====================== 创建Storage合约 ======================
+	//	CREATE EVM storage contract resp: message:"OK" contract_result:<result:"\n(b397dbecf8c200eced8441eff6504d712f61429b\022\0051.0.0\030\005*<\n\026wx-org1.chainmaker.org\020\001\032 $p^\215Q\366\236\2120\007\233eW\210\220\3746\250\027\331h\212\024\253\370Ecl\214J'\322" message:"OK" > tx_id:"4668c5dc91074119b96ad19f568ae06422488344c6224349bd71296b4fafea32"
+	//====================== 设置数值 ======================
+	//	invoke contract success, resp: [code:0]/[msg:OK]/[contractResult:gas_used:5375 ]
+	//====================== 查看数值 ======================
+	//val: [123]
 }
 
 func testUserContractStorageEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
@@ -83,7 +90,7 @@ func testUserContractStorageEVMCreate(client, admin1, admin2, admin3, admin4 *sd
 	}
 
 	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		storageContractName, storageVersion, string(codeBytes), common.RuntimeType_EVM, nil, withSyncResult)
+		examples.CalcContractName(storageContractName), storageVersion, string(codeBytes), common.RuntimeType_EVM, nil, withSyncResult)
 	if !isIgnoreSameContract {
 		if err != nil {
 			log.Fatalln(err)
@@ -96,41 +103,17 @@ func testUserContractStorageEVMCreate(client, admin1, admin2, admin3, admin4 *sd
 func createUserContract(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, contractName, version,
 	byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool) (*common.TxResponse, error) {
 
-	payloadBytes, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
+	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
 		return nil, err
 	}
 
-	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
+	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
 	if err != nil {
 		return nil, err
 	}
 
-	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
-		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
-	if err != nil {
-		return nil, err
-	}
-
-	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}
@@ -162,19 +145,22 @@ func testUserContractStorageEVMSet(client *sdk.ChainClient, data int64, withSync
 	dataString := hex.EncodeToString(dataByte)
 	method := dataString[0:8]
 
-	pairs := map[string]string{
-		"data": dataString,
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   "data",
+			Value: []byte(dataString),
+		},
 	}
 
-	err = invokeUserContract(client, storageContractName, method, "", pairs, withSyncResult)
+	err = invokeUserContract(client, examples.CalcContractName(storageContractName), method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, params map[string]string, withSyncResult bool) error {
+func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, kvs []*common.KeyValuePair, withSyncResult bool) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
 		return err
 	}
@@ -212,11 +198,14 @@ func testUserContractStorageEVMGet(client *sdk.ChainClient, withSyncResult bool)
 	dataString := hex.EncodeToString(dataByte)
 	method := dataString[0:8]
 
-	pairs := map[string]string{
-		"data": dataString,
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   "data",
+			Value: []byte(dataString),
+		},
 	}
 
-	result, err := invokeUserContractWithResult(client, storageContractName, method, "", pairs, withSyncResult)
+	result, err := invokeUserContractWithResult(client, examples.CalcContractName(storageContractName), method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -229,9 +218,9 @@ func testUserContractStorageEVMGet(client *sdk.ChainClient, withSyncResult bool)
 }
 
 func invokeUserContractWithResult(client *sdk.ChainClient, contractName, method, txId string,
-	params map[string]string, withSyncResult bool) ([]byte, error) {
+	kvs []*common.KeyValuePair, withSyncResult bool) ([]byte, error) {
 
-	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
 		return nil, err
 	}
