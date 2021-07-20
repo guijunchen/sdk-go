@@ -8,6 +8,8 @@ SPDX-License-Identifier: Apache-2.0
 package examples
 
 import (
+	"chainmaker.org/chainmaker/common/evmutils"
+	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -64,4 +66,23 @@ func CreateChainClientWithSDKConf(sdkConfPath string) (*sdk.ChainClient, error) 
 		return nil, err
 	}
 	return cc, nil
+}
+
+func GetEndorsers(payload *common.Payload, admins ...*sdk.ChainClient) ([]*common.EndorsementEntry, error) {
+	var endorsers []*common.EndorsementEntry
+
+	for _, admin := range admins {
+		signedPayload, err := admin.SignContractManagePayload(payload)
+		if err != nil {
+			return nil, err
+		}
+
+		endorsers = append(endorsers, signedPayload)
+	}
+
+	return endorsers, nil
+}
+
+func CalcContractName(contractName string) string {
+	return hex.EncodeToString(evmutils.Keccak256([]byte(contractName)))[24:]
 }
