@@ -30,13 +30,15 @@ const (
 	tokenByteCodePath     = "../../testdata/token-evm-demo/token.bin"
 	tokenABIPath          = "../../testdata/token-evm-demo/token.abi"
 
-	client1AddrInt = "1087848554046178479107522336262214072175637027873"
-	client2AddrInt = "944104665674401770091203869615921096651560803325"
-	client1AddrSki = "7081212378e72d4ecf406c30384f82a74c2a0c8d9e91ccfa94c245023942240f"
+	// use cmc to calulate this addr, eg: `./cmc cert addr --cert-path xxx.tls.crt`
+	client1AddrInt = "1018109374098032500766612781247089211099623418384"
+	client2AddrInt = "1317892642413437150535769048733130623036570974971"
+	client1AddrSki = "4d2b2301e06ca9269361fce6105296cc00ee19ffaa6a5f5b37b4c7faf8889697"
 	amount         = 200
 
-	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+
+	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
 	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
 	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
 	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
@@ -83,6 +85,17 @@ func testUserContractTokenEVM() {
 	fmt.Println("====================== 查看余额 ======================")
 	testUserContractTokenEVMBalanceOf(client, client1AddrInt, true)
 	testUserContractTokenEVMBalanceOf(client, client2AddrInt, true)
+
+	//====================== 创建Token合约,给client1地址分配初始代币 ======================
+	//CREATE EVM token contract resp: message:"OK" contract_result:<result:"\n(a90b890d4b2577b3d8c9bb487fcb5e90167e4842\022\0051.0.0\030\005*<\n\026wx-org1.chainmaker.org\020\001\032 $p^\215Q\366\236\2120\007\233eW\210\220\3746\250\027\331h\212\024\253\370Ecl\214J'\322" message:"OK" > tx_id:"df90acc322724e1e852313f510bbbf81dbb65774ac5c4aa4a83a7258f002d8eb"
+	//====================== 查看余额 ======================
+	//addr [1018109374098032500766612781247089211099623418384] => [100000000000000000]
+	//addr [1317892642413437150535769048733130623036570974971] => [0]
+	//====================== client1给client2地址转账 ======================
+	//invoke contract success, resp: [code:0]/[msg:OK]/[contractResult:result:"\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\001" gas_used:19916 contract_event:<topic:"ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" tx_id:"e45f546577994c0eaec0c33a6281cd6219fac062ecea4defb7411772c582c4c7" contract_name:"a90b890d4b2577b3d8c9bb487fcb5e90167e4842" contract_version:"1.0.0" event_data:"000000000000000000000000b2559a706dbab942671d5978ea97a13c82af6a10" event_data:"000000000000000000000000e6d859965e3dd4ef88c99130350b44b2ae9fbafb" event_data:"00000000000000000000000000000000000000000000000000000000000000c8" > ]
+	//====================== 查看余额 ======================
+	//addr [1018109374098032500766612781247089211099623418384] => [99999999999999800]
+	//addr [1317892642413437150535769048733130623036570974971] => [200]
 }
 
 func testUserContractTokenEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
@@ -118,7 +131,7 @@ func testUserContractTokenEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.
 	pairs := []*common.KeyValuePair{
 		{
 			Key:   "data",
-			Value: data,
+			Value: []byte(data),
 		},
 	}
 
@@ -132,7 +145,7 @@ func testUserContractTokenEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.
 
 	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
 		//tokenContractName, tokenVersion, bc + data, common.RuntimeType_EVM, pairs, withSyncResult)
-		tokenContractName, tokenVersion, string(byteCode), common.RuntimeType_EVM, pairs, withSyncResult)
+		examples.CalcContractName(tokenContractName), tokenVersion, string(byteCode), common.RuntimeType_EVM, pairs, withSyncResult)
 	if !isIgnoreSameContract {
 		if err != nil {
 			log.Fatalln(err)
@@ -145,41 +158,18 @@ func testUserContractTokenEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.
 func createUserContract(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, contractName, version,
 	byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool) (*common.TxResponse, error) {
 
-	payloadBytes, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
+	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
 		return nil, err
 	}
 
-	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
-		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
+	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
 	if err != nil {
 		return nil, err
 	}
 
 	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}
@@ -212,14 +202,17 @@ func testUserContractTokenEVMTransfer(client *sdk.ChainClient, amount int64, wit
 		log.Fatalln(err)
 	}
 
-	data := hex.EncodeToString(dataByte)
-	method := data[0:8]
+	dataString := hex.EncodeToString(dataByte)
+	method := dataString[0:8]
 
-	pairs := map[string]string{
-		"data": data,
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   "data",
+			Value: []byte(dataString),
+		},
 	}
 
-	err = invokeUserContract(client, tokenContractName, method, "", pairs, withSyncResult)
+	err = invokeUserContract(client, examples.CalcContractName(tokenContractName), method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -245,14 +238,17 @@ func testUserContractTokenEVMBalanceOf(client *sdk.ChainClient, address string, 
 		log.Fatalln(err)
 	}
 
-	data := hex.EncodeToString(dataByte)
-	method := data[0:8]
+	dataString := hex.EncodeToString(dataByte)
+	method := dataString[0:8]
 
-	pairs := map[string]string{
-		"data": data,
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   "data",
+			Value: []byte(dataString),
+		},
 	}
 
-	result, err := invokeUserContractWithResult(client, tokenContractName, method, "", pairs, withSyncResult)
+	result, err := invokeUserContractWithResult(client, examples.CalcContractName(tokenContractName), method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -264,9 +260,9 @@ func testUserContractTokenEVMBalanceOf(client *sdk.ChainClient, address string, 
 	fmt.Printf("addr [%s] => %d\n", address, balance)
 }
 
-func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, params map[string]string, withSyncResult bool) error {
+func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, kvs []*common.KeyValuePair, withSyncResult bool) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
 		return err
 	}
@@ -285,9 +281,9 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 }
 
 func invokeUserContractWithResult(client *sdk.ChainClient, contractName, method, txId string,
-	params map[string]string, withSyncResult bool) ([]byte, error) {
+	kvs []*common.KeyValuePair, withSyncResult bool) ([]byte, error) {
 
-	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
 		return nil, err
 	}
