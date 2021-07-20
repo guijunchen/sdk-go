@@ -114,10 +114,6 @@ func testUserContractBalanceEVM() {
 	//addr [1018109374098032500766612781247089211099623418384] => [978]
 }
 
-func calcContractName(contractName string) string {
-	return hex.EncodeToString(evmutils.Keccak256([]byte(contractName)))[24:]
-}
-
 func testUserContractBalanceEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
 	withSyncResult bool, isIgnoreSameContract bool) {
 
@@ -127,7 +123,7 @@ func testUserContractBalanceEVMCreate(client, admin1, admin2, admin3, admin4 *sd
 	}
 
 	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		calcContractName(balanceContractName), balanceVersion, string(byteCode), common.RuntimeType_EVM, nil, withSyncResult)
+		examples.CalcContractName(balanceContractName), balanceVersion, string(byteCode), common.RuntimeType_EVM, nil, withSyncResult)
 	if !isIgnoreSameContract {
 		if err != nil {
 			log.Fatalln(err)
@@ -145,32 +141,10 @@ func createUserContract(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
 		return nil, err
 	}
 
-	// 各组织Admin权限用户签名
-	signedPayload1, err := admin1.SignContractManagePayload(payload)
+	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
 	if err != nil {
 		return nil, err
 	}
-
-	signedPayload2, err := admin2.SignContractManagePayload(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	signedPayload3, err := admin3.SignContractManagePayload(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	signedPayload4, err := admin4.SignContractManagePayload(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	var endorsers []*common.EndorsementEntry
-	endorsers = append(endorsers, signedPayload1)
-	endorsers = append(endorsers, signedPayload2)
-	endorsers = append(endorsers, signedPayload3)
-	endorsers = append(endorsers, signedPayload4)
 
 	// 发送创建合约请求
 	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
@@ -216,7 +190,7 @@ func testUserContractBalanceEVMTransfer(client *sdk.ChainClient, withSyncResult 
 		},
 	}
 
-	err = invokeUserContract(client, calcContractName(balanceContractName), method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, examples.CalcContractName(balanceContractName), method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -251,7 +225,7 @@ func testUserContractBalanceEVMUpdateBalance(client *sdk.ChainClient, address st
 		},
 	}
 
-	err = invokeUserContract(client, calcContractName(balanceContractName), method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, examples.CalcContractName(balanceContractName), method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -305,7 +279,7 @@ func testUserContractBalanceEVMGetBalance(client *sdk.ChainClient, address strin
 		},
 	}
 
-	result, err := invokeUserContractWithResult(client, calcContractName(balanceContractName), method, "", kvs, withSyncResult)
+	result, err := invokeUserContractWithResult(client, examples.CalcContractName(balanceContractName), method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -358,7 +332,7 @@ func testUserContractBalanceEVMUpdateMyBalance(client *sdk.ChainClient, data int
 		},
 	}
 
-	err = invokeUserContract(client, calcContractName(balanceContractName), method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, examples.CalcContractName(balanceContractName), method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -392,7 +366,7 @@ func testUserContractBalanceEVMGetMyBalance(client *sdk.ChainClient, address str
 		},
 	}
 
-	result, err := invokeUserContractWithResult(client, calcContractName(balanceContractName), method, "", kvs, withSyncResult)
+	result, err := invokeUserContractWithResult(client, examples.CalcContractName(balanceContractName), method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
