@@ -251,7 +251,7 @@ func (cc *ChainClient) GetFullBlockByHeight(blockHeight uint64) (*store.BlockWit
 		syscontract.ChainQueryFunction_GET_FULL_BLOCK_BY_HEIGHT.String(), []*common.KeyValuePair{
 			{
 				Key:   utils.KeyBlockHeight,
-				Value: utils.U64ToBytes(blockHeight),
+				Value: []byte(strconv.FormatUint(blockHeight, 10)),
 			},
 		}, 0,
 	)
@@ -334,7 +334,7 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (uint64, error) {
 		return 0, fmt.Errorf(errStringFormat, payload.TxType, err)
 	}
 
-	blockHeight, err := utils.BytesToU64(resp.ContractResult.Result)
+	blockHeight, err := strconv.ParseUint(string(resp.ContractResult.Result), 10, 64)
 	if err != nil {
 		return 0, fmt.Errorf("%s, parse block height failed, %s", payload.TxType, err)
 	}
