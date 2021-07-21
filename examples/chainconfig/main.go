@@ -70,27 +70,27 @@ func testChainConfig() {
 
 	// 1) [CoreUpdate]
 	rand.Seed(time.Now().UnixNano())
-	txSchedulerTimeout := rand.Intn(61)
-	txSchedulerValidateTimeout := rand.Intn(61)
+	txSchedulerTimeout := uint64(rand.Intn(61))
+	txSchedulerValidateTimeout := uint64(rand.Intn(61))
 	testChainConfigCoreUpdate(client, admin1, admin2, admin3, admin4, txSchedulerTimeout, txSchedulerValidateTimeout)
 	time.Sleep(5 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	fmt.Printf("txSchedulerTimeout: %d, txSchedulerValidateTimeout: %d\n", txSchedulerTimeout, txSchedulerValidateTimeout)
 	fmt.Printf("chainConfig txSchedulerTimeout: %d, txSchedulerValidateTimeout: %d\n",
 		chainConfig.Core.TxSchedulerTimeout, chainConfig.Core.TxSchedulerValidateTimeout)
-	if txSchedulerTimeout != int(chainConfig.Core.TxSchedulerTimeout) {
+	if txSchedulerTimeout != chainConfig.Core.TxSchedulerTimeout {
 		log.Fatalln("require txSchedulerTimeout == int(chainConfig.Core.TxSchedulerTimeout)")
 	}
-	if txSchedulerValidateTimeout != int(chainConfig.Core.TxSchedulerValidateTimeout) {
+	if txSchedulerValidateTimeout != chainConfig.Core.TxSchedulerValidateTimeout {
 		log.Fatalln("require txSchedulerValidateTimeout == int(chainConfig.Core.TxSchedulerValidateTimeout)")
 	}
 
 	// 2) [BlockUpdate]
 	txTimestampVerify := rand.Intn(2) == 0
-	txTimeout := rand.Intn(1000) + 600
-	blockTxCapacity := rand.Intn(1000) + 1
-	blockSize := rand.Intn(10) + 1
-	blockInterval := rand.Intn(10000) + 10
+	txTimeout := uint32(rand.Intn(1000)) + 600
+	blockTxCapacity := uint32(rand.Intn(1000)) + 1
+	blockSize := uint32(rand.Intn(10)) + 1
+	blockInterval := uint32(rand.Intn(10000)) + 10
 	testChainConfigBlockUpdate(client, admin1, admin2, admin3, admin4, txTimestampVerify, txTimeout, blockTxCapacity, blockSize, blockInterval)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
@@ -100,16 +100,16 @@ func testChainConfig() {
 	if chainConfig.Block.TxTimestampVerify != txTimestampVerify {
 		log.Fatalln("require chainConfig.Block.TxTimestampVerify == txTimestampVerify")
 	}
-	if txTimeout != int(chainConfig.Block.TxTimeout) {
+	if txTimeout != chainConfig.Block.TxTimeout {
 		log.Fatalln("require txTimeout == int(chainConfig.Block.TxTimeout)")
 	}
-	if blockTxCapacity != int(chainConfig.Block.BlockTxCapacity) {
+	if blockTxCapacity != chainConfig.Block.BlockTxCapacity {
 		log.Fatalln("require equal")
 	}
-	if blockSize != int(chainConfig.Block.BlockSize) {
+	if blockSize != chainConfig.Block.BlockSize {
 		log.Fatalln("require equal")
 	}
-	if blockInterval != int(chainConfig.Block.BlockInterval) {
+	if blockInterval != chainConfig.Block.BlockInterval {
 		log.Fatalln("require equal")
 	}
 
@@ -321,7 +321,7 @@ func testChainConfig() {
 	kvs := []*common.KeyValuePair{
 		{
 			Key:   testKey,
-			Value: "test_value",
+			Value: []byte("test_value"),
 		},
 	}
 	testChainConfigConsensusExtAdd(client, admin1, admin2, admin3, admin4, kvs)
@@ -338,7 +338,7 @@ func testChainConfig() {
 	kvs = []*common.KeyValuePair{
 		{
 			Key:   testKey,
-			Value: "updated_value",
+			Value: []byte("updated_value"),
 		},
 	}
 	testChainConfigConsensusExtUpdate(client, admin1, admin2, admin3, admin4, kvs)
@@ -387,20 +387,20 @@ func testGetChainConfigSeq(client *sdk.ChainClient) {
 }
 
 func testChainConfigCoreUpdate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, txSchedulerTimeout,
-	txSchedulerValidateTimeout int) {
+	txSchedulerValidateTimeout uint64) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigCoreUpdatePayload(
+	payload, err := client.CreateChainConfigCoreUpdatePayload(
 		txSchedulerTimeout, txSchedulerValidateTimeout)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, admin1, admin2, admin3, admin4, payload)
 }
 
 func testChainConfigBlockUpdate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, txTimestampVerify bool,
-	txTimeout, blockTxCapacity, blockSize, blockInterval int) {
+	txTimeout, blockTxCapacity, blockSize, blockInterval uint32) {
 
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigBlockUpdatePayload(
@@ -591,45 +591,38 @@ func testChainConfigConsensusExtDelete(client, admin1, admin2, admin3, admin4 *s
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
 }
 
-func signAndSendRequest(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, payloadBytes []byte) {
+func signAndSendRequest(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, payload *common.Payload) {
 	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.SignChainConfigPayload(payloadBytes)
+	endorsementEntry1, err := admin1.SignChainConfigPayload(payload)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signedPayloadBytes2, err := admin2.SignChainConfigPayload(payloadBytes)
+	endorsementEntry2, err := admin2.SignChainConfigPayload(payload)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signedPayloadBytes3, err := admin3.SignChainConfigPayload(payloadBytes)
+	endorsementEntry3, err := admin3.SignChainConfigPayload(payload)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signedPayloadBytes4, err := admin4.SignChainConfigPayload(payloadBytes)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.MergeChainConfigSignedPayload([][]byte{signedPayloadBytes1,
-		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
+	endorsementEntry4, err := admin4.SignChainConfigPayload(payload)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	// 发送配置更新请求
-	resp, err := client.SendChainConfigUpdateRequest(mergeSignedPayloadBytes)
+	resp, err := client.SendChainConfigUpdateRequest(payload, []*common.EndorsementEntry{endorsementEntry1, endorsementEntry2, endorsementEntry3, endorsementEntry4}, -1, true)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = examples.CheckProposalRequestResp(resp, true)
+	err = examples.CheckProposalRequestResp(resp, false)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("chain config [CoreUpdate] resp: %+v", resp)
+	fmt.Printf("chain config [CoreUpdate] resp: %+v\n", resp)
 }
