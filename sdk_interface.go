@@ -77,7 +77,7 @@ type SDKInterface interface {
 	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
 	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 	// ```go
-	SendContractManageRequest(payload *common.Payload, endosers []*common.EndorsementEntry, timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	SendContractManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
 	// ### 1.8 合约调用

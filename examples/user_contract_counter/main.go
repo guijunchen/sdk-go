@@ -8,22 +8,21 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"fmt"
-	"log"
-	"time"
-
 	"chainmaker.org/chainmaker/pb-go/common"
 	sdk "chainmaker.org/chainmaker/sdk-go"
 	"chainmaker.org/chainmaker/sdk-go/examples"
+	"fmt"
+	"log"
+	"time"
 )
 
 const (
 	createContractTimeout = 5
-	contractName          = "counter-go-1"
+	contractName          = "counter001"
 	version               = "1.0.0"
 	upgradeVersion        = "2.0.0"
-	byteCodePath          = "../../testdata/counter-go-demo/counter-rust-0.7.2.wasm"
-	upgradeByteCodePath   = "../../testdata/counter-go-demo/counter-go-upgrade.wasm"
+	byteCodePath          = "../../testdata/counter-go-demo/rust-counter-1.0.0.wasm"
+	upgradeByteCodePath   = "../../testdata/counter-go-demo/rust-counter-2.0.0.wasm"
 
 	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
@@ -83,10 +82,10 @@ func testUserContractCounterGo() {
 	testUserContractCounterGoQuery(client, "query", nil)
 
 	//fmt.Println("====================== 吊销合约 ======================")
-	//testUserContractCounterGoRevoke(t, client, admin1, admin2, admin3, admin4, false)
+	//testUserContractCounterGoRevoke(client, admin1, admin2, admin3, admin4, false)
 	//time.Sleep(5 * time.Second)
 	//fmt.Println("====================== 执行合约查询接口 ======================")
-	//testUserContractCounterGoQuery(t, client, "query", nil)
+	//testUserContractCounterGoQuery(client, "query", nil)
 
 	fmt.Println("====================== 调用合约（同步）======================")
 	testUserContractCounterGoInvoke(client, "increase", nil, true)
@@ -94,19 +93,47 @@ func testUserContractCounterGo() {
 	fmt.Println("====================== 执行合约查询接口 ======================")
 	testUserContractCounterGoQuery(client, "query", nil)
 
-	fmt.Println("====================== 升级合约（异步）======================")
-	testUserContractCounterGoUpgrade(client, admin1, admin2, admin3, admin4)
+	fmt.Println("====================== 调用升级合约的接口(报错) ======================")
+	testUserContractCounterGoInvoke(client, "add_two", nil, true)
+
+	fmt.Println("====================== 升级合约 ======================")
+	testUserContractCounterGoUpgrade(client, admin1, admin2, admin3, admin4, false)
 	time.Sleep(5 * time.Second)
 
-	params := map[string]string{
-		"key":   "key001",
-		"name":  "name001",
-		"value": "value001",
-	}
-	testUserContractCounterGoInvoke(client, "upgrade_set_store", params, false)
-	time.Sleep(5 * time.Second)
+	fmt.Println("====================== 调用新接口 ======================")
+	testUserContractCounterGoInvoke(client, "add_two", nil, true)
 
-	testUserContractCounterGoQuery(client, "upgrade_get_store", params)
+	fmt.Println("====================== 执行合约查询接口 ======================")
+	testUserContractCounterGoQuery(client, "query", nil)
+
+	//====================== 创建合约（异步）======================
+	//CREATE counter-go contract resp: message:"OK" tx_id:"383cf7ca18f6459d8cc643f021db16f61fd0df87ee3b46d787634f5a28a06e62"
+	//====================== 调用合约（异步）======================
+	//invoke contract success, resp: [code:0]/[msg:OK]/[txId:5452383de99a471999c1530c9c777377ff27a705bafb40a5ba9b72688ab88eec]
+	//====================== 执行合约查询接口1 ======================
+	//QUERY counter-go contract resp: message:"SUCCESS" contract_result:<result:"1" gas_used:11541125 > tx_id:"fa8cddc2cd3b4b81a465e7d01ce4804ad6acc3336a17403ea6c755f8c7e54916"
+	//====================== 冻结合约 ======================
+	//resp: message:"OK" tx_id:"2e94e47369ad45c588ac712c18598f28f976e54a716941e38f03cfdb35c5a0ce"
+	//Freeze counter-go contract resp: message:"OK" tx_id:"2e94e47369ad45c588ac712c18598f28f976e54a716941e38f03cfdb35c5a0ce"
+	//====================== 执行合约查询接口2 ======================
+	//QUERY counter-go contract resp: code:CONTRACT_FREEZE_FAILED message:"txStatusCode:36, resultCode:1, contractName[counter001] method[query] txType[QUERY_CONTRACT], failed to run user contract, counter001 has been frozen." contract_result:<code:1 message:"failed to run user contract, counter001 has been frozen." > tx_id:"f2c749f260b140af9e3c0a1cab2c4e966c7e7f823ddd4aaab88f355e7f457e01"
+	//====================== 解冻合约 ======================
+	//unfreeze resp: message:"OK" tx_id:"137c39c5e3dc4e96a5847c9536c9c0c292e38bf459f74d7eb65202a5e08ebb9d"
+	//Unfreeze counter-go contract resp: message:"OK" tx_id:"137c39c5e3dc4e96a5847c9536c9c0c292e38bf459f74d7eb65202a5e08ebb9d"
+	//====================== 执行合约查询接口3 ======================
+	//QUERY counter-go contract resp: message:"SUCCESS" contract_result:<result:"1" gas_used:11541125 > tx_id:"aec5a93436f84ef69c949e03f6e57b8038490ae5d509460c91fae7f4f3d2c4bf"
+	//====================== 调用合约（同步）======================
+	//invoke contract success, resp: [code:0]/[msg:OK]/[contractResult:result:"++ stone success count=2" gas_used:14081908 ]
+	//====================== 执行合约查询接口 ======================
+	//QUERY counter-go contract resp: message:"SUCCESS" contract_result:<result:"2" gas_used:11543981 > tx_id:"5f141e2ef34b4047892c0addecdd0d81cf8948d7bef4404ea50a89f933af25af"
+	//====================== 调用升级合约的接口(报错) ======================
+	//invoke contract success, resp: [code:0]/[msg:OK]/[contractResult:code:1 message:"contract[counter001] invoke failed, method [add_two] not export" gas_used:71537 ]
+	//====================== 升级合约 ======================
+	//UPGRADE counter-go contract resp: message:"OK" tx_id:"66177733a6944147b30bde9510c1ae11b8f2e803bce947e3877dae1459d4ce65"
+	//====================== 调用新接口 ======================
+	//invoke contract success, resp: [code:0]/[msg:OK]/[contractResult:result:"++ stone success count=4" gas_used:14065288 ]
+	//====================== 执行合约查询接口 ======================
+	//QUERY counter-go contract resp: message:"SUCCESS" contract_result:<result:"4" gas_used:11488459 > tx_id:"549c1b3e4cf3447785a6185e81d15ef51bf689aa52d3485792427257d429d1cc"
 }
 
 // [用户合约]
@@ -122,47 +149,23 @@ func testUserContractCounterGoCreate(client, admin1, admin2, admin3, admin4 *sdk
 }
 
 // 更新合约
-func testUserContractCounterGoUpgrade(client, admin1, admin2, admin3, admin4 *sdk.ChainClient) {
-	payloadBytes, err := client.CreateContractUpgradePayload(contractName, upgradeVersion, upgradeByteCodePath, common.RuntimeType_GASM, []*common.KeyValuePair{})
+func testUserContractCounterGoUpgrade(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, withSyncResult bool) {
+	payload, err := client.CreateContractUpgradePayload(contractName, upgradeVersion, upgradeByteCodePath, common.RuntimeType_WASMER, []*common.KeyValuePair{})
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
+	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
+	resp, err := client.SendContractManageRequest(payload, endorsers, -1, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
-		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, -1, false)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	err = examples.CheckProposalRequestResp(resp, true)
+	err = examples.CheckProposalRequestResp(resp, false)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -173,47 +176,23 @@ func testUserContractCounterGoUpgrade(client, admin1, admin2, admin3, admin4 *sd
 // 冻结合约
 func testUserContractCounterGoFreeze(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
 	withSyncResult bool) {
-	payloadBytes, err := client.CreateContractFreezePayload(contractName)
+	payload, err := client.CreateContractFreezePayload(contractName)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
+	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
-		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	fmt.Printf("resp: %+v\n", resp)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = examples.CheckProposalRequestResp(resp, true)
+	err = examples.CheckProposalRequestResp(resp, false)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -224,47 +203,23 @@ func testUserContractCounterGoFreeze(client, admin1, admin2, admin3, admin4 *sdk
 // 解冻合约
 func testUserContractCounterGoUnfreeze(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
 	withSyncResult bool) {
-	payloadBytes, err := client.CreateContractUnfreezePayload(contractName)
+	payload, err := client.CreateContractUnfreezePayload(contractName)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
+	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
-		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	fmt.Printf("unfreeze resp: %+v\n", resp)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = examples.CheckProposalRequestResp(resp, true)
+	err = examples.CheckProposalRequestResp(resp, false)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -275,47 +230,23 @@ func testUserContractCounterGoUnfreeze(client, admin1, admin2, admin3, admin4 *s
 // 吊销合约
 func testUserContractCounterGoRevoke(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
 	withSyncResult bool) {
-	payloadBytes, err := client.CreateContractRevokePayload(contractName)
+	payload, err := client.CreateContractRevokePayload(contractName)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
+	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
-		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	fmt.Printf("revoke resp: %+v\n", resp)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = examples.CheckProposalRequestResp(resp, true)
+	err = examples.CheckProposalRequestResp(resp, false)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -323,17 +254,17 @@ func testUserContractCounterGoRevoke(client, admin1, admin2, admin3, admin4 *sdk
 	fmt.Printf("revoke counter-go contract resp: %+v\n", resp)
 }
 
-func testUserContractCounterGoInvoke(client *sdk.ChainClient, method string, params map[string]string,
+func testUserContractCounterGoInvoke(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair,
 	withSyncResult bool) {
 
-	err := invokeUserContract(client, contractName, method, "", params, withSyncResult)
+	err := invokeUserContract(client, contractName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func testUserContractCounterGoQuery(client *sdk.ChainClient, method string, params map[string]string) {
-	resp, err := client.QueryContract(contractName, method, params, -1)
+func testUserContractCounterGoQuery(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair) {
+	resp, err := client.QueryContract(contractName, method, kvs, -1)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -343,46 +274,22 @@ func testUserContractCounterGoQuery(client *sdk.ChainClient, method string, para
 func createUserContract(client *sdk.ChainClient, admin1, admin2, admin3, admin4 *sdk.ChainClient,
 	contractName, version, byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool) (*common.TxResponse, error) {
 
-	payloadBytes, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
+	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
 		return nil, err
 	}
 
-	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
+	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
 	if err != nil {
 		return nil, err
 	}
 
-	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}
 
-	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
-		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
-	if err != nil {
-		return nil, err
-	}
-
-	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
-	if err != nil {
-		return nil, err
-	}
-
-	err = examples.CheckProposalRequestResp(resp, true)
+	err = examples.CheckProposalRequestResp(resp, false)
 	if err != nil {
 		return nil, err
 	}
@@ -390,39 +297,9 @@ func createUserContract(client *sdk.ChainClient, admin1, admin2, admin3, admin4 
 	return resp, nil
 }
 
-func invokeUserContractWithResult(client *sdk.ChainClient, contractName, method, txId string,
-	params map[string]string, withSyncResult bool) ([]byte, error) {
+func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, kvs []*common.KeyValuePair, withSyncResult bool) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.Code != common.TxStatusCode_SUCCESS {
-		return nil, fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
-	}
-
-	return resp.ContractResult.Result, nil
-}
-
-func invokeUserContractWithContractResult(client *sdk.ChainClient, contractName, method, txId string,
-	params map[string]string, withSyncResult bool) (*common.ContractResult, error) {
-
-	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.Code != common.TxStatusCode_SUCCESS {
-		return nil, fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
-	}
-
-	return resp.ContractResult, nil
-}
-
-func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, params map[string]string, withSyncResult bool) error {
-
-	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
 		return err
 	}
@@ -432,17 +309,17 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 	}
 
 	if !withSyncResult {
-		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
+		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.TxId)
 	} else {
-		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%s]\n", resp.Code, resp.Message, resp.ContractResult)
+		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%+v]\n", resp.Code, resp.Message, resp.ContractResult)
 	}
 
 	return nil
 }
 
 func invokeUserContractStepByStep(client *sdk.ChainClient, contractName, method, txId string,
-	params map[string]string, withSyncResult bool) error {
-	req, err := client.GetTxRequest(contractName, method, "", params)
+	kvs []*common.KeyValuePair, withSyncResult bool) error {
+	req, err := client.GetTxRequest(contractName, method, "", kvs)
 	if err != nil {
 		return err
 	}

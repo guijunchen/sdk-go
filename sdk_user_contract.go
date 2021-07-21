@@ -48,7 +48,13 @@ func (cc *ChainClient) CreateContractRevokePayload(contractName string) (*common
 }
 
 func (cc *ChainClient) createContractManagePayload(contractName, method string) (*common.Payload, error) {
-	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, contractName, method, nil, 0), nil
+	kvs := []*common.KeyValuePair {
+		{
+			Key: syscontract.GetContractInfo_CONTRACT_NAME.String(),
+			Value: []byte(contractName),
+		},
+	}
+	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(), method, kvs, 0), nil
 }
 
 func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, method, version, byteCode string,
@@ -138,9 +144,6 @@ func (cc *ChainClient) SendContractManageRequest(payload *common.Payload, endors
 }
 
 func (cc *ChainClient) InvokeContract(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
-	if txId == "" {
-		txId = utils.GetRandTxId()
-	}
 
 	cc.logger.Debugf("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, kvs)
