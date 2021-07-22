@@ -671,7 +671,7 @@ type SDKInterface interface {
 	//DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
 	// ```
 
-	// ## 10 数据归档接口
+	// ## 10 数据归档接口（以下是归档操作中的原子接口，请勿直接通过sdk调用，如需进行数据归档，请使用cmc归档工具）
 	// ### 10.1 获取已归档区块高度
 	// **参数说明**
 	//   - 输出已归档的区块高度
