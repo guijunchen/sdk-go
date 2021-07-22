@@ -68,7 +68,13 @@ func testChainConfig() {
 		log.Fatalln(err)
 	}
 
-	// 1) [CoreUpdate]
+	fmt.Println("====================== 根据区块高度获取链配置 ======================")
+	testGetChainConfigByBlockHeight(client, 1)
+
+	fmt.Println("====================== 获取链Sequence ======================")
+	testGetChainConfigSeq(client)
+
+	fmt.Println("====================== 更新CoreConfig ======================")
 	rand.Seed(time.Now().UnixNano())
 	txSchedulerTimeout := uint64(rand.Intn(61))
 	txSchedulerValidateTimeout := uint64(rand.Intn(61))
@@ -85,7 +91,7 @@ func testChainConfig() {
 		log.Fatalln("require txSchedulerValidateTimeout == int(chainConfig.Core.TxSchedulerValidateTimeout)")
 	}
 
-	// 2) [BlockUpdate]
+	fmt.Println("====================== 更新BlockConfig ======================")
 	txTimestampVerify := rand.Intn(2) == 0
 	txTimeout := uint32(rand.Intn(1000)) + 600
 	blockTxCapacity := uint32(rand.Intn(1000)) + 1
@@ -113,7 +119,7 @@ func testChainConfig() {
 		log.Fatalln("require equal")
 	}
 
-	// 3) [TrustRootAdd]
+	fmt.Println("====================== 新增trust root ca ======================")
 	trustCount := len(testGetChainConfig(client).TrustRoots)
 	raw, err := ioutil.ReadFile("../../testdata/crypto-config/wx-org5.chainmaker.org/ca/ca.crt")
 	if err != nil {
@@ -134,7 +140,7 @@ func testChainConfig() {
 		log.Fatalln("require equal")
 	}
 
-	// 4) [TrustRootUpdate]
+	fmt.Println("====================== 更新trust root ca ======================")
 	admin5, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg5Admin1Path)
 	if err != nil {
 		log.Fatalln(err)
@@ -158,7 +164,7 @@ func testChainConfig() {
 		log.Fatalln("require equal")
 	}
 
-	// 5) [TrustRootDelete]
+	fmt.Println("====================== 删除trust root ca ======================")
 	trustRootOrgId = examples.OrgId5
 	trustRootCrt = string(raw)
 	testChainConfigTrustRootDelete(client, admin1, admin2, admin3, admin5, trustRootOrgId)
@@ -370,8 +376,8 @@ func testGetChainConfig(client *sdk.ChainClient) *config.ChainConfig {
 	return resp
 }
 
-func testGetChainConfigByBlockHeight(client *sdk.ChainClient) {
-	resp, err := client.GetChainConfigByBlockHeight(1)
+func testGetChainConfigByBlockHeight(client *sdk.ChainClient, blockHeight uint64) {
+	resp, err := client.GetChainConfigByBlockHeight(blockHeight)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -428,12 +434,12 @@ func testChainConfigTrustRootUpdate(client, admin1, admin2, admin3, admin4 *sdk.
 	trustRootOrgId, trustRootCrt string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt)
+	payload, err := client.CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, admin1, admin2, admin3, admin4, payload)
 }
 
 func testChainConfigTrustRootDelete(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, trustRootOrgId string) {
@@ -624,5 +630,5 @@ func signAndSendRequest(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("chain config [CoreUpdate] resp: %+v\n", resp)
+	fmt.Printf("ChainConfigUpdate resp: %+v\n", resp)
 }
