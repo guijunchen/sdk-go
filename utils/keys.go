@@ -25,4 +25,9 @@ const (
 	MysqlDBNamePrefix     = "cm_archived_chain"
 	MysqlTableNamePrefix  = "t_block_info"
 	RowsPerBlockInfoTable = 100000
+
+	// CertManage keys
+	KeyCertHashes = "cert_hashes"
+	KeyCerts      = "certs"
+	KeyCertCrl    = "cert_crl"
 )
