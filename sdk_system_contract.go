@@ -64,6 +64,10 @@ func (cc *ChainClient) GetBlockByHeight(blockHeight uint64, withRWSet bool) (*co
 				Key:   utils.KeyBlockContractBlockHeight,
 				Value: []byte(strconv.FormatUint(blockHeight, 10)),
 			},
+			{
+				Key:   utils.KeyBlockContractWithRWSet,
+				Value: []byte(strconv.FormatBool(withRWSet)),
+			},
 		}, 0,
 	)
 
