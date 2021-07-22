@@ -141,7 +141,7 @@ func testChainConfig() {
 	}
 
 	fmt.Println("====================== 更新trust root ca ======================")
-	admin5, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg5Admin1Path)
+	admin5, err := examples.CreateChainClientWithSDKConfDisableCertHash(sdkConfigOrg5Admin1Path)
 	if err != nil {
 		log.Fatalln(err)
 	}

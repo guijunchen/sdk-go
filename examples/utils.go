@@ -16,14 +16,10 @@ import (
 )
 
 const (
-	chainId        = "chain1"
 	OrgId1         = "wx-org1.chainmaker.org"
 	OrgId2         = "wx-org2.chainmaker.org"
-	OrgId3         = "wx-org3.chainmaker.org"
 	OrgId4         = "wx-org4.chainmaker.org"
 	OrgId5         = "wx-org5.chainmaker.org"
-	orgId6         = "wx-org6.chainmaker.org"
-	orgId7         = "wx-org7.chainmaker.org"
 	certPathPrefix = "../../testdata"
 	Version        = "1.0.0"
 	UpgradeVersion = "2.0.0"
@@ -63,5 +59,17 @@ func CreateChainClientWithSDKConf(sdkConfPath string) (*sdk.ChainClient, error) 
 	if err != nil {
 		return nil, err
 	}
+	return cc, nil
+}
+
+// CreateChainClientWithSDKConfDisableCertHash create a chain client with sdk config file path, disable cert hash.
+func CreateChainClientWithSDKConfDisableCertHash(sdkConfPath string) (*sdk.ChainClient, error) {
+	cc, err := sdk.NewChainClient(
+		sdk.WithConfPath(sdkConfPath),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	return cc, nil
 }
