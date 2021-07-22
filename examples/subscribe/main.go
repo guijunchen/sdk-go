@@ -8,57 +8,41 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"context"
-	"fmt"
-	"log"
-	"time"
-
-	"chainmaker.org/chainmaker/common/random/uuid"
 	"chainmaker.org/chainmaker/pb-go/common"
 	sdk "chainmaker.org/chainmaker/sdk-go"
 	"chainmaker.org/chainmaker/sdk-go/examples"
+	"context"
+	"fmt"
+	"log"
 )
 
 const (
-	sendTxCount       = 5
-	claimContractName = "claim001"
-
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
 func main() {
-	go testSubscribeBlock()
-	go testSubscribeTx()
-	go testSubscribeContractEvent()
-	select {}
-}
-
-func testSubscribeBlock() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
+	go testSubscribeBlock(client, false)
+	go testSubscribeBlock(client, true)
+	go testSubscribeTx(client)
+	go testSubscribeContractEvent(client)
+	select {}
+}
+
+func testSubscribeBlock(client *sdk.ChainClient, onlyHeader bool) {
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	c, err := client.SubscribeBlock(ctx, 0, 10, true, false)
-	//c, err := client.SubscribeBlock(ctx, 5, 16, false)
-	//c, err := client.SubscribeBlock(ctx, 0, -1, false)
-	//c, err := client.SubscribeBlock(ctx, 10, -1, false)
+	c, err := client.SubscribeBlock(ctx, 0, 10, true, onlyHeader)
+	//c, err := client.SubscribeBlock(ctx, 10, -1, true, onlyHeader)
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	go func() {
-		for i := 0; i < sendTxCount; i++ {
-			_, err := testUserContractClaimInvoke(client, "save", false)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			time.Sleep(2 * time.Second)
-		}
-	}()
 
 	for {
 		select {
@@ -72,12 +56,21 @@ func testSubscribeBlock() {
 				log.Fatalln("require not nil")
 			}
 
-			blockInfo, ok := block.(*common.BlockInfo)
-			if !ok {
-				log.Fatalln("require true")
-			}
+			if onlyHeader {
+				blockHeader, ok := block.(*common.BlockHeader)
+				if !ok {
+					log.Fatalln("require true")
+				}
 
-			fmt.Printf("recv block [%d] => %+v\n", blockInfo.Block.Header.BlockHeight, blockInfo)
+				fmt.Printf("recv block [%d] => %+v\n", blockHeader.BlockHeight, blockHeader)
+			} else {
+				blockInfo, ok := block.(*common.BlockInfo)
+				if !ok {
+					log.Fatalln("require true")
+				}
+
+				fmt.Printf("recv block [%d] => %+v\n", blockInfo.Block.Header.BlockHeight, blockInfo)
+			}
 
 			//if err := client.Stop(); err != nil {
 			//	return
@@ -89,29 +82,17 @@ func testSubscribeBlock() {
 	}
 }
 
-func testSubscribeTx() {
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
+func testSubscribeTx(client *sdk.ChainClient) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	c, err := client.SubscribeTx(ctx, -1, -1, "", nil)
+	//c, err := client.SubscribeTx(ctx, 0, 4, "", nil)
+	//c, err := client.SubscribeTx(ctx, 0, -1, "", []string{"fc4eac7ac478453aa486ab84e4f814df56b39ccfc5d9418d96a197781327bf31"})
+	//c, err := client.SubscribeTx(ctx, 0, -1, syscontract.SystemContract_CERT_MANAGE.String(), nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	go func() {
-		for i := 0; i < sendTxCount; i++ {
-			_, err := testUserContractClaimInvoke(client, "save", false)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			time.Sleep(2 * time.Second)
-		}
-	}()
 
 	for {
 		select {
@@ -142,12 +123,7 @@ func testSubscribeTx() {
 	}
 }
 
-func testSubscribeContractEvent() {
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
+func testSubscribeContractEvent(client *sdk.ChainClient) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -157,16 +133,6 @@ func testSubscribeContractEvent() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	go func() {
-		for i := 0; i < sendTxCount; i++ {
-			_, err := testUserContractClaimInvoke(client, "save", false)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			time.Sleep(2 * time.Second)
-		}
-	}()
 
 	for {
 		select {
@@ -192,55 +158,4 @@ func testSubscribeContractEvent() {
 			return
 		}
 	}
-}
-
-
-func testUserContractClaimInvoke(client *sdk.ChainClient, method string, withSyncResult bool) (string, error) {
-	curTime := time.Now().Format("2006-01-02 15:04:05")
-
-	fileHash := uuid.GetUUID()
-
-	kvs := []*common.KeyValuePair{
-		{
-			Key: "time",
-			Value: []byte(curTime),
-		},
-		{
-			Key: "file_hash",
-			Value: []byte(fileHash),
-		},
-		{
-			Key: "file_name",
-			Value: []byte(fmt.Sprintf("file_%s", curTime)),
-		},
-	}
-
-	err := invokeUserContract(client, claimContractName, method, "", kvs, withSyncResult)
-	//err := invokeUserContractStepByStep(client, claimContractName, method, "", params, withSyncResult)
-	if err != nil {
-		return "", err
-	}
-
-	return fileHash, nil
-}
-
-func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, kvs []*common.KeyValuePair,
-	withSyncResult bool) error {
-
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
-	if err != nil {
-		return err
-	}
-
-	if resp.Code != common.TxStatusCode_SUCCESS {
-		return fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
-	}
-
-	if !withSyncResult {
-		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
-	} else {
-		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%s]\n", resp.Code, resp.Message, resp.ContractResult)
-	}
-
-	return nil
 }
