@@ -267,7 +267,8 @@ type SDKInterface interface {
 
 	// ### 3.4 链配置更新获取Payload签名
 	// ```go
-	SignChainConfigPayload(payloadBytes []byte) ([]byte, error)
+	//SignChainConfigPayload(payloadBytes []byte) ([]byte, error)
+	SignChainConfigPayload(payload *common.Payload) (*common.EndorsementEntry, error)
 	//// ```
 	//
 	//// ### 3.5 链配置更新Payload签名收集&合并
@@ -284,10 +285,10 @@ type SDKInterface interface {
 
 	// ### 3.7 更新Core模块待签名payload生成
 	// **参数说明**
-	//   - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]，若无需修改，请置为-1
-	//   - txSchedulerValidateTimeout: 交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60]，若无需修改，请置为-1
+	//   - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60], 若设置为0，则抛出错误
+	//   - txSchedulerValidateTimeout: 交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60], 若设置为0，则抛出错误
 	// ```go
-	CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int64) (*common.Payload, error)
+	CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout uint64) (*common.Payload, error)
 	// ```
 
 	// ### 3.8 更新Core模块待签名payload生成
@@ -299,7 +300,7 @@ type SDKInterface interface {
 	//   - blockSize: 区块最大限制，单位MB，其值范围为(0, +∞]
 	//   - blockInterval: 出块间隔，单位:ms，其值范围为[10, +∞]
 	// ```go
-	CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize, blockInterval int64) (*common.Payload, error)
+	CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize, blockInterval uint32) (*common.Payload, error)
 	// ```
 
 	// ### 3.9 添加信任组织根证书待签名payload生成
