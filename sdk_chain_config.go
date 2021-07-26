@@ -97,11 +97,11 @@ func (cc *ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, tx
 	cc.logger.Debug("[SDK] begin to create [CoreUpdate] to be signed payload")
 
 	if txSchedulerTimeout > 60 {
-		return nil, fmt.Errorf("[tx_scheduler_timeout] should be [0,60]")
+		return nil, fmt.Errorf("[tx_scheduler_timeout] should be (0,60]")
 	}
 
 	if txSchedulerValidateTimeout > 60 {
-		return nil, fmt.Errorf("[tx_scheduler_validate_timeout] should be [0,60]")
+		return nil, fmt.Errorf("[tx_scheduler_validate_timeout] should be (0,60]")
 	}
 
 	pairs := make([]*common.KeyValuePair, 0)
