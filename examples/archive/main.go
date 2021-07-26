@@ -27,6 +27,8 @@ const (
 
 func main() {
 	testArchive()
+
+	// 确保链外存储中已经有已归档的区块数据
 	testRestore()
 	testGetFromArchiveStore()
 }
@@ -38,7 +40,7 @@ func testArchive() {
 	}
 
 	fmt.Println("====================== 数据归档 ======================")
-	var targetBlockHeight int64 = 20
+	var targetBlockHeight uint64 = 20
 	testArchiveBlock(admin1, targetBlockHeight)
 }
 
@@ -54,7 +56,7 @@ func testRestore() {
 	}
 
 	fmt.Println("====================== 归档恢复 ======================")
-	var blockHeight int64 = 2
+	var blockHeight uint64 = 20
 
 	fullBlock, err := client1.GetArchivedFullBlockByHeight(blockHeight)
 	if err != nil {
@@ -77,7 +79,7 @@ func testGetFromArchiveStore() {
 	}
 
 	fmt.Println("====================== 归档查询 ======================")
-	var blockHeight int64 = 8
+	var blockHeight uint64 = 8
 	fullBlockInfo, err := client.GetFromArchiveStore(blockHeight)
 	if err != nil {
 		log.Fatalln(err)
@@ -114,7 +116,7 @@ func testGetFromArchiveStore() {
 	}
 	prettyJsonShow("GetArchivedBlockByHash without rwset", blockInfo)
 
-	txId := blockInfo.Block.Txs[0].Header.TxId
+	txId := blockInfo.Block.Txs[0].Payload.TxId
 	txInfo, err := client.GetArchivedTxByTxId(txId)
 	if err != nil {
 		log.Fatalln(err)
@@ -130,13 +132,12 @@ func prettyJsonShow(name string, v interface{}) {
 	fmt.Printf("\n\n\n====== %s ======\n%s\n==========================\n", name, marshal)
 }
 
-func testArchiveBlock(admin1 *sdk.ChainClient, targetBlockHeight int64) {
+func testArchiveBlock(admin1 *sdk.ChainClient, targetBlockHeight uint64) {
 	var (
 		err                error
-		payload            []byte
-		signedPayloadBytes []byte
+		payload            *common.Payload
+		signedPayloadBytes *common.Payload
 		resp               *common.TxResponse
-		result             string
 	)
 
 	payload, err = admin1.CreateArchiveBlockPayload(targetBlockHeight)
@@ -159,18 +160,15 @@ func testArchiveBlock(admin1 *sdk.ChainClient, targetBlockHeight int64) {
 		log.Fatalln(err)
 	}
 
-	result = string(resp.ContractResult.Result)
-
-	fmt.Printf("resp: %+v, result:%s\n", resp, result)
+	fmt.Printf("resp: %+v\n", resp)
 }
 
 func testRestoreBlock(admin1 *sdk.ChainClient, fullBlock []byte) {
 	var (
 		err                error
-		payload            []byte
-		signedPayloadBytes []byte
+		payload            *common.Payload
+		signedPayloadBytes *common.Payload
 		resp               *common.TxResponse
-		result             string
 	)
 
 	payload, err = admin1.CreateRestoreBlockPayload(fullBlock)
@@ -193,7 +191,5 @@ func testRestoreBlock(admin1 *sdk.ChainClient, fullBlock []byte) {
 		log.Fatalln(err)
 	}
 
-	result = string(resp.ContractResult.Result)
-
-	fmt.Printf("resp: %+v, result:%s\n", resp, result)
+	fmt.Printf("resp: %+v\n", resp)
 }

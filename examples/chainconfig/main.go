@@ -68,29 +68,35 @@ func testChainConfig() {
 		log.Fatalln(err)
 	}
 
-	// 1) [CoreUpdate]
+	fmt.Println("====================== 根据区块高度获取链配置 ======================")
+	testGetChainConfigByBlockHeight(client, 1)
+
+	fmt.Println("====================== 获取链Sequence ======================")
+	testGetChainConfigSeq(client)
+
+	fmt.Println("====================== 更新CoreConfig ======================")
 	rand.Seed(time.Now().UnixNano())
-	txSchedulerTimeout := rand.Intn(61)
-	txSchedulerValidateTimeout := rand.Intn(61)
+	txSchedulerTimeout := uint64(rand.Intn(61))
+	txSchedulerValidateTimeout := uint64(rand.Intn(61))
 	testChainConfigCoreUpdate(client, admin1, admin2, admin3, admin4, txSchedulerTimeout, txSchedulerValidateTimeout)
 	time.Sleep(5 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	fmt.Printf("txSchedulerTimeout: %d, txSchedulerValidateTimeout: %d\n", txSchedulerTimeout, txSchedulerValidateTimeout)
 	fmt.Printf("chainConfig txSchedulerTimeout: %d, txSchedulerValidateTimeout: %d\n",
 		chainConfig.Core.TxSchedulerTimeout, chainConfig.Core.TxSchedulerValidateTimeout)
-	if txSchedulerTimeout != int(chainConfig.Core.TxSchedulerTimeout) {
+	if txSchedulerTimeout != chainConfig.Core.TxSchedulerTimeout {
 		log.Fatalln("require txSchedulerTimeout == int(chainConfig.Core.TxSchedulerTimeout)")
 	}
-	if txSchedulerValidateTimeout != int(chainConfig.Core.TxSchedulerValidateTimeout) {
+	if txSchedulerValidateTimeout != chainConfig.Core.TxSchedulerValidateTimeout {
 		log.Fatalln("require txSchedulerValidateTimeout == int(chainConfig.Core.TxSchedulerValidateTimeout)")
 	}
 
-	// 2) [BlockUpdate]
+	fmt.Println("====================== 更新BlockConfig ======================")
 	txTimestampVerify := rand.Intn(2) == 0
-	txTimeout := rand.Intn(1000) + 600
-	blockTxCapacity := rand.Intn(1000) + 1
-	blockSize := rand.Intn(10) + 1
-	blockInterval := rand.Intn(10000) + 10
+	txTimeout := uint32(rand.Intn(1000)) + 600
+	blockTxCapacity := uint32(rand.Intn(1000)) + 1
+	blockSize := uint32(rand.Intn(10)) + 1
+	blockInterval := uint32(rand.Intn(10000)) + 10
 	testChainConfigBlockUpdate(client, admin1, admin2, admin3, admin4, txTimestampVerify, txTimeout, blockTxCapacity, blockSize, blockInterval)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
@@ -100,20 +106,20 @@ func testChainConfig() {
 	if chainConfig.Block.TxTimestampVerify != txTimestampVerify {
 		log.Fatalln("require chainConfig.Block.TxTimestampVerify == txTimestampVerify")
 	}
-	if txTimeout != int(chainConfig.Block.TxTimeout) {
+	if txTimeout != chainConfig.Block.TxTimeout {
 		log.Fatalln("require txTimeout == int(chainConfig.Block.TxTimeout)")
 	}
-	if blockTxCapacity != int(chainConfig.Block.BlockTxCapacity) {
+	if blockTxCapacity != chainConfig.Block.BlockTxCapacity {
 		log.Fatalln("require equal")
 	}
-	if blockSize != int(chainConfig.Block.BlockSize) {
+	if blockSize != chainConfig.Block.BlockSize {
 		log.Fatalln("require equal")
 	}
-	if blockInterval != int(chainConfig.Block.BlockInterval) {
+	if blockInterval != chainConfig.Block.BlockInterval {
 		log.Fatalln("require equal")
 	}
 
-	// 3) [TrustRootAdd]
+	fmt.Println("====================== 新增trust root ca ======================")
 	trustCount := len(testGetChainConfig(client).TrustRoots)
 	raw, err := ioutil.ReadFile("../../testdata/crypto-config/wx-org5.chainmaker.org/ca/ca.crt")
 	if err != nil {
@@ -134,8 +140,8 @@ func testChainConfig() {
 		log.Fatalln("require equal")
 	}
 
-	// 4) [TrustRootUpdate]
-	admin5, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg5Admin1Path)
+	fmt.Println("====================== 更新trust root ca ======================")
+	admin5, err := examples.CreateChainClientWithSDKConfDisableCertHash(sdkConfigOrg5Admin1Path)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -158,7 +164,7 @@ func testChainConfig() {
 		log.Fatalln("require equal")
 	}
 
-	// 5) [TrustRootDelete]
+	fmt.Println("====================== 删除trust root ca ======================")
 	trustRootOrgId = examples.OrgId5
 	trustRootCrt = string(raw)
 	testChainConfigTrustRootDelete(client, admin1, admin2, admin3, admin5, trustRootOrgId)
@@ -321,7 +327,7 @@ func testChainConfig() {
 	kvs := []*common.KeyValuePair{
 		{
 			Key:   testKey,
-			Value: "test_value",
+			Value: []byte("test_value"),
 		},
 	}
 	testChainConfigConsensusExtAdd(client, admin1, admin2, admin3, admin4, kvs)
@@ -338,7 +344,7 @@ func testChainConfig() {
 	kvs = []*common.KeyValuePair{
 		{
 			Key:   testKey,
-			Value: "updated_value",
+			Value: []byte("updated_value"),
 		},
 	}
 	testChainConfigConsensusExtUpdate(client, admin1, admin2, admin3, admin4, kvs)
@@ -370,8 +376,8 @@ func testGetChainConfig(client *sdk.ChainClient) *config.ChainConfig {
 	return resp
 }
 
-func testGetChainConfigByBlockHeight(client *sdk.ChainClient) {
-	resp, err := client.GetChainConfigByBlockHeight(1)
+func testGetChainConfigByBlockHeight(client *sdk.ChainClient, blockHeight uint64) {
+	resp, err := client.GetChainConfigByBlockHeight(blockHeight)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -387,20 +393,20 @@ func testGetChainConfigSeq(client *sdk.ChainClient) {
 }
 
 func testChainConfigCoreUpdate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, txSchedulerTimeout,
-	txSchedulerValidateTimeout int) {
+	txSchedulerValidateTimeout uint64) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigCoreUpdatePayload(
+	payload, err := client.CreateChainConfigCoreUpdatePayload(
 		txSchedulerTimeout, txSchedulerValidateTimeout)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, admin1, admin2, admin3, admin4, payload)
 }
 
 func testChainConfigBlockUpdate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, txTimestampVerify bool,
-	txTimeout, blockTxCapacity, blockSize, blockInterval int) {
+	txTimeout, blockTxCapacity, blockSize, blockInterval uint32) {
 
 	// 配置块更新payload生成
 	payloadBytes, err := client.CreateChainConfigBlockUpdatePayload(
@@ -428,12 +434,12 @@ func testChainConfigTrustRootUpdate(client, admin1, admin2, admin3, admin4 *sdk.
 	trustRootOrgId, trustRootCrt string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt)
+	payload, err := client.CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, admin1, admin2, admin3, admin4, payload)
 }
 
 func testChainConfigTrustRootDelete(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, trustRootOrgId string) {
@@ -591,45 +597,38 @@ func testChainConfigConsensusExtDelete(client, admin1, admin2, admin3, admin4 *s
 	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
 }
 
-func signAndSendRequest(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, payloadBytes []byte) {
+func signAndSendRequest(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, payload *common.Payload) {
 	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.SignChainConfigPayload(payloadBytes)
+	endorsementEntry1, err := admin1.SignChainConfigPayload(payload)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signedPayloadBytes2, err := admin2.SignChainConfigPayload(payloadBytes)
+	endorsementEntry2, err := admin2.SignChainConfigPayload(payload)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signedPayloadBytes3, err := admin3.SignChainConfigPayload(payloadBytes)
+	endorsementEntry3, err := admin3.SignChainConfigPayload(payload)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signedPayloadBytes4, err := admin4.SignChainConfigPayload(payloadBytes)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.MergeChainConfigSignedPayload([][]byte{signedPayloadBytes1,
-		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
+	endorsementEntry4, err := admin4.SignChainConfigPayload(payload)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	// 发送配置更新请求
-	resp, err := client.SendChainConfigUpdateRequest(mergeSignedPayloadBytes)
+	resp, err := client.SendChainConfigUpdateRequest(payload, []*common.EndorsementEntry{endorsementEntry1, endorsementEntry2, endorsementEntry3, endorsementEntry4}, -1, true)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = examples.CheckProposalRequestResp(resp, true)
+	err = examples.CheckProposalRequestResp(resp, false)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("chain config [CoreUpdate] resp: %+v", resp)
+	fmt.Printf("ChainConfigUpdate resp: %+v\n", resp)
 }
