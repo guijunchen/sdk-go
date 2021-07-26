@@ -285,8 +285,8 @@ type SDKInterface interface {
 
 	// ### 3.7 更新Core模块待签名payload生成
 	// **参数说明**
-	//   - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60], 若设置为0，则抛出错误
-	//   - txSchedulerValidateTimeout: 交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60], 若设置为0，则抛出错误
+	//   - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为(0, 60], 若设置为0，则抛出错误
+	//   - txSchedulerValidateTimeout: 交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为(0, 60], 若设置为0，则抛出错误
 	// ```go
 	CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout uint64) (*common.Payload, error)
 	// ```
