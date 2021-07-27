@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"chainmaker.org/chainmaker/sdk-go/utils"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -17,7 +18,6 @@ import (
 	"reflect"
 
 	"chainmaker.org/chainmaker/pb-go/common"
-	sdk "chainmaker.org/chainmaker/sdk-go"
 	"chainmaker.org/chainmaker/sdk-go/examples"
 )
 
@@ -30,6 +30,7 @@ const (
 	quoteId = "quote_id"
 	quote   = "quote_content"
 	orderId = "order_id"
+	ContractResultCode_OK uint32 = 0 //todo pb create
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
@@ -101,7 +102,7 @@ var priDir = &common.StrSlice{
 
 func testChainClientSaveData() {
 	codeHash := sha256.Sum256([]byte(computeCode))
-	txid := sdk.GetRandTxId()
+	txid := utils.GetRandTxId()
 	result := &common.ContractResult{
 		Code:    0,
 		Result:  nil,
@@ -132,13 +133,13 @@ func testChainClientSaveData() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	if res.ContractResult.Code != common.ContractResultCode_OK {
+	if res.ContractResult.Code != ContractResultCode_OK {
 		log.Fatalln("res.ContractResult.Code != common.ContractResultCode_OK")
 	}
 }
 
 func testChainClientSaveDir() {
-	txid := sdk.GetRandTxId()
+	txid := utils.GetRandTxId()
 
 	cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
@@ -148,7 +149,7 @@ func testChainClientSaveDir() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	if got.ContractResult.Code != common.ContractResultCode_OK {
+	if got.ContractResult.Code != ContractResultCode_OK {
 		log.Fatalln("got.ContractResult.Code != common.ContractResultCode_OK")
 	}
 }
