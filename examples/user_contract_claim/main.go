@@ -10,6 +10,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"chainmaker.org/chainmaker/common/random/uuid"
@@ -26,10 +27,10 @@ const (
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 
-	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
-	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
-	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
-	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
+	sdkConfigOrg1Admin1Path = "../sdk_configs/sdk_config_org1_admin1.yml"
+	sdkConfigOrg2Admin1Path = "../sdk_configs/sdk_config_org2_admin1.yml"
+	sdkConfigOrg3Admin1Path = "../sdk_configs/sdk_config_org3_admin1.yml"
+	sdkConfigOrg4Admin1Path = "../sdk_configs/sdk_config_org4_admin1.yml"
 )
 
 func main() {
@@ -75,9 +76,9 @@ func testUserContractClaim() {
 	fmt.Println("====================== 执行合约查询接口 ======================")
 	//txId := "1cbdbe6106cc4132b464185ea8275d0a53c0261b7b1a470fb0c3f10bd4a57ba6"
 	//fileHash = txId[len(txId)/2:]
-	kvs := []*common.KeyValuePair {
+	kvs := []*common.KeyValuePair{
 		{
-			Key: "file_hash",
+			Key:   "file_hash",
 			Value: []byte(fileHash),
 		},
 	}
@@ -134,21 +135,20 @@ func createUserContract(client *sdk.ChainClient, admin1, admin2, admin3, admin4 
 func testUserContractClaimInvoke(client *sdk.ChainClient,
 	method string, withSyncResult bool) (string, error) {
 
-	//curTime := fmt.Sprintf("%d", CurrentTimeMillisSeconds())
-	curTime := time.Now().Format("2006-01-02 15:04:05")
+	curTime := strconv.FormatInt(time.Now().Unix(), 10)
 
 	fileHash := uuid.GetUUID()
-	kvs := []*common.KeyValuePair {
+	kvs := []*common.KeyValuePair{
 		{
-			Key: "time",
+			Key:   "time",
 			Value: []byte(curTime),
 		},
 		{
-			Key: "file_hash",
+			Key:   "file_hash",
 			Value: []byte(fileHash),
 		},
 		{
-			Key: "file_name",
+			Key:   "file_name",
 			Value: []byte(fmt.Sprintf("file_%s", curTime)),
 		},
 	}

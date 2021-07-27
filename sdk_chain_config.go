@@ -22,8 +22,7 @@ import (
 )
 
 const (
-	getCCSeqErrStringFormat         = "get chain config sequence failed, %s"
-	genConfigPayloadErrStringFormat = "construct config update payload failed, %s"
+	getCCSeqErrStringFormat = "get chain config sequence failed, %s"
 )
 
 func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
@@ -54,8 +53,8 @@ func (cc *ChainClient) GetChainConfigByBlockHeight(blockHeight uint64) (*config.
 	cc.logger.Debugf("[SDK] begin to get chain config by block height [%d]", blockHeight)
 
 	var pairs = []*common.KeyValuePair{{
-		Key:   utils.KeyBlockHeight,
-		Value: utils.U64ToBytes(blockHeight),
+		Key:   utils.KeyChainConfigContractBlockHeight,
+		Value: []byte(strconv.FormatUint(blockHeight, 10)),
 	}}
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
@@ -90,42 +89,33 @@ func (cc *ChainClient) GetChainConfigSequence() (uint64, error) {
 	return chainConfig.Sequence, nil
 }
 
-func (cc *ChainClient) SignChainConfigPayload(payloadBytes []byte) ([]byte, error) {
-	signature, err := utils.SignPayloadBytes(cc.privateKey, cc.userCrt, payloadBytes)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, "SignChainConfigPayload", err)
-	}
-
-	return signature, nil
+func (cc *ChainClient) SignChainConfigPayload(payload *common.Payload) (*common.EndorsementEntry, error) {
+	return cc.SignPayload(payload)
 }
 
-//func (cc *ChainClient) MergeChainConfigSignedPayload(signedPayloadBytes [][]byte) ([]byte, error) {
-//	return mergeSystemContractSignedPayload(signedPayloadBytes)
-//}
-
-func (cc *ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int64) (*common.Payload, error) {
+func (cc *ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout uint64) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [CoreUpdate] to be signed payload")
 
 	if txSchedulerTimeout > 60 {
-		return nil, fmt.Errorf("[tx_scheduler_timeout] should be [0,60]")
+		return nil, fmt.Errorf("[tx_scheduler_timeout] should be (0,60]")
 	}
 
 	if txSchedulerValidateTimeout > 60 {
-		return nil, fmt.Errorf("[tx_scheduler_validate_timeout] should be [0,60]")
+		return nil, fmt.Errorf("[tx_scheduler_validate_timeout] should be (0,60]")
 	}
 
 	pairs := make([]*common.KeyValuePair, 0)
 	if txSchedulerTimeout > 0 {
 		pairs = append(pairs, &common.KeyValuePair{
-			Key:   "tx_scheduler_timeout",
-			Value: utils.I64ToBytes(txSchedulerTimeout),
+			Key:   utils.KeyTxSchedulerTimeout,
+			Value: []byte(strconv.FormatUint(txSchedulerTimeout, 10)),
 		})
 	}
 
 	if txSchedulerValidateTimeout > 0 {
 		pairs = append(pairs, &common.KeyValuePair{
-			Key:   "tx_scheduler_validate_timeout",
-			Value: utils.I64ToBytes(txSchedulerValidateTimeout),
+			Key:   utils.KeyTxSchedulerValidateTimeout,
+			Value: []byte(strconv.FormatUint(txSchedulerValidateTimeout, 10)),
 		})
 	}
 
@@ -145,7 +135,7 @@ func (cc *ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, tx
 }
 
 func (cc *ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity,
-	blockSize, blockInterval int64) (*common.Payload, error) {
+	blockSize, blockInterval uint32) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [BlockUpdate] to be signed payload")
 
 	pairs := []*common.KeyValuePair{
@@ -173,26 +163,26 @@ func (cc *ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify boo
 
 	if txTimeout > 0 {
 		pairs = append(pairs, &common.KeyValuePair{
-			Key:   "tx_timeout",
-			Value: utils.I64ToBytes(txTimeout),
+			Key:   utils.KeyTxTimeOut,
+			Value: []byte(strconv.FormatUint(uint64(txTimeout), 10)),
 		})
 	}
 	if blockTxCapacity > 0 {
 		pairs = append(pairs, &common.KeyValuePair{
-			Key:   "block_tx_capacity",
-			Value: utils.I64ToBytes(blockTxCapacity),
+			Key:   utils.KeyBlockTxCapacity,
+			Value: []byte(strconv.FormatUint(uint64(blockTxCapacity), 10)),
 		})
 	}
 	if blockSize > 0 {
 		pairs = append(pairs, &common.KeyValuePair{
-			Key:   "block_size",
-			Value: utils.I64ToBytes(blockSize),
+			Key:   utils.KeyBlockSize,
+			Value: []byte(strconv.FormatUint(uint64(blockSize), 10)),
 		})
 	}
 	if blockInterval > 0 {
 		pairs = append(pairs, &common.KeyValuePair{
-			Key:   "block_interval",
-			Value: utils.I64ToBytes(blockInterval),
+			Key:   utils.KeyBlockInterval,
+			Value: []byte(strconv.FormatUint(uint64(blockInterval), 10)),
 		})
 	}
 
@@ -212,11 +202,11 @@ func (cc *ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId, trus
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   utils.KeyOrgId,
+			Key:   utils.KeyChainConfigContractOrgId,
 			Value: []byte(trustRootOrgId),
 		},
 		{
-			Key:   "root",
+			Key:   utils.KeyChainConfigContractRoot,
 			Value: []byte(trustRootCrt),
 		},
 	}
@@ -237,11 +227,11 @@ func (cc *ChainClient) CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, t
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   utils.KeyOrgId,
+			Key:   utils.KeyChainConfigContractOrgId,
 			Value: []byte(trustRootOrgId),
 		},
 		{
-			Key:   "root",
+			Key:   utils.KeyChainConfigContractRoot,
 			Value: []byte(trustRootCrt),
 		},
 	}
@@ -262,7 +252,7 @@ func (cc *ChainClient) CreateChainConfigTrustRootDeletePayload(trustRootOrgId st
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   utils.KeyOrgId,
+			Key:   utils.KeyChainConfigContractOrgId,
 			Value: []byte(trustRootOrgId),
 		},
 	}
@@ -355,11 +345,11 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeIdAddPayload(nodeOrgId stri
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   utils.KeyOrgId,
+			Key:   utils.KeyChainConfigContractOrgId,
 			Value: []byte(nodeOrgId),
 		},
 		{
-			Key:   utils.KeyNodeIds,
+			Key:   utils.KeyChainConfigContractNodeIds,
 			Value: []byte(strings.Join(nodeIds, ",")),
 		},
 	}
@@ -380,15 +370,15 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeIdUpdatePayload(nodeOrgId, 
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   utils.KeyOrgId,
+			Key:   utils.KeyChainConfigContractOrgId,
 			Value: []byte(nodeOrgId),
 		},
 		{
-			Key:   utils.KeyNodeId,
+			Key:   utils.KeyChainConfigContractNodeId,
 			Value: []byte(nodeOldIds),
 		},
 		{
-			Key:   utils.KeyNewNodeId,
+			Key:   utils.KeyChainConfigContractNewNodeId,
 			Value: []byte(nodeNewIds),
 		},
 	}
@@ -409,11 +399,11 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeIdDeletePayload(nodeOrgId, 
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   utils.KeyOrgId,
+			Key:   utils.KeyChainConfigContractOrgId,
 			Value: []byte(nodeOrgId),
 		},
 		{
-			Key:   utils.KeyNodeId,
+			Key:   utils.KeyChainConfigContractNodeId,
 			Value: []byte(nodeId),
 		},
 	}
@@ -434,11 +424,11 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId str
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   utils.KeyOrgId,
+			Key:   utils.KeyChainConfigContractOrgId,
 			Value: []byte(nodeOrgId),
 		},
 		{
-			Key:   utils.KeyNodeIds,
+			Key:   utils.KeyChainConfigContractNodeIds,
 			Value: []byte(strings.Join(nodeIds, ",")),
 		},
 	}
@@ -459,11 +449,11 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId 
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   utils.KeyOrgId,
+			Key:   utils.KeyChainConfigContractOrgId,
 			Value: []byte(nodeOrgId),
 		},
 		{
-			Key:   utils.KeyNodeIds,
+			Key:   utils.KeyChainConfigContractNodeIds,
 			Value: []byte(strings.Join(nodeIds, ",")),
 		},
 	}
@@ -484,7 +474,7 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeOrgDeletePayload(nodeOrgId 
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   utils.KeyOrgId,
+			Key:   utils.KeyChainConfigContractOrgId,
 			Value: []byte(nodeOrgId),
 		},
 	}

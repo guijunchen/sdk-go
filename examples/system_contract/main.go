@@ -220,9 +220,4 @@ func testSystemContractGetBlockHeaderByHeight(client *sdk.ChainClient) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	_, err = client.GetBlockHeaderByHeight(-2)
-	if err == nil {
-		log.Fatalln("require err not nil")
-	}
 }
