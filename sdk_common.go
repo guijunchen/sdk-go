@@ -19,6 +19,8 @@ import (
 const (
 	// 轮训交易结果最大次数
 	retryCnt = 10
+	// defaultSeq default sequence
+	defaultSeq = 0
 )
 
 func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error) {
