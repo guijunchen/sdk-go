@@ -19,7 +19,10 @@ func SignPayload(keyBytes, crtBytes []byte, payload *common.Payload) (*common.En
 		return nil, fmt.Errorf("asym.PrivateKeyFromPEM failed, %s", err)
 	}
 
-	blockCrt, _ := pem.Decode(crtBytes)
+	blockCrt, rest := pem.Decode(crtBytes)
+	if len(rest) != 0 {
+		return nil, errors.New("pem.Decode failed, invalid cert")
+	}
 	crt, err := bcx509.ParseCertificate(blockCrt.Bytes)
 	if err != nil {
 		return nil, fmt.Errorf("bcx509.ParseCertificate failed, %s", err)
