@@ -183,9 +183,9 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 	)
 
 	if timeout < 0 {
-		timeout = SendTxTimeout
+		timeout = DefaultSendTxTimeout
 		if strings.HasPrefix(txRequest.Payload.TxType.String(), "QUERY") {
-			timeout = GetTxTimeout
+			timeout = DefaultGetTxTimeout
 		}
 	}
 

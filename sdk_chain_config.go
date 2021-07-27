@@ -29,7 +29,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 	cc.logger.Debug("[SDK] begin to get chain config")
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
-		syscontract.ChainConfigFunction_GET_CHAIN_CONFIG.String(), nil, 0)
+		syscontract.ChainConfigFunction_GET_CHAIN_CONFIG.String(), nil, defaultSeq)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -58,7 +58,7 @@ func (cc *ChainClient) GetChainConfigByBlockHeight(blockHeight uint64) (*config.
 	}}
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
-		syscontract.ChainConfigFunction_GET_CHAIN_CONFIG_AT.String(), pairs, 0)
+		syscontract.ChainConfigFunction_GET_CHAIN_CONFIG_AT.String(), pairs, defaultSeq)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -104,7 +104,7 @@ func (cc *ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, tx
 		return nil, fmt.Errorf("[tx_scheduler_validate_timeout] should be (0,60]")
 	}
 
-	pairs := make([]*common.KeyValuePair, 0)
+	var pairs []*common.KeyValuePair
 	if txSchedulerTimeout > 0 {
 		pairs = append(pairs, &common.KeyValuePair{
 			Key:   utils.KeyTxSchedulerTimeout,

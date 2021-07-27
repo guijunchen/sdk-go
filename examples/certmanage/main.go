@@ -21,11 +21,7 @@ import (
 )
 
 const (
-	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
-	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
-	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
-	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
 )
 
 func main() {
@@ -35,22 +31,6 @@ func main() {
 
 func testCertHash() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -66,7 +46,7 @@ func testCertHash() {
 	}
 
 	fmt.Println("====================== 用户证书删除 ======================")
-	testDeleteCert(admin1, admin2, admin3, admin4, []string{certHash})
+	testDeleteCert(client, []string{certHash})
 	time.Sleep(3 * time.Second)
 
 	fmt.Println("====================== 再次查询用户证书 ======================")
@@ -88,54 +68,30 @@ func testCertManage() {
 	// org2 client证书的CRL
 	var certCrl = "-----BEGIN CRL-----\nMIIBXTCCAQMCAQEwCgYIKoZIzj0EAwIwgYoxCzAJBgNVBAYTAkNOMRAwDgYDVQQI\nEwdCZWlqaW5nMRAwDgYDVQQHEwdCZWlqaW5nMR8wHQYDVQQKExZ3eC1vcmcyLmNo\nYWlubWFrZXIub3JnMRIwEAYDVQQLEwlyb290LWNlcnQxIjAgBgNVBAMTGWNhLnd4\nLW9yZzIuY2hhaW5tYWtlci5vcmcXDTIxMDEyMTA2NDYwM1oXDTIxMDEyMTEwNDYw\nM1owFjAUAgMK5JMXDTI0MDMyMzE1MDMwNVqgLzAtMCsGA1UdIwQkMCKAIJmXK7WF\nqU8zeeiw2Xaoh2od3xucNJD2i6BAbcgvBn2hMAoGCCqGSM49BAMCA0gAMEUCIEgb\nQsHoMkKAKAurOUUfAJpb++DYyxXS3zhvSWPxIUPWAiEAyLSd4TgB9PbSgHyGzS5D\nU1knUTu/4HKTol6GuzmV0Kg=\n-----END CRL-----"
 
-	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	fmt.Println("====================== 用户证书冻结 ======================")
-	testCertManageFrozen(admin1, admin2, admin3, admin4, certs)
+	testCertManageFrozen(client, certs)
 
 	fmt.Println("====================== 用户证书解冻 ======================")
-	testCertManageUnfrozen(admin1, admin2, admin3, admin4, certs)
+	testCertManageUnfrozen(client, certs)
 
 	fmt.Println("====================== 用户证书吊销 ======================")
-	testCertManageRevoke(admin1, admin2, admin3, admin4, certCrl)
+	testCertManageRevoke(client, certCrl)
 }
 
-func testCertManageFrozen(admin1, admin2, admin3, admin4 *sdk.ChainClient, certs []string) {
-	payload := admin1.CreateCertManageFrozenPayload(certs)
+func testCertManageFrozen(client *sdk.ChainClient, certs []string) {
+	payload := client.CreateCertManageFrozenPayload(certs)
 
-	endorsementEntry1, err := admin1.SignCertManagePayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	endorsementEntry2, err := admin2.SignCertManagePayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	endorsementEntry3, err := admin3.SignCertManagePayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	endorsementEntry4, err := admin4.SignCertManagePayload(payload)
+	endorsers, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := admin1.SendCertManageRequest(payload, []*common.EndorsementEntry{endorsementEntry1, endorsementEntry2, endorsementEntry3, endorsementEntry4}, -1, true)
+	resp, err := client.SendCertManageRequest(payload, endorsers, -1, true)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -143,27 +99,15 @@ func testCertManageFrozen(admin1, admin2, admin3, admin4 *sdk.ChainClient, certs
 	fmt.Printf("frozen resp: %+v\n", resp)
 }
 
-func testCertManageUnfrozen(admin1, admin2, admin3, admin4 *sdk.ChainClient, certs []string) {
-	payload := admin1.CreateCertManageUnfrozenPayload(certs)
+func testCertManageUnfrozen(client *sdk.ChainClient, certs []string) {
+	payload := client.CreateCertManageUnfrozenPayload(certs)
 
-	endorsementEntry1, err := admin1.SignCertManagePayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	endorsementEntry2, err := admin2.SignCertManagePayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	endorsementEntry3, err := admin3.SignCertManagePayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	endorsementEntry4, err := admin4.SignCertManagePayload(payload)
+	endorsers, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := admin1.SendCertManageRequest(payload, []*common.EndorsementEntry{endorsementEntry1, endorsementEntry2, endorsementEntry3, endorsementEntry4}, -1, true)
+	resp, err := client.SendCertManageRequest(payload, endorsers, -1, true)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -171,27 +115,15 @@ func testCertManageUnfrozen(admin1, admin2, admin3, admin4 *sdk.ChainClient, cer
 	fmt.Printf("unfrozen resp: %+v\n", resp)
 }
 
-func testCertManageRevoke(admin1, admin2, admin3, admin4 *sdk.ChainClient, certCrl string) {
-	payload := admin1.CreateCertManageRevocationPayload(certCrl)
+func testCertManageRevoke(client *sdk.ChainClient, certCrl string) {
+	payload := client.CreateCertManageRevocationPayload(certCrl)
 
-	endorsementEntry1, err := admin1.SignCertManagePayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	endorsementEntry2, err := admin2.SignCertManagePayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	endorsementEntry3, err := admin3.SignCertManagePayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	endorsementEntry4, err := admin4.SignCertManagePayload(payload)
+	endorsers, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := admin1.SendCertManageRequest(payload, []*common.EndorsementEntry{endorsementEntry1, endorsementEntry2, endorsementEntry3, endorsementEntry4}, -1, true)
+	resp, err := client.SendCertManageRequest(payload, endorsers, -1, true)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -217,7 +149,7 @@ func testQueryCert(client *sdk.ChainClient, certHashes []string) *common.CertInf
 	return certInfos
 }
 
-func testDeleteCert(admin1, admin2, admin3, admin4 *sdk.ChainClient, certHashes []string) {
+func testDeleteCert(client *sdk.ChainClient, certHashes []string) {
 	pairs := []*common.KeyValuePair{
 		{
 			Key:   "cert_hashes",
@@ -225,26 +157,14 @@ func testDeleteCert(admin1, admin2, admin3, admin4 *sdk.ChainClient, certHashes 
 		},
 	}
 
-	payload := admin1.CreateCertManagePayload(syscontract.CertManageFunction_CERTS_DELETE.String(), pairs)
+	payload := client.CreateCertManagePayload(syscontract.CertManageFunction_CERTS_DELETE.String(), pairs)
 
-	endorsementEntry1, err := admin1.SignCertManagePayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	endorsementEntry2, err := admin2.SignCertManagePayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	endorsementEntry3, err := admin3.SignCertManagePayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	endorsementEntry4, err := admin4.SignCertManagePayload(payload)
+	endorsers, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := admin1.SendCertManageRequest(payload, []*common.EndorsementEntry{endorsementEntry1, endorsementEntry2, endorsementEntry3, endorsementEntry4}, -1, true)
+	resp, err := client.SendCertManageRequest(payload, endorsers, -1, true)
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -327,7 +327,7 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (uint64, error) {
 		cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]", method)
 	}
 
-	payload := cc.createPayload("", txType, contractName, method, pairs, 0)
+	payload := cc.createPayload("", txType, contractName, method, pairs, defaultSeq)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -420,7 +420,7 @@ func (cc *ChainClient) InvokeSystemContract(contractName, method, txId string, p
 	cc.logger.Debugf("[SDK] begin to INVOKE system contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, params)
 
-	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, params, 0)
+	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, params, defaultSeq)
 
 	return cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 }
@@ -430,7 +430,7 @@ func (cc *ChainClient) QuerySystemContract(contractName, method string, params [
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [contractName:%s]/[method:%s]/[params:%+v]",
 		contractName, method, params)
 
-	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, contractName, method, params, 0)
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, contractName, method, params, defaultSeq)
 
 	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {
