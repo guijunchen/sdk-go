@@ -8,24 +8,25 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker/sdk-go/utils"
 	"fmt"
 	"io/ioutil"
+
+	"go.uber.org/zap"
 
 	"chainmaker.org/chainmaker/common/crypto"
 	"chainmaker.org/chainmaker/common/crypto/asym"
 	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
 	"chainmaker.org/chainmaker/common/log"
-	"go.uber.org/zap"
+	"chainmaker.org/chainmaker/sdk-go/utils"
 )
 
 const (
 	// 单ChainMaker节点最大连接数
 	MaxConnCnt = 1024
 	// 查询交易超时时间
-	GetTxTimeout = 10
+	DefaultGetTxTimeout = 10
 	// 发送交易超时时间
-	SendTxTimeout = 10
+	DefaultSendTxTimeout = 10
 	// 默认grpc客户端接受最大值 4M
 	DefaultRpcClientMaxReceiveMessageSize = 4
 )
