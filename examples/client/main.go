@@ -28,17 +28,25 @@ func testChainClientGetEVMAddressFromCertPath() {
 		log.Fatalln(err)
 	}
 
-	certFilePath := fmt.Sprintf(examples.UserCrtPath, examples.OrgId1)
-	addr, err := client.GetEVMAddressFromCertPath(certFilePath)
+	userOrg1Client1, err := examples.GetUser(examples.UserNameOrg1Client1)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Printf("client1 address: %s\n", addr)
 
-	certFilePath = fmt.Sprintf(examples.UserCrtPath, examples.OrgId2)
-	addr, err = client.GetEVMAddressFromCertPath(certFilePath)
+	addrInt, err := client.GetEVMAddressFromCertPath(userOrg1Client1.SignCrtPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Printf("client2 address: %s\n", addr)
+	fmt.Printf("client1 addrInt: %s\n", addrInt)
+
+	userOrg2Client1, err := examples.GetUser(examples.UserNameOrg2Client1)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	addrInt, err = client.GetEVMAddressFromCertPath(userOrg2Client1.SignCrtPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Printf("client2 addrInt: %s\n", addrInt)
 }
