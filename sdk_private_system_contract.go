@@ -40,8 +40,8 @@ func (cc *ChainClient) SaveDir(orderId, txId string,
 	}
 
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"order_id":    []byte(orderId),
-		"private_dir": priDirBytes,
+		utils.KeyOrderId:    []byte(orderId),
+		utils.KeyPrivateDir: priDirBytes,
 	})
 
 	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -74,8 +74,8 @@ func (cc *ChainClient) GetContract(contractName, codeHash string) (*common.Priva
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"contract_name": []byte(contractName),
-		"code_hash":     []byte(codeHash),
+		utils.KeyContractName: []byte(contractName),
+		utils.KeyCodeHash:     []byte(codeHash),
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -142,29 +142,28 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, isD
 
 	deployStr := strconv.FormatBool(isDeployment)
 	pairsMap := map[string][]byte{
-		"result":        []byte(resultStr),
-		"code_header":   codeHeader,
-		"contract_name": []byte(contractName),
-		"version":       []byte(contractVersion),
-		"is_deploy":     []byte(deployStr),
-		"code_hash":     codeHash,
-		"rw_set":        []byte(rwSetStr),
-		"events":        []byte(eventsStr),
-		"report_hash":   reportHash,
-		"sign":          sign,
+		utils.KeyResult:       []byte(resultStr),
+		utils.KeyCodeHeader:   codeHeader,
+		utils.KeyContractName: []byte(contractName),
+		utils.KeyVersion:      []byte(contractVersion),
+		utils.KeyIsDeploy:     []byte(deployStr),
+		utils.KeyCodeHash:     codeHash,
+		utils.KeyRWSet:        []byte(rwSetStr),
+		utils.KeyEvents:       []byte(eventsStr),
+		utils.KeyReportHash:   reportHash,
+		utils.KeySign:         sign,
 	}
 
 	if isDeployment {
-		pairsMap["deploy_req"] = privateReq
+		pairsMap[utils.KeyDeployReq] = privateReq
 	} else {
-		pairsMap["private_req"] = privateReq
+		pairsMap[utils.KeyPrivateReq] = privateReq
 	}
 
 	pairs := paramsMap2KVPairs(pairsMap)
 
 	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
 		syscontract.PrivateComputeFunction_SAVE_DATA.String(), pairs, 0)
-
 
 	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {
@@ -192,13 +191,12 @@ func (cc *ChainClient) GetData(contractName, key string) ([]byte, error) {
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"contract_name": []byte(contractName),
-		"key":           []byte(key),
+		utils.KeyContractName: []byte(contractName),
+		utils.KeyKey:          []byte(key),
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
 		syscontract.PrivateComputeFunction_GET_DATA.String(), pairs, 0)
-
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -220,7 +218,7 @@ func (cc *ChainClient) GetDir(orderId string) ([]byte, error) {
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"order_id": []byte(orderId),
+		utils.KeyOrderId: []byte(orderId),
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -255,9 +253,9 @@ func (cc *ChainClient) CheckCallerCertAuth(payload string, orgIds []string, sign
 	}
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"payload":    []byte(payload),
-		"org_ids":    orgIdsJson,
-		"sign_pairs": signPairsJson,
+		utils.KeyPayload:   []byte(payload),
+		utils.KeyOrgIds:    orgIdsJson,
+		utils.KeySignPairs: signPairsJson,
 	})
 
 	payloadBytes := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -288,7 +286,7 @@ func (cc *ChainClient) SaveEnclaveCACert(enclaveCACert, txId string, withSyncRes
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"ca_cert": []byte(enclaveCACert),
+		utils.KeyCaCert: []byte(enclaveCACert),
 	})
 
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -328,7 +326,6 @@ func (cc *ChainClient) GetEnclaveCACert() ([]byte, error) {
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
 		syscontract.PrivateComputeFunction_GET_CA_CERT.String(), pairs, 0)
 
-
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
 		return nil, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
@@ -354,13 +351,12 @@ func (cc *ChainClient) SaveEnclaveReport(enclaveId, report, txId string, withSyn
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"enclave_id": []byte(enclaveId),
-		"report":     []byte(report),
+		utils.KeyEnclaveId: []byte(enclaveId),
+		utils.KeyReport:    []byte(report),
 	})
 
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
 		syscontract.PrivateComputeFunction_SAVE_ENCLAVE_REPORT.String(), pairs, 0)
-
 
 	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {
@@ -397,7 +393,7 @@ func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncRe
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"proof": []byte(proof),
+		utils.KeyProof: []byte(proof),
 	})
 
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -433,7 +429,7 @@ func (cc *ChainClient) GetEnclaveEncryptPubKey(enclaveId string) ([]byte, error)
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"enclave_id": []byte(enclaveId),
+		utils.KeyEnclaveId: []byte(enclaveId),
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -459,7 +455,7 @@ func (cc *ChainClient) GetEnclaveVerificationPubKey(enclaveId string) ([]byte, e
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"enclave_id": []byte(enclaveId),
+		utils.KeyEnclaveId: []byte(enclaveId),
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -485,7 +481,7 @@ func (cc *ChainClient) GetEnclaveReport(enclaveId string) ([]byte, error) {
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"enclave_id": []byte(enclaveId),
+		utils.KeyEnclaveId: []byte(enclaveId),
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -511,7 +507,7 @@ func (cc *ChainClient) GetEnclaveChallenge(enclaveId string) ([]byte, error) {
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"enclave_id": []byte(enclaveId),
+		utils.KeyEnclaveId: []byte(enclaveId),
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -537,7 +533,7 @@ func (cc *ChainClient) GetEnclaveSignature(enclaveId string) ([]byte, error) {
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"enclave_id": []byte(enclaveId),
+		utils.KeyEnclaveId: []byte(enclaveId),
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -563,7 +559,7 @@ func (cc *ChainClient) GetEnclaveProof(enclaveId string) ([]byte, error) {
 
 	// 构造Payload
 	pairs := paramsMap2KVPairs(map[string][]byte{
-		"enclave_id": []byte(enclaveId),
+		utils.KeyEnclaveId: []byte(enclaveId),
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
