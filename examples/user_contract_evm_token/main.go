@@ -34,12 +34,7 @@ const (
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
-var (
-	// use cmc to calulate this addr, eg: `./cmc cert addr --cert-path xxx.tls.crt`
-	client1AddrInt = "1018109374098032500766612781247089211099623418384"
-	client2AddrInt = "1317892642413437150535769048733130623036570974971"
-	client1AddrSki = "4d2b2301e06ca9269361fce6105296cc00ee19ffaa6a5f5b37b4c7faf8889697"
-)
+var client1AddrInt, client2AddrInt, client1AddrSki string
 
 func init() {
 	userClient1, err := examples.GetUser(examples.UserNameOrg1Client1)
@@ -47,7 +42,7 @@ func init() {
 		log.Fatalln(err)
 	}
 
-	client1AddrInt, client1AddrSki, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient1.TlsCrtPath)
+	client1AddrInt, client1AddrSki, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient1.SignCrtPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -57,7 +52,7 @@ func init() {
 		log.Fatalln(err)
 	}
 
-	client2AddrInt, _, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient2.TlsCrtPath)
+	client2AddrInt, _, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient2.SignCrtPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
