@@ -116,13 +116,13 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 		return nil, err
 	}
 
-	endorsementEntrys, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		return nil, err
 	}
 
 	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(payload, endorsementEntrys, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}

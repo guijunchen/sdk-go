@@ -29,15 +29,41 @@ const (
 	tokenVersion          = "1.0.0"
 	tokenByteCodePath     = "../../testdata/token-evm-demo/token.bin"
 	tokenABIPath          = "../../testdata/token-evm-demo/token.abi"
+	amount                = 200
 
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+)
+
+var (
 	// use cmc to calulate this addr, eg: `./cmc cert addr --cert-path xxx.tls.crt`
 	client1AddrInt = "1018109374098032500766612781247089211099623418384"
 	client2AddrInt = "1317892642413437150535769048733130623036570974971"
 	client1AddrSki = "4d2b2301e06ca9269361fce6105296cc00ee19ffaa6a5f5b37b4c7faf8889697"
-	amount         = 200
-
-	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
+
+func init() {
+	userClient1, err := examples.GetUser(examples.UserNameOrg1Client1)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	client1AddrInt, client1AddrSki, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient1.TlsCrtPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	userClient2, err := examples.GetUser(examples.UserNameOrg2Client1)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	client2AddrInt, _, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient2.TlsCrtPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("client1AddrInt: %s\nclient1AddrSki: %s\nclient2AddrInt: %s\n", client1AddrInt, client1AddrSki, client2AddrInt)
+}
 
 func main() {
 	testUserContractTokenEVM()
@@ -140,13 +166,13 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 		return nil, err
 	}
 
-	endorsementEntrys, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		return nil, err
 	}
 
 	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(payload, endorsementEntrys, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}

@@ -9,9 +9,12 @@ package examples
 
 import (
 	"encoding/hex"
+	"encoding/pem"
 	"errors"
 	"fmt"
+	"io/ioutil"
 
+	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
 	"chainmaker.org/chainmaker/common/evmutils"
 	"chainmaker.org/chainmaker/pb-go/common"
 	sdk "chainmaker.org/chainmaker/sdk-go"
@@ -22,6 +25,9 @@ const (
 	OrgId2 = "wx-org2.chainmaker.org"
 	OrgId4 = "wx-org4.chainmaker.org"
 	OrgId5 = "wx-org5.chainmaker.org"
+
+	UserNameOrg1Client1 = "org1client1"
+	UserNameOrg2Client1 = "org2client1"
 
 	UserNameOrg1Admin1 = "org1admin1"
 	UserNameOrg2Admin1 = "org2admin1"
@@ -34,7 +40,8 @@ const (
 	UpgradeVersion = "2.0.0"
 )
 
-type user struct {
+type User struct {
+	TlsKeyPath, TlsCrtPath   string
 	SignKeyPath, SignCrtPath string
 }
 
@@ -42,27 +49,58 @@ var (
 	UserCrtPath = certPathPrefix + "/crypto-config/%s/user/client1/client1.tls.crt"
 )
 
-var users = map[string]*user{
+var users = map[string]*User{
+	"org1client1": {
+		"../../testdata/crypto-config/wx-org1.chainmaker.org/user/client1/client1.tls.key",
+		"../../testdata/crypto-config/wx-org1.chainmaker.org/user/client1/client1.tls.crt",
+		"../../testdata/crypto-config/wx-org1.chainmaker.org/user/client1/client1.sign.key",
+		"../../testdata/crypto-config/wx-org1.chainmaker.org/user/client1/client1.sign.crt",
+	},
+	"org2client1": {
+		"../../testdata/crypto-config/wx-org2.chainmaker.org/user/client1/client1.tls.key",
+		"../../testdata/crypto-config/wx-org2.chainmaker.org/user/client1/client1.tls.crt",
+		"../../testdata/crypto-config/wx-org2.chainmaker.org/user/client1/client1.sign.key",
+		"../../testdata/crypto-config/wx-org2.chainmaker.org/user/client1/client1.sign.crt",
+	},
 	"org1admin1": {
+		"../../testdata/crypto-config/wx-org1.chainmaker.org/user/admin1/admin1.tls.key",
+		"../../testdata/crypto-config/wx-org1.chainmaker.org/user/admin1/admin1.tls.crt",
 		"../../testdata/crypto-config/wx-org1.chainmaker.org/user/admin1/admin1.sign.key",
 		"../../testdata/crypto-config/wx-org1.chainmaker.org/user/admin1/admin1.sign.crt",
 	},
 	"org2admin1": {
+		"../../testdata/crypto-config/wx-org2.chainmaker.org/user/admin1/admin1.tls.key",
+		"../../testdata/crypto-config/wx-org2.chainmaker.org/user/admin1/admin1.tls.crt",
 		"../../testdata/crypto-config/wx-org2.chainmaker.org/user/admin1/admin1.sign.key",
 		"../../testdata/crypto-config/wx-org2.chainmaker.org/user/admin1/admin1.sign.crt",
 	},
 	"org3admin1": {
+		"../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.tls.key",
+		"../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.tls.crt",
 		"../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.sign.key",
 		"../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.sign.crt",
 	},
 	"org4admin1": {
+		"../../testdata/crypto-config/wx-org4.chainmaker.org/user/admin1/admin1.tls.key",
+		"../../testdata/crypto-config/wx-org4.chainmaker.org/user/admin1/admin1.tls.crt",
 		"../../testdata/crypto-config/wx-org4.chainmaker.org/user/admin1/admin1.sign.key",
 		"../../testdata/crypto-config/wx-org4.chainmaker.org/user/admin1/admin1.sign.crt",
 	},
 	"org5admin1": {
+		"../../testdata/crypto-config/wx-org5.chainmaker.org/user/admin1/admin1.tls.key",
+		"../../testdata/crypto-config/wx-org5.chainmaker.org/user/admin1/admin1.tls.crt",
 		"../../testdata/crypto-config/wx-org5.chainmaker.org/user/admin1/admin1.sign.key",
 		"../../testdata/crypto-config/wx-org5.chainmaker.org/user/admin1/admin1.sign.crt",
 	},
+}
+
+func GetUser(username string) (*User, error) {
+	u, ok := users[username]
+	if !ok {
+		return nil, errors.New("user not found")
+	}
+
+	return u, nil
 }
 
 func CheckProposalRequestResp(resp *common.TxResponse, needContractResult bool) error {
@@ -115,7 +153,7 @@ func CalcContractName(contractName string) string {
 }
 
 func GetEndorsers(payload *common.Payload, usernames ...string) ([]*common.EndorsementEntry, error) {
-	var endorsementEntrys []*common.EndorsementEntry
+	var endorsers []*common.EndorsementEntry
 
 	for _, name := range usernames {
 		u, ok := users[name]
@@ -128,8 +166,29 @@ func GetEndorsers(payload *common.Payload, usernames ...string) ([]*common.Endor
 			return nil, err
 		}
 
-		endorsementEntrys = append(endorsementEntrys, entry)
+		endorsers = append(endorsers, entry)
 	}
 
-	return endorsementEntrys, nil
+	return endorsers, nil
+}
+
+func MakeAddrAndSkiFromCrtFilePath(crtFilePath string) (string, string, error) {
+	crtBytes, err := ioutil.ReadFile(crtFilePath)
+	if err != nil {
+		return "", "", err
+	}
+
+	blockCrt, _ := pem.Decode(crtBytes)
+	crt, err := bcx509.ParseCertificate(blockCrt.Bytes)
+	if err != nil {
+		return "", "", err
+	}
+
+	ski := hex.EncodeToString(crt.SubjectKeyId)
+	addrInt, err := evmutils.MakeAddressFromHex(ski)
+	if err != nil {
+		return "", "", err
+	}
+
+	return addrInt.String(), ski, nil
 }

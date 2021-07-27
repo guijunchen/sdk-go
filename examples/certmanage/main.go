@@ -86,12 +86,12 @@ func testCertManage() {
 func testCertManageFrozen(client *sdk.ChainClient, certs []string) {
 	payload := client.CreateCertManageFrozenPayload(certs)
 
-	endorsementEntrys, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
+	endorsers, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := client.SendCertManageRequest(payload, endorsementEntrys, -1, true)
+	resp, err := client.SendCertManageRequest(payload, endorsers, -1, true)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -102,12 +102,12 @@ func testCertManageFrozen(client *sdk.ChainClient, certs []string) {
 func testCertManageUnfrozen(client *sdk.ChainClient, certs []string) {
 	payload := client.CreateCertManageUnfrozenPayload(certs)
 
-	endorsementEntrys, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
+	endorsers, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := client.SendCertManageRequest(payload, endorsementEntrys, -1, true)
+	resp, err := client.SendCertManageRequest(payload, endorsers, -1, true)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -118,12 +118,12 @@ func testCertManageUnfrozen(client *sdk.ChainClient, certs []string) {
 func testCertManageRevoke(client *sdk.ChainClient, certCrl string) {
 	payload := client.CreateCertManageRevocationPayload(certCrl)
 
-	endorsementEntrys, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
+	endorsers, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := client.SendCertManageRequest(payload, endorsementEntrys, -1, true)
+	resp, err := client.SendCertManageRequest(payload, endorsers, -1, true)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -159,12 +159,12 @@ func testDeleteCert(client *sdk.ChainClient, certHashes []string) {
 
 	payload := client.CreateCertManagePayload(syscontract.CertManageFunction_CERTS_DELETE.String(), pairs)
 
-	endorsementEntrys, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
+	endorsers, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := client.SendCertManageRequest(payload, endorsementEntrys, -1, true)
+	resp, err := client.SendCertManageRequest(payload, endorsers, -1, true)
 	if err != nil {
 		log.Fatalln(err)
 	}

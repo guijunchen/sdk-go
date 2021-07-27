@@ -136,12 +136,12 @@ func testUserContractCounterGoUpgrade(client *sdk.ChainClient, withSyncResult bo
 		log.Fatalln(err)
 	}
 
-	endorsementEntrys, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := client.SendContractManageRequest(payload, endorsementEntrys, -1, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, -1, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -161,12 +161,12 @@ func testUserContractCounterGoFreeze(client *sdk.ChainClient, withSyncResult boo
 		log.Fatalln(err)
 	}
 
-	endorsementEntrys, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := client.SendContractManageRequest(payload, endorsementEntrys, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	fmt.Printf("resp: %+v\n", resp)
 	if err != nil {
 		log.Fatalln(err)
@@ -187,12 +187,12 @@ func testUserContractCounterGoUnfreeze(client *sdk.ChainClient, withSyncResult b
 		log.Fatalln(err)
 	}
 
-	endorsementEntrys, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := client.SendContractManageRequest(payload, endorsementEntrys, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	fmt.Printf("unfreeze resp: %+v\n", resp)
 	if err != nil {
 		log.Fatalln(err)
@@ -213,12 +213,12 @@ func testUserContractCounterGoRevoke(client *sdk.ChainClient, withSyncResult boo
 		log.Fatalln(err)
 	}
 
-	endorsementEntrys, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := client.SendContractManageRequest(payload, endorsementEntrys, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	fmt.Printf("revoke resp: %+v\n", resp)
 	if err != nil {
 		log.Fatalln(err)
@@ -257,12 +257,12 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 		return nil, err
 	}
 
-	endorsementEntrys, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := client.SendContractManageRequest(payload, endorsementEntrys, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}

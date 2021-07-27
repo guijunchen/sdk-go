@@ -558,13 +558,13 @@ func testChainConfigConsensusExtDelete(client *sdk.ChainClient, keys []string, u
 
 func signAndSendRequest(client *sdk.ChainClient, payload *common.Payload, usernames ...string) {
 	// 各组织Admin权限用户签名
-	endorsementEntrys, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	// 发送配置更新请求
-	resp, err := client.SendChainConfigUpdateRequest(payload, endorsementEntrys, -1, true)
+	resp, err := client.SendChainConfigUpdateRequest(payload, endorsers, -1, true)
 	if err != nil {
 		log.Fatalln(err)
 	}
