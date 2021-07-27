@@ -278,7 +278,7 @@ func invokeUserHibeContractMsg(client *sdk.ChainClient, contractName, method, tx
 	org[2] = "wx-org1.chainmaker.org"
 
 	// query params
-	paramsBytesList := make([][]byte, 0)
+	var paramsBytesList [][]byte
 	for _, id := range org {
 		hibeParamsBytes, err := client.QueryHibeParamsWithOrgId(hibeContractName, findParamsByOrgId, id, -1)
 		if err != nil {

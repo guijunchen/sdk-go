@@ -37,11 +37,6 @@ const (
 	amount         = 200
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
-
-	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
-	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
-	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
-	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
 )
 
 func main() {
@@ -55,25 +50,9 @@ func testUserContractTokenEVM() {
 		log.Fatalln(err)
 	}
 
-	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	fmt.Println("====================== 创建Token合约,给client1地址分配初始代币 ======================")
-	testUserContractTokenEVMCreate(client, admin1, admin2, admin3, admin4, true, true)
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	testUserContractTokenEVMCreate(client, true, true, usernames...)
 
 	fmt.Println("====================== 查看余额 ======================")
 	testUserContractTokenEVMBalanceOf(client, client1AddrInt, true)
@@ -98,8 +77,7 @@ func testUserContractTokenEVM() {
 	//addr [1317892642413437150535769048733130623036570974971] => [200]
 }
 
-func testUserContractTokenEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	withSyncResult bool, isIgnoreSameContract bool) {
+func testUserContractTokenEVMCreate(client *sdk.ChainClient, withSyncResult bool, isIgnoreSameContract bool, usernames ...string) {
 
 	abiJson, err := ioutil.ReadFile(tokenABIPath)
 	if err != nil {
@@ -143,9 +121,8 @@ func testUserContractTokenEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.
 	//bc := string(byteCode)
 	//bc = strings.TrimSpace(bc)
 
-	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		//tokenContractName, tokenVersion, bc + data, common.RuntimeType_EVM, pairs, withSyncResult)
-		examples.CalcContractName(tokenContractName), tokenVersion, string(byteCode), common.RuntimeType_EVM, pairs, withSyncResult)
+	resp, err := createUserContract(client, examples.CalcContractName(tokenContractName), tokenVersion, string(byteCode),
+		common.RuntimeType_EVM, pairs, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
 			log.Fatalln(err)
@@ -155,21 +132,21 @@ func testUserContractTokenEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.
 	fmt.Printf("CREATE EVM token contract resp: %+v\n", resp)
 }
 
-func createUserContract(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, contractName, version,
-	byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool) (*common.TxResponse, error) {
+func createUserContract(client *sdk.ChainClient, contractName, version, byteCodePath string,
+	runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool, usernames ...string) (*common.TxResponse, error) {
 
 	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
+	endorsementEntrys, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		return nil, err
 	}
 
 	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsementEntrys, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}

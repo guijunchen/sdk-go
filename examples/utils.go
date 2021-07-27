@@ -18,19 +18,52 @@ import (
 )
 
 const (
-	OrgId1         = "wx-org1.chainmaker.org"
-	OrgId2         = "wx-org2.chainmaker.org"
-	OrgId4         = "wx-org4.chainmaker.org"
-	OrgId5         = "wx-org5.chainmaker.org"
+	OrgId1 = "wx-org1.chainmaker.org"
+	OrgId2 = "wx-org2.chainmaker.org"
+	OrgId4 = "wx-org4.chainmaker.org"
+	OrgId5 = "wx-org5.chainmaker.org"
+
+	UserNameOrg1Admin1 = "org1admin1"
+	UserNameOrg2Admin1 = "org2admin1"
+	UserNameOrg3Admin1 = "org3admin1"
+	UserNameOrg4Admin1 = "org4admin1"
+	UserNameOrg5Admin1 = "org5admin1"
 
 	certPathPrefix = "../../testdata"
 	Version        = "1.0.0"
 	UpgradeVersion = "2.0.0"
 )
 
+type user struct {
+	SignKeyPath, SignCrtPath string
+}
+
 var (
 	UserCrtPath = certPathPrefix + "/crypto-config/%s/user/client1/client1.tls.crt"
 )
+
+var users = map[string]*user{
+	"org1admin1": {
+		"../../testdata/crypto-config/wx-org1.chainmaker.org/user/admin1/admin1.sign.key",
+		"../../testdata/crypto-config/wx-org1.chainmaker.org/user/admin1/admin1.sign.crt",
+	},
+	"org2admin1": {
+		"../../testdata/crypto-config/wx-org2.chainmaker.org/user/admin1/admin1.sign.key",
+		"../../testdata/crypto-config/wx-org2.chainmaker.org/user/admin1/admin1.sign.crt",
+	},
+	"org3admin1": {
+		"../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.sign.key",
+		"../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.sign.crt",
+	},
+	"org4admin1": {
+		"../../testdata/crypto-config/wx-org4.chainmaker.org/user/admin1/admin1.sign.key",
+		"../../testdata/crypto-config/wx-org4.chainmaker.org/user/admin1/admin1.sign.crt",
+	},
+	"org5admin1": {
+		"../../testdata/crypto-config/wx-org5.chainmaker.org/user/admin1/admin1.sign.key",
+		"../../testdata/crypto-config/wx-org5.chainmaker.org/user/admin1/admin1.sign.crt",
+	},
+}
 
 func CheckProposalRequestResp(resp *common.TxResponse, needContractResult bool) error {
 	if resp.Code != common.TxStatusCode_SUCCESS {
@@ -77,21 +110,26 @@ func CreateChainClientWithSDKConfDisableCertHash(sdkConfPath string) (*sdk.Chain
 	return cc, nil
 }
 
-func GetEndorsers(payload *common.Payload, admins ...*sdk.ChainClient) ([]*common.EndorsementEntry, error) {
-	var endorsers []*common.EndorsementEntry
+func CalcContractName(contractName string) string {
+	return hex.EncodeToString(evmutils.Keccak256([]byte(contractName)))[24:]
+}
 
-	for _, admin := range admins {
-		signedPayload, err := admin.SignContractManagePayload(payload)
+func GetEndorsers(payload *common.Payload, usernames ...string) ([]*common.EndorsementEntry, error) {
+	var endorsementEntrys []*common.EndorsementEntry
+
+	for _, name := range usernames {
+		u, ok := users[name]
+		if !ok {
+			return nil, errors.New("user not found")
+		}
+
+		entry, err := sdk.SignPayloadWithPath(u.SignKeyPath, u.SignCrtPath, payload)
 		if err != nil {
 			return nil, err
 		}
 
-		endorsers = append(endorsers, signedPayload)
+		endorsementEntrys = append(endorsementEntrys, entry)
 	}
 
-	return endorsers, nil
-}
-
-func CalcContractName(contractName string) string {
-	return hex.EncodeToString(evmutils.Keccak256([]byte(contractName)))[24:]
+	return endorsementEntrys, nil
 }

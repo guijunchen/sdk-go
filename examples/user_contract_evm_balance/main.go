@@ -36,11 +36,6 @@ const (
 	amount         = 200
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
-
-	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
-	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
-	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
-	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
 )
 
 func main() {
@@ -54,28 +49,9 @@ func testUserContractBalanceEVM() {
 		log.Fatalln(err)
 	}
 
-	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	fmt.Println("====================== 创建Balance合约 ======================")
-	testUserContractBalanceEVMCreate(client, admin1, admin2, admin3, admin4, true, true)
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	testUserContractBalanceEVMCreate(client, true, true, usernames...)
 
 	fmt.Println("====================== 设置addr2余额 ======================")
 	testUserContractBalanceEVMUpdateBalance(client, client2AddrInt, 1234, true)
@@ -114,16 +90,15 @@ func testUserContractBalanceEVM() {
 	//addr [1018109374098032500766612781247089211099623418384] => [978]
 }
 
-func testUserContractBalanceEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	withSyncResult bool, isIgnoreSameContract bool) {
+func testUserContractBalanceEVMCreate(client *sdk.ChainClient, withSyncResult bool, isIgnoreSameContract bool, usernames ...string) {
 
 	byteCode, err := ioutil.ReadFile(balanceByteCodePath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		examples.CalcContractName(balanceContractName), balanceVersion, string(byteCode), common.RuntimeType_EVM, nil, withSyncResult)
+	resp, err := createUserContract(client, examples.CalcContractName(balanceContractName), balanceVersion,
+		string(byteCode), common.RuntimeType_EVM, nil, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
 			log.Fatalln(err)
@@ -133,21 +108,21 @@ func testUserContractBalanceEVMCreate(client, admin1, admin2, admin3, admin4 *sd
 	fmt.Printf("CREATE EVM balance contract resp: %+v\n", resp)
 }
 
-func createUserContract(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, contractName, version,
-	byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool) (*common.TxResponse, error) {
+func createUserContract(client *sdk.ChainClient, contractName, version, byteCodePath string,
+	runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool, usernames ...string) (*common.TxResponse, error) {
 
 	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
+	endorsementEntrys, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		return nil, err
 	}
 
 	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsementEntrys, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}
@@ -183,9 +158,9 @@ func testUserContractBalanceEVMTransfer(client *sdk.ChainClient, withSyncResult 
 	dataString := hex.EncodeToString(dataByte)
 	method := dataString[0:8]
 
-	kvs := []*common.KeyValuePair {
+	kvs := []*common.KeyValuePair{
 		{
-			Key: "data",
+			Key:   "data",
 			Value: []byte(dataString),
 		},
 	}
@@ -218,9 +193,9 @@ func testUserContractBalanceEVMUpdateBalance(client *sdk.ChainClient, address st
 	dataString := hex.EncodeToString(dataByte)
 	method := dataString[0:8]
 
-	kvs := []*common.KeyValuePair {
+	kvs := []*common.KeyValuePair{
 		{
-			Key: "data",
+			Key:   "data",
 			Value: []byte(dataString),
 		},
 	}
@@ -272,9 +247,9 @@ func testUserContractBalanceEVMGetBalance(client *sdk.ChainClient, address strin
 	dataString := hex.EncodeToString(dataByte)
 	method := dataString[0:8]
 
-	kvs := []*common.KeyValuePair {
+	kvs := []*common.KeyValuePair{
 		{
-			Key: "data",
+			Key:   "data",
 			Value: []byte(dataString),
 		},
 	}
@@ -325,9 +300,9 @@ func testUserContractBalanceEVMUpdateMyBalance(client *sdk.ChainClient, data int
 	dataString := hex.EncodeToString(dataByte)
 	method := dataString[0:8]
 
-	kvs := []*common.KeyValuePair {
+	kvs := []*common.KeyValuePair{
 		{
-			Key: "data",
+			Key:   "data",
 			Value: []byte(dataString),
 		},
 	}
@@ -359,9 +334,9 @@ func testUserContractBalanceEVMGetMyBalance(client *sdk.ChainClient, address str
 	dataString := hex.EncodeToString(dataByte)
 	method := dataString[0:8]
 
-	kvs := []*common.KeyValuePair {
+	kvs := []*common.KeyValuePair{
 		{
-			Key: "data",
+			Key:   "data",
 			Value: []byte(dataString),
 		},
 	}

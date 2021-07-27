@@ -26,11 +26,6 @@ const (
 	claimByteCodePath     = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
-
-	sdkConfigOrg1Admin1Path = "../sdk_configs/sdk_config_org1_admin1.yml"
-	sdkConfigOrg2Admin1Path = "../sdk_configs/sdk_config_org2_admin1.yml"
-	sdkConfigOrg3Admin1Path = "../sdk_configs/sdk_config_org3_admin1.yml"
-	sdkConfigOrg4Admin1Path = "../sdk_configs/sdk_config_org4_admin1.yml"
 )
 
 func main() {
@@ -44,28 +39,9 @@ func testUserContractClaim() {
 		log.Fatalln(err)
 	}
 
-	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	fmt.Println("====================== 创建合约 ======================")
-	testUserContractClaimCreate(client, admin1, admin2, admin3, admin4, true, true)
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	testUserContractClaimCreate(client, true, true, usernames...)
 
 	fmt.Println("====================== 调用合约 ======================")
 	fileHash, err := testUserContractClaimInvoke(client, "save", true)
@@ -92,11 +68,10 @@ func testUserContractClaim() {
 	//QUERY claim contract resp: message:"SUCCESS" contract_result:<result:"{\"file_hash\":\"8f4c3500833040919ea63bfe1059e117\",\"file_name\":\"file_2021-07-20 19:47:24\",\"time\":\"2021-07-20 19:47:24\"}" gas_used:24597022 > tx_id:"154d3f1bb53d432098de1664b5dbdbfa1e1420cdb4634bd3ba92431ce037ca29"
 }
 
-func testUserContractClaimCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	withSyncResult bool, isIgnoreSameContract bool) {
+func testUserContractClaimCreate(client *sdk.ChainClient, withSyncResult bool, isIgnoreSameContract bool, usernames ...string) {
 
-	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		claimContractName, claimVersion, claimByteCodePath, common.RuntimeType_WASMER, []*common.KeyValuePair{}, withSyncResult)
+	resp, err := createUserContract(client, claimContractName, claimVersion, claimByteCodePath,
+		common.RuntimeType_WASMER, []*common.KeyValuePair{}, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
 			log.Fatalln(err)
@@ -106,20 +81,20 @@ func testUserContractClaimCreate(client, admin1, admin2, admin3, admin4 *sdk.Cha
 	fmt.Printf("CREATE claim contract resp: %+v\n", resp)
 }
 
-func createUserContract(client *sdk.ChainClient, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	contractName, version, byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool) (*common.TxResponse, error) {
+func createUserContract(client *sdk.ChainClient, contractName, version, byteCodePath string, runtime common.RuntimeType,
+	kvs []*common.KeyValuePair, withSyncResult bool, usernames ...string) (*common.TxResponse, error) {
 
 	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
+	endorsementEntrys, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsementEntrys, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}

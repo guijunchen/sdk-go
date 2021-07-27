@@ -29,12 +29,7 @@ const (
 	nodePeerId1 = "QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
 	nodePeerId2 = "QmQVkTSF6aWzRSddT3rro6Ve33jhKpsHFaQoVxHKMWzhuN"
 
-	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
-	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
-	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
-	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
-	sdkConfigOrg5Admin1Path  = "../sdk_configs/sdk_config_org5_admin1.yml"
 )
 
 func main() {
@@ -51,23 +46,6 @@ func testChainConfig() {
 		log.Fatalln(err)
 	}
 
-	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	fmt.Println("====================== 根据区块高度获取链配置 ======================")
 	testGetChainConfigByBlockHeight(client, 1)
 
@@ -78,7 +56,7 @@ func testChainConfig() {
 	rand.Seed(time.Now().UnixNano())
 	txSchedulerTimeout := uint64(rand.Intn(61))
 	txSchedulerValidateTimeout := uint64(rand.Intn(61))
-	testChainConfigCoreUpdate(client, admin1, admin2, admin3, admin4, txSchedulerTimeout, txSchedulerValidateTimeout)
+	testChainConfigCoreUpdate(client, txSchedulerTimeout, txSchedulerValidateTimeout, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(5 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	fmt.Printf("txSchedulerTimeout: %d, txSchedulerValidateTimeout: %d\n", txSchedulerTimeout, txSchedulerValidateTimeout)
@@ -97,7 +75,7 @@ func testChainConfig() {
 	blockTxCapacity := uint32(rand.Intn(1000)) + 1
 	blockSize := uint32(rand.Intn(10)) + 1
 	blockInterval := uint32(rand.Intn(10000)) + 10
-	testChainConfigBlockUpdate(client, admin1, admin2, admin3, admin4, txTimestampVerify, txTimeout, blockTxCapacity, blockSize, blockInterval)
+	testChainConfigBlockUpdate(client, txTimestampVerify, txTimeout, blockTxCapacity, blockSize, blockInterval, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	fmt.Printf("tx_timestamp_verify: %s, txTimeout: %d, blockTxCapacity: %d, blockSize: %d, blockInterval: %d\n", strconv.FormatBool(txTimestampVerify), txTimeout, blockTxCapacity, blockSize, blockInterval)
@@ -127,7 +105,7 @@ func testChainConfig() {
 	}
 	trustRootOrgId := examples.OrgId5
 	trustRootCrt := string(raw)
-	testChainConfigTrustRootAdd(client, admin1, admin2, admin3, admin4, trustRootOrgId, trustRootCrt)
+	testChainConfigTrustRootAdd(client, trustRootOrgId, trustRootCrt, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if trustCount+1 != len(chainConfig.TrustRoots) {
@@ -141,17 +119,13 @@ func testChainConfig() {
 	}
 
 	fmt.Println("====================== 更新trust root ca ======================")
-	admin5, err := examples.CreateChainClientWithSDKConfDisableCertHash(sdkConfigOrg5Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
 	raw, err = ioutil.ReadFile("../../testdata/crypto-config/wx-org6.chainmaker.org/ca/ca.crt")
 	if err != nil {
 		log.Fatalln(err)
 	}
 	trustRootOrgId = examples.OrgId5
 	trustRootCrt = string(raw)
-	testChainConfigTrustRootUpdate(client, admin1, admin2, admin3, admin5, trustRootOrgId, trustRootCrt)
+	testChainConfigTrustRootUpdate(client, trustRootOrgId, trustRootCrt, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg5Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if trustCount+1 != len(chainConfig.TrustRoots) {
@@ -167,7 +141,7 @@ func testChainConfig() {
 	fmt.Println("====================== 删除trust root ca ======================")
 	trustRootOrgId = examples.OrgId5
 	trustRootCrt = string(raw)
-	testChainConfigTrustRootDelete(client, admin1, admin2, admin3, admin5, trustRootOrgId)
+	testChainConfigTrustRootDelete(client, trustRootOrgId, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg5Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if trustCount != len(chainConfig.TrustRoots) {
@@ -180,7 +154,7 @@ func testChainConfig() {
 	policy := &accesscontrol.Policy{
 		Rule: "ANY",
 	}
-	testChainConfigPermissionAdd(client, admin1, admin2, admin3, admin4, permissionResourceName, policy)
+	testChainConfigPermissionAdd(client, permissionResourceName, policy, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if permissionCount+1 != len(chainConfig.ResourcePolicies) {
@@ -195,7 +169,7 @@ func testChainConfig() {
 	policy = &accesscontrol.Policy{
 		Rule: "ANY",
 	}
-	testChainConfigPermissionUpdate(client, admin1, admin2, admin3, admin4, permissionResourceName, policy)
+	testChainConfigPermissionUpdate(client, permissionResourceName, policy, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if permissionCount+1 != len(chainConfig.ResourcePolicies) {
@@ -206,7 +180,7 @@ func testChainConfig() {
 	}
 
 	// 8) [PermissionDelete]
-	testChainConfigPermissionDelete(client, admin1, admin2, admin3, admin4, permissionResourceName)
+	testChainConfigPermissionDelete(client, permissionResourceName, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if permissionCount != len(chainConfig.ResourcePolicies) {
@@ -216,7 +190,7 @@ func testChainConfig() {
 	// 9) [ConsensusNodeAddrAdd]
 	nodeOrgId := examples.OrgId4
 	nodeIds := []string{nodePeerId1}
-	testChainConfigConsensusNodeIdAdd(client, admin1, admin2, admin3, admin4, nodeOrgId, nodeIds)
+	testChainConfigConsensusNodeIdAdd(client, nodeOrgId, nodeIds, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if nodeOrgId != chainConfig.Consensus.Nodes[3].OrgId {
@@ -233,7 +207,7 @@ func testChainConfig() {
 	nodeOrgId = examples.OrgId4
 	nodeOldId := nodePeerId1
 	nodeNewId := nodePeerId2
-	testChainConfigConsensusNodeIdUpdate(client, admin1, admin2, admin3, admin4, nodeOrgId, nodeOldId, nodeNewId)
+	testChainConfigConsensusNodeIdUpdate(client, nodeOrgId, nodeOldId, nodeNewId, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if nodeOrgId != chainConfig.Consensus.Nodes[3].OrgId {
@@ -248,7 +222,7 @@ func testChainConfig() {
 
 	// 11) [ConsensusNodeAddrDelete]
 	nodeOrgId = examples.OrgId4
-	testChainConfigConsensusNodeIdDelete(client, admin1, admin2, admin3, admin4, nodeOrgId, nodeNewId)
+	testChainConfigConsensusNodeIdDelete(client, nodeOrgId, nodeNewId, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if nodeOrgId != chainConfig.Consensus.Nodes[3].OrgId {
@@ -265,7 +239,7 @@ func testChainConfig() {
 	}
 	trustRootOrgId = examples.OrgId5
 	trustRootCrt = string(raw)
-	testChainConfigTrustRootAdd(client, admin1, admin2, admin3, admin4, trustRootOrgId, trustRootCrt)
+	testChainConfigTrustRootAdd(client, trustRootOrgId, trustRootCrt, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 5 != len(chainConfig.TrustRoots) {
@@ -279,7 +253,7 @@ func testChainConfig() {
 	}
 	nodeOrgId = examples.OrgId5
 	nodeIds = []string{nodePeerId1}
-	testChainConfigConsensusNodeOrgAdd(client, admin1, admin2, admin3, admin4, nodeOrgId, nodeIds)
+	testChainConfigConsensusNodeOrgAdd(client, nodeOrgId, nodeIds, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 5 != len(chainConfig.Consensus.Nodes) {
@@ -298,7 +272,7 @@ func testChainConfig() {
 	// 13) [ConsensusNodeOrgUpdate]
 	nodeOrgId = examples.OrgId5
 	nodeIds = []string{nodePeerId2}
-	testChainConfigConsensusNodeOrgUpdate(client, admin1, admin2, admin3, admin4, nodeOrgId, nodeIds)
+	testChainConfigConsensusNodeOrgUpdate(client, nodeOrgId, nodeIds, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 5 != len(chainConfig.Consensus.Nodes) {
@@ -316,7 +290,7 @@ func testChainConfig() {
 
 	// 14) [ConsensusNodeOrgDelete]
 	nodeOrgId = examples.OrgId5
-	testChainConfigConsensusNodeOrgDelete(client, admin1, admin2, admin3, admin4, nodeOrgId)
+	testChainConfigConsensusNodeOrgDelete(client, nodeOrgId, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 4 != len(chainConfig.Consensus.Nodes) {
@@ -330,7 +304,7 @@ func testChainConfig() {
 			Value: []byte("test_value"),
 		},
 	}
-	testChainConfigConsensusExtAdd(client, admin1, admin2, admin3, admin4, kvs)
+	testChainConfigConsensusExtAdd(client, kvs, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 2 != len(chainConfig.Consensus.ExtConfig) {
@@ -347,7 +321,7 @@ func testChainConfig() {
 			Value: []byte("updated_value"),
 		},
 	}
-	testChainConfigConsensusExtUpdate(client, admin1, admin2, admin3, admin4, kvs)
+	testChainConfigConsensusExtUpdate(client, kvs, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 2 != len(chainConfig.Consensus.ExtConfig) {
@@ -359,7 +333,7 @@ func testChainConfig() {
 
 	// 16) [ConsensusExtDelete]
 	keys := []string{testKey}
-	testChainConfigConsensusExtDelete(client, admin1, admin2, admin3, admin4, keys)
+	testChainConfigConsensusExtDelete(client, keys, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 1 != len(chainConfig.Consensus.ExtConfig) {
@@ -392,8 +366,7 @@ func testGetChainConfigSeq(client *sdk.ChainClient) {
 	fmt.Printf("chainconfig seq: %d\n", seq)
 }
 
-func testChainConfigCoreUpdate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, txSchedulerTimeout,
-	txSchedulerValidateTimeout uint64) {
+func testChainConfigCoreUpdate(client *sdk.ChainClient, txSchedulerTimeout, txSchedulerValidateTimeout uint64, usernames ...string) {
 
 	// 配置块更新payload生成
 	payload, err := client.CreateChainConfigCoreUpdatePayload(
@@ -402,36 +375,34 @@ func testChainConfigCoreUpdate(client, admin1, admin2, admin3, admin4 *sdk.Chain
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payload)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigBlockUpdate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, txTimestampVerify bool,
-	txTimeout, blockTxCapacity, blockSize, blockInterval uint32) {
+func testChainConfigBlockUpdate(client *sdk.ChainClient, txTimestampVerify bool,
+	txTimeout, blockTxCapacity, blockSize, blockInterval uint32, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigBlockUpdatePayload(
+	payload, err := client.CreateChainConfigBlockUpdatePayload(
 		txTimestampVerify, txTimeout, blockTxCapacity, blockSize, blockInterval)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigTrustRootAdd(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	trustRootOrgId, trustRootCrt string) {
+func testChainConfigTrustRootAdd(client *sdk.ChainClient, trustRootOrgId, trustRootCrt string, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigTrustRootAddPayload(trustRootOrgId, trustRootCrt)
+	payload, err := client.CreateChainConfigTrustRootAddPayload(trustRootOrgId, trustRootCrt)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigTrustRootUpdate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	trustRootOrgId, trustRootCrt string) {
+func testChainConfigTrustRootUpdate(client *sdk.ChainClient, trustRootOrgId, trustRootCrt string, usernames ...string) {
 
 	// 配置块更新payload生成
 	payload, err := client.CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt)
@@ -439,188 +410,161 @@ func testChainConfigTrustRootUpdate(client, admin1, admin2, admin3, admin4 *sdk.
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payload)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigTrustRootDelete(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, trustRootOrgId string) {
+func testChainConfigTrustRootDelete(client *sdk.ChainClient, trustRootOrgId string, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigTrustRootDeletePayload(trustRootOrgId)
+	payload, err := client.CreateChainConfigTrustRootDeletePayload(trustRootOrgId)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigPermissionAdd(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	permissionResourceName string, policy *accesscontrol.Policy) {
+func testChainConfigPermissionAdd(client *sdk.ChainClient, permissionResourceName string, policy *accesscontrol.Policy, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigPermissionAddPayload(permissionResourceName, policy)
+	payload, err := client.CreateChainConfigPermissionAddPayload(permissionResourceName, policy)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigPermissionUpdate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	permissionResourceName string, policy *accesscontrol.Policy) {
+func testChainConfigPermissionUpdate(client *sdk.ChainClient, permissionResourceName string, policy *accesscontrol.Policy, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigPermissionUpdatePayload(permissionResourceName, policy)
+	payload, err := client.CreateChainConfigPermissionUpdatePayload(permissionResourceName, policy)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigPermissionDelete(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	permissionResourceName string) {
+func testChainConfigPermissionDelete(client *sdk.ChainClient, permissionResourceName string, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigPermissionDeletePayload(permissionResourceName)
+	payload, err := client.CreateChainConfigPermissionDeletePayload(permissionResourceName)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigConsensusNodeIdAdd(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	nodeAddrOrgId string, nodeIds []string) {
+func testChainConfigConsensusNodeIdAdd(client *sdk.ChainClient, nodeAddrOrgId string, nodeIds []string, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigConsensusNodeIdAddPayload(nodeAddrOrgId, nodeIds)
+	payload, err := client.CreateChainConfigConsensusNodeIdAddPayload(nodeAddrOrgId, nodeIds)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigConsensusNodeIdUpdate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	nodeAddrOrgId, nodeOldIds, nodeNewIds string) {
+func testChainConfigConsensusNodeIdUpdate(client *sdk.ChainClient, nodeAddrOrgId, nodeOldIds, nodeNewIds string, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigConsensusNodeIdUpdatePayload(nodeAddrOrgId, nodeOldIds, nodeNewIds)
+	payload, err := client.CreateChainConfigConsensusNodeIdUpdatePayload(nodeAddrOrgId, nodeOldIds, nodeNewIds)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigConsensusNodeIdDelete(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	nodeAddrOrgId, nodeId string) {
+func testChainConfigConsensusNodeIdDelete(client *sdk.ChainClient, nodeAddrOrgId, nodeId string, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigConsensusNodeIdDeletePayload(nodeAddrOrgId, nodeId)
+	payload, err := client.CreateChainConfigConsensusNodeIdDeletePayload(nodeAddrOrgId, nodeId)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigConsensusNodeOrgAdd(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	nodeAddrOrgId string, nodeIds []string) {
+func testChainConfigConsensusNodeOrgAdd(client *sdk.ChainClient, nodeAddrOrgId string, nodeIds []string, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigConsensusNodeOrgAddPayload(nodeAddrOrgId, nodeIds)
+	payload, err := client.CreateChainConfigConsensusNodeOrgAddPayload(nodeAddrOrgId, nodeIds)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigConsensusNodeOrgUpdate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	nodeAddrOrgId string, nodeIds []string) {
+func testChainConfigConsensusNodeOrgUpdate(client *sdk.ChainClient, nodeAddrOrgId string, nodeIds []string, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigConsensusNodeOrgUpdatePayload(nodeAddrOrgId, nodeIds)
+	payload, err := client.CreateChainConfigConsensusNodeOrgUpdatePayload(nodeAddrOrgId, nodeIds)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigConsensusNodeOrgDelete(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	nodeAddrOrgId string) {
+func testChainConfigConsensusNodeOrgDelete(client *sdk.ChainClient, nodeAddrOrgId string, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigConsensusNodeOrgDeletePayload(nodeAddrOrgId)
+	payload, err := client.CreateChainConfigConsensusNodeOrgDeletePayload(nodeAddrOrgId)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigConsensusExtAdd(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	kvs []*common.KeyValuePair) {
+func testChainConfigConsensusExtAdd(client *sdk.ChainClient, kvs []*common.KeyValuePair, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigConsensusExtAddPayload(kvs)
+	payload, err := client.CreateChainConfigConsensusExtAddPayload(kvs)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigConsensusExtUpdate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	kvs []*common.KeyValuePair) {
+func testChainConfigConsensusExtUpdate(client *sdk.ChainClient, kvs []*common.KeyValuePair, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigConsensusExtUpdatePayload(kvs)
+	payload, err := client.CreateChainConfigConsensusExtUpdatePayload(kvs)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigConsensusExtDelete(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	keys []string) {
+func testChainConfigConsensusExtDelete(client *sdk.ChainClient, keys []string, usernames ...string) {
 
 	// 配置块更新payload生成
-	payloadBytes, err := client.CreateChainConfigConsensusExtDeletePayload(keys)
+	payload, err := client.CreateChainConfigConsensusExtDeletePayload(keys)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	signAndSendRequest(client, admin1, admin2, admin3, admin4, payloadBytes)
+	signAndSendRequest(client, payload, usernames...)
 }
 
-func signAndSendRequest(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, payload *common.Payload) {
+func signAndSendRequest(client *sdk.ChainClient, payload *common.Payload, usernames ...string) {
 	// 各组织Admin权限用户签名
-	endorsementEntry1, err := admin1.SignChainConfigPayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	endorsementEntry2, err := admin2.SignChainConfigPayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	endorsementEntry3, err := admin3.SignChainConfigPayload(payload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	endorsementEntry4, err := admin4.SignChainConfigPayload(payload)
+	endorsementEntrys, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	// 发送配置更新请求
-	resp, err := client.SendChainConfigUpdateRequest(payload, []*common.EndorsementEntry{endorsementEntry1, endorsementEntry2, endorsementEntry3, endorsementEntry4}, -1, true)
+	resp, err := client.SendChainConfigUpdateRequest(payload, endorsementEntrys, -1, true)
 	if err != nil {
 		log.Fatalln(err)
 	}

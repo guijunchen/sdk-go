@@ -24,11 +24,6 @@ const (
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 	sdkConfigOrg2Client1Path = "../sdk_configs/sdk_config_org2_client1.yml"
-
-	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
-	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
-	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
-	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
 )
 
 var (
@@ -53,26 +48,6 @@ func testUserContractAsset() {
 		log.Fatalln(err)
 	}
 
-	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	fmt.Println("====================== 1)安装钱包合约 ======================")
 	pairs := []*common.KeyValuePair{
 		{
@@ -85,7 +60,8 @@ func testUserContractAsset() {
 		},
 	}
 
-	testUserContractAssetCreate(client, admin1, admin2, admin3, admin4, pairs, true, false)
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	testUserContractAssetCreate(client, pairs, true, false, usernames...)
 
 	fmt.Println("====================== 2)注册另一个用户 ======================")
 	testUserContractAssetInvokeRegister(client2, "register", true)
@@ -171,11 +147,11 @@ func testUserContractAssetBalanceOf() {
 	getBalance(client, addr2)
 }
 
-func testUserContractAssetCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	kvs []*common.KeyValuePair, withSyncResult bool, isIgnoreSameContract bool) {
+func testUserContractAssetCreate(client *sdk.ChainClient, kvs []*common.KeyValuePair, withSyncResult bool,
+	isIgnoreSameContract bool, usernames ...string) {
 
-	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		assetContractName, assetVersion, assetByteCodePath, common.RuntimeType_WASMER, kvs, withSyncResult)
+	resp, err := createUserContract(client, assetContractName, assetVersion, assetByteCodePath,
+		common.RuntimeType_WASMER, kvs, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
 			log.Fatalln(err)
@@ -207,13 +183,13 @@ func testUserContractAssetQuery(client *sdk.ChainClient, method string, kvs []*c
 }
 
 func testUserContractAssetInvoke(client *sdk.ChainClient, method string, amount, addr string, withSyncResult bool) {
-	kvs := []*common.KeyValuePair {
+	kvs := []*common.KeyValuePair{
 		{
-			Key: "amount",
+			Key:   "amount",
 			Value: []byte(amount),
 		},
 		{
-			Key: "to",
+			Key:   "to",
 			Value: []byte(addr),
 		},
 	}
@@ -225,9 +201,9 @@ func testUserContractAssetInvoke(client *sdk.ChainClient, method string, amount,
 }
 
 func getBalance(client *sdk.ChainClient, addr string) {
-	kvs := []*common.KeyValuePair {
+	kvs := []*common.KeyValuePair{
 		{
-			Key: "owner",
+			Key:   "owner",
 			Value: []byte(addr),
 		},
 	}
@@ -258,21 +234,21 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 	return nil
 }
 
-func createUserContract(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, contractName, version,
+func createUserContract(client *sdk.ChainClient, contractName, version,
 	byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair,
-	withSyncResult bool) (*common.TxResponse, error) {
+	withSyncResult bool, usernames ...string) (*common.TxResponse, error) {
 
 	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
+	endorsementEntrys, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsementEntrys, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}
