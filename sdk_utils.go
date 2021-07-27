@@ -1,6 +1,7 @@
 package chainmaker_sdk_go
 
 import (
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -18,7 +19,11 @@ func SignPayload(keyBytes, crtBytes []byte, payload *common.Payload) (*common.En
 		return nil, fmt.Errorf("asym.PrivateKeyFromPEM failed, %s", err)
 	}
 
-	crt, err := bcx509.ParseCertificate(crtBytes)
+	blockCrt, rest := pem.Decode(crtBytes)
+	if len(rest) != 0 {
+		return nil, errors.New("pem.Decode failed, invalid cert")
+	}
+	crt, err := bcx509.ParseCertificate(blockCrt.Bytes)
 	if err != nil {
 		return nil, fmt.Errorf("bcx509.ParseCertificate failed, %s", err)
 	}
