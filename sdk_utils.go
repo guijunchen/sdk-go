@@ -1,6 +1,7 @@
 package chainmaker_sdk_go
 
 import (
+	"encoding/hex"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 
 	"chainmaker.org/chainmaker/common/crypto/asym"
 	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
+	"chainmaker.org/chainmaker/common/evmutils"
 	"chainmaker.org/chainmaker/pb-go/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/common"
 	"chainmaker.org/chainmaker/sdk-go/utils"
@@ -65,4 +67,29 @@ func SignPayloadWithPath(keyFilePath, crtFilePath string, payload *common.Payloa
 	}
 
 	return SignPayload(keyBytes, crtBytes, payload)
+}
+
+func GetEVMAddressFromCertPath(certFilePath string) (string, error) {
+	certBytes, err := ioutil.ReadFile(certFilePath)
+	if err != nil {
+		return "", fmt.Errorf("read cert file [%s] failed, %s", certFilePath, err)
+	}
+
+	return GetEVMAddressFromCertBytes(certBytes)
+}
+
+func GetEVMAddressFromCertBytes(certBytes []byte) (string, error) {
+	block, _ := pem.Decode(certBytes)
+	cert, err := bcx509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return "", fmt.Errorf("ParseCertificate cert failed, %s", err)
+	}
+
+	ski := hex.EncodeToString(cert.SubjectKeyId)
+	addrInt, err := evmutils.MakeAddressFromHex(ski)
+	if err != nil {
+		return "", fmt.Errorf("make address from cert SKI failed, %s", err)
+	}
+
+	return addrInt.String(), nil
 }

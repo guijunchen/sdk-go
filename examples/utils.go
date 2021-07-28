@@ -22,7 +22,6 @@ import (
 
 const (
 	OrgId1 = "wx-org1.chainmaker.org"
-	OrgId2 = "wx-org2.chainmaker.org"
 	OrgId4 = "wx-org4.chainmaker.org"
 	OrgId5 = "wx-org5.chainmaker.org"
 
@@ -35,18 +34,8 @@ const (
 	UserNameOrg4Admin1 = "org4admin1"
 	UserNameOrg5Admin1 = "org5admin1"
 
-	certPathPrefix = "../../testdata"
 	Version        = "1.0.0"
 	UpgradeVersion = "2.0.0"
-)
-
-type User struct {
-	TlsKeyPath, TlsCrtPath   string
-	SignKeyPath, SignCrtPath string
-}
-
-var (
-	UserCrtPath = certPathPrefix + "/crypto-config/%s/user/client1/client1.tls.crt"
 )
 
 var users = map[string]*User{
@@ -94,6 +83,11 @@ var users = map[string]*User{
 	},
 }
 
+type User struct {
+	TlsKeyPath, TlsCrtPath   string
+	SignKeyPath, SignCrtPath string
+}
+
 func GetUser(username string) (*User, error) {
 	u, ok := users[username]
 	if !ok {
@@ -133,18 +127,6 @@ func CreateChainClientWithSDKConf(sdkConfPath string) (*sdk.ChainClient, error) 
 	if err != nil {
 		return nil, err
 	}
-	return cc, nil
-}
-
-// CreateChainClientWithSDKConfDisableCertHash create a chain client with sdk config file path, disable cert hash.
-func CreateChainClientWithSDKConfDisableCertHash(sdkConfPath string) (*sdk.ChainClient, error) {
-	cc, err := sdk.NewChainClient(
-		sdk.WithConfPath(sdkConfPath),
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	return cc, nil
 }
 
