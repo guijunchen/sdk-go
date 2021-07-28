@@ -8,12 +8,14 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"context"
+
+	"chainmaker.org/chainmaker/common/crypto"
 	"chainmaker.org/chainmaker/pb-go/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/common"
 	"chainmaker.org/chainmaker/pb-go/config"
 	"chainmaker.org/chainmaker/pb-go/discovery"
 	"chainmaker.org/chainmaker/pb-go/store"
-	"context"
 )
 
 // # ChainMaker Go SDK 接口说明
@@ -77,7 +79,7 @@ type SDKInterface interface {
 	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
 	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 	// ```go
-	SendContractManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	SendContractManageRequest(payload *common.Payload, endosers []*common.EndorsementEntry, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
 	// ### 1.8 合约调用
@@ -267,7 +269,8 @@ type SDKInterface interface {
 
 	// ### 3.4 链配置更新获取Payload签名
 	// ```go
-	SignChainConfigPayload(payloadBytes []byte) ([]byte, error)
+	//SignChainConfigPayload(payloadBytes []byte) ([]byte, error)
+	SignChainConfigPayload(payload *common.Payload) (*common.EndorsementEntry, error)
 	//// ```
 	//
 	//// ### 3.5 链配置更新Payload签名收集&合并
@@ -284,10 +287,10 @@ type SDKInterface interface {
 
 	// ### 3.7 更新Core模块待签名payload生成
 	// **参数说明**
-	//   - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为[0, 60]，若无需修改，请置为-1
-	//   - txSchedulerValidateTimeout: 交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为[0, 60]，若无需修改，请置为-1
+	//   - txSchedulerTimeout: 交易调度器从交易池拿到交易后, 进行调度的时间，其值范围为(0, 60], 若设置为0，则抛出错误
+	//   - txSchedulerValidateTimeout: 交易调度器从区块中拿到交易后, 进行验证的超时时间，其值范围为(0, 60], 若设置为0，则抛出错误
 	// ```go
-	CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout int64) (*common.Payload, error)
+	CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout uint64) (*common.Payload, error)
 	// ```
 
 	// ### 3.8 更新Core模块待签名payload生成
@@ -299,7 +302,7 @@ type SDKInterface interface {
 	//   - blockSize: 区块最大限制，单位MB，其值范围为(0, +∞]
 	//   - blockInterval: 出块间隔，单位:ms，其值范围为[10, +∞]
 	// ```go
-	CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize, blockInterval int64) (*common.Payload, error)
+	CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize, blockInterval uint32) (*common.Payload, error)
 	// ```
 
 	// ### 3.9 添加信任组织根证书待签名payload生成
@@ -612,66 +615,66 @@ type SDKInterface interface {
 	//GetEVMAddressFromCertBytes(certBytes []byte) (string, error)
 	//// ```
 	//
-	//// ## 9 层级属性加密类接口
-	//// > 注意：层级属性加密模块 `Id` 使用 `/` 作为分隔符，例如： Org1/Ou1/Member1
-	//// ### 9.1 生成层级属性参数初始化交易 payload
-	//// **参数说明**
-	////   - orgId: 参与方组织 id
-	////   - hibeParams: 传入序列化后的hibeParams byte数组
-	//// ```go
-	//CreateHibeInitParamsTxPayloadParams(orgId string, hibeParams []byte) (map[string]string, error)
-	//// ```
-	//
-	//// ### 9.2 生成层级属性加密交易 payload，加密参数已知
-	//// **参数说明**
-	////   - plaintext: 待加密交易消息明文
-	////   - receiverIds: 消息接收者 id 列表，需和 paramsList 一一对应
-	////   - paramsBytesList: 消息接收者对应的加密参数，需和 receiverIds 一一对应
-	////   - txId: 以交易 Id 作为链上存储 hibeMsg 的 Key, 如果不提供存储的信息可能被覆盖
-	////   - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
-	//// ```go
-	//CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, paramsBytesList [][]byte, txId string,
-	//	keyType crypto.KeyType) (map[string]string, error)
-	//// ```
-	//
-	//// ### 9.3 生成层级属性加密交易 payload，参数由链上查询得出
-	//// **参数说明**
-	////   - contractName: 合约名
-	////   - queryParamsMethod: 链上查询 hibe.Params 的合约方法
-	////   - plaintext: 待加密交易消息明文
-	////   - receiverIds: 消息接收者 id 列表，需和 paramsList 一一对应
-	////   - paramsList: 消息接收者对应的加密参数，需和 receiverIds 一一对应
-	////   - receiverOrgIds: 链上查询 hibe Params 的 Key 列表，需要和 receiverIds 一一对应
-	////   - txId: 以交易 Id 作为链上存储 hibeMsg 的 Key, 如果不提供存储的信息可能被覆盖
-	////   - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
-	////   - timeout: （内部查询 HibeParams 的）超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	//// ```go
-	//CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte, receiverIds []string,
-	//	receiverOrgIds []string, txId string, keyType crypto.KeyType, timeout int64) (map[string]string, error)
-	//// ```
-	//
-	//// ### 9.4 查询某一组织的加密公共参数，返回其序列化后的byte数组
-	//// **参数说明**
-	////   - contractName: 合约名
-	////   - method: 查询的合约方法名
-	////   - orgId: 参与方 id
-	////   - timeout: 查询超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	//// ```go
-	//QueryHibeParamsWithOrgId(contractName, method, orgId string, timeout int64) ([]byte, error)
-	//// ```
-	//
-	//// ### 9.5 已知交易id，根据私钥解密密文交易
-	//// **参数说明**
-	////   - localId: 本地层级属性加密 id
-	////   - hibeParams: hibeParams 序列化后的byte数组
-	////   - hibePrivKey: hibe私钥序列化后的byte数组
-	////   - txId: 层级属性加密交易 id
-	////   - keyType: 对加密信息进行对称解密的方法，请和加密时使用的方法保持一致，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
-	//// ```go
-	//DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
+	// ## 9 层级属性加密类接口
+	// > 注意：层级属性加密模块 `Id` 使用 `/` 作为分隔符，例如： Org1/Ou1/Member1
+	// ### 9.1 生成层级属性参数初始化交易 payload
+	// **参数说明**
+	//   - orgId: 参与方组织 id
+	//   - hibeParams: 传入序列化后的hibeParams byte数组
+	// ```go
+	CreateHibeInitParamsTxPayloadParams(orgId string, hibeParams []byte) ([]*common.KeyValuePair, error)
 	// ```
 
-	// ## 10 数据归档接口（以下是归档操作中的原子接口，请勿直接通过sdk调用，如需进行数据归档，请使用cmc归档工具）
+	// ### 9.2 生成层级属性加密交易 payload，加密参数已知
+	// **参数说明**
+	//   - plaintext: 待加密交易消息明文
+	//   - receiverIds: 消息接收者 id 列表，需和 paramsList 一一对应
+	//   - paramsBytesList: 消息接收者对应的加密参数，需和 receiverIds 一一对应
+	//   - txId: 以交易 Id 作为链上存储 hibeMsg 的 Key, 如果不提供存储的信息可能被覆盖
+	//   - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
+	// ```go
+	CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, paramsBytesList [][]byte, txId string,
+		keyType crypto.KeyType) ([]*common.KeyValuePair, error)
+	// ```
+
+	// ### 9.3 生成层级属性加密交易 payload，参数由链上查询得出
+	// **参数说明**
+	//   - contractName: 合约名
+	//   - queryParamsMethod: 链上查询 hibe.Params 的合约方法
+	//   - plaintext: 待加密交易消息明文
+	//   - receiverIds: 消息接收者 id 列表，需和 paramsList 一一对应
+	//   - paramsList: 消息接收者对应的加密参数，需和 receiverIds 一一对应
+	//   - receiverOrgIds: 链上查询 hibe Params 的 Key 列表，需要和 receiverIds 一一对应
+	//   - txId: 以交易 Id 作为链上存储 hibeMsg 的 Key, 如果不提供存储的信息可能被覆盖
+	//   - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
+	//   - timeout: （内部查询 HibeParams 的）超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	// ```go
+	CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte, receiverIds []string,
+		receiverOrgIds []string, txId string, keyType crypto.KeyType, timeout int64) ([]*common.KeyValuePair, error)
+	// ```
+
+	// ### 9.4 查询某一组织的加密公共参数，返回其序列化后的byte数组
+	// **参数说明**
+	//   - contractName: 合约名
+	//   - method: 查询的合约方法名
+	//   - orgId: 参与方 id
+	//   - timeout: 查询超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	// ```go
+	QueryHibeParamsWithOrgId(contractName, method, orgId string, timeout int64) ([]byte, error)
+	// ```
+
+	// ### 9.5 已知交易id，根据私钥解密密文交易
+	// **参数说明**
+	//   - localId: 本地层级属性加密 id
+	//   - hibeParams: hibeParams 序列化后的byte数组
+	//   - hibePrivKey: hibe私钥序列化后的byte数组
+	//   - txId: 层级属性加密交易 id
+	//   - keyType: 对加密信息进行对称解密的方法，请和加密时使用的方法保持一致，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
+	// ```go
+	DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
+	//```
+
+	// ## 10 数据归档接口
 	// ### 10.1 获取已归档区块高度
 	// **参数说明**
 	//   - 输出已归档的区块高度

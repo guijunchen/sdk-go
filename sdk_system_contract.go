@@ -28,7 +28,7 @@ func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error)
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID.String(), []*common.KeyValuePair{
 			{
-				Key:   utils.KeyTxId,
+				Key:   utils.KeyBlockContractTxId,
 				Value: []byte(txId),
 			},
 		}, 0,
@@ -61,8 +61,12 @@ func (cc *ChainClient) GetBlockByHeight(blockHeight uint64, withRWSet bool) (*co
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_BLOCK_BY_HEIGHT.String(), []*common.KeyValuePair{
 			{
-				Key:   utils.KeyBlockHeight,
-				Value: utils.U64ToBytes(blockHeight),
+				Key:   utils.KeyBlockContractBlockHeight,
+				Value: []byte(strconv.FormatUint(blockHeight, 10)),
+			},
+			{
+				Key:   utils.KeyBlockContractWithRWSet,
+				Value: []byte(strconv.FormatBool(withRWSet)),
 			},
 		}, 0,
 	)
@@ -94,11 +98,11 @@ func (cc *ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*common
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_BLOCK_BY_HASH.String(), []*common.KeyValuePair{
 			{
-				Key:   utils.KeyBlockHash,
+				Key:   utils.KeyBlockContractBlockHash,
 				Value: []byte(blockHash),
 			},
 			{
-				Key:   utils.KeyWithRWSet,
+				Key:   utils.KeyBlockContractWithRWSet,
 				Value: []byte(strconv.FormatBool(withRWSet)),
 			},
 		}, 0,
@@ -131,11 +135,11 @@ func (cc *ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*common.Bloc
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_BLOCK_BY_TX_ID.String(), []*common.KeyValuePair{
 			{
-				Key:   utils.KeyTxId,
+				Key:   utils.KeyBlockContractTxId,
 				Value: []byte(txId),
 			},
 			{
-				Key:   utils.KeyWithRWSet,
+				Key:   utils.KeyBlockContractWithRWSet,
 				Value: []byte(strconv.FormatBool(withRWSet)),
 			},
 		}, 0,
@@ -168,7 +172,7 @@ func (cc *ChainClient) GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, er
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_LAST_CONFIG_BLOCK.String(), []*common.KeyValuePair{
 			{
-				Key:   utils.KeyWithRWSet,
+				Key:   utils.KeyBlockContractWithRWSet,
 				Value: []byte(strconv.FormatBool(withRWSet)),
 			},
 		}, 0,
@@ -250,8 +254,8 @@ func (cc *ChainClient) GetFullBlockByHeight(blockHeight uint64) (*store.BlockWit
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_FULL_BLOCK_BY_HEIGHT.String(), []*common.KeyValuePair{
 			{
-				Key:   utils.KeyBlockHeight,
-				Value: utils.U64ToBytes(blockHeight),
+				Key:   utils.KeyBlockContractBlockHeight,
+				Value: []byte(strconv.FormatUint(blockHeight, 10)),
 			},
 		}, 0,
 	)
@@ -300,7 +304,7 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (uint64, error) {
 		method = syscontract.ChainQueryFunction_GET_BLOCK_HEIGHT_BY_TX_ID.String()
 		pairs = []*common.KeyValuePair{
 			{
-				Key:   utils.KeyTxId,
+				Key:   utils.KeyBlockContractTxId,
 				Value: []byte(txId),
 			},
 		}
@@ -310,7 +314,7 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (uint64, error) {
 		method = syscontract.ChainQueryFunction_GET_BLOCK_HEIGHT_BY_HASH.String()
 		pairs = []*common.KeyValuePair{
 			{
-				Key:   utils.KeyBlockHash,
+				Key:   utils.KeyBlockContractBlockHash,
 				Value: []byte(blockHash),
 			},
 		}
@@ -323,7 +327,7 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (uint64, error) {
 		cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]", method)
 	}
 
-	payload := cc.createPayload("", txType, contractName, method, pairs, 0)
+	payload := cc.createPayload("", txType, contractName, method, pairs, defaultSeq)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -334,7 +338,7 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (uint64, error) {
 		return 0, fmt.Errorf(errStringFormat, payload.TxType, err)
 	}
 
-	blockHeight, err := utils.BytesToU64(resp.ContractResult.Result)
+	blockHeight, err := strconv.ParseUint(string(resp.ContractResult.Result), 10, 64)
 	if err != nil {
 		return 0, fmt.Errorf("%s, parse block height failed, %s", payload.TxType, err)
 	}
@@ -349,7 +353,7 @@ func (cc *ChainClient) GetLastBlock(withRWSet bool) (*common.BlockInfo, error) {
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_LAST_BLOCK.String(), []*common.KeyValuePair{
 			{
-				Key:   utils.KeyWithRWSet,
+				Key:   utils.KeyBlockContractWithRWSet,
 				Value: []byte(strconv.FormatBool(withRWSet)),
 			},
 		}, 0,
@@ -388,8 +392,8 @@ func (cc *ChainClient) GetBlockHeaderByHeight(blockHeight uint64) (*common.Block
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
 		syscontract.ChainQueryFunction_GET_BLOCK_HEADER_BY_HEIGHT.String(), []*common.KeyValuePair{
 			{
-				Key:   utils.KeyBlockHeight,
-				Value: utils.U64ToBytes(blockHeight),
+				Key:   utils.KeyBlockContractBlockHeight,
+				Value: []byte(strconv.FormatUint(blockHeight, 10)),
 			},
 		}, 0,
 	)
@@ -416,7 +420,7 @@ func (cc *ChainClient) InvokeSystemContract(contractName, method, txId string, p
 	cc.logger.Debugf("[SDK] begin to INVOKE system contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, params)
 
-	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, params, 0)
+	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, params, defaultSeq)
 
 	return cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 }
@@ -426,7 +430,7 @@ func (cc *ChainClient) QuerySystemContract(contractName, method string, params [
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [contractName:%s]/[method:%s]/[params:%+v]",
 		contractName, method, params)
 
-	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, contractName, method, params, 0)
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, contractName, method, params, defaultSeq)
 
 	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {

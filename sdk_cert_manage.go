@@ -8,12 +8,14 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"fmt"
+	"strings"
+
+	"github.com/gogo/protobuf/proto"
+
 	"chainmaker.org/chainmaker/pb-go/common"
 	"chainmaker.org/chainmaker/pb-go/syscontract"
 	"chainmaker.org/chainmaker/sdk-go/utils"
-	"fmt"
-	"github.com/gogo/protobuf/proto"
-	"strings"
 )
 
 func (cc *ChainClient) GetCertHash() ([]byte, error) {
@@ -37,13 +39,13 @@ func (cc *ChainClient) QueryCert(certHashes []string) (*common.CertInfos, error)
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   "cert_hashes",
+			Key:   utils.KeyCertHashes,
 			Value: []byte(strings.Join(certHashes, ",")),
 		},
 	}
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CERT_MANAGE.String(),
-		syscontract.CertManageFunction_CERTS_QUERY.String(), pairs, 0)
+		syscontract.CertManageFunction_CERTS_QUERY.String(), pairs, defaultSeq)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -96,7 +98,7 @@ func (cc *ChainClient) DeleteCert(certHashes []string) (*common.TxResponse, erro
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   "cert_hashes",
+			Key:   utils.KeyCertHashes,
 			Value: []byte(strings.Join(certHashes, ",")),
 		},
 	}
@@ -117,14 +119,14 @@ func (cc *ChainClient) DeleteCert(certHashes []string) (*common.TxResponse, erro
 
 func (cc *ChainClient) CreateCertManagePayload(method string, kvs []*common.KeyValuePair) *common.Payload {
 	cc.logger.Debugf("[SDK] create CertManagePayload, method: %s", method)
-	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CERT_MANAGE.String(), method, kvs, 0)
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CERT_MANAGE.String(), method, kvs, defaultSeq)
 	return payload
 }
 
 func (cc *ChainClient) CreateCertManageFrozenPayload(certs []string) *common.Payload {
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   "certs",
+			Key:   utils.KeyCerts,
 			Value: []byte(strings.Join(certs, ",")),
 		},
 	}
@@ -135,7 +137,7 @@ func (cc *ChainClient) CreateCertManageFrozenPayload(certs []string) *common.Pay
 func (cc *ChainClient) CreateCertManageUnfrozenPayload(certs []string) *common.Payload {
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   "certs",
+			Key:   utils.KeyCerts,
 			Value: []byte(strings.Join(certs, ",")),
 		},
 	}
@@ -146,7 +148,7 @@ func (cc *ChainClient) CreateCertManageUnfrozenPayload(certs []string) *common.P
 func (cc *ChainClient) CreateCertManageRevocationPayload(certCrl string) *common.Payload {
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   "cert_crl",
+			Key:   utils.KeyCertCrl,
 			Value: []byte(certCrl),
 		},
 	}

@@ -48,13 +48,13 @@ func (cc *ChainClient) CreateContractRevokePayload(contractName string) (*common
 }
 
 func (cc *ChainClient) createContractManagePayload(contractName, method string) (*common.Payload, error) {
-	kvs := []*common.KeyValuePair {
+	kvs := []*common.KeyValuePair{
 		{
-			Key: syscontract.GetContractInfo_CONTRACT_NAME.String(),
+			Key:   syscontract.GetContractInfo_CONTRACT_NAME.String(),
 			Value: []byte(contractName),
 		},
 	}
-	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(), method, kvs, 0), nil
+	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(), method, kvs, defaultSeq), nil
 }
 
 func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, method, version, byteCode string,
@@ -93,7 +93,7 @@ func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, met
 	}
 
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT,
-		syscontract.SystemContract_CONTRACT_MANAGE.String(), method, kvs, 0)
+		syscontract.SystemContract_CONTRACT_MANAGE.String(), method, kvs, defaultSeq)
 
 	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
 		Key:   syscontract.InitContract_CONTRACT_NAME.String(),
@@ -148,7 +148,7 @@ func (cc *ChainClient) InvokeContract(contractName, method, txId string, kvs []*
 	cc.logger.Debugf("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, kvs)
 
-	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, 0)
+	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, defaultSeq)
 
 	return cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 }
@@ -158,7 +158,7 @@ func (cc *ChainClient) QueryContract(contractName, method string, kvs []*common.
 	cc.logger.Debugf("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[params:%+v]",
 		contractName, method, kvs)
 
-	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, contractName, method, kvs, 0)
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, contractName, method, kvs, defaultSeq)
 
 	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {
@@ -176,7 +176,7 @@ func (cc *ChainClient) GetTxRequest(contractName, method, txId string, kvs []*co
 	cc.logger.Debugf("[SDK] begin to create TxRequest, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, kvs)
 
-	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, 0)
+	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, defaultSeq)
 
 	req, err := cc.generateTxRequest(payload, nil)
 	if err != nil {

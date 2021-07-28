@@ -24,11 +24,7 @@ const (
 	byteCodePath          = "../../testdata/counter-go-demo/rust-counter-1.0.0.wasm"
 	upgradeByteCodePath   = "../../testdata/counter-go-demo/rust-counter-2.0.0.wasm"
 
-	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
-	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
-	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
-	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
 )
 
 func main() {
@@ -41,25 +37,9 @@ func testUserContractCounterGo() {
 		log.Fatalln(err)
 	}
 
-	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	fmt.Println("====================== 创建合约（异步）======================")
-	testUserContractCounterGoCreate(client, admin1, admin2, admin3, admin4, false)
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	testUserContractCounterGoCreate(client, false, usernames...)
 	time.Sleep(5 * time.Second)
 
 	fmt.Println("====================== 调用合约（异步）======================")
@@ -70,13 +50,13 @@ func testUserContractCounterGo() {
 	testUserContractCounterGoQuery(client, "query", nil)
 
 	fmt.Println("====================== 冻结合约 ======================")
-	testUserContractCounterGoFreeze(client, admin1, admin2, admin3, admin4, false)
+	testUserContractCounterGoFreeze(client, false, usernames...)
 	time.Sleep(5 * time.Second)
 	fmt.Println("====================== 执行合约查询接口2 ======================")
 	testUserContractCounterGoQuery(client, "query", nil)
 
 	fmt.Println("====================== 解冻合约 ======================")
-	testUserContractCounterGoUnfreeze(client, admin1, admin2, admin3, admin4, false)
+	testUserContractCounterGoUnfreeze(client, false, usernames...)
 	time.Sleep(5 * time.Second)
 	fmt.Println("====================== 执行合约查询接口3 ======================")
 	testUserContractCounterGoQuery(client, "query", nil)
@@ -97,7 +77,7 @@ func testUserContractCounterGo() {
 	testUserContractCounterGoInvoke(client, "add_two", nil, true)
 
 	fmt.Println("====================== 升级合约 ======================")
-	testUserContractCounterGoUpgrade(client, admin1, admin2, admin3, admin4, false)
+	testUserContractCounterGoUpgrade(client, false, usernames...)
 	time.Sleep(5 * time.Second)
 
 	fmt.Println("====================== 调用新接口 ======================")
@@ -137,10 +117,10 @@ func testUserContractCounterGo() {
 }
 
 // [用户合约]
-func testUserContractCounterGoCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, withSyncResult bool) {
+func testUserContractCounterGoCreate(client *sdk.ChainClient, withSyncResult bool, usernames ...string) {
 
-	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		contractName, version, byteCodePath, common.RuntimeType_WASMER, []*common.KeyValuePair{}, withSyncResult)
+	resp, err := createUserContract(client, contractName, version, byteCodePath, common.RuntimeType_WASMER,
+		[]*common.KeyValuePair{}, withSyncResult, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -149,13 +129,14 @@ func testUserContractCounterGoCreate(client, admin1, admin2, admin3, admin4 *sdk
 }
 
 // 更新合约
-func testUserContractCounterGoUpgrade(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, withSyncResult bool) {
-	payload, err := client.CreateContractUpgradePayload(contractName, upgradeVersion, upgradeByteCodePath, common.RuntimeType_WASMER, []*common.KeyValuePair{})
+func testUserContractCounterGoUpgrade(client *sdk.ChainClient, withSyncResult bool, usernames ...string) {
+	payload, err := client.CreateContractUpgradePayload(contractName, upgradeVersion, upgradeByteCodePath,
+		common.RuntimeType_WASMER, []*common.KeyValuePair{})
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -174,14 +155,13 @@ func testUserContractCounterGoUpgrade(client, admin1, admin2, admin3, admin4 *sd
 }
 
 // 冻结合约
-func testUserContractCounterGoFreeze(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	withSyncResult bool) {
+func testUserContractCounterGoFreeze(client *sdk.ChainClient, withSyncResult bool, usernames ...string) {
 	payload, err := client.CreateContractFreezePayload(contractName)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -201,14 +181,13 @@ func testUserContractCounterGoFreeze(client, admin1, admin2, admin3, admin4 *sdk
 }
 
 // 解冻合约
-func testUserContractCounterGoUnfreeze(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	withSyncResult bool) {
+func testUserContractCounterGoUnfreeze(client *sdk.ChainClient, withSyncResult bool, usernames ...string) {
 	payload, err := client.CreateContractUnfreezePayload(contractName)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -228,14 +207,13 @@ func testUserContractCounterGoUnfreeze(client, admin1, admin2, admin3, admin4 *s
 }
 
 // 吊销合约
-func testUserContractCounterGoRevoke(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	withSyncResult bool) {
+func testUserContractCounterGoRevoke(client *sdk.ChainClient, withSyncResult bool, usernames ...string) {
 	payload, err := client.CreateContractRevokePayload(contractName)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -271,15 +249,15 @@ func testUserContractCounterGoQuery(client *sdk.ChainClient, method string, kvs 
 	fmt.Printf("QUERY counter-go contract resp: %+v\n", resp)
 }
 
-func createUserContract(client *sdk.ChainClient, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	contractName, version, byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool) (*common.TxResponse, error) {
+func createUserContract(client *sdk.ChainClient, contractName, version, byteCodePath string,
+	runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool, usernames ...string) (*common.TxResponse, error) {
 
 	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		return nil, err
 	}

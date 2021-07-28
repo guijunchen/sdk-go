@@ -29,20 +29,36 @@ const (
 	tokenVersion          = "1.0.0"
 	tokenByteCodePath     = "../../testdata/token-evm-demo/token.bin"
 	tokenABIPath          = "../../testdata/token-evm-demo/token.abi"
-
-	// use cmc to calulate this addr, eg: `./cmc cert addr --cert-path xxx.tls.crt`
-	client1AddrInt = "1018109374098032500766612781247089211099623418384"
-	client2AddrInt = "1317892642413437150535769048733130623036570974971"
-	client1AddrSki = "4d2b2301e06ca9269361fce6105296cc00ee19ffaa6a5f5b37b4c7faf8889697"
-	amount         = 200
+	amount                = 200
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
-
-	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
-	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
-	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
-	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
 )
+
+var client1AddrInt, client2AddrInt, client1AddrSki string
+
+func init() {
+	userClient1, err := examples.GetUser(examples.UserNameOrg1Client1)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	client1AddrInt, client1AddrSki, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient1.SignCrtPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	userClient2, err := examples.GetUser(examples.UserNameOrg2Client1)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	client2AddrInt, _, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient2.SignCrtPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("client1AddrInt: %s\nclient1AddrSki: %s\nclient2AddrInt: %s\n", client1AddrInt, client1AddrSki, client2AddrInt)
+}
 
 func main() {
 	testUserContractTokenEVM()
@@ -55,25 +71,9 @@ func testUserContractTokenEVM() {
 		log.Fatalln(err)
 	}
 
-	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	fmt.Println("====================== 创建Token合约,给client1地址分配初始代币 ======================")
-	testUserContractTokenEVMCreate(client, admin1, admin2, admin3, admin4, true, true)
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	testUserContractTokenEVMCreate(client, true, true, usernames...)
 
 	fmt.Println("====================== 查看余额 ======================")
 	testUserContractTokenEVMBalanceOf(client, client1AddrInt, true)
@@ -98,8 +98,7 @@ func testUserContractTokenEVM() {
 	//addr [1317892642413437150535769048733130623036570974971] => [200]
 }
 
-func testUserContractTokenEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	withSyncResult bool, isIgnoreSameContract bool) {
+func testUserContractTokenEVMCreate(client *sdk.ChainClient, withSyncResult bool, isIgnoreSameContract bool, usernames ...string) {
 
 	abiJson, err := ioutil.ReadFile(tokenABIPath)
 	if err != nil {
@@ -143,9 +142,8 @@ func testUserContractTokenEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.
 	//bc := string(byteCode)
 	//bc = strings.TrimSpace(bc)
 
-	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		//tokenContractName, tokenVersion, bc + data, common.RuntimeType_EVM, pairs, withSyncResult)
-		examples.CalcContractName(tokenContractName), tokenVersion, string(byteCode), common.RuntimeType_EVM, pairs, withSyncResult)
+	resp, err := createUserContract(client, examples.CalcContractName(tokenContractName), tokenVersion, string(byteCode),
+		common.RuntimeType_EVM, pairs, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
 			log.Fatalln(err)
@@ -155,15 +153,15 @@ func testUserContractTokenEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.
 	fmt.Printf("CREATE EVM token contract resp: %+v\n", resp)
 }
 
-func createUserContract(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, contractName, version,
-	byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool) (*common.TxResponse, error) {
+func createUserContract(client *sdk.ChainClient, contractName, version, byteCodePath string,
+	runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool, usernames ...string) (*common.TxResponse, error) {
 
 	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		return nil, err
 	}

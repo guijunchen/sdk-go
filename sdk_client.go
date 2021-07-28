@@ -8,16 +8,10 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker/common/crypto/asym"
-	"chainmaker.org/chainmaker/common/evmutils"
-	"chainmaker.org/chainmaker/common/serialize"
-	"chainmaker.org/chainmaker/sdk-go/utils"
 	"context"
 	"encoding/hex"
-	"encoding/pem"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"strings"
 	"time"
 
@@ -27,9 +21,12 @@ import (
 	"google.golang.org/grpc/status"
 
 	"chainmaker.org/chainmaker/common/crypto"
+	"chainmaker.org/chainmaker/common/crypto/asym"
 	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
+	"chainmaker.org/chainmaker/common/serialize"
 	"chainmaker.org/chainmaker/pb-go/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/common"
+	"chainmaker.org/chainmaker/sdk-go/utils"
 )
 
 const (
@@ -183,9 +180,9 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 	)
 
 	if timeout < 0 {
-		timeout = SendTxTimeout
+		timeout = DefaultSendTxTimeout
 		if strings.HasPrefix(txRequest.Payload.TxType.String(), "QUERY") {
-			timeout = GetTxTimeout
+			timeout = DefaultGetTxTimeout
 		}
 	}
 
@@ -238,7 +235,7 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 	}
 }
 
-// ================================== Cert Hash logic ==================================
+// EnableCertHash Cert Hash logic
 func (cc *ChainClient) EnableCertHash() error {
 	var (
 		err error
@@ -405,35 +402,4 @@ func CreateChainClient(pool ConnectionPool, userCrtBytes, privKey, userCrtHash [
 
 func (cc *ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string][]byte {
 	return serialize.EasyCodecItemToParamsMap(items)
-}
-
-func (cc *ChainClient) GetEVMAddressFromCertPath(certFilePath string) (string, error) {
-	certBytes, err := ioutil.ReadFile(certFilePath)
-	if err != nil {
-		return "", fmt.Errorf("read cert file [%s] failed, %s", certFilePath, err)
-	}
-
-	return cc.GetEVMAddressFromCertBytes(certBytes)
-}
-
-func (cc *ChainClient) GetEVMAddressFromCertBytes(certBytes []byte) (string, error) {
-	block, _ := pem.Decode(certBytes)
-	cert, err := bcx509.ParseCertificate(block.Bytes)
-	if err != nil {
-		return "", fmt.Errorf("ParseCertificate cert failed, %s", err)
-	}
-
-	ski := hex.EncodeToString(cert.SubjectKeyId)
-	addrInt, err := evmutils.MakeAddressFromHex(ski)
-	if err != nil {
-		return "", fmt.Errorf("make address from cert SKI failed, %s", err)
-	}
-
-	//return fmt.Sprintf("0x%x", addrInt.AsStringKey()), nil
-	//address := evmutils.BigToAddress(addrInt)
-	//address := evmutils.EVMIntToHashBytes(addrInt)
-	//return hex.EncodeToString([]byte(address)), nil
-	//return fmt.Sprintf("%s", address), nil
-
-	return addrInt.String(), nil
 }

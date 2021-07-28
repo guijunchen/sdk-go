@@ -16,6 +16,7 @@ import (
 	"chainmaker.org/chainmaker/pb-go/common"
 	sdk "chainmaker.org/chainmaker/sdk-go"
 	"chainmaker.org/chainmaker/sdk-go/examples"
+	"chainmaker.org/chainmaker/sdk-go/utils"
 )
 
 // test contract functionName
@@ -31,20 +32,19 @@ const (
 
 	createContractTimeout = 5
 
-	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
-	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
-	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
-	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
-	sdkConfigOrg5Admin1Path  = "../sdk_configs/sdk_config_org5_admin1.yml"
+	//sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
+	//sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
+	//sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
+	//sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
+	//sdkConfigOrg5Admin1Path  = "../sdk_configs/sdk_config_org5_admin1.yml"
 )
 
 // test data
 const (
-	hibeContractByteCodePath = "../../testdata/counter-go-demo/contract-hibe-1.0.0.wasm"
+	hibeContractByteCodePath = "../../testdata/hibe-wasm-demo/contract-hibe.wasm"
 
-	//
-	hibeContractName = "contract-hibe-1"
+	hibeContractName = "contracthibe10000005"
 
 	// 本地 hibe params 文件路径
 	localHibeParamsFilePath = "../../testdata/hibe-data/wx-org1.chainmaker.org/wx-org1.chainmaker.org.params"
@@ -60,10 +60,10 @@ const (
 	localTopLevelHibePrvKeyFilePath = "../../testdata/hibe-data/wx-org1.chainmaker.org/privateKeys/wx-topL.privateKey"
 
 	localSecondLevelId                 = "wx-topL/secondL"
-	localSecondLevelHibePrvKeyFilePath = "../../testdata/hibe-data/wx-org1.chainmaker.org/privateKeys/wx-topL_secondL.privateKey"
+	localSecondLevelHibePrvKeyFilePath = "../../testdata/hibe-data/wx-org1.chainmaker.org/privateKeys/wx-topL#secondL.privateKey"
 
 	localThirdLevelId                 = "wx-topL/secondL/thirdL"
-	localThirdLevelHibePrvKeyFilePath = "../../testdata/hibe-data/wx-org1.chainmaker.org/privateKeys/wx-topL.privateKey"
+	localThirdLevelHibePrvKeyFilePath = "../../testdata/hibe-data/wx-org1.chainmaker.org/privateKeys/wx-topL#secondL#thirdL.privateKey"
 )
 
 var txId = ""
@@ -74,31 +74,14 @@ func main() {
 
 func testHibeContractCounterGo() {
 
-	txId = sdk.GetRandTxId()
+	txId = utils.GetRandTxId()
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	fmt.Println("====================== 创建合约（异步）======================")
-	testUserHibeContractCounterGoCreate(client, admin1, admin2, admin3, admin4, false)
+	testUserHibeContractCounterGoCreate(client, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1, false)
 	time.Sleep(5 * time.Second)
 
 	fmt.Println("====================== 调用合约 params 上链 （异步）======================")
@@ -107,6 +90,7 @@ func testHibeContractCounterGo() {
 
 	fmt.Println("====================== 执行合约 params 查询接口 ======================")
 	testUserHibeContractParamsGoQuery(client, findParamsByOrgId, nil)
+	time.Sleep(5 * time.Second)
 
 	fmt.Println("====================== 调用合约 加密数据上链（异步）======================")
 	testUserHibeContractMsgGoInvoke(client, saveHibeMsg, false)
@@ -118,8 +102,7 @@ func testHibeContractCounterGo() {
 
 // 创建Hibe合约
 func testUserHibeContractCounterGoCreate(client *sdk.ChainClient, admin1, admin2, admin3,
-	admin4 *sdk.ChainClient, withSyncResult bool) {
-
+	admin4 string, withSyncResult bool) {
 	resp, err := createUserHibeContract(client, admin1, admin2, admin3, admin4,
 		hibeContractName, examples.Version, hibeContractByteCodePath, common.RuntimeType_GASM, []*common.KeyValuePair{}, withSyncResult)
 	if err != nil {
@@ -160,12 +143,22 @@ func testUserHibeContractMsgGoQuery(client *sdk.ChainClient) {
 	//keyType := crypto.AES
 	keyType := crypto.SM4
 
-	localParams, err := sdk.ReadHibeParamsWithFilePath(localHibeParamsFilePath)
+	localParams, err := utils.ReadHibeParamsWithFilePath(localHibeParamsFilePath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	topHibePrvKey, err := sdk.ReadHibePrvKeysWithFilePath(localTopLevelHibePrvKeyFilePath)
+	topHibePrvKey, err := utils.ReadHibePrvKeysWithFilePath(localTopLevelHibePrvKeyFilePath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	secondHibePrvKey, err := utils.ReadHibePrvKeysWithFilePath(localSecondLevelHibePrvKeyFilePath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	thirdHibePrvKey, err := utils.ReadHibePrvKeysWithFilePath(localThirdLevelHibePrvKeyFilePath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -176,13 +169,13 @@ func testUserHibeContractMsgGoQuery(client *sdk.ChainClient) {
 	}
 	fmt.Printf("QUERY hibe-contract-go-1 contract resp DecryptHibeTxByBizId [Decrypt Msg By TopLevel privateKey] message: %s\n", string(msgBytes1))
 
-	msgBytes2, err := client.DecryptHibeTxByTxId(localTopLevelId, localParams, topHibePrvKey, txId, keyType)
+	msgBytes2, err := client.DecryptHibeTxByTxId(localSecondLevelId, localParams, secondHibePrvKey, txId, keyType)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	fmt.Printf("QUERY hibe-contract-go-1 contract resp DecryptHibeTxByBizId [Decrypt Msg By SecondLevel privateKey] message: %s\n", string(msgBytes2))
 
-	msgBytes3, err := client.DecryptHibeTxByTxId(localTopLevelId, localParams, topHibePrvKey, txId, keyType)
+	msgBytes3, err := client.DecryptHibeTxByTxId(localThirdLevelId, localParams, thirdHibePrvKey, txId, keyType)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -190,63 +183,42 @@ func testUserHibeContractMsgGoQuery(client *sdk.ChainClient) {
 
 }
 
-func createUserHibeContract(client *sdk.ChainClient, admin1, admin2, admin3, admin4 *sdk.ChainClient,
+func createUserHibeContract(client *sdk.ChainClient, admin1, admin2, admin3, admin4 string,
 	contractName, version, byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool) (*common.TxResponse, error) {
 
-	payloadBytes, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
+	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
 		return nil, err
 	}
 
-	// 各组织Admin权限用户签名
-	signedPayloadBytes1, err := admin1.SignContractManagePayload(payloadBytes)
+	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
 	if err != nil {
 		return nil, err
 	}
 
-	signedPayloadBytes2, err := admin2.SignContractManagePayload(payloadBytes)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}
 
-	signedPayloadBytes3, err := admin3.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	signedPayloadBytes4, err := admin4.SignContractManagePayload(payloadBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	// 收集并合并签名
-	mergeSignedPayloadBytes, err := client.MergeContractManageSignedPayload([][]byte{signedPayloadBytes1,
-		signedPayloadBytes2, signedPayloadBytes3, signedPayloadBytes4})
-	if err != nil {
-		return nil, err
-	}
-
-	// 发送创建合约请求
-	resp, err := client.SendContractManageRequest(mergeSignedPayloadBytes, createContractTimeout, withSyncResult)
-	if err != nil {
-		return nil, err
-	}
-
-	err = examples.CheckProposalRequestResp(resp, true)
-	if err != nil {
-		return nil, err
-	}
+	// TODO: ??
+	//err = examples.CheckProposalRequestResp(resp, true)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	return resp, nil
 }
 
 func invokeUserHibeContractParams(client *sdk.ChainClient, contractName, method, txId string,
 	withSyncResult bool) error {
-	localParams, err := sdk.ReadHibeParamsWithFilePath(localHibeParamsFilePath)
+	localParams, err := utils.ReadHibeParamsWithFilePath(localHibeParamsFilePath)
 	if err != nil {
 		return err
 	}
 	payloadParams, err := client.CreateHibeInitParamsTxPayloadParams(examples.OrgId1, localParams)
+
+	// resp, err := client.InvokeContract(contractName, method, txId, payloadParams, -1, withSyncResult)
 	resp, err := client.InvokeContract(contractName, method, txId, payloadParams, -1, withSyncResult)
 	if err != nil {
 		return err
@@ -256,11 +228,12 @@ func invokeUserHibeContractParams(client *sdk.ChainClient, contractName, method,
 		return fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
 	}
 
-	if !withSyncResult {
-		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
-	} else {
-		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%s]\n", resp.Code, resp.Message, resp.ContractResult)
-	}
+	// TODO: ??
+	//if !withSyncResult {
+	//	fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
+	//} else {
+	//	fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%s]\n", resp.Code, resp.Message, resp.ContractResult)
+	//}
 
 	return nil
 }
@@ -278,7 +251,7 @@ func invokeUserHibeContractMsg(client *sdk.ChainClient, contractName, method, tx
 	org[2] = "wx-org1.chainmaker.org"
 
 	// query params
-	paramsBytesList := make([][]byte, 0)
+	var paramsBytesList [][]byte
 	for _, id := range org {
 		hibeParamsBytes, err := client.QueryHibeParamsWithOrgId(hibeContractName, findParamsByOrgId, id, -1)
 		if err != nil {
@@ -309,11 +282,12 @@ func invokeUserHibeContractMsg(client *sdk.ChainClient, contractName, method, tx
 		return fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
 	}
 
-	if !withSyncResult {
-		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
-	} else {
-		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%s]\n", resp.Code, resp.Message, resp.ContractResult)
-	}
+	// TODO: ??
+	//if !withSyncResult {
+	//	fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
+	//} else {
+	//	fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%s]\n", resp.Code, resp.Message, resp.ContractResult)
+	//}
 
 	return nil
 }

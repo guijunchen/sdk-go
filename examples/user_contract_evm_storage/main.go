@@ -29,11 +29,7 @@ const (
 	storageByteCodePath   = "../../testdata/storage-evm-demo/storage.bin"
 	storageABIPath        = "../../testdata/storage-evm-demo/storage.abi"
 
-	sdkConfigOrg1Admin1Path  = "../sdk_configs/sdk_config_org1_admin1.yml"
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
-	sdkConfigOrg2Admin1Path  = "../sdk_configs/sdk_config_org2_admin1.yml"
-	sdkConfigOrg3Admin1Path  = "../sdk_configs/sdk_config_org3_admin1.yml"
-	sdkConfigOrg4Admin1Path  = "../sdk_configs/sdk_config_org4_admin1.yml"
 )
 
 func main() {
@@ -47,25 +43,9 @@ func testUserContractStorageEVM() {
 		log.Fatalln(err)
 	}
 
-	admin1, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin2, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg2Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin3, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg3Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	admin4, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg4Admin1Path)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	fmt.Println("====================== 创建Storage合约 ======================")
-	testUserContractStorageEVMCreate(client, admin1, admin2, admin3, admin4, true, true)
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	testUserContractStorageEVMCreate(client, true, true, usernames...)
 
 	fmt.Println("====================== 设置数值 ======================")
 	testUserContractStorageEVMSet(client, 123, true)
@@ -81,16 +61,15 @@ func testUserContractStorageEVM() {
 	//val: [123]
 }
 
-func testUserContractStorageEVMCreate(client, admin1, admin2, admin3, admin4 *sdk.ChainClient,
-	withSyncResult bool, isIgnoreSameContract bool) {
+func testUserContractStorageEVMCreate(client *sdk.ChainClient, withSyncResult bool, isIgnoreSameContract bool, usernames ...string) {
 
 	codeBytes, err := ioutil.ReadFile(storageByteCodePath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := createUserContract(client, admin1, admin2, admin3, admin4,
-		examples.CalcContractName(storageContractName), storageVersion, string(codeBytes), common.RuntimeType_EVM, nil, withSyncResult)
+	resp, err := createUserContract(client, examples.CalcContractName(storageContractName), storageVersion,
+		string(codeBytes), common.RuntimeType_EVM, nil, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
 			log.Fatalln(err)
@@ -100,15 +79,15 @@ func testUserContractStorageEVMCreate(client, admin1, admin2, admin3, admin4 *sd
 	fmt.Printf("CREATE EVM storage contract resp: %+v\n", resp)
 }
 
-func createUserContract(client, admin1, admin2, admin3, admin4 *sdk.ChainClient, contractName, version,
-	byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool) (*common.TxResponse, error) {
+func createUserContract(client *sdk.ChainClient, contractName, version, byteCodePath string,
+	runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool, usernames ...string) (*common.TxResponse, error) {
 
 	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
 	if err != nil {
 		return nil, err
 	}
