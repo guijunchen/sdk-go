@@ -563,7 +563,7 @@ func (cc *ChainClient) GetEnclaveProof(enclaveId string) ([]byte, error) {
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_ENCLAVE_VERIFICATION_PUB_KEY.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_ENCLAVE_PROOF.String(), pairs, 0)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {

@@ -43,20 +43,20 @@ var (
 )
 
 func main() {
-	testChainClientSaveData()
-	testChainClientSaveDir()
-	testChainClientGetContract()
-	testChainClientGetData()
-	testChainClientGetDir()
-	testChainClientSaveCACert()
-	testChainClientGetCACert()
-	testChainClientSaveEnclaveReport()
-	testChainClientSaveRemoteAttestationProof()
-	testChainClientGetEnclaveEncryptPubKey()
-	testChainClientGetEnclaveVerificationPubKey()
-	testChainClientGetEnclaveReport()
-	testChainClientGetEnclaveChallenge()
-	testChainClientGetEnclaveSignature()
+	//testChainClientSaveData()
+	//testChainClientSaveDir()
+	//testChainClientGetContract()
+	//testChainClientGetData()
+	//testChainClientGetDir()
+	//testChainClientSaveCACert()
+	//testChainClientGetCACert()
+	//testChainClientSaveEnclaveReport()
+	//testChainClientSaveRemoteAttestationProof()
+	//testChainClientGetEnclaveEncryptPubKey()
+	//testChainClientGetEnclaveVerificationPubKey()
+	//testChainClientGetEnclaveReport()
+	//testChainClientGetEnclaveChallenge()
+	//testChainClientGetEnclaveSignature()
 	testChainClientGetEnclaveProof()
 }
 
@@ -79,12 +79,8 @@ func initCaCert() {
 }
 
 func initProof() {
-	var err error
-	proofHex := readFileData("../../testdata/remote_attestation/proof.hex")
-	proof, err = hex.DecodeString(string(proofHex))
-	if err != nil {
-		log.Fatalln(err)
-	}
+	proof = readFileData("../../testdata/remote_attestation/proof.hex")
+
 }
 
 func initEnclaveId() {
@@ -485,7 +481,8 @@ func testChainClientSaveRemoteAttestationProof() {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		fmt.Printf("enclaveId = 0x%x \n", got.ContractResult.Result)
+
+		fmt.Printf("enclaveId = %s \n", string(got.ContractResult.Result))
 	}
 }
 
@@ -591,7 +588,13 @@ func testChainClientGetEnclaveReport() {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		fmt.Printf("testChainClientGetEnclaveReport got %+v\n", got)
+
+		report, err := hex.DecodeString(string(got))
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		fmt.Printf("testChainClientGetEnclaveReport got =>\n%s\n", report)
 	}
 }
 
@@ -661,9 +664,7 @@ func testChainClientGetEnclaveSignature() {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		if !reflect.DeepEqual(got, tt.want) {
-			log.Fatalln("!reflect.DeepEqual(got, tt.want)")
-		}
+		fmt.Printf("signature = %x \n", got)
 	}
 }
 
@@ -695,10 +696,11 @@ func testChainClientGetEnclaveProof() {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		got, err := cc.GetEnclaveSignature(tt.args.enclaveId)
+		got, err := cc.GetEnclaveProof(tt.args.enclaveId)
 		if err != nil {
 			log.Fatalln(err)
 		}
+
 		if !reflect.DeepEqual(got, tt.want) {
 			log.Fatalln("!reflect.DeepEqual(got, tt.want)")
 		}
