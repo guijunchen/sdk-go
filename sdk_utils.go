@@ -1,6 +1,7 @@
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker/common/serialize"
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
@@ -92,4 +93,8 @@ func GetEVMAddressFromCertBytes(certBytes []byte) (string, error) {
 	}
 
 	return addrInt.String(), nil
+}
+
+func (cc *ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string][]byte {
+	return serialize.EasyCodecItemToParamsMap(items)
 }
