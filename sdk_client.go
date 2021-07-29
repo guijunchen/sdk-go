@@ -23,7 +23,6 @@ import (
 	"chainmaker.org/chainmaker/common/crypto"
 	"chainmaker.org/chainmaker/common/crypto/asym"
 	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
-	"chainmaker.org/chainmaker/common/serialize"
 	"chainmaker.org/chainmaker/pb-go/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/common"
 	"chainmaker.org/chainmaker/sdk-go/utils"
@@ -398,8 +397,4 @@ func CreateChainClient(pool ConnectionPool, userCrtBytes, privKey, userCrtHash [
 	}
 
 	return chain, nil
-}
-
-func (cc *ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string][]byte {
-	return serialize.EasyCodecItemToParamsMap(items)
 }
