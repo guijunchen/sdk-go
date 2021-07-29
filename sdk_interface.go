@@ -271,14 +271,13 @@ type SDKInterface interface {
 	// ```
 
 	// ### 3.4 链配置更新获取Payload签名
-	// ```go
 	// **参数说明**
 	//   - payload: 待签名payload
+	// ```go
 	SignChainConfigPayload(payload *common.Payload) (*common.EndorsementEntry, error)
 	// ```
 
 	// ### 3.5 发送链配置更新请求
-	// ```go
 	// **参数说明**
 	//   - payload: 待签名payload
 	//   - endorsers: 背书签名信息列表
@@ -286,6 +285,7 @@ type SDKInterface interface {
 	//   - withSyncResult: 是否同步获取交易执行结果
 	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
 	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
+	// ```go
 	SendChainConfigUpdateRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
@@ -444,7 +444,6 @@ type SDKInterface interface {
 	// ### 4.3 用户证书查询
 	// **参数说明**
 	//   - certHashes: 证书Hash列表
-	//
 	// **返回值说明**
 	//   - *common.CertInfos: 包含证书Hash和证书内容的列表
 	// ```go
@@ -611,7 +610,7 @@ type SDKInterface interface {
 	//   - keyType: 对加密信息进行对称解密的方法，请和加密时使用的方法保持一致，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 	// ```go
 	DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
-	//```
+	// ```
 
 	// ## 8 数据归档接口
 	// **（注意：请使用归档工具cmc进行归档操作，以下接口是归档原子接口，并不包括归档完整流程）**
