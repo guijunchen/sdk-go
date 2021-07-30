@@ -1,7 +1,6 @@
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker/common/serialize"
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
@@ -11,6 +10,7 @@ import (
 	"chainmaker.org/chainmaker/common/crypto/asym"
 	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
 	"chainmaker.org/chainmaker/common/evmutils"
+	"chainmaker.org/chainmaker/common/serialize"
 	"chainmaker.org/chainmaker/pb-go/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/common"
 	"chainmaker.org/chainmaker/sdk-go/utils"

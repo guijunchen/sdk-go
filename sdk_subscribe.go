@@ -8,17 +8,20 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/pb-go/syscontract"
-	"chainmaker.org/chainmaker/sdk-go/utils"
 	"context"
-	"github.com/gogo/protobuf/proto"
 	"io"
 	"strconv"
 	"strings"
+
+	"github.com/gogo/protobuf/proto"
+
+	"chainmaker.org/chainmaker/pb-go/common"
+	"chainmaker.org/chainmaker/pb-go/syscontract"
+	"chainmaker.org/chainmaker/sdk-go/utils"
 )
 
-func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRWSet, onlyHeader bool) (<-chan interface{}, error) {
+func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRWSet,
+	onlyHeader bool) (<-chan interface{}, error) {
 
 	payload := cc.createPayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
 		syscontract.SubscribeFunction_SUBSCRIBE_BLOCK.String(), []*common.KeyValuePair{
@@ -44,7 +47,8 @@ func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock 
 	return cc.Subscribe(ctx, payload)
 }
 
-func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int64, contractName string, txIds []string) (<-chan interface{}, error) {
+func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int64, contractName string,
+	txIds []string) (<-chan interface{}, error) {
 
 	payload := cc.createPayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
 		syscontract.SubscribeFunction_SUBSCRIBE_TX.String(), []*common.KeyValuePair{
@@ -70,7 +74,8 @@ func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int
 	return cc.Subscribe(ctx, payload)
 }
 
-func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, topic string, contractName string) (<-chan interface{}, error) {
+func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, topic string,
+	contractName string) (<-chan interface{}, error) {
 
 	payload := cc.createPayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
 		syscontract.SubscribeFunction_SUBSCRIBE_CONTRACT_EVENT.String(), []*common.KeyValuePair{
@@ -115,7 +120,7 @@ func (cc *ChainClient) Subscribe(ctx context.Context, payload *common.Payload) (
 			default:
 				result, err := resp.Recv()
 				if err == io.EOF {
-					cc.logger.Debugf("[SDK] Subscirber got EOF and stop recv msg")
+					cc.logger.Debugf("[SDK] Subscriber got EOF and stop recv msg")
 					return
 				}
 
@@ -127,23 +132,21 @@ func (cc *ChainClient) Subscribe(ctx context.Context, payload *common.Payload) (
 				var ret interface{}
 				switch payload.Method {
 				case syscontract.SubscribeFunction_SUBSCRIBE_BLOCK.String():
-					for {
-						blockInfo := &common.BlockInfo{}
-						if err = proto.Unmarshal(result.Data, blockInfo); err == nil {
-							ret = blockInfo
-							break
-						}
-
-						blockHeader := &common.BlockHeader{}
-						if err = proto.Unmarshal(result.Data, blockHeader); err == nil {
-							ret = blockHeader
-							break
-						}
-
-						cc.logger.Error("[SDK] Subscriber receive block failed, %s", err)
-						close(c)
-						return
+					blockInfo := &common.BlockInfo{}
+					if err = proto.Unmarshal(result.Data, blockInfo); err == nil {
+						ret = blockInfo
+						break
 					}
+
+					blockHeader := &common.BlockHeader{}
+					if err = proto.Unmarshal(result.Data, blockHeader); err == nil {
+						ret = blockHeader
+						break
+					}
+
+					cc.logger.Error("[SDK] Subscriber receive block failed, %s", err)
+					close(c)
+					return
 				case syscontract.SubscribeFunction_SUBSCRIBE_TX.String():
 					tx := &common.Transaction{}
 					if err = proto.Unmarshal(result.Data, tx); err != nil {

@@ -8,14 +8,16 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"errors"
+	"fmt"
+	"strconv"
+
+	"github.com/gogo/protobuf/proto"
+
 	"chainmaker.org/chainmaker/common/json"
 	"chainmaker.org/chainmaker/pb-go/common"
 	"chainmaker.org/chainmaker/pb-go/syscontract"
 	"chainmaker.org/chainmaker/sdk-go/utils"
-	"errors"
-	"fmt"
-	"github.com/gogo/protobuf/proto"
-	"strconv"
 )
 
 const ContractResultCode_OK uint32 = 0 //todo pb create const
@@ -273,7 +275,8 @@ func (cc *ChainClient) CheckCallerCertAuth(payload string, orgIds []string, sign
 	return resp, nil
 }
 
-func (cc *ChainClient) SaveEnclaveCACert(enclaveCACert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+func (cc *ChainClient) SaveEnclaveCACert(enclaveCACert, txId string, withSyncResult bool,
+	timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = utils.GetRandTxId()
 	}
@@ -338,7 +341,8 @@ func (cc *ChainClient) GetEnclaveCACert() ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
-func (cc *ChainClient) SaveEnclaveReport(enclaveId, report, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+func (cc *ChainClient) SaveEnclaveReport(enclaveId, report, txId string, withSyncResult bool,
+	timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = utils.GetRandTxId()
 	}
@@ -380,7 +384,8 @@ func (cc *ChainClient) SaveEnclaveReport(enclaveId, report, txId string, withSyn
 	return resp, nil
 }
 
-func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncResult bool,
+	timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = utils.GetRandTxId()
 	}

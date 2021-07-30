@@ -119,11 +119,13 @@ func (cc *ChainClient) Stop() error {
 	return cc.pool.Close()
 }
 
-func (cc *ChainClient) proposalRequest(payload *common.Payload, endorsers []*common.EndorsementEntry) (*common.TxResponse, error) {
+func (cc *ChainClient) proposalRequest(payload *common.Payload,
+	endorsers []*common.EndorsementEntry) (*common.TxResponse, error) {
 	return cc.proposalRequestWithTimeout(payload, endorsers, -1)
 }
 
-func (cc *ChainClient) proposalRequestWithTimeout(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64) (*common.TxResponse, error) {
+func (cc *ChainClient) proposalRequestWithTimeout(payload *common.Payload, endorsers []*common.EndorsementEntry,
+	timeout int64) (*common.TxResponse, error) {
 
 	req, err := cc.generateTxRequest(payload, endorsers)
 	if err != nil {
@@ -133,7 +135,8 @@ func (cc *ChainClient) proposalRequestWithTimeout(payload *common.Payload, endor
 	return cc.sendTxRequest(req, timeout)
 }
 
-func (cc *ChainClient) generateTxRequest(payload *common.Payload, endorsers []*common.EndorsementEntry) (*common.TxRequest, error) {
+func (cc *ChainClient) generateTxRequest(payload *common.Payload,
+	endorsers []*common.EndorsementEntry) (*common.TxRequest, error) {
 	var (
 		signer *accesscontrol.Member
 	)
@@ -321,7 +324,7 @@ func (cc *ChainClient) checkUserCertOnChain() error {
 		}
 
 		if !ok {
-			errMsg := fmt.Sprintf("user cert havenot on chain yet, and try again")
+			errMsg := "user cert havenot on chain yet, and try again"
 			cc.logger.Debugf(sdkErrStringFormat, errMsg)
 			return errors.New(errMsg)
 		}
@@ -353,7 +356,7 @@ func (cc *ChainClient) getCheckCertHash() (bool, error) {
 
 	// 返回链上证书列表长度不为1，即报错
 	if len(certInfo.CertInfos) > 1 {
-		errMsg := fmt.Sprintf("CertInfos != 1")
+		errMsg := "CertInfos != 1"
 		cc.logger.Errorf(sdkErrStringFormat, errMsg)
 		return false, errors.New(errMsg)
 	}
@@ -375,7 +378,8 @@ func (cc *ChainClient) getCheckCertHash() (bool, error) {
 	return false, nil
 }
 
-func CreateChainClient(pool ConnectionPool, userCrtBytes, privKey, userCrtHash []byte, orgId, chainId string, enabledCrtHash int) (*ChainClient, error) {
+func CreateChainClient(pool ConnectionPool, userCrtBytes, privKey, userCrtHash []byte, orgId, chainId string,
+	enabledCrtHash int) (*ChainClient, error) {
 	cert, err := utils.ParseCert(userCrtBytes)
 	if err != nil {
 		return nil, err

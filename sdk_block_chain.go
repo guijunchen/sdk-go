@@ -8,9 +8,10 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker/pb-go/config"
 	"context"
 	"fmt"
+
+	"chainmaker.org/chainmaker/pb-go/config"
 )
 
 func (cc *ChainClient) CheckNewBlockChainConfig() error {

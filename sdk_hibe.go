@@ -38,7 +38,8 @@ const (
 	HibeParamsValueKey = "params"
 )
 
-func (cc *ChainClient) CreateHibeInitParamsTxPayloadParams(orgId string, hibeParams []byte) ([]*common.KeyValuePair, error) {
+func (cc *ChainClient) CreateHibeInitParamsTxPayloadParams(orgId string,
+	hibeParams []byte) ([]*common.KeyValuePair, error) {
 	if err := hibe.ValidateId(orgId); err != nil {
 		return nil, err
 	}
@@ -61,7 +62,8 @@ func (cc *ChainClient) CreateHibeInitParamsTxPayloadParams(orgId string, hibePar
 	return payloadParams, nil
 }
 
-func (cc *ChainClient) CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, paramsBytesList [][]byte, txId string, keyType crypto.KeyType) ([]*common.KeyValuePair, error) {
+func (cc *ChainClient) CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string,
+	paramsBytesList [][]byte, txId string, keyType crypto.KeyType) ([]*common.KeyValuePair, error) {
 	if len(paramsBytesList) == 0 {
 		return nil, errors.New("invalid parameters, paramsBytesList is nil")
 	}
@@ -110,7 +112,9 @@ func (cc *ChainClient) CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte,
 	return payloadParams, nil
 }
 
-func (cc *ChainClient) CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte, receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType, timeout int64) ([]*common.KeyValuePair, error) {
+func (cc *ChainClient) CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string,
+	plaintext []byte, receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType,
+	timeout int64) ([]*common.KeyValuePair, error) {
 	hibeParamsBytesList := make([][]byte, len(receiverOrgIds))
 	for i, id := range receiverOrgIds {
 		hibeParamsBytes, err := cc.QueryHibeParamsWithOrgId(contractName, queryParamsMethod, id, timeout)
@@ -150,8 +154,7 @@ func (cc *ChainClient) QueryHibeParamsWithOrgId(contractName, method, orgId stri
 
 	// resp -> hibe.params
 	result := serialize.EasyUnmarshal(resp.ContractResult.Result)
-	resultMap := make(map[string][]byte)
-	resultMap = serialize.EasyCodecItemToParamsMap(result)
+	resultMap := serialize.EasyCodecItemToParamsMap(result)
 
 	hibeParamsBytes := resultMap[HibeParamsValueKey]
 	hibeParams := new(hibe.Params)
@@ -162,7 +165,8 @@ func (cc *ChainClient) QueryHibeParamsWithOrgId(contractName, method, orgId stri
 	return hibeParams.Marshal(), nil
 }
 
-func (cc *ChainClient) DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error) {
+func (cc *ChainClient) DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string,
+	keyType crypto.KeyType) ([]byte, error) {
 	if txId == "" {
 		return nil, errors.New("invalid parameters, txId is empty")
 	}

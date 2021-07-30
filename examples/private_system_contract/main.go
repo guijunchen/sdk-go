@@ -27,10 +27,10 @@ const (
 	computeCode2 = "compute_code2"
 	ComputeRes   = "private_compute_result"
 	//enclaveId    = "enclave_id"
-	quoteId = "quote_id"
-	quote   = "quote_content"
-	orderId = "order_id"
-	ContractResultCode_OK uint32 = 0 //todo pb create
+	quoteId                     = "quote_id"
+	quote                       = "quote_content"
+	orderId                     = "order_id"
+	ContractresultcodeOk uint32 = 0 //todo pb create
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
@@ -129,7 +129,7 @@ func testChainClientSaveData() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	if res.ContractResult.Code != ContractResultCode_OK {
+	if res.ContractResult.Code != ContractresultcodeOk {
 		log.Fatalln("res.ContractResult.Code != common.ContractResultCode_OK")
 	}
 }
@@ -145,7 +145,7 @@ func testChainClientSaveDir() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	if got.ContractResult.Code != ContractResultCode_OK {
+	if got.ContractResult.Code != ContractresultcodeOk {
 		log.Fatalln("got.ContractResult.Code != common.ContractResultCode_OK")
 	}
 }
