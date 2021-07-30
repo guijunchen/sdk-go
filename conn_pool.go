@@ -8,13 +8,13 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker/sdk-go/utils"
 	"fmt"
 	"math/rand"
 	"time"
 
 	"chainmaker.org/chainmaker/common/ca"
 	"chainmaker.org/chainmaker/pb-go/api"
+	"chainmaker.org/chainmaker/sdk-go/utils"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc"
@@ -48,7 +48,7 @@ type networkClient struct {
 	ID          string
 }
 
-// 客户端连接池结构定义
+// ClientConnectionPool 客户端连接池结构定义
 type ClientConnectionPool struct {
 	connections                    []*networkClient
 	logger                         utils.Logger
@@ -57,7 +57,7 @@ type ClientConnectionPool struct {
 	rpcClientMaxReceiveMessageSize int
 }
 
-// 创建连接池
+// NewConnPool 创建连接池
 func NewConnPool(config *ChainClientConfig) (*ClientConnectionPool, error) {
 	pool := &ClientConnectionPool{
 		logger:                         config.logger,
@@ -87,7 +87,8 @@ func NewConnPool(config *ChainClientConfig) (*ClientConnectionPool, error) {
 }
 
 // 初始化GPRC客户端连接
-func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string, tlsHostName string) (*grpc.ClientConn, error) {
+func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string,
+	tlsHostName string) (*grpc.ClientConn, error) {
 	var tlsClient ca.CAClient
 	maxCallRecvMsgSize := pool.rpcClientMaxReceiveMessageSize * 1024 * 1024
 	if useTLS {
@@ -113,10 +114,11 @@ func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, 
 		if err != nil {
 			return nil, err
 		}
-		return grpc.Dial(nodeAddr, grpc.WithTransportCredentials(*c), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)))
-	} else {
-		return grpc.Dial(nodeAddr, grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)))
+		return grpc.Dial(nodeAddr, grpc.WithTransportCredentials(*c),
+			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)))
 	}
+	return grpc.Dial(nodeAddr, grpc.WithInsecure(),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)))
 }
 
 // 获取空闲的可用客户端连接对象
@@ -172,7 +174,7 @@ func (pool *ClientConnectionPool) getLogger() utils.Logger {
 	return pool.logger
 }
 
-// 关闭连接池
+// Close 关闭连接池
 func (pool *ClientConnectionPool) Close() error {
 	for _, c := range pool.connections {
 		if c.conn == nil {
@@ -190,6 +192,7 @@ func (pool *ClientConnectionPool) Close() error {
 	return nil
 }
 
+//nolint
 // 数组打散
 func shuffle(vals []*networkClient) []*networkClient {
 	r := rand.New(rand.NewSource(time.Now().Unix()))

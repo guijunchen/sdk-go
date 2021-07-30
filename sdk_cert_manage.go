@@ -119,7 +119,8 @@ func (cc *ChainClient) DeleteCert(certHashes []string) (*common.TxResponse, erro
 
 func (cc *ChainClient) CreateCertManagePayload(method string, kvs []*common.KeyValuePair) *common.Payload {
 	cc.logger.Debugf("[SDK] create CertManagePayload, method: %s", method)
-	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CERT_MANAGE.String(), method, kvs, defaultSeq)
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CERT_MANAGE.String(),
+		method, kvs, defaultSeq)
 	return payload
 }
 

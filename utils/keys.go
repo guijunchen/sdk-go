@@ -1,5 +1,6 @@
 package utils
 
+//nolint
 const (
 	// System Block Contract keys
 	KeyBlockContractWithRWSet   = "withRWSet"
@@ -55,6 +56,7 @@ const (
 	KeyPrivateReq   = "private_req"
 )
 
+//nolint
 const (
 	// ArchiveConfig consts
 	MysqlDBNamePrefix     = "cm_archived_chain"

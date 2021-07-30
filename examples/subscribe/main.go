@@ -8,12 +8,13 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"chainmaker.org/chainmaker/pb-go/common"
-	sdk "chainmaker.org/chainmaker/sdk-go"
-	"chainmaker.org/chainmaker/sdk-go/examples"
 	"context"
 	"fmt"
 	"log"
+
+	"chainmaker.org/chainmaker/pb-go/common"
+	sdk "chainmaker.org/chainmaker/sdk-go"
+	"chainmaker.org/chainmaker/sdk-go/examples"
 )
 
 const (
@@ -62,14 +63,14 @@ func testSubscribeBlock(client *sdk.ChainClient, onlyHeader bool) {
 					log.Fatalln("require true")
 				}
 
-				fmt.Printf("recv block [%d] => %+v\n", blockHeader.BlockHeight, blockHeader)
+				fmt.Printf("recv blockHeader [%d] => %+v\n", blockHeader.BlockHeight, blockHeader)
 			} else {
 				blockInfo, ok := block.(*common.BlockInfo)
 				if !ok {
 					log.Fatalln("require true")
 				}
 
-				fmt.Printf("recv block [%d] => %+v\n", blockInfo.Block.Header.BlockHeight, blockInfo)
+				fmt.Printf("recv blockInfo [%d] => %+v\n", blockInfo.Block.Header.BlockHeight, blockInfo)
 			}
 
 			//if err := client.Stop(); err != nil {

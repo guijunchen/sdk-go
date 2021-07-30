@@ -6,19 +6,22 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
+	"encoding/pem"
+	"errors"
+	"fmt"
+	"os"
+
+	"github.com/gogo/protobuf/proto"
+
 	"chainmaker.org/chainmaker/common/crypto"
 	"chainmaker.org/chainmaker/common/crypto/hash"
 	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
 	"chainmaker.org/chainmaker/common/random/uuid"
 	"chainmaker.org/chainmaker/pb-go/common"
-	"encoding/pem"
-	"errors"
-	"fmt"
-	"github.com/gogo/protobuf/proto"
-	"os"
 )
 
 const (
+	// SUCCESS ContractResult success code
 	SUCCESS uint32 = 0
 )
 
@@ -103,10 +106,7 @@ func ParseCert(crtPEM []byte) (*bcx509.Certificate, error) {
 func Exists(path string) bool {
 	_, err := os.Stat(path)
 	if err != nil {
-		if os.IsExist(err) {
-			return true
-		}
-		return false
+		return os.IsExist(err)
 	}
 	return true
 }

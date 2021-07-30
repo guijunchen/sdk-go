@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Config global ChainClientConfigModel
 var Config *ChainClientConfigModel
 
 type nodesConfigModel struct {
