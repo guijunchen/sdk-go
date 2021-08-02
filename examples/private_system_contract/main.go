@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	sdk "chainmaker.org/chainmaker/sdk-go"
 	"chainmaker.org/chainmaker/sdk-go/utils"
 	"crypto/sha256"
 	"encoding/hex"
@@ -50,14 +51,14 @@ func main() {
 	//testChainClientGetDir()
 	//testChainClientSaveCACert()
 	//testChainClientGetCACert()
-	//testChainClientSaveEnclaveReport()
+	testChainClientSaveEnclaveReport()
 	//testChainClientSaveRemoteAttestationProof()
 	//testChainClientGetEnclaveEncryptPubKey()
 	//testChainClientGetEnclaveVerificationPubKey()
 	//testChainClientGetEnclaveReport()
 	//testChainClientGetEnclaveChallenge()
 	//testChainClientGetEnclaveSignature()
-	testChainClientGetEnclaveProof()
+	//testChainClientGetEnclaveProof()
 }
 
 func readFileData(filename string) []byte {
@@ -341,16 +342,44 @@ func testChainClientSaveCACert() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+		chainClient, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		got, err := cc.SaveEnclaveCACert(tt.args.caCert, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
+		resp, err := saveEnclaveCACert(chainClient, tt.args.caCert, tt.args.txId, tt.args.withSyncResult, tt.args.timeout,
+			"org1admin1", "org2admin1", "org3admin1", "org4admin1", "org5admin1")
 		if err != nil {
 			log.Fatalln(err)
 		}
-		fmt.Printf("testChainClientSaveCACert got %+v\n", got)
+		log.Printf("testChainClientSaveCACert() got response ==> \n%+v\n", resp)
 	}
+	log.Println("########## testChainClientSaveCACert() execute successfully.")
+}
+
+func saveEnclaveCACert(client *sdk.ChainClient, enclaveCACert string, txId string, withSyncResult bool,
+	timeout int64, usernames ...string) (*common.TxResponse, error) {
+
+	payload, err := client.CreateSaveEnclaveCACertPayload(enclaveCACert, txId)
+	if err != nil {
+		return nil, err
+	}
+
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.SendMultiSigningRequest(payload, endorsers, timeout, withSyncResult)
+	if err != nil {
+		return nil, err
+	}
+
+	err = examples.CheckProposalRequestResp(resp, true)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func testChainClientGetCACert() {
@@ -392,6 +421,7 @@ func testChainClientGetCACert() {
 			log.Fatalln("!reflect.DeepEqual(got, tt.want)")
 		}
 	}
+	log.Println("########## testChainClientGetCACert() execute successfully.")
 }
 
 func testChainClientSaveEnclaveReport() {
@@ -427,16 +457,44 @@ func testChainClientSaveEnclaveReport() {
 	}
 
 	for _, tt := range tests {
-		cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+		chainClient, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		got, err := cc.SaveEnclaveReport(tt.args.enclaveId, tt.args.report, tt.args.txId, tt.args.withSyncResult, tt.args.timeout)
+		got, err := saveEnclaveReport(chainClient, tt.args.enclaveId, tt.args.report, tt.args.txId, tt.args.withSyncResult, tt.args.timeout,
+			"org1admin1", "org2admin1", "org3admin1",  "org4admin1")
 		if err != nil {
 			log.Fatalln(err)
 		}
-		fmt.Printf("testChainClientSaveEnclaveReport got %+v\n", got)
+		log.Printf("testChainClientSaveEnclaveReport got %+v\n", got)
 	}
+	log.Println("########## testChainClientSaveEnclaveReport() execute successfully.")
+}
+
+func saveEnclaveReport(client *sdk.ChainClient, enclaveId string, report string, txId string, withSyncResult bool,
+	timeout int64, usernames ...string) (*common.TxResponse, error) {
+
+	payload, err := client.CreateSaveEnclaveReportPayload(enclaveId, report, txId)
+	if err != nil {
+		return nil, err
+	}
+
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.SendMultiSigningRequest(payload, endorsers, timeout, withSyncResult)
+	if err != nil {
+		return nil, err
+	}
+
+	err = examples.CheckProposalRequestResp(resp, true)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func testChainClientSaveRemoteAttestationProof() {
@@ -482,8 +540,9 @@ func testChainClientSaveRemoteAttestationProof() {
 			log.Fatalln(err)
 		}
 
-		fmt.Printf("enclaveId = %s \n", string(got.ContractResult.Result))
+		log.Printf("enclaveId = %s \n", string(got.ContractResult.Result))
 	}
+	log.Println("########## testChainClientSaveRemoteAttestationProof() execute successfully.")
 }
 
 func testChainClientGetEnclaveEncryptPubKey() {
@@ -519,6 +578,7 @@ func testChainClientGetEnclaveEncryptPubKey() {
 		}
 		fmt.Printf("encrypt pub key => %s \n", got)
 	}
+	log.Println("########## testChainClientGetEnclaveEncryptPubKey() execute successfully.")
 }
 
 func testChainClientGetEnclaveVerificationPubKey() {
@@ -554,6 +614,7 @@ func testChainClientGetEnclaveVerificationPubKey() {
 		}
 		fmt.Printf("verification pub key => %s \n", got)
 	}
+	log.Println("########## testChainClientGetEnclaveVerificationPubKey() execute successfully.")
 }
 
 func testChainClientGetEnclaveReport() {
@@ -596,6 +657,7 @@ func testChainClientGetEnclaveReport() {
 
 		fmt.Printf("testChainClientGetEnclaveReport got =>\n%s\n", report)
 	}
+	log.Println("########## testChainClientGetEnclaveReport() execute successfully.")
 }
 
 func testChainClientGetEnclaveChallenge() {
@@ -631,6 +693,7 @@ func testChainClientGetEnclaveChallenge() {
 		}
 		fmt.Printf("challenge => %s \n", got)
 	}
+	log.Println("########## testChainClientGetEnclaveChallenge() execute successfully.")
 }
 
 func testChainClientGetEnclaveSignature() {
@@ -666,6 +729,7 @@ func testChainClientGetEnclaveSignature() {
 		}
 		fmt.Printf("signature = %x \n", got)
 	}
+	log.Println("########## testChainClientGetEnclaveSignature() execute successfully.")
 }
 
 func testChainClientGetEnclaveProof() {
@@ -705,4 +769,5 @@ func testChainClientGetEnclaveProof() {
 			log.Fatalln("!reflect.DeepEqual(got, tt.want)")
 		}
 	}
+	log.Println("########## testChainClientGetEnclaveProof() execute successfully.")
 }

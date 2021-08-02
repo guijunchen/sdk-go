@@ -742,14 +742,14 @@ type SDKInterface interface {
 	SaveRemoteAttestationProof(proof, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	// ```
 
-	// ### 9.3 保存Enclave CA证书
+	// ### 9.3 构建上传Enclave CA证书的报文
 	// **参数说明**
 	//   - caCert: Enclave CA证书
 	//   - txId: 交易Id
 	//   - withSyncResult: 是否同步返回调用结果
 	//   - timeout: 交易发送超时时间
 	// ```go
-	SaveEnclaveCACert(caCert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	CreateSaveEnclaveCACertPayload(caCert, txId string) (*common.Payload, error)
 	// ```
 
 	// ### 9.4 获取Enclave CA证书
@@ -815,7 +815,7 @@ type SDKInterface interface {
 	GetDir(orderId string) ([]byte, error)
 	// ```
 
-	// ### 9.12 上传隐私计算环境的report
+	// ### 9.12 构建上传隐私计算环境的report的报文
 	// **参数说明**
 	//   - enclaveId: 隐私计算环境的标识
 	//   - report: 隐私计算环境的report
@@ -823,7 +823,7 @@ type SDKInterface interface {
 	//   - withSyncResult: 是否同步等待交易结果
 	//   - timeout: 等待交易结果的超时时间
 	// ```go
-	SaveEnclaveReport(enclaveId, report, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	CreateSaveEnclaveReportPayload(enclaveId, report, txId string) (*common.Payload, error)
 	// ```
 
 	// ### 9.13 获取隐私计算环境的加密公钥
