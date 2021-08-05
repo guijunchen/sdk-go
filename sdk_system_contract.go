@@ -439,3 +439,28 @@ func (cc *ChainClient) QuerySystemContract(contractName, method string, kvs []*c
 
 	return resp, nil
 }
+
+func (cc *ChainClient) GetMerklePathByTxId(txId string) ([]byte, error) {
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
+		syscontract.ChainQueryFunction_GET_MERKLE_PATH_BY_TX_ID, txId)
+
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   utils.KeyBlockContractTxId,
+			Value: []byte(txId),
+		},
+	}
+
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
+		syscontract.ChainQueryFunction_GET_MERKLE_PATH_BY_TX_ID.String(), kvs, defaultSeq)
+
+	resp, err := cc.proposalRequest(payload, nil)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
+	}
+
+	if err = utils.CheckProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
+	}
+	return resp.ContractResult.Result, nil
+}

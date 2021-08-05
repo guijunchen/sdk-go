@@ -228,6 +228,13 @@ InvokeSystemContract(contractName, method, txId string, kvs []*common.KeyValuePa
 QuerySystemContract(contractName, method string, kvs[]*common.KeyValuePair, timeout int64) (*common.TxResponse, error)
 ```
 
+### 2.16 根据交易Id获取Merkle路径
+**参数说明**
+- txId: 交易ID
+```go
+GetMerklePathByTxId(txId string) ([]byte, error)
+```
+
 ## 3 链配置接口
 ### 3.1 查询最新链配置
 ```go
