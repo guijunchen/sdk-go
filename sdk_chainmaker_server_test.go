@@ -20,7 +20,7 @@ func TestGetChainMakerServerVersion(t *testing.T) {
 	}{
 		{
 			"valid request",
-			"1.0.0",
+			"2.0.0",
 			nil,
 		},
 	}

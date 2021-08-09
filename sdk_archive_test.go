@@ -16,10 +16,10 @@ import (
 
 func TestSendArchiveBlockRequest(t *testing.T) {
 	tests := []struct {
-		name       string
-		height     uint64
-		wantedResp *common.TxResponse
-		wantedErr  error
+		name         string
+		height       uint64
+		serverTxResp *common.TxResponse
+		serverErr    error
 	}{
 		{
 			"valid request",
@@ -27,11 +27,17 @@ func TestSendArchiveBlockRequest(t *testing.T) {
 			&common.TxResponse{Code: common.TxStatusCode_SUCCESS},
 			nil,
 		},
+		{
+			"block already archived",
+			100,
+			&common.TxResponse{Code: common.TxStatusCode_ARCHIVED_BLOCK},
+			nil,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cli, err := newMockChainClient(WithConfPath(sdkConfigPathForUT))
+			cli, err := newMockChainClient(tt.serverTxResp, tt.serverErr, WithConfPath(sdkConfigPathForUT))
 			require.Nil(t, err)
 			defer cli.Stop()
 
@@ -59,10 +65,11 @@ func TestSendArchiveBlockRequest(t *testing.T) {
 
 func TestSendRestoreBlockRequest(t *testing.T) {
 	tests := []struct {
-		name       string
-		fullblock  []byte
-		wantedResp *common.TxResponse
-		wantedErr  error
+		name                       string
+		fullblock                  []byte
+		serverTxResp, wantedTxResp *common.TxResponse
+		serverErr                  error
+		wantedErr                  error
 	}{
 		{
 			"valid request",
