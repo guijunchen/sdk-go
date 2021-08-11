@@ -34,15 +34,13 @@ const (
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
-var client1AddrInt, client2AddrInt string
+var client1AddrInt, client2AddrInt, client1EthAddr, client2EthAddr string
 
 func init() {
 	userClient1, err := examples.GetUser(examples.UserNameOrg1Client1)
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	var client1EthAddr, client2EthAddr string
 
 	client1AddrInt, client1EthAddr, _, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient1.SignCrtPath)
 	if err != nil {
