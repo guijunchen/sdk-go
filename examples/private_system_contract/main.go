@@ -462,7 +462,7 @@ func testChainClientSaveEnclaveReport() {
 			log.Fatalln(err)
 		}
 		got, err := saveEnclaveReport(chainClient, tt.args.enclaveId, tt.args.report, tt.args.txId, tt.args.withSyncResult, tt.args.timeout,
-			"org1admin1", "org2admin1", "org3admin1",  "org4admin1")
+			"org1admin1", "org2admin1", "org3admin1", "org4admin1")
 		if err != nil {
 			log.Fatalln(err)
 		}
