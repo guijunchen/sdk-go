@@ -42,7 +42,9 @@ func init() {
 		log.Fatalln(err)
 	}
 
-	client1AddrInt, _, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient1.SignCrtPath)
+	var client1EthAddr, client2EthAddr string
+
+	client1AddrInt, client1EthAddr, _, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient1.SignCrtPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -52,12 +54,13 @@ func init() {
 		log.Fatalln(err)
 	}
 
-	client2AddrInt, _, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient2.SignCrtPath)
+	client2AddrInt, client2EthAddr, _, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient2.SignCrtPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("client1AddrInt: %s\nclient2AddrInt: %s\n", client1AddrInt, client2AddrInt)
+	fmt.Printf("client1AddrInt: %s\nclient1EthAddr: %s\nclient2AddrInt: %s\nclient2EthAddr: %s\n",
+		client1AddrInt, client1EthAddr, client2AddrInt, client2EthAddr)
 }
 
 func main() {
