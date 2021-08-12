@@ -1,4 +1,3 @@
-
 run:
   timeout: 10m
   tests: true
@@ -45,7 +44,7 @@ linters-settings:
   golint:
   #min-confidence: 0
   govet:
-    check-shadowing: true
+    check-shadowing: false
   gosimple:
     go: "1.15"
   lll:

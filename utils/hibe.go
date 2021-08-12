@@ -20,7 +20,7 @@ const (
 	HibeParamsValueKey   = "params"
 )
 
-// Returns the serialized byte array of hibeParams
+// ReadHibeParamsWithFilePath Returns the serialized byte array of hibeParams
 func ReadHibeParamsWithFilePath(hibeParamsFilePath string) ([]byte, error) {
 	paramsBytes, err := ioutil.ReadFile(hibeParamsFilePath)
 	if err != nil {
@@ -30,7 +30,7 @@ func ReadHibeParamsWithFilePath(hibeParamsFilePath string) ([]byte, error) {
 	return paramsBytes, nil
 }
 
-// Returns the serialized byte array of hibePrvKey
+// ReadHibePrvKeysWithFilePath Returns the serialized byte array of hibePrvKey
 func ReadHibePrvKeysWithFilePath(hibePrvKeyFilePath string) ([]byte, error) {
 	prvKeyBytes, err := ioutil.ReadFile(hibePrvKeyFilePath)
 	if err != nil {
@@ -40,7 +40,8 @@ func ReadHibePrvKeysWithFilePath(hibePrvKeyFilePath string) ([]byte, error) {
 	return prvKeyBytes, nil
 }
 
-func DecryptHibeTx(localId string, hibeParams []byte, hibePrvKey []byte, tx *common.Transaction, keyType crypto.KeyType) ([]byte, error) {
+func DecryptHibeTx(localId string, hibeParams []byte, hibePrvKey []byte, tx *common.Transaction,
+	keyType crypto.KeyType) ([]byte, error) {
 	localParams, ok := new(hibe.Params).Unmarshal(hibeParams)
 	if !ok {
 		return nil, errors.New("hibe.Params.Unmarshal failed, please check your file")

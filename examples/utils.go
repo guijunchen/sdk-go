@@ -154,23 +154,25 @@ func GetEndorsers(payload *common.Payload, usernames ...string) ([]*common.Endor
 	return endorsers, nil
 }
 
-func MakeAddrAndSkiFromCrtFilePath(crtFilePath string) (string, string, error) {
+func MakeAddrAndSkiFromCrtFilePath(crtFilePath string) (string, string, string, error) {
 	crtBytes, err := ioutil.ReadFile(crtFilePath)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
 	blockCrt, _ := pem.Decode(crtBytes)
 	crt, err := bcx509.ParseCertificate(blockCrt.Bytes)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
 	ski := hex.EncodeToString(crt.SubjectKeyId)
 	addrInt, err := evmutils.MakeAddressFromHex(ski)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
-	return addrInt.String(), ski, nil
+	fmt.Sprintf("0x%s", addrInt.AsStringKey())
+
+	return addrInt.String(), fmt.Sprintf("0x%x", addrInt.AsStringKey()), ski, nil
 }

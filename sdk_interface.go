@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker/pb-go/syscontract"
 	"context"
 
 	"chainmaker.org/chainmaker/common/crypto"
@@ -17,9 +16,10 @@ import (
 	"chainmaker.org/chainmaker/pb-go/config"
 	"chainmaker.org/chainmaker/pb-go/discovery"
 	"chainmaker.org/chainmaker/pb-go/store"
+	"chainmaker.org/chainmaker/pb-go/syscontract"
 )
 
-// # ChainMaker Go SDK 接口说明
+// SDKInterface # ChainMaker Go SDK 接口说明
 type SDKInterface interface {
 	// ## 1 用户合约接口
 	// ### 1.1 创建合约待签名payload生成
@@ -30,7 +30,8 @@ type SDKInterface interface {
 	//   - runtime: 合约运行环境
 	//   - kvs: 合约初始化参数
 	// ```go
-	CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType, kvs []*common.KeyValuePair) (*common.Payload, error)
+	CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType,
+		kvs []*common.KeyValuePair) (*common.Payload, error)
 	// ```
 
 	// ### 1.2 升级合约待签名payload生成
@@ -41,7 +42,8 @@ type SDKInterface interface {
 	//   - runtime: 合约运行环境
 	//   - kvs: 合约升级参数
 	// ```go
-	CreateContractUpgradePayload(contractName, version, byteCode string, runtime common.RuntimeType, kvs []*common.KeyValuePair) (*common.Payload, error)
+	CreateContractUpgradePayload(contractName, version, byteCode string, runtime common.RuntimeType,
+		kvs []*common.KeyValuePair) (*common.Payload, error)
 	// ```
 
 	// ### 1.3 冻结合约payload生成
@@ -81,7 +83,8 @@ type SDKInterface interface {
 	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
 	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 	// ```go
-	SendContractManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	SendContractManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
+		withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
 	// ### 1.8 合约调用
@@ -97,7 +100,8 @@ type SDKInterface interface {
 	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
 	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 	// ```go
-	InvokeContract(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	InvokeContract(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64,
+		withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
 	// ### 1.9 合约查询接口调用
@@ -237,7 +241,8 @@ type SDKInterface interface {
 	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
 	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 	// ```go
-	InvokeSystemContract(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	InvokeSystemContract(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64,
+		withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
 	// ### 2.15 系统合约查询接口调用
@@ -247,7 +252,7 @@ type SDKInterface interface {
 	//   - kvs: 合约参数
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
-	QuerySystemContract(contractName, method string, kvs[]*common.KeyValuePair, timeout int64) (*common.TxResponse, error)
+	QuerySystemContract(contractName, method string, kvs []*common.KeyValuePair, timeout int64) (*common.TxResponse, error)
 	// ```
 
 	// ## 3 链配置接口
@@ -286,7 +291,8 @@ type SDKInterface interface {
 	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
 	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 	// ```go
-	SendChainConfigUpdateRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	SendChainConfigUpdateRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
+		withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
 	// > 以下CreateChainConfigXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
@@ -308,7 +314,8 @@ type SDKInterface interface {
 	//   - blockSize: 区块最大限制，单位MB，其值范围为(0, +∞]
 	//   - blockInterval: 出块间隔，单位:ms，其值范围为[10, +∞]
 	// ```go
-	CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize, blockInterval uint32) (*common.Payload, error)
+	CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize,
+		blockInterval uint32) (*common.Payload, error)
 	// ```
 
 	// ### 3.8 添加信任组织根证书待签名payload生成
@@ -339,7 +346,8 @@ type SDKInterface interface {
 	//   - permissionResourceName: 权限名
 	//   - policy: 权限规则
 	// ```go
-	CreateChainConfigPermissionAddPayload(permissionResourceName string, policy *accesscontrol.Policy) (*common.Payload, error)
+	CreateChainConfigPermissionAddPayload(permissionResourceName string,
+		policy *accesscontrol.Policy) (*common.Payload, error)
 	// ```
 
 	// ### 3.12 更新权限配置待签名payload生成
@@ -347,7 +355,8 @@ type SDKInterface interface {
 	//   - permissionResourceName: 权限名
 	//   - policy: 权限规则
 	// ```go
-	CreateChainConfigPermissionUpdatePayload(permissionResourceName string, policy *accesscontrol.Policy) (*common.Payload, error)
+	CreateChainConfigPermissionUpdatePayload(permissionResourceName string,
+		policy *accesscontrol.Policy) (*common.Payload, error)
 	// ```
 
 	// ### 3.13 删除权限配置待签名payload生成
@@ -501,7 +510,8 @@ type SDKInterface interface {
 	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
 	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 	// ```go
-	SendCertManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	SendCertManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
+		withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
 	// ## 5 消息订阅接口
@@ -522,7 +532,8 @@ type SDKInterface interface {
 	//   - contractName ：指定订阅指定合约的交易，可以传用户合约名称或系统合约名称，若为空，表示订阅所有合约的交易
 	//   - txIds: 订阅txId列表，若为空，表示订阅所有txId
 	// ```go
-	SubscribeTx(ctx context.Context, startBlock, endBlock int64, contractName string, txIds []string) (<-chan interface{}, error)
+	SubscribeTx(ctx context.Context, startBlock, endBlock int64, contractName string,
+		txIds []string) (<-chan interface{}, error)
 	// ```
 
 	// ### 5.3 合约事件订阅
@@ -587,8 +598,9 @@ type SDKInterface interface {
 	//   - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 	//   - timeout: （内部查询 HibeParams 的）超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 	// ```go
-	CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte, receiverIds []string,
-		receiverOrgIds []string, txId string, keyType crypto.KeyType, timeout int64) ([]*common.KeyValuePair, error)
+	CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte,
+		receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType,
+		timeout int64) ([]*common.KeyValuePair, error)
 	// ```
 
 	// ### 7.4 查询某一组织的加密公共参数，返回其序列化后的byte数组
@@ -609,7 +621,8 @@ type SDKInterface interface {
 	//   - txId: 层级属性加密交易 id
 	//   - keyType: 对加密信息进行对称解密的方法，请和加密时使用的方法保持一致，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 	// ```go
-	DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string, keyType crypto.KeyType) ([]byte, error)
+	DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string,
+		keyType crypto.KeyType) ([]byte, error)
 	// ```
 
 	// ## 8 数据归档接口
@@ -729,17 +742,17 @@ type SDKInterface interface {
 	SaveRemoteAttestationProof(proof, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 	// ```
 
-	// ### 9.3 保存Encalve CA证书
+	// ### 9.3 构建上传Enclave CA证书的报文
 	// **参数说明**
 	//   - caCert: Enclave CA证书
 	//   - txId: 交易Id
 	//   - withSyncResult: 是否同步返回调用结果
 	//   - timeout: 交易发送超时时间
 	// ```go
-	SaveEnclaveCACert(caCert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	CreateSaveEnclaveCACertPayload(caCert, txId string) (*common.Payload, error)
 	// ```
 
-	// ### 9.4 获取Encalve CA证书
+	// ### 9.4 获取Enclave CA证书
 	// ```go
 	GetEnclaveCACert() ([]byte, error)
 	// ```
@@ -783,7 +796,8 @@ type SDKInterface interface {
 	//   - withSyncResult: 是否同步等待交易结果
 	//   - timeout: 等待交易结果的超时时间
 	// ```go
-	SaveDir(orderId, txId string, privateDir *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	SaveDir(orderId, txId string, privateDir *common.StrSlice, withSyncResult bool,
+		timeout int64) (*common.TxResponse, error)
 	// ```
 
 	// ### 9.10 获取用户部署的隐私合约
@@ -801,7 +815,7 @@ type SDKInterface interface {
 	GetDir(orderId string) ([]byte, error)
 	// ```
 
-	// ### 9.12 上传隐私计算环境的report
+	// ### 9.12 构建上传隐私计算环境的report的报文
 	// **参数说明**
 	//   - enclaveId: 隐私计算环境的标识
 	//   - report: 隐私计算环境的report
@@ -809,7 +823,7 @@ type SDKInterface interface {
 	//   - withSyncResult: 是否同步等待交易结果
 	//   - timeout: 等待交易结果的超时时间
 	// ```go
-	SaveEnclaveReport(enclaveId, report, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	CreateSaveEnclaveReportPayload(enclaveId, report, txId string) (*common.Payload, error)
 	// ```
 
 	// ### 9.13 获取隐私计算环境的加密公钥

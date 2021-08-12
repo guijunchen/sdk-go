@@ -21,17 +21,17 @@ import (
 )
 
 const (
-	// 单ChainMaker节点最大连接数
+	// MaxConnCnt 单ChainMaker节点最大连接数
 	MaxConnCnt = 1024
-	// 查询交易超时时间
+	// DefaultGetTxTimeout 查询交易超时时间
 	DefaultGetTxTimeout = 10
-	// 发送交易超时时间
+	// DefaultSendTxTimeout 发送交易超时时间
 	DefaultSendTxTimeout = 10
-	// 默认grpc客户端接受最大值 4M
+	// DefaultRpcClientMaxReceiveMessageSize 默认grpc客户端接受最大值 4M
 	DefaultRpcClientMaxReceiveMessageSize = 4
 )
 
-// 节点配置
+// NodeConfig 节点配置
 type NodeConfig struct {
 	// 必填项
 	// 节点地址
@@ -51,35 +51,35 @@ type NodeConfig struct {
 
 type NodeOption func(config *NodeConfig)
 
-// 设置节点地址
+// WithNodeAddr 设置节点地址
 func WithNodeAddr(addr string) NodeOption {
 	return func(config *NodeConfig) {
 		config.addr = addr
 	}
 }
 
-// 设置节点连接数
+// WithNodeConnCnt 设置节点连接数
 func WithNodeConnCnt(connCnt int) NodeOption {
 	return func(config *NodeConfig) {
 		config.connCnt = connCnt
 	}
 }
 
-// 设置是否启动TLS开关
+// WithNodeUseTLS 设置是否启动TLS开关
 func WithNodeUseTLS(useTLS bool) NodeOption {
 	return func(config *NodeConfig) {
 		config.useTLS = useTLS
 	}
 }
 
-// 添加CA证书路径
+// WithNodeCAPaths 添加CA证书路径
 func WithNodeCAPaths(caPaths []string) NodeOption {
 	return func(config *NodeConfig) {
 		config.caPaths = caPaths
 	}
 }
 
-// 添加CA证书内容
+// WithNodeCACerts 添加CA证书内容
 func WithNodeCACerts(caCerts []string) NodeOption {
 	return func(config *NodeConfig) {
 		config.caCerts = caCerts
@@ -92,7 +92,7 @@ func WithNodeTLSHostName(tlsHostName string) NodeOption {
 	}
 }
 
-// Archive配置
+// ArchiveConfig Archive配置
 type ArchiveConfig struct {
 	// 非必填
 	// secret key
@@ -101,14 +101,14 @@ type ArchiveConfig struct {
 
 type ArchiveOption func(config *ArchiveConfig)
 
-// 设置Archive的secret key
+// WithSecretKey 设置Archive的secret key
 func WithSecretKey(key string) ArchiveOption {
 	return func(config *ArchiveConfig) {
 		config.secretKey = key
 	}
 }
 
-// RPC Client 链接配置
+// RPCClientConfig RPC Client 链接配置
 type RPCClientConfig struct {
 
 	//pc客户端最大接受大小 (MB)
@@ -117,7 +117,7 @@ type RPCClientConfig struct {
 
 type RPCClientOption func(config *RPCClientConfig)
 
-// 设置RPC Client的Max Receive Message Size
+// WithRPCClientMaxReceiveMessageSize 设置RPC Client的Max Receive Message Size
 func WithRPCClientMaxReceiveMessageSize(size int) RPCClientOption {
 	return func(config *RPCClientConfig) {
 		config.rpcClientMaxReceiveMessageSize = size
@@ -161,105 +161,105 @@ type ChainClientConfig struct {
 
 type ChainClientOption func(*ChainClientConfig)
 
-// 设置配置文件路径
+// WithConfPath 设置配置文件路径
 func WithConfPath(confPath string) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.confPath = confPath
 	}
 }
 
-// 添加ChainMaker节点地址及连接数配置
+// AddChainClientNodeConfig 添加ChainMaker节点地址及连接数配置
 func AddChainClientNodeConfig(nodeConfig *NodeConfig) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.nodeList = append(config.nodeList, nodeConfig)
 	}
 }
 
-// 添加用户私钥文件路径配置
+// WithUserKeyFilePath 添加用户私钥文件路径配置
 func WithUserKeyFilePath(userKeyFilePath string) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.userKeyFilePath = userKeyFilePath
 	}
 }
 
-// 添加用户证书文件路径配置
+// WithUserCrtFilePath 添加用户证书文件路径配置
 func WithUserCrtFilePath(userCrtFilePath string) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.userCrtFilePath = userCrtFilePath
 	}
 }
 
-// 添加用户签名私钥文件路径配置
+// WithUserSignKeyFilePath 添加用户签名私钥文件路径配置
 func WithUserSignKeyFilePath(userSignKeyFilePath string) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.userSignKeyFilePath = userSignKeyFilePath
 	}
 }
 
-// 添加用户签名证书文件路径配置
+// WithUserSignCrtFilePath 添加用户签名证书文件路径配置
 func WithUserSignCrtFilePath(userSignCrtFilePath string) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.userSignCrtFilePath = userSignCrtFilePath
 	}
 }
 
-// 添加用户私钥文件内容配置
+// WithUserKeyBytes 添加用户私钥文件内容配置
 func WithUserKeyBytes(userKeyBytes []byte) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.userKeyBytes = userKeyBytes
 	}
 }
 
-// 添加用户证书文件内容配置
+// WithUserCrtBytes 添加用户证书文件内容配置
 func WithUserCrtBytes(userCrtBytes []byte) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.userCrtBytes = userCrtBytes
 	}
 }
 
-// 添加用户签名私钥文件内容配置
+// WithUserSignKeyBytes 添加用户签名私钥文件内容配置
 func WithUserSignKeyBytes(userSignKeyBytes []byte) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.userSignKeyBytes = userSignKeyBytes
 	}
 }
 
-// 添加用户签名证书文件内容配置
+// WithUserSignCrtBytes 添加用户签名证书文件内容配置
 func WithUserSignCrtBytes(userSignCrtBytes []byte) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.userSignCrtBytes = userSignCrtBytes
 	}
 }
 
-// 添加OrgId
+// WithChainClientOrgId 添加OrgId
 func WithChainClientOrgId(orgId string) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.orgId = orgId
 	}
 }
 
-// 添加ChainId
+// WithChainClientChainId 添加ChainId
 func WithChainClientChainId(chainId string) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.chainId = chainId
 	}
 }
 
-// 设置Logger对象，便于日志打印
+// WithChainClientLogger 设置Logger对象，便于日志打印
 func WithChainClientLogger(logger utils.Logger) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.logger = logger
 	}
 }
 
-// 设置Archive配置
+// WithArchiveConfig 设置Archive配置
 func WithArchiveConfig(conf *ArchiveConfig) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.archiveConfig = conf
 	}
 }
 
-//设置grpc客户端配置
+// WithRPCClientConfig 设置grpc客户端配置
 func WithRPCClientConfig(conf *RPCClientConfig) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.rpcClientConfig = conf
@@ -298,19 +298,23 @@ func setChainConfig(config *ChainClientConfig) {
 
 // 如果参数没有设置，便使用配置文件的配置
 func setUserConfig(config *ChainClientConfig) {
-	if utils.Config.ChainClientConfig.UserKeyFilePath != "" && config.userKeyFilePath == "" && config.userKeyBytes == nil {
+	if utils.Config.ChainClientConfig.UserKeyFilePath != "" && config.userKeyFilePath == "" &&
+		config.userKeyBytes == nil {
 		config.userKeyFilePath = utils.Config.ChainClientConfig.UserKeyFilePath
 	}
 
-	if utils.Config.ChainClientConfig.UserCrtFilePath != "" && config.userCrtFilePath == "" && config.userCrtBytes == nil {
+	if utils.Config.ChainClientConfig.UserCrtFilePath != "" && config.userCrtFilePath == "" &&
+		config.userCrtBytes == nil {
 		config.userCrtFilePath = utils.Config.ChainClientConfig.UserCrtFilePath
 	}
 
-	if utils.Config.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyFilePath == "" && config.userSignKeyBytes == nil {
+	if utils.Config.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyFilePath == "" &&
+		config.userSignKeyBytes == nil {
 		config.userSignKeyFilePath = utils.Config.ChainClientConfig.UserSignKeyFilePath
 	}
 
-	if utils.Config.ChainClientConfig.UserSignCrtFilePath != "" && config.userSignCrtFilePath == "" && config.userSignCrtBytes == nil {
+	if utils.Config.ChainClientConfig.UserSignCrtFilePath != "" && config.userSignCrtFilePath == "" &&
+		config.userSignCrtBytes == nil {
 		config.userSignCrtFilePath = utils.Config.ChainClientConfig.UserSignCrtFilePath
 	}
 }
@@ -411,10 +415,7 @@ func checkConfig(config *ChainClientConfig) error {
 		return err
 	}
 
-	if err = checkRPCClientConfig(config); err != nil {
-		return err
-	}
-	return nil
+	return checkRPCClientConfig(config)
 }
 
 func checkNodeListConfig(config *ChainClientConfig) error {
@@ -485,7 +486,8 @@ func checkRPCClientConfig(config *ChainClientConfig) error {
 		)
 		config.rpcClientConfig = rpcClient
 	} else {
-		if config.rpcClientConfig.rpcClientMaxReceiveMessageSize <= 0 || config.rpcClientConfig.rpcClientMaxReceiveMessageSize > 100 {
+		if config.rpcClientConfig.rpcClientMaxReceiveMessageSize <= 0 ||
+			config.rpcClientConfig.rpcClientMaxReceiveMessageSize > 100 {
 			config.rpcClientConfig.rpcClientMaxReceiveMessageSize = DefaultRpcClientMaxReceiveMessageSize
 		}
 	}
@@ -507,11 +509,7 @@ func dealConfig(config *ChainClientConfig) error {
 		return err
 	}
 
-	if err = dealUserSignKeyConfig(config); err != nil {
-		return err
-	}
-
-	return nil
+	return dealUserSignKeyConfig(config)
 }
 
 func dealUserCrtConfig(config *ChainClientConfig) (err error) {

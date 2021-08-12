@@ -8,28 +8,31 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/pb-go/syscontract"
-	"chainmaker.org/chainmaker/sdk-go/utils"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"strings"
+
+	"chainmaker.org/chainmaker/pb-go/common"
+	"chainmaker.org/chainmaker/pb-go/syscontract"
+	"chainmaker.org/chainmaker/sdk-go/utils"
 )
 
 func (cc *ChainClient) CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType,
 	kvs []*common.KeyValuePair) (*common.Payload, error) {
 
 	cc.logger.Debugf("[SDK] create [ContractCreate] to be signed payload")
-	return cc.createContractManageWithByteCodePayload(contractName, syscontract.ContractManageFunction_INIT_CONTRACT.String(), version, byteCode, runtime, kvs)
+	return cc.createContractManageWithByteCodePayload(contractName,
+		syscontract.ContractManageFunction_INIT_CONTRACT.String(), version, byteCode, runtime, kvs)
 }
 
 func (cc *ChainClient) CreateContractUpgradePayload(contractName, version, byteCode string, runtime common.RuntimeType,
 	kvs []*common.KeyValuePair) (*common.Payload, error) {
 
 	cc.logger.Debugf("[SDK] create [ContractUpgrade] to be signed payload")
-	return cc.createContractManageWithByteCodePayload(contractName, syscontract.ContractManageFunction_UPGRADE_CONTRACT.String(), version, byteCode, runtime, kvs)
+	return cc.createContractManageWithByteCodePayload(contractName,
+		syscontract.ContractManageFunction_UPGRADE_CONTRACT.String(), version, byteCode, runtime, kvs)
 }
 
 func (cc *ChainClient) CreateContractFreezePayload(contractName string) (*common.Payload, error) {
@@ -54,7 +57,8 @@ func (cc *ChainClient) createContractManagePayload(contractName, method string) 
 			Value: []byte(contractName),
 		},
 	}
-	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(), method, kvs, defaultSeq), nil
+	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
+		method, kvs, defaultSeq), nil
 }
 
 func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, method, version, byteCode string,
@@ -71,20 +75,12 @@ func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, met
 			return nil, fmt.Errorf("read from byteCode file %s failed, %s", byteCode, err)
 		}
 	} else {
-		for {
-			byteCode = strings.TrimSpace(byteCode)
+		byteCode = strings.TrimSpace(byteCode)
 
-			codeBytes, err = hex.DecodeString(byteCode)
-			if err == nil {
-				break
+		if codeBytes, err = hex.DecodeString(byteCode); err != nil {
+			if codeBytes, err = base64.StdEncoding.DecodeString(byteCode); err != nil {
+				return nil, fmt.Errorf("decode byteCode failed, %s", err)
 			}
-
-			codeBytes, err = base64.StdEncoding.DecodeString(byteCode)
-			if err == nil {
-				break
-			}
-
-			return nil, fmt.Errorf("decode byteCode failed, %s", err)
 		}
 	}
 
@@ -139,11 +135,13 @@ func (cc *ChainClient) SignContractManagePayload(payload *common.Payload) (*comm
 	return cc.SignPayload(payload)
 }
 
-func (cc *ChainClient) SendContractManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+func (cc *ChainClient) SendContractManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry,
+	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	return cc.sendContractRequest(payload, endorsers, timeout, withSyncResult)
 }
 
-func (cc *ChainClient) InvokeContract(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+func (cc *ChainClient) InvokeContract(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64,
+	withSyncResult bool) (*common.TxResponse, error) {
 
 	cc.logger.Debugf("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, kvs)
@@ -153,7 +151,8 @@ func (cc *ChainClient) InvokeContract(contractName, method, txId string, kvs []*
 	return cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 }
 
-func (cc *ChainClient) QueryContract(contractName, method string, kvs []*common.KeyValuePair, timeout int64) (*common.TxResponse, error) {
+func (cc *ChainClient) QueryContract(contractName, method string, kvs []*common.KeyValuePair,
+	timeout int64) (*common.TxResponse, error) {
 
 	cc.logger.Debugf("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[params:%+v]",
 		contractName, method, kvs)
@@ -168,7 +167,8 @@ func (cc *ChainClient) QueryContract(contractName, method string, kvs []*common.
 	return resp, nil
 }
 
-func (cc *ChainClient) GetTxRequest(contractName, method, txId string, kvs []*common.KeyValuePair) (*common.TxRequest, error) {
+func (cc *ChainClient) GetTxRequest(contractName, method, txId string,
+	kvs []*common.KeyValuePair) (*common.TxRequest, error) {
 	if txId == "" {
 		txId = utils.GetRandTxId()
 	}
@@ -186,7 +186,8 @@ func (cc *ChainClient) GetTxRequest(contractName, method, txId string, kvs []*co
 	return req, nil
 }
 
-func (cc *ChainClient) SendTxRequest(txRequest *common.TxRequest, timeout int64, withSyncResult bool) (*common.TxResponse, error) {
+func (cc *ChainClient) SendTxRequest(txRequest *common.TxRequest, timeout int64,
+	withSyncResult bool) (*common.TxResponse, error) {
 
 	resp, err := cc.sendTxRequest(txRequest, timeout)
 	if err != nil {
