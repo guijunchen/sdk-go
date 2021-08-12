@@ -282,28 +282,25 @@ func (cc *ChainClient) CreateChainConfigTrustMemberAddPayload(trustMemberOrgId, 
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   orgId,
-			Value: trustMemberOrgId,
+			Key:   utils.KeyChainConfigContractTrustMemberOrgId,
+			Value: []byte(trustMemberOrgId),
 		},
 		{
-			Key:   "member_info",
-			Value: trustMemberInfo,
+			Key:   utils.KeyChainConfigContractTrustMemberInfo,
+			Value: []byte(trustMemberInfo),
 		},
 		{
-			Key:   "node_id",
-			Value: trustMemberNodeId,
+			Key:   utils.KeyChainConfigContractNodeId,
+			Value: []byte(trustMemberNodeId),
 		},
 		{
-			Key:   "role",
-			Value: trustMemberRole,
+			Key:   utils.KeyChainConfigContractTrustMemberRole,
+			Value: []byte(trustMemberRole),
 		},
 	}
 
-	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		common.ConfigFunction_TRUST_MEMBER_ADD.String(), pairs, seq+1)
-	if err != nil {
-		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
-	}
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
+		syscontract.ChainConfigFunction_TRUST_MEMBER_ADD.String(), pairs, seq+1)
 
 	return payload, nil
 }
@@ -318,16 +315,12 @@ func (cc *ChainClient) CreateChainConfigTrustMemberDeletePayload(trustMemberInfo
 
 	pairs := []*common.KeyValuePair{
 		{
-			Key:   "member_info",
-			Value: trustMemberInfo,
+			Key:   utils.KeyChainConfigContractTrustMemberInfo,
+			Value: []byte(trustMemberInfo),
 		},
 	}
-
-	payload, err := constructConfigUpdatePayload(cc.chainId, common.ContractName_SYSTEM_CONTRACT_CHAIN_CONFIG.String(),
-		common.ConfigFunction_TRUST_MEMBER_DELETE.String(), pairs, seq+1)
-	if err != nil {
-		return nil, fmt.Errorf(genConfigPayloadErrStringFormat, err)
-	}
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
+		syscontract.ChainConfigFunction_TRUST_MEMBER_DELETE.String(), pairs, seq+1)
 
 	return payload, nil
 }
