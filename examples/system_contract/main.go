@@ -44,7 +44,9 @@ func testSystemContract() {
 	testSystemContractGetTxByTxId(client, genesisBlockInfo.Block.Txs[0].Payload.TxId)
 	testSystemContractGetBlockByHash(client, hex.EncodeToString(genesisBlockInfo.Block.Header.BlockHash))
 	testSystemContractGetBlockByTxId(client, genesisBlockInfo.Block.Txs[0].Payload.TxId)
-	testSystemContractGetLastConfigBlock(client)
+	blockInfo := testSystemContractGetLastConfigBlock(client)
+	fmt.Printf("GetLastConfigBlock BlockType=%s, BlockHeight=%d\n",
+		blockInfo.Block.Header.BlockType, blockInfo.Block.Header.BlockHeight)
 	testSystemContractGetLastBlock(client)
 	testSystemContractGetChainInfo(client)
 
