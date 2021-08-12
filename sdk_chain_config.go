@@ -198,8 +198,8 @@ func (cc *ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify boo
 	return payload, nil
 }
 
-func (cc *ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId,
-	trustRootCrt string) (*common.Payload, error) {
+func (cc *ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId string,
+	trustRootCrt []string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [TrustRootAdd] to be signed payload")
 
 	pairs := []*common.KeyValuePair{
@@ -209,7 +209,7 @@ func (cc *ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId,
 		},
 		{
 			Key:   utils.KeyChainConfigContractRoot,
-			Value: []byte(trustRootCrt),
+			Value: []byte(strings.Join(trustRootCrt, ",")),
 		},
 	}
 
@@ -224,8 +224,8 @@ func (cc *ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId,
 	return payload, nil
 }
 
-func (cc *ChainClient) CreateChainConfigTrustRootUpdatePayload(trustRootOrgId,
-	trustRootCrt string) (*common.Payload, error) {
+func (cc *ChainClient) CreateChainConfigTrustRootUpdatePayload(trustRootOrgId string,
+	trustRootCrt []string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [TrustRootUpdate] to be signed payload")
 
 	pairs := []*common.KeyValuePair{
@@ -235,7 +235,7 @@ func (cc *ChainClient) CreateChainConfigTrustRootUpdatePayload(trustRootOrgId,
 		},
 		{
 			Key:   utils.KeyChainConfigContractRoot,
-			Value: []byte(trustRootCrt),
+			Value: []byte(strings.Join(trustRootCrt, ",")),
 		},
 	}
 
@@ -267,6 +267,60 @@ func (cc *ChainClient) CreateChainConfigTrustRootDeletePayload(trustRootOrgId st
 
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
 		syscontract.ChainConfigFunction_TRUST_ROOT_DELETE.String(), pairs, seq+1)
+
+	return payload, nil
+}
+
+func (cc *ChainClient) CreateChainConfigTrustMemberAddPayload(trustMemberOrgId, trustMemberNodeId,
+	trustMemberRole, trustMemberInfo string) (*common.Payload, error) {
+	cc.logger.Debug("[SDK] begin to create [TrustRootAdd] to be signed payload")
+
+	seq, err := cc.GetChainConfigSequence()
+	if err != nil {
+		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
+	}
+
+	pairs := []*common.KeyValuePair{
+		{
+			Key:   utils.KeyChainConfigContractTrustMemberOrgId,
+			Value: []byte(trustMemberOrgId),
+		},
+		{
+			Key:   utils.KeyChainConfigContractTrustMemberInfo,
+			Value: []byte(trustMemberInfo),
+		},
+		{
+			Key:   utils.KeyChainConfigContractNodeId,
+			Value: []byte(trustMemberNodeId),
+		},
+		{
+			Key:   utils.KeyChainConfigContractTrustMemberRole,
+			Value: []byte(trustMemberRole),
+		},
+	}
+
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
+		syscontract.ChainConfigFunction_TRUST_MEMBER_ADD.String(), pairs, seq+1)
+
+	return payload, nil
+}
+
+func (cc *ChainClient) CreateChainConfigTrustMemberDeletePayload(trustMemberInfo string) (*common.Payload, error) {
+	cc.logger.Debug("[SDK] begin to create [TrustRootDelete] to be signed payload")
+
+	seq, err := cc.GetChainConfigSequence()
+	if err != nil {
+		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
+	}
+
+	pairs := []*common.KeyValuePair{
+		{
+			Key:   utils.KeyChainConfigContractTrustMemberInfo,
+			Value: []byte(trustMemberInfo),
+		},
+	}
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
+		syscontract.ChainConfigFunction_TRUST_MEMBER_DELETE.String(), pairs, seq+1)
 
 	return payload, nil
 }

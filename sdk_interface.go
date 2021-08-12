@@ -323,7 +323,7 @@ type SDKInterface interface {
 	//   - trustRootOrgId: 组织Id
 	//   - trustRootCrt: 根证书
 	// ```go
-	CreateChainConfigTrustRootAddPayload(trustRootOrgId, trustRootCrt string) (*common.Payload, error)
+	CreateChainConfigTrustRootAddPayload(trustRootOrgId string, trustRootCrt []string) (*common.Payload, error)
 	// ```
 
 	// ### 3.9 更新信任组织根证书待签名payload生成
@@ -331,7 +331,7 @@ type SDKInterface interface {
 	//   - trustRootOrgId: 组织Id
 	//   - trustRootCrt: 根证书
 	// ```go
-	CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt string) (*common.Payload, error)
+	CreateChainConfigTrustRootUpdatePayload(trustRootOrgId string, trustRootCrt []string) (*common.Payload, error)
 	// ```
 
 	// ### 3.10 删除信任组织根证书待签名payload生成
