@@ -275,7 +275,8 @@ func (cc *ChainClient) CheckCallerCertAuth(payload string, orgIds []string, sign
 	return resp, nil
 }
 
-func (cc *ChainClient) SaveEnclaveCACert(enclaveCACert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+func (cc *ChainClient) SaveEnclaveCACert(
+	enclaveCACert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = utils.GetRandTxId()
 	}
@@ -316,7 +317,8 @@ func (cc *ChainClient) SaveEnclaveCACert(enclaveCACert, txId string, withSyncRes
 	return resp, nil
 }
 
-func (cc *ChainClient) SaveEnclaveReport(enclaveId, report, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+func (cc *ChainClient) SaveEnclaveReport(
+	enclaveId, report, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
 		txId = utils.GetRandTxId()
 	}
