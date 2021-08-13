@@ -10,26 +10,20 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	"chainmaker.org/chainmaker/pb-go/common"
 )
 
 func TestCheckNewBlockChainConfig(t *testing.T) {
 	tests := []struct {
 		name string
-		res  *common.TxResponse
-		err  error
 	}{
 		{
-			"valid request",
-			&common.TxResponse{Code: common.TxStatusCode_SUCCESS},
-			nil,
+			"good",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cli, err := newMockChainClient(WithConfPath(sdkConfigPathForUT))
+			cli, err := newMockChainClient(nil, nil, WithConfPath(sdkConfigPathForUT))
 			require.Nil(t, err)
 			defer cli.Stop()
 

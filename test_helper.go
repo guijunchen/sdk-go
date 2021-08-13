@@ -44,7 +44,8 @@ type mockConnectionPool struct {
 	rpcClientMaxReceiveMessageSize int
 }
 
-func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverError error, opts ...ChainClientOption) (*ChainClient, error) {
+func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverTxError error,
+	opts ...ChainClientOption) (*ChainClient, error) {
 	conf, err := generateConfig(opts...)
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverError error, o
 	}
 
 	_mockServer.txResponse = serverTxResponse
-	_mockServer.err = serverError
+	_mockServer.txErr = serverTxError
 
 	return &ChainClient{
 		pool:            pool,
@@ -209,31 +210,14 @@ func (pool *mockConnectionPool) Close() error {
 type mockRpcNodeServer struct {
 	apipb.UnimplementedRpcNodeServer
 	txResponse *cmnpb.TxResponse
-	err        error
+	txErr      error
 }
 
 func (s *mockRpcNodeServer) SendRequest(ctx context.Context, req *cmnpb.TxRequest) (*cmnpb.TxResponse, error) {
-	return s.txResponse, s.err
+	return s.txResponse, s.txErr
 }
 
 func (s *mockRpcNodeServer) Subscribe(req *cmnpb.TxRequest, server apipb.RpcNode_SubscribeServer) error {
-	//var (
-	//	errCode cmnerr.ErrCode
-	//	errMsg  string
-	//)
-
-	//tx := &cmnpb.Transaction{
-	//	Header:           req.Header,
-	//	RequestPayload:   req.Payload,
-	//	RequestSignature: req.Signature,
-	//	Result:           nil,
-	//}
-
-	//errCode, errMsg = s.validate(tx)
-	//if errCode != cmnerr.ERR_CODE_OK {
-	//	return status.Error(codes.Unauthenticated, errMsg)
-	//}
-
 	switch req.Payload.TxType {
 	case cmnpb.TxType_SUBSCRIBE:
 	}
