@@ -275,47 +275,90 @@ func (cc *ChainClient) CheckCallerCertAuth(payload string, orgIds []string, sign
 	return resp, nil
 }
 
-//func (cc *ChainClient) SaveEnclaveCACert(enclaveCACert, txId string, withSyncResult bool,
-//	timeout int64) (*common.TxResponse, error) {
-//	if txId == "" {
-//		txId = utils.GetRandTxId()
-//	}
-//
-//	cc.logger.Infof("[SDK] begin to save ca cert , [contract:%s]/[method:%s]/[txId:%s]",
-//		syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-//		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(),
-//		txId,
-//	)
-//
-//	// 构造Payload
-//	pairs := paramsMap2KVPairs(map[string][]byte{
-//		utils.KeyCaCert: []byte(enclaveCACert),
-//	})
-//
-//	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-//		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(), pairs, 0)
-//
-//	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
-//	if err != nil {
-//		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
-//	}
-//
-//	if resp.Code == common.TxStatusCode_SUCCESS {
-//		if withSyncResult {
-//			contractResult, err := cc.getSyncResult(payload.TxId)
-//			if err != nil {
-//				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-//			}
-//			resp.ContractResult = contractResult
-//		}
-//	}
-//
-//	if err = checkProposalRequestResp(resp, true); err != nil {
-//		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_CONTRACT.String(), err.Error())
-//	}
-//
-//	return resp, nil
-//}
+func (cc *ChainClient) SaveEnclaveCACert(
+	enclaveCACert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+	if txId == "" {
+		txId = utils.GetRandTxId()
+	}
+
+	cc.logger.Infof("[SDK] begin to save ca cert , [contract:%s]/[method:%s]/[txId:%s]",
+		syscontract.SystemContract_PRIVATE_COMPUTE.String(),
+		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(),
+		txId,
+	)
+
+	// 构造Payload
+	pairs := paramsMap2KVPairs(map[string][]byte{
+		utils.KeyCaCert: []byte(enclaveCACert),
+	})
+
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
+		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(), pairs, 0)
+
+	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
+	if err != nil {
+		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
+	}
+
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if withSyncResult {
+			contractResult, err := cc.getSyncResult(payload.TxId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+			resp.ContractResult = contractResult
+		}
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_QUERY_CONTRACT.String(), err.Error())
+	}
+
+	return resp, nil
+}
+
+func (cc *ChainClient) SaveEnclaveReport(
+	enclaveId, report, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
+	if txId == "" {
+		txId = utils.GetRandTxId()
+	}
+
+	cc.logger.Infof("[SDK] begin to save enclave report , [contract:%s]/[method:%s]/[txId:%s]",
+		syscontract.SystemContract_PRIVATE_COMPUTE.String(),
+		syscontract.PrivateComputeFunction_SAVE_ENCLAVE_REPORT.String(),
+		txId,
+	)
+
+	// 构造Payload
+	pairs := paramsMap2KVPairs(map[string][]byte{
+		utils.KeyEnclaveId: []byte(enclaveId),
+		utils.KeyReport:    []byte(report),
+	})
+
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
+		syscontract.PrivateComputeFunction_SAVE_ENCLAVE_REPORT.String(), pairs, 0)
+
+	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
+	if err != nil {
+		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
+	}
+
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if withSyncResult {
+			contractResult, err := cc.getSyncResult(payload.TxId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+			resp.ContractResult = contractResult
+		}
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, common.TxType_INVOKE_CONTRACT.String(), err.Error())
+	}
+
+	return resp, nil
+}
 
 func (cc *ChainClient) CreateSaveEnclaveCACertPayload(enclaveCACert string, txId string) (*common.Payload, error) {
 	if txId == "" {

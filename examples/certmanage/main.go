@@ -153,7 +153,7 @@ func testDeleteCert(client *sdk.ChainClient, certHashes []string) {
 	pairs := []*common.KeyValuePair{
 		{
 			Key:   "cert_hashes",
-			Value: []byte(strings.Join(certHashes, "")),
+			Value: []byte(strings.Join(certHashes, ",")),
 		},
 	}
 

@@ -34,7 +34,7 @@ const (
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
-var client1AddrInt, client2AddrInt, client1AddrSki string
+var client1AddrInt, client2AddrInt, client1AddrSki, client1EthAddr, client2EthAddr string
 
 func init() {
 	userClient1, err := examples.GetUser(examples.UserNameOrg1Client1)
@@ -42,7 +42,7 @@ func init() {
 		log.Fatalln(err)
 	}
 
-	client1AddrInt, client1AddrSki, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient1.SignCrtPath)
+	client1AddrInt, client1EthAddr, client1AddrSki, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient1.SignCrtPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -52,12 +52,13 @@ func init() {
 		log.Fatalln(err)
 	}
 
-	client2AddrInt, _, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient2.SignCrtPath)
+	client2AddrInt, client2EthAddr, _, err = examples.MakeAddrAndSkiFromCrtFilePath(userClient2.SignCrtPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("client1AddrInt: %s\nclient1AddrSki: %s\nclient2AddrInt: %s\n", client1AddrInt, client1AddrSki, client2AddrInt)
+	fmt.Printf("client1AddrInt: %s\nclient1EthAddr: %s\nclient1AddrSki: %s\nclient2AddrInt: %s\nclient2EthAddr: %s\n",
+		client1AddrInt, client1EthAddr, client1AddrSki, client2AddrInt, client2EthAddr)
 }
 
 func main() {

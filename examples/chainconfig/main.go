@@ -39,6 +39,7 @@ func main() {
 func testChainConfig() {
 	var (
 		chainConfig *config.ChainConfig
+		ok          bool
 	)
 
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
@@ -105,7 +106,7 @@ func testChainConfig() {
 	}
 	trustRootOrgId := examples.OrgId5
 	trustRootCrt := string(raw)
-	testChainConfigTrustRootAdd(client, trustRootOrgId, trustRootCrt, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
+	testChainConfigTrustRootAdd(client, trustRootOrgId, []string{trustRootCrt}, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if trustCount+1 != len(chainConfig.TrustRoots) {
@@ -114,7 +115,14 @@ func testChainConfig() {
 	if trustRootOrgId != chainConfig.TrustRoots[trustCount].OrgId {
 		log.Fatalln("require equal")
 	}
-	if trustRootCrt != chainConfig.TrustRoots[trustCount].Root {
+
+	for _, root := range chainConfig.TrustRoots[trustCount].Root {
+		if trustRootCrt == root {
+			ok = true
+			break
+		}
+	}
+	if !ok {
 		log.Fatalln("require equal")
 	}
 
@@ -125,7 +133,7 @@ func testChainConfig() {
 	}
 	trustRootOrgId = examples.OrgId5
 	trustRootCrt = string(raw)
-	testChainConfigTrustRootUpdate(client, trustRootOrgId, trustRootCrt, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg5Admin1)
+	testChainConfigTrustRootUpdate(client, trustRootOrgId, []string{trustRootCrt}, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg5Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if trustCount+1 != len(chainConfig.TrustRoots) {
@@ -134,7 +142,13 @@ func testChainConfig() {
 	if trustRootOrgId != chainConfig.TrustRoots[trustCount].OrgId {
 		log.Fatalln("require equal")
 	}
-	if trustRootCrt != chainConfig.TrustRoots[trustCount].Root {
+	for _, root := range chainConfig.TrustRoots[trustCount].Root {
+		if trustRootCrt == root {
+			ok = true
+			break
+		}
+	}
+	if !ok {
 		log.Fatalln("require equal")
 	}
 
@@ -239,7 +253,7 @@ func testChainConfig() {
 	}
 	trustRootOrgId = examples.OrgId5
 	trustRootCrt = string(raw)
-	testChainConfigTrustRootAdd(client, trustRootOrgId, trustRootCrt, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
+	testChainConfigTrustRootAdd(client, trustRootOrgId, []string{trustRootCrt}, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	if 5 != len(chainConfig.TrustRoots) {
@@ -248,7 +262,13 @@ func testChainConfig() {
 	if trustRootOrgId != chainConfig.TrustRoots[4].OrgId {
 		log.Fatalln("require equal")
 	}
-	if trustRootCrt != chainConfig.TrustRoots[4].Root {
+	for _, root := range chainConfig.TrustRoots[trustCount].Root {
+		if trustRootCrt == root {
+			ok = true
+			break
+		}
+	}
+	if !ok {
 		log.Fatalln("require equal")
 	}
 	nodeOrgId = examples.OrgId5
@@ -391,7 +411,7 @@ func testChainConfigBlockUpdate(client *sdk.ChainClient, txTimestampVerify bool,
 	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigTrustRootAdd(client *sdk.ChainClient, trustRootOrgId, trustRootCrt string, usernames ...string) {
+func testChainConfigTrustRootAdd(client *sdk.ChainClient, trustRootOrgId string, trustRootCrt []string, usernames ...string) {
 
 	// 配置块更新payload生成
 	payload, err := client.CreateChainConfigTrustRootAddPayload(trustRootOrgId, trustRootCrt)
@@ -402,7 +422,7 @@ func testChainConfigTrustRootAdd(client *sdk.ChainClient, trustRootOrgId, trustR
 	signAndSendRequest(client, payload, usernames...)
 }
 
-func testChainConfigTrustRootUpdate(client *sdk.ChainClient, trustRootOrgId, trustRootCrt string, usernames ...string) {
+func testChainConfigTrustRootUpdate(client *sdk.ChainClient, trustRootOrgId string, trustRootCrt []string, usernames ...string) {
 
 	// 配置块更新payload生成
 	payload, err := client.CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt)
