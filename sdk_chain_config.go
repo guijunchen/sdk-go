@@ -299,8 +299,10 @@ func (cc *ChainClient) CreateChainConfigTrustMemberAddPayload(trustMemberOrgId, 
 		},
 	}
 
+	//payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
+	//	syscontract.ChainConfigFunction_TRUST_MEMBER_ADD.String(), pairs, seq+1)
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
-		syscontract.ChainConfigFunction_TRUST_MEMBER_ADD.String(), pairs, seq+1)
+		syscontract.ChainConfigFunction_TRUST_ROOT_ADD.String(), pairs, seq+1)
 
 	return payload, nil
 }
@@ -319,8 +321,10 @@ func (cc *ChainClient) CreateChainConfigTrustMemberDeletePayload(trustMemberInfo
 			Value: []byte(trustMemberInfo),
 		},
 	}
+	//payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
+	//	syscontract.ChainConfigFunction_TRUST_MEMBER_DELETE.String(), pairs, seq+1)
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
-		syscontract.ChainConfigFunction_TRUST_MEMBER_DELETE.String(), pairs, seq+1)
+		syscontract.ChainConfigFunction_TRUST_ROOT_DELETE.String(), pairs, seq+1)
 
 	return payload, nil
 }
