@@ -30,11 +30,11 @@ const (
 func main() {
 	testSystemContract()
 	testSystemContractArchive()
+	testGetMerklePathByTxId()
 }
 
 // [系统合约]
 func testSystemContract() {
-	//client, err := createClientWithConfig()
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		log.Fatalln(err)
@@ -44,7 +44,9 @@ func testSystemContract() {
 	testSystemContractGetTxByTxId(client, genesisBlockInfo.Block.Txs[0].Payload.TxId)
 	testSystemContractGetBlockByHash(client, hex.EncodeToString(genesisBlockInfo.Block.Header.BlockHash))
 	testSystemContractGetBlockByTxId(client, genesisBlockInfo.Block.Txs[0].Payload.TxId)
-	testSystemContractGetLastConfigBlock(client)
+	blockInfo := testSystemContractGetLastConfigBlock(client)
+	fmt.Printf("GetLastConfigBlock BlockType=%s, BlockHeight=%d\n",
+		blockInfo.Block.Header.BlockType, blockInfo.Block.Header.BlockHeight)
 	testSystemContractGetLastBlock(client)
 	testSystemContractGetChainInfo(client)
 
@@ -220,4 +222,21 @@ func testSystemContractGetBlockHeaderByHeight(client *sdk.ChainClient) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func testGetMerklePathByTxId() {
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	genesisBlockInfo := testSystemContractGetBlockByHeight(client, 1)
+	txId := genesisBlockInfo.Block.Txs[0].Payload.TxId
+
+	merklePath, err := client.GetMerklePathByTxId(txId)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("GetMerklePathByTxId: ", merklePath)
 }

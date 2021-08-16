@@ -228,6 +228,13 @@ InvokeSystemContract(contractName, method, txId string, kvs []*common.KeyValuePa
 QuerySystemContract(contractName, method string, kvs[]*common.KeyValuePair, timeout int64) (*common.TxResponse, error)
 ```
 
+### 2.16 根据交易Id获取Merkle路径
+**参数说明**
+- txId: 交易ID
+```go
+GetMerklePathByTxId(txId string) ([]byte, error)
+```
+
 ## 3 链配置接口
 ### 3.1 查询最新链配置
 ```go
@@ -312,7 +319,25 @@ CreateChainConfigTrustRootUpdatePayload(trustRootOrgId, trustRootCrt string) (*c
 CreateChainConfigTrustRootDeletePayload(trustRootOrgId string) (*common.Payload, error)
 ```
 
-### 3.11 添加权限配置待签名payload生成
+### 3.11 添加信任成员证书待签名payload生成
+**参数说明**
+  - trustMemberOrgId: 组织Id
+  - trustMemberNodeId: 节点Id
+  - trustMemberRole: 成员角色
+  - trustMemberInfo: 成员信息内容
+```go
+	CreateChainConfigTrustMemberAddPayload(trustMemberOrgId, trustMemberNodeId,
+		trustMemberRole, trustMemberInfo string) (*common.Payload, error)
+```
+
+### 3.12 删除信任成员证书待签名payload生成
+**参数说明**
+  - trustMemberInfo: 成员信息内容
+```go
+	CreateChainConfigTrustMemberDeletePayload(trustMemberInfo string) (*common.Payload, error)
+```
+
+### 3.13 添加权限配置待签名payload生成
 **参数说明**
   - permissionResourceName: 权限名
   - policy: 权限规则
@@ -320,7 +345,7 @@ CreateChainConfigTrustRootDeletePayload(trustRootOrgId string) (*common.Payload,
 CreateChainConfigPermissionAddPayload(permissionResourceName string, policy *accesscontrol.Policy) (*common.Payload, error)
 ```
 
-### 3.12 更新权限配置待签名payload生成
+### 3.14 更新权限配置待签名payload生成
 **参数说明**
   - permissionResourceName: 权限名
   - policy: 权限规则
@@ -328,14 +353,14 @@ CreateChainConfigPermissionAddPayload(permissionResourceName string, policy *acc
 CreateChainConfigPermissionUpdatePayload(permissionResourceName string, policy *accesscontrol.Policy) (*common.Payload, error)
 ```
 
-### 3.13 删除权限配置待签名payload生成
+### 3.15 删除权限配置待签名payload生成
 **参数说明**
   - permissionResourceName: 权限名
 ```go
 CreateChainConfigPermissionDeletePayload(permissionResourceName string) (*common.Payload, error)
 ```
 
-### 3.14 添加共识节点地址待签名payload生成
+### 3.16 添加共识节点地址待签名payload生成
 **参数说明**
   - nodeOrgId: 节点组织Id
   - nodeIds: 节点Id
@@ -343,7 +368,7 @@ CreateChainConfigPermissionDeletePayload(permissionResourceName string) (*common
 CreateChainConfigConsensusNodeIdAddPayload(nodeOrgId string, nodeIds []string) (*common.Payload, error)
 ```
 
-### 3.15 更新共识节点地址待签名payload生成
+### 3.17 更新共识节点地址待签名payload生成
 **参数说明**
   - nodeOrgId: 节点组织Id
   - nodeOldNodeId: 节点原Id
@@ -352,7 +377,7 @@ CreateChainConfigConsensusNodeIdAddPayload(nodeOrgId string, nodeIds []string) (
 CreateChainConfigConsensusNodeIdUpdatePayload(nodeOrgId, nodeOldNodeId, nodeNewNodeId string) (*common.Payload, error)
 ```
 
-### 3.16 删除共识节点地址待签名payload生成
+### 3.18 删除共识节点地址待签名payload生成
 **参数说明**
   - nodeOrgId: 节点组织Id
   - nodeId: 节点Id
@@ -360,7 +385,7 @@ CreateChainConfigConsensusNodeIdUpdatePayload(nodeOrgId, nodeOldNodeId, nodeNewN
 CreateChainConfigConsensusNodeIdDeletePayload(nodeOrgId, nodeId string) (*common.Payload, error)
 ```
 
-### 3.17 添加共识节点待签名payload生成
+### 3.19 添加共识节点待签名payload生成
 **参数说明**
   - nodeOrgId: 节点组织Id
   - nodeIds: 节点Id
@@ -368,7 +393,7 @@ CreateChainConfigConsensusNodeIdDeletePayload(nodeOrgId, nodeId string) (*common
 CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId string, nodeIds []string) (*common.Payload, error)
 ```
 
-### 3.18 更新共识节点待签名payload生成
+### 3.20 更新共识节点待签名payload生成
 **参数说明**
   - nodeOrgId: 节点组织Id
   - nodeIds: 节点Id
@@ -376,28 +401,28 @@ CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId string, nodeIds []string) 
 CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId string, nodeIds []string) (*common.Payload, error)
 ```
 
-### 3.19 删除共识节点待签名payload生成
+### 3.21 删除共识节点待签名payload生成
 **参数说明**
   - nodeOrgId: 节点组织Id
 ```go
 CreateChainConfigConsensusNodeOrgDeletePayload(nodeOrgId string) (*common.Payload, error)
 ```
 
-### 3.20 添加共识扩展字段待签名payload生成
+### 3.22 添加共识扩展字段待签名payload生成
 **参数说明**
   - kvs: 字段key、value对
 ```go
 CreateChainConfigConsensusExtAddPayload(kvs []*common.KeyValuePair) (*common.Payload, error)
 ```
 
-### 3.21 添加共识扩展字段待签名payload生成
+### 3.23 添加共识扩展字段待签名payload生成
 **参数说明**
   - kvs: 字段key、value对
 ```go
 CreateChainConfigConsensusExtUpdatePayload(kvs []*common.KeyValuePair) (*common.Payload, error)
 ```
 
-### 3.22 添加共识扩展字段待签名payload生成
+### 3.24 添加共识扩展字段待签名payload生成
 **参数说明**
   - keys: 待删除字段
 ```go
