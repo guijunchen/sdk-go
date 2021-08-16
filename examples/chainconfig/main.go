@@ -116,12 +116,12 @@ func testChainConfig() {
 		log.Fatalln("require equal")
 	}
 
-	for _, root := range chainConfig.TrustRoots[trustCount].Root {
-		if trustRootCrt == root {
-			ok = true
-			break
-		}
-	}
+	//for _, root := range chainConfig.TrustRoots[trustCount].Root {
+	//	if trustRootCrt == root {
+	//		ok = true
+	//		break
+	//	}
+	//}
 	if !ok {
 		log.Fatalln("require equal")
 	}
@@ -142,12 +142,12 @@ func testChainConfig() {
 	if trustRootOrgId != chainConfig.TrustRoots[trustCount].OrgId {
 		log.Fatalln("require equal")
 	}
-	for _, root := range chainConfig.TrustRoots[trustCount].Root {
-		if trustRootCrt == root {
-			ok = true
-			break
-		}
-	}
+	//for _, root := range chainConfig.TrustRoots[trustCount].Root {
+	//	if trustRootCrt == root {
+	//		ok = true
+	//		break
+	//	}
+	//}
 	if !ok {
 		log.Fatalln("require equal")
 	}
@@ -262,12 +262,12 @@ func testChainConfig() {
 	if trustRootOrgId != chainConfig.TrustRoots[4].OrgId {
 		log.Fatalln("require equal")
 	}
-	for _, root := range chainConfig.TrustRoots[trustCount].Root {
-		if trustRootCrt == root {
-			ok = true
-			break
-		}
-	}
+	//for _, root := range chainConfig.TrustRoots[trustCount].Root {
+	//	if trustRootCrt == root {
+	//		ok = true
+	//		break
+	//	}
+	//}
 	if !ok {
 		log.Fatalln("require equal")
 	}
