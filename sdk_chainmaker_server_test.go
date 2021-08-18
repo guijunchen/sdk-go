@@ -14,26 +14,26 @@ import (
 
 func TestGetChainMakerServerVersion(t *testing.T) {
 	tests := []struct {
-		name    string
-		version string
-		err     error
+		name       string
+		expVersion string
+		expErr     error
 	}{
 		{
-			"valid request",
-			"1.0.0",
+			"good",
+			"2.0.0",
 			nil,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cli, err := newMockChainClient(WithConfPath(sdkConfigPathForUT))
+			cli, err := newMockChainClient(nil, nil, WithConfPath(sdkConfigPathForUT))
 			require.Nil(t, err)
 			defer cli.Stop()
 
 			version, err := cli.GetChainMakerServerVersion()
-			require.Nil(t, err)
-			require.Equal(t, tt.version, version)
+			require.Equal(t, tt.expErr, err)
+			require.Equal(t, tt.expVersion, version)
 		})
 	}
 }

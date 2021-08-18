@@ -23,7 +23,6 @@ import (
 	apipb "chainmaker.org/chainmaker/pb-go/api"
 	cmnpb "chainmaker.org/chainmaker/pb-go/common"
 	confpb "chainmaker.org/chainmaker/pb-go/config"
-	"chainmaker.org/chainmaker/pb-go/syscontract"
 	"chainmaker.org/chainmaker/sdk-go/utils"
 )
 
@@ -35,6 +34,7 @@ const (
 )
 
 var _ ConnectionPool = (*mockConnectionPool)(nil)
+var _mockServer = &mockRpcNodeServer{}
 
 type mockConnectionPool struct {
 	connections                    []*networkClient
@@ -44,7 +44,8 @@ type mockConnectionPool struct {
 	rpcClientMaxReceiveMessageSize int
 }
 
-func newMockChainClient(opts ...ChainClientOption) (*ChainClient, error) {
+func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverTxError error,
+	opts ...ChainClientOption) (*ChainClient, error) {
 	conf, err := generateConfig(opts...)
 	if err != nil {
 		return nil, err
@@ -54,6 +55,9 @@ func newMockChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	_mockServer.txResponse = serverTxResponse
+	_mockServer.txErr = serverTxError
 
 	return &ChainClient{
 		pool:            pool,
@@ -205,42 +209,15 @@ func (pool *mockConnectionPool) Close() error {
 
 type mockRpcNodeServer struct {
 	apipb.UnimplementedRpcNodeServer
+	txResponse *cmnpb.TxResponse
+	txErr      error
 }
 
 func (s *mockRpcNodeServer) SendRequest(ctx context.Context, req *cmnpb.TxRequest) (*cmnpb.TxResponse, error) {
-	switch req.Payload.TxType {
-	case cmnpb.TxType_ARCHIVE:
-		switch req.Payload.Method {
-
-		case syscontract.ArchiveFunction_ARCHIVE_BLOCK.String():
-			return &cmnpb.TxResponse{Code: cmnpb.TxStatusCode_SUCCESS}, nil
-		case syscontract.ArchiveFunction_RESTORE_BLOCK.String():
-			return &cmnpb.TxResponse{Code: cmnpb.TxStatusCode_SUCCESS}, nil
-		default:
-			return &cmnpb.TxResponse{Code: cmnpb.TxStatusCode_CONTRACT_FAIL}, nil
-		}
-	}
-	return &cmnpb.TxResponse{}, nil
+	return s.txResponse, s.txErr
 }
 
 func (s *mockRpcNodeServer) Subscribe(req *cmnpb.TxRequest, server apipb.RpcNode_SubscribeServer) error {
-	//var (
-	//	errCode cmnerr.ErrCode
-	//	errMsg  string
-	//)
-
-	//tx := &cmnpb.Transaction{
-	//	Header:           req.Header,
-	//	RequestPayload:   req.Payload,
-	//	RequestSignature: req.Signature,
-	//	Result:           nil,
-	//}
-
-	//errCode, errMsg = s.validate(tx)
-	//if errCode != cmnerr.ERR_CODE_OK {
-	//	return status.Error(codes.Unauthenticated, errMsg)
-	//}
-
 	switch req.Payload.TxType {
 	case cmnpb.TxType_SUBSCRIBE:
 	}
@@ -253,7 +230,7 @@ func (s *mockRpcNodeServer) GetChainMakerVersion(ctx context.Context,
 	return &confpb.ChainMakerVersionResponse{
 		Code:    0,
 		Message: "OK",
-		Version: "1.0.0",
+		Version: "2.0.0",
 	}, nil
 }
 
@@ -294,7 +271,7 @@ func dialer(useTLS bool, caPaths, caCerts []string) func(context.Context, string
 	server := grpc.NewServer(opts...)
 	listener := bufconn.Listen(1024 * 1024)
 
-	apipb.RegisterRpcNodeServer(server, &mockRpcNodeServer{})
+	apipb.RegisterRpcNodeServer(server, _mockServer)
 
 	go func() {
 		if err := server.Serve(listener); err != nil {
