@@ -36,8 +36,13 @@ func SignPayload(keyBytes, crtBytes []byte, payload *common.Payload) (*common.En
 		return nil, fmt.Errorf("SignPayload failed, %s", err)
 	}
 
+	var orgId string
+	if len(crt.Subject.Organization) != 0 {
+		orgId = crt.Subject.Organization[0]
+	}
+
 	sender := &accesscontrol.Member{
-		OrgId:      crt.Subject.Organization[0],
+		OrgId:      orgId,
 		MemberInfo: crtBytes,
 		MemberType: accesscontrol.MemberType_CERT,
 	}
