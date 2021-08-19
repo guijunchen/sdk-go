@@ -31,10 +31,6 @@ func SignPayload(keyBytes, crtBytes []byte, payload *common.Payload) (*common.En
 		return nil, fmt.Errorf("bcx509.ParseCertificate failed, %s", err)
 	}
 
-	if len(crt.Subject.Organization) != 1 {
-		return nil, errors.New("invalid certificate, certificate must contain one Organization")
-	}
-
 	signature, err := utils.SignPayload(key, crt, payload)
 	if err != nil {
 		return nil, fmt.Errorf("SignPayload failed, %s", err)
