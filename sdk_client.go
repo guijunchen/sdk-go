@@ -188,9 +188,6 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 		}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
-	defer cancel()
-
 	ignoreAddrs := make(map[string]struct{})
 	for {
 		client, err := cc.pool.getClientWithIgnoreAddrs(ignoreAddrs)
@@ -201,6 +198,9 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 		if len(ignoreAddrs) > 0 {
 			cc.logger.Debugf("[SDK] begin try to connect node [%s]", client.ID)
 		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+		defer cancel()
 
 		resp, err := client.rpcNode.SendRequest(ctx, txRequest)
 		if err != nil {
