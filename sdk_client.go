@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -199,10 +198,7 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 			cc.logger.Debugf("[SDK] begin try to connect node [%s]", client.ID)
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
-		defer cancel()
-
-		resp, err := client.rpcNode.SendRequest(ctx, txRequest)
+		resp, err := client.sendRequestWithTimeout(txRequest, timeout)
 		if err != nil {
 			resp := &common.TxResponse{
 				Message: err.Error(),
