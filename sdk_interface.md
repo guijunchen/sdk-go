@@ -742,8 +742,6 @@ SaveRemoteAttestationProof(proof, txId string, withSyncResult bool, timeout int6
 **参数说明**
   - caCert: Enclave CA证书
   - txId: 交易Id
-  - withSyncResult: 是否同步返回调用结果
-  - timeout: 交易发送超时时间
 ```go
 CreateSaveEnclaveCACertPayload(caCert, txId string) (*common.Payload, error)
 ```
@@ -816,8 +814,6 @@ GetDir(orderId string) ([]byte, error)
   - enclaveId: 隐私计算环境的标识
   - report: 隐私计算环境的report
   - txId: 交易ID
-  - withSyncResult: 是否同步等待交易结果
-  - timeout: 等待交易结果的超时时间
 ```go
 CreateSaveEnclaveReportPayload(enclaveId, report, txId string) (*common.Payload, error)
 ```
