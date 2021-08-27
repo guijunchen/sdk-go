@@ -8,12 +8,14 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"time"
 
 	"chainmaker.org/chainmaker/common/ca"
 	"chainmaker.org/chainmaker/pb-go/api"
+	"chainmaker.org/chainmaker/pb-go/common"
 	"chainmaker.org/chainmaker/sdk-go/utils"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
@@ -46,6 +48,12 @@ type networkClient struct {
 	caCerts     []string
 	tlsHostName string
 	ID          string
+}
+
+func (cli *networkClient) sendRequestWithTimeout(txReq *common.TxRequest, timeout int64) (*common.TxResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+	defer cancel() // releases resources if SendRequest completes before timeout elapses
+	return cli.rpcNode.SendRequest(ctx, txReq)
 }
 
 // ClientConnectionPool 客户端连接池结构定义
