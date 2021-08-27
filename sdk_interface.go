@@ -350,14 +350,14 @@ type SDKInterface interface {
 	// ```go
 	CreateChainConfigTrustMemberAddPayload(trustMemberOrgId, trustMemberNodeId,
 		trustMemberRole, trustMemberInfo string) (*common.Payload, error)
-	// `
+	// ```
 
 	// ### 3.12 删除信任成员证书待签名payload生成
 	// **参数说明**
 	//   - trustMemberInfo: 成员信息内容
 	// ```go
 	CreateChainConfigTrustMemberDeletePayload(trustMemberInfo string) (*common.Payload, error)
-	// `
+	// ```
 
 	// ### 3.13 添加权限配置待签名payload生成
 	// **参数说明**
