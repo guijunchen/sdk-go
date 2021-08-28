@@ -3,7 +3,7 @@ module chainmaker.org/chainmaker/sdk-go
 go 1.15
 
 require (
-	chainmaker.org/chainmaker/common v0.0.0-20210825071035-c1f0524e591e
+	chainmaker.org/chainmaker/common v0.0.0-20210828064653-da1cfc1db5ea
 	chainmaker.org/chainmaker/pb-go v0.0.0-20210826130850-b78ed618ce07
 	github.com/Rican7/retry v0.1.0
 	github.com/ethereum/go-ethereum v1.10.4
