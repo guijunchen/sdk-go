@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"log"
 
-	"chainmaker.org/chainmaker/sdk-go/examples"
+	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 )
 
 const (

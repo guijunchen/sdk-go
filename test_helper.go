@@ -19,11 +19,11 @@ import (
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/test/bufconn"
 
-	"chainmaker.org/chainmaker/common/ca"
-	apipb "chainmaker.org/chainmaker/pb-go/api"
-	cmnpb "chainmaker.org/chainmaker/pb-go/common"
-	confpb "chainmaker.org/chainmaker/pb-go/config"
-	"chainmaker.org/chainmaker/sdk-go/utils"
+	"chainmaker.org/chainmaker/common/v2/ca"
+	apipb "chainmaker.org/chainmaker/pb-go/v2/api"
+	cmnpb "chainmaker.org/chainmaker/pb-go/v2/common"
+	confpb "chainmaker.org/chainmaker/pb-go/v2/config"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
 const (

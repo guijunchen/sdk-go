@@ -14,9 +14,9 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/pb-go/syscontract"
-	"chainmaker.org/chainmaker/sdk-go/utils"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
 func (cc *ChainClient) CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType,

@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"chainmaker.org/chainmaker/common/crypto/paillier"
+	"chainmaker.org/chainmaker/common/v2/crypto/paillier"
 
-	sdk "chainmaker.org/chainmaker/sdk-go"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/sdk-go/examples"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 	"github.com/stretchr/testify/require"
 )
 

@@ -12,11 +12,11 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/require"
 
-	"chainmaker.org/chainmaker/common/crypto"
-	"chainmaker.org/chainmaker/common/crypto/asym"
-	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/sdk-go/utils"
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/common/v2/crypto/asym"
+	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
 func TestSignPayload(t *testing.T) {

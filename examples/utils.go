@@ -14,10 +14,10 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
-	"chainmaker.org/chainmaker/common/evmutils"
-	"chainmaker.org/chainmaker/pb-go/common"
-	sdk "chainmaker.org/chainmaker/sdk-go"
+	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
+	"chainmaker.org/chainmaker/common/v2/evmutils"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 )
 
 const (

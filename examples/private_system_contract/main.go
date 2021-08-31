@@ -8,8 +8,8 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	sdk "chainmaker.org/chainmaker/sdk-go"
-	"chainmaker.org/chainmaker/sdk-go/utils"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -18,8 +18,8 @@ import (
 	"os"
 	"reflect"
 
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/sdk-go/examples"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 )
 
 const (

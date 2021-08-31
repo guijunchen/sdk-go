@@ -1,10 +1,10 @@
-module chainmaker.org/chainmaker/sdk-go
+module chainmaker.org/chainmaker/sdk-go/v2
 
 go 1.15
 
 require (
-	chainmaker.org/chainmaker/common v0.0.0-20210828064653-da1cfc1db5ea
-	chainmaker.org/chainmaker/pb-go v0.0.0-20210826130850-b78ed618ce07
+	chainmaker.org/chainmaker/common/v2 v2.0.1-0.20210831112613-754cd525d627 // indirect
+	chainmaker.org/chainmaker/pb-go/v2 v2.0.1-0.20210831114653-68cf6bb191f9 // indirect
 	github.com/Rican7/retry v0.1.0
 	github.com/ethereum/go-ethereum v1.10.4
 	github.com/go-sql-driver/mysql v1.4.1
