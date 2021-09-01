@@ -12,9 +12,9 @@ import (
 	"math/rand"
 	"time"
 
-	"chainmaker.org/chainmaker/common/ca"
-	"chainmaker.org/chainmaker/pb-go/api"
-	"chainmaker.org/chainmaker/sdk-go/utils"
+	"chainmaker.org/chainmaker/common/v2/ca"
+	"chainmaker.org/chainmaker/pb-go/v2/api"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc"

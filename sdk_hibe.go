@@ -12,11 +12,11 @@ import (
 	"errors"
 	"fmt"
 
-	"chainmaker.org/chainmaker/common/crypto"
-	"chainmaker.org/chainmaker/common/crypto/hibe"
-	"chainmaker.org/chainmaker/common/serialize"
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/sdk-go/utils"
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/common/v2/crypto/hibe"
+	"chainmaker.org/chainmaker/common/v2/serialize"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
 // hibe msg's Keys

@@ -11,7 +11,7 @@ import (
 	"context"
 	"fmt"
 
-	"chainmaker.org/chainmaker/pb-go/config"
+	"chainmaker.org/chainmaker/pb-go/v2/config"
 )
 
 func (cc *ChainClient) CheckNewBlockChainConfig() error {

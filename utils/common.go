@@ -13,11 +13,11 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 
-	"chainmaker.org/chainmaker/common/crypto"
-	"chainmaker.org/chainmaker/common/crypto/hash"
-	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
-	"chainmaker.org/chainmaker/common/random/uuid"
-	"chainmaker.org/chainmaker/pb-go/common"
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/common/v2/crypto/hash"
+	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
+	"chainmaker.org/chainmaker/common/v2/random/uuid"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
 )
 
 const (

@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
-	commonPb "chainmaker.org/chainmaker/pb-go/common"
+	commonPb "chainmaker.org/chainmaker/pb-go/v2/common"
 )
 
 type PayloadOption func(*commonPb.Payload)
