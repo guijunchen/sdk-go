@@ -446,14 +446,14 @@ type SDKInterface interface {
 	CreateChainConfigConsensusExtAddPayload(kvs []*common.KeyValuePair) (*common.Payload, error)
 	// ```
 
-	// ### 3.23 添加共识扩展字段待签名payload生成
+	// ### 3.23 更新共识扩展字段待签名payload生成
 	// **参数说明**
 	//   - kvs: 字段key、value对
 	// ```go
 	CreateChainConfigConsensusExtUpdatePayload(kvs []*common.KeyValuePair) (*common.Payload, error)
 	// ```
 
-	// ### 3.24 添加共识扩展字段待签名payload生成
+	// ### 3.24 删除共识扩展字段待签名payload生成
 	// **参数说明**
 	//   - keys: 待删除字段
 	// ```go
