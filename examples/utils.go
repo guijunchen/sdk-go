@@ -18,6 +18,7 @@ import (
 	"chainmaker.org/chainmaker/common/v2/evmutils"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
+	sdkutils "chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
 const (
@@ -143,7 +144,7 @@ func GetEndorsers(payload *common.Payload, usernames ...string) ([]*common.Endor
 			return nil, errors.New("user not found")
 		}
 
-		entry, err := sdk.SignPayloadWithPath(u.SignKeyPath, u.SignCrtPath, payload)
+		entry, err := sdkutils.MakeEndorserWithPath(u.SignKeyPath, u.SignCrtPath, payload)
 		if err != nil {
 			return nil, err
 		}
