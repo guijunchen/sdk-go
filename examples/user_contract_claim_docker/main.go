@@ -39,8 +39,8 @@ func testUserContractClaim() {
 	}
 
 	fmt.Println("====================== 创建合约 ======================")
-	//usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
-	usernames := []string{examples.UserNameOrg1Admin1}
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	//usernames := []string{examples.UserNameOrg1Admin1}
 	testUserContractClaimCreate(client, true, true, usernames...)
 
 	fmt.Println("====================== 调用合约 ======================")
