@@ -21,10 +21,10 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 
 	"chainmaker.org/chainmaker/common/v2/ca"
+	cmx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	apipb "chainmaker.org/chainmaker/pb-go/v2/api"
 	cmnpb "chainmaker.org/chainmaker/pb-go/v2/common"
 	confpb "chainmaker.org/chainmaker/pb-go/v2/config"
-	cmx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
