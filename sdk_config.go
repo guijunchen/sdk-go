@@ -394,12 +394,14 @@ func setRPCClientConfig(config *ChainClientConfig) {
 
 func setPkcs11Config(config *ChainClientConfig) {
 	if utils.Config.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
-		config.pkcs11Config.Enabled = utils.Config.ChainClientConfig.Pkcs11Config.Enabled
-		config.pkcs11Config.Library = utils.Config.ChainClientConfig.Pkcs11Config.Library
-		config.pkcs11Config.Label = utils.Config.ChainClientConfig.Pkcs11Config.Label
-		config.pkcs11Config.Password = utils.Config.ChainClientConfig.Pkcs11Config.Password
-		config.pkcs11Config.SessionCacheSize = utils.Config.ChainClientConfig.Pkcs11Config.SessionCacheSize
-		config.pkcs11Config.Hash = utils.Config.ChainClientConfig.Pkcs11Config.Hash
+		config.pkcs11Config = NewPkcs11Config(
+			utils.Config.ChainClientConfig.Pkcs11Config.Enabled,
+			utils.Config.ChainClientConfig.Pkcs11Config.Library,
+			utils.Config.ChainClientConfig.Pkcs11Config.Label,
+			utils.Config.ChainClientConfig.Pkcs11Config.Password,
+			utils.Config.ChainClientConfig.Pkcs11Config.SessionCacheSize,
+			utils.Config.ChainClientConfig.Pkcs11Config.Hash,
+		)
 	}
 }
 
