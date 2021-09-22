@@ -8,21 +8,24 @@ package chainmaker_sdk_go
 
 import (
 	"context"
+	"crypto/x509"
 	"fmt"
 	"log"
 	"net"
 	"time"
 
-	"chainmaker.org/chainmaker/common/v2/ca"
-	apipb "chainmaker.org/chainmaker/pb-go/v2/api"
-	cmnpb "chainmaker.org/chainmaker/pb-go/v2/common"
-	confpb "chainmaker.org/chainmaker/pb-go/v2/config"
-	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/test/bufconn"
+
+	"chainmaker.org/chainmaker/common/v2/ca"
+	cmx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
+	apipb "chainmaker.org/chainmaker/pb-go/v2/api"
+	cmnpb "chainmaker.org/chainmaker/pb-go/v2/common"
+	confpb "chainmaker.org/chainmaker/pb-go/v2/config"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
 const (
@@ -68,7 +71,6 @@ func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverTxError error,
 		privateKey:      conf.privateKey,
 		archiveConfig:   conf.archiveConfig,
 		rpcClientConfig: conf.rpcClientConfig,
-		pkcs11Config:    conf.pkcs11Config,
 	}, nil
 }
 
@@ -260,7 +262,12 @@ func dialer(useTLS bool, caPaths, caCerts []string) func(context.Context, string
 			}
 		}
 
-		c, err := tlsRPCServer.GetCredentialsByCA(true, ca.CustomVerify{})
+		customVerify := ca.CustomVerify{
+			VerifyPeerCertificate:   createVerifyPeerCertificateFunc(),
+			GMVerifyPeerCertificate: createGMVerifyPeerCertificateFunc(),
+		}
+
+		c, err := tlsRPCServer.GetCredentialsByCA(true, customVerify)
 		if err != nil {
 			log.Fatalf("new gRPC failed, GetTLSCredentialsByCA err: %v\n", err)
 		}
@@ -281,5 +288,17 @@ func dialer(useTLS bool, caPaths, caCerts []string) func(context.Context, string
 
 	return func(context.Context, string) (net.Conn, error) {
 		return listener.Dial()
+	}
+}
+
+func createVerifyPeerCertificateFunc() func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+	return func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+		return nil
+	}
+}
+
+func createGMVerifyPeerCertificateFunc() func(rawCerts [][]byte, verifiedChains [][]*cmx509.Certificate) error {
+	return func(rawCerts [][]byte, verifiedChains [][]*cmx509.Certificate) error {
+		return nil
 	}
 }
