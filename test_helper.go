@@ -13,17 +13,16 @@ import (
 	"net"
 	"time"
 
-	"github.com/Rican7/retry"
-	"github.com/Rican7/retry/strategy"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/connectivity"
-	"google.golang.org/grpc/test/bufconn"
-
 	"chainmaker.org/chainmaker/common/v2/ca"
 	apipb "chainmaker.org/chainmaker/pb-go/v2/api"
 	cmnpb "chainmaker.org/chainmaker/pb-go/v2/common"
 	confpb "chainmaker.org/chainmaker/pb-go/v2/config"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
+	"github.com/Rican7/retry"
+	"github.com/Rican7/retry/strategy"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/test/bufconn"
 )
 
 const (
@@ -261,7 +260,7 @@ func dialer(useTLS bool, caPaths, caCerts []string) func(context.Context, string
 			}
 		}
 
-		c, err := tlsRPCServer.GetCredentialsByCA(true)
+		c, err := tlsRPCServer.GetCredentialsByCA(true, ca.CustomVerify{})
 		if err != nil {
 			log.Fatalf("new gRPC failed, GetTLSCredentialsByCA err: %v\n", err)
 		}
