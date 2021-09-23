@@ -1,14 +1,15 @@
 package main
 
 import (
-	"chainmaker.org/chainmaker/pb-go/v2/common"
-	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
-	sdk "chainmaker.org/chainmaker/sdk-go/v2"
-	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"time"
+
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
+	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 )
 
 var (
@@ -16,7 +17,6 @@ var (
 	WasmUpgradePath = ""
 	runtimeType     common.RuntimeType
 	contractName    = ""
-	method          = ""
 	payload         *common.Payload
 	pairs           []*common.KeyValuePair
 	SignKeyPath     = "../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.sign.key"
@@ -40,7 +40,6 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	method = syscontract.ContractManageFunction_INIT_CONTRACT.String()
 	pairs = initContractInitPairs() //构造交易发起pairs1
 	payload = testMultiSignReq(client)
 

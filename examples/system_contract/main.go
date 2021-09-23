@@ -8,6 +8,10 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"encoding/hex"
+	"fmt"
+	"log"
+
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/pb-go/v2/consensus"
 	"chainmaker.org/chainmaker/pb-go/v2/discovery"
@@ -16,10 +20,7 @@ import (
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 	sdkutils "chainmaker.org/chainmaker/sdk-go/v2/utils"
-	"encoding/hex"
-	"fmt"
 	"github.com/hokaccha/go-prettyjson"
-	"log"
 )
 
 const (
@@ -32,8 +33,10 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
-	toAddContractList := []string{syscontract.SystemContract_DPOS_ERC20.String(), syscontract.SystemContract_DPOS_STAKE.String()}
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1,
+		examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	toAddContractList := []string{syscontract.SystemContract_DPOS_ERC20.String(),
+		syscontract.SystemContract_DPOS_STAKE.String()}
 	testSystemContract()
 	testSystemContractArchive()
 	testGetMerklePathByTxId()
@@ -250,7 +253,8 @@ func testGetMerklePathByTxId() {
 	fmt.Println("GetMerklePathByTxId: ", merklePath)
 }
 
-func testNativeContractAccessControl(client *sdk.ChainClient, withSyncResult bool, toAddContractList []string, usernames ...string) {
+func testNativeContractAccessControl(client *sdk.ChainClient, withSyncResult bool,
+	toAddContractList []string, usernames ...string) {
 	payload, err := client.CreateNativeContractAccessControlPayload(toAddContractList...)
 	if err != nil {
 		log.Fatalln(err)
@@ -275,7 +279,8 @@ func testNativeContractAccessControl(client *sdk.ChainClient, withSyncResult boo
 	fmt.Printf("testNativeContractAccessControl resp: %+v\n", resp)
 }
 
-func testNativeContractAccessRevoke(client *sdk.ChainClient, withSyncResult bool, toAddContractList []string, usernames ...string) {
+func testNativeContractAccessRevoke(client *sdk.ChainClient, withSyncResult bool,
+	toAddContractList []string, usernames ...string) {
 	payload, err := client.CreateNativeContractAccessRevokePayload(toAddContractList...)
 	if err != nil {
 		log.Fatalln(err)
