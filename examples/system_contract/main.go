@@ -254,8 +254,8 @@ func testGetMerklePathByTxId() {
 }
 
 func testNativeContractAccessControl(client *sdk.ChainClient, withSyncResult bool,
-	toAddContractList []string, usernames ...string) {
-	payload, err := client.CreateNativeContractAccessControlPayload(toAddContractList...)
+	grantContractList []string, usernames ...string) {
+	payload, err := client.CreateNativeContractAccessGrantPayload(grantContractList...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -280,8 +280,8 @@ func testNativeContractAccessControl(client *sdk.ChainClient, withSyncResult boo
 }
 
 func testNativeContractAccessRevoke(client *sdk.ChainClient, withSyncResult bool,
-	toAddContractList []string, usernames ...string) {
-	payload, err := client.CreateNativeContractAccessRevokePayload(toAddContractList...)
+	revokeContractList []string, usernames ...string) {
+	payload, err := client.CreateNativeContractAccessRevokePayload(revokeContractList...)
 	if err != nil {
 		log.Fatalln(err)
 	}

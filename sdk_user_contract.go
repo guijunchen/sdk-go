@@ -51,16 +51,16 @@ func (cc *ChainClient) CreateContractRevokePayload(contractName string) (*common
 	return cc.createContractManagePayload(contractName, syscontract.ContractManageFunction_REVOKE_CONTRACT.String())
 }
 
-func (cc *ChainClient) CreateNativeContractAccessControlPayload(toAddContractList ...string) (*common.Payload, error) {
+func (cc *ChainClient) CreateNativeContractAccessGrantPayload(grantContractList ...string) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [NativeContractAccessControl] to be signed payload")
 	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_GRANT_CONTRACT_ACCESS.String(),
-		toAddContractList...)
+		grantContractList...)
 }
 
-func (cc *ChainClient) CreateNativeContractAccessRevokePayload(toAddContractList ...string) (*common.Payload, error) {
+func (cc *ChainClient) CreateNativeContractAccessRevokePayload(revokeContractList ...string) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [NativeContractAccessControl] to be signed payload")
 	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_REVOKE_CONTRACT_ACCESS.String(),
-		toAddContractList...)
+		revokeContractList...)
 }
 
 func (cc *ChainClient) CreateGetDisabledNativeContractListPayload() (*common.Payload, error) {
