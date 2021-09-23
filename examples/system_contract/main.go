@@ -8,29 +8,38 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"encoding/hex"
-	"fmt"
-	"log"
-
-	"github.com/hokaccha/go-prettyjson"
-
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/pb-go/v2/consensus"
 	"chainmaker.org/chainmaker/pb-go/v2/discovery"
 	"chainmaker.org/chainmaker/pb-go/v2/store"
+	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 	sdkutils "chainmaker.org/chainmaker/sdk-go/v2/utils"
+	"encoding/hex"
+	"fmt"
+	"github.com/hokaccha/go-prettyjson"
+	"log"
 )
 
 const (
+	createContractTimeout    = 5
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
 func main() {
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	toAddContractList := []string{syscontract.SystemContract_DPOS_ERC20.String(), syscontract.SystemContract_DPOS_STAKE.String()}
 	testSystemContract()
 	testSystemContractArchive()
 	testGetMerklePathByTxId()
+	testNativeContractAccessControl(client, false, toAddContractList, usernames...)
+	testNativeContractAccessRevoke(client, false, toAddContractList, usernames...)
+	testGetDisabledNativeContractList(client, false, usernames...)
 }
 
 // [系统合约]
@@ -239,4 +248,78 @@ func testGetMerklePathByTxId() {
 	}
 
 	fmt.Println("GetMerklePathByTxId: ", merklePath)
+}
+
+func testNativeContractAccessControl(client *sdk.ChainClient, withSyncResult bool, toAddContractList []string, usernames ...string) {
+	payload, err := client.CreateNativeContractAccessControlPayload(toAddContractList...)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
+	fmt.Printf("resp: %+v\n", resp)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = examples.CheckProposalRequestResp(resp, false)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("testNativeContractAccessControl resp: %+v\n", resp)
+}
+
+func testNativeContractAccessRevoke(client *sdk.ChainClient, withSyncResult bool, toAddContractList []string, usernames ...string) {
+	payload, err := client.CreateNativeContractAccessRevokePayload(toAddContractList...)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
+	fmt.Printf("resp: %+v\n", resp)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = examples.CheckProposalRequestResp(resp, false)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("testNativeContractAccessRevoke resp: %+v\n", resp)
+}
+
+func testGetDisabledNativeContractList(client *sdk.ChainClient, withSyncResult bool, usernames ...string) {
+	payload, err := client.CreateGetDisabledNativeContractListPayload()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
+	fmt.Printf("resp: %+v\n", resp)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = examples.CheckProposalRequestResp(resp, false)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("testGetDisabledNativeContractList resp: %+v\n", resp)
 }
