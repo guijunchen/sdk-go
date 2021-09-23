@@ -53,12 +53,14 @@ func (cc *ChainClient) CreateContractRevokePayload(contractName string) (*common
 
 func (cc *ChainClient) CreateNativeContractAccessControlPayload(toAddContractList ...string) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [NativeContractAccessControl] to be signed payload")
-	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_GRANT_CONTRACT_ACCESS.String(), toAddContractList...)
+	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_GRANT_CONTRACT_ACCESS.String(),
+		toAddContractList...)
 }
 
 func (cc *ChainClient) CreateNativeContractAccessRevokePayload(toAddContractList ...string) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [NativeContractAccessControl] to be signed payload")
-	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_REVOKE_CONTRACT_ACCESS.String(), toAddContractList...)
+	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_REVOKE_CONTRACT_ACCESS.String(),
+		toAddContractList...)
 }
 
 func (cc *ChainClient) CreateGetDisabledNativeContractListPayload() (*common.Payload, error) {
@@ -77,7 +79,8 @@ func (cc *ChainClient) createContractManagePayload(contractName, method string) 
 		method, kvs, defaultSeq), nil
 }
 
-func (cc *ChainClient) createNativeContractAccessPayload(method string, toAddContractList ...string) (*common.Payload, error) {
+func (cc *ChainClient) createNativeContractAccessPayload(method string,
+	toAddContractList ...string) (*common.Payload, error) {
 	val, _ := json.Marshal(toAddContractList)
 	kvs := []*common.KeyValuePair{
 		{
@@ -87,12 +90,6 @@ func (cc *ChainClient) createNativeContractAccessPayload(method string, toAddCon
 	}
 	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
 		method, kvs, defaultSeq), nil
-}
-
-func (cc *ChainClient) createGetDisabledNativeContractListPayload(method string) (*common.Payload, error) {
-
-	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
-		method, nil, defaultSeq), nil
 }
 
 func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, method, version, byteCode string,
