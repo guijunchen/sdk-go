@@ -10,7 +10,6 @@ package chainmaker_sdk_go
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -56,19 +55,6 @@ func (cc *ChainClient) createContractManagePayload(contractName, method string) 
 		{
 			Key:   syscontract.GetContractInfo_CONTRACT_NAME.String(),
 			Value: []byte(contractName),
-		},
-	}
-	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
-		method, kvs, defaultSeq), nil
-}
-
-func (cc *ChainClient) createNativeContractAccessPayload(method string,
-	toAddContractList ...string) (*common.Payload, error) {
-	val, _ := json.Marshal(toAddContractList)
-	kvs := []*common.KeyValuePair{
-		{
-			Key:   syscontract.ContractAccess_NATIVE_CONTRACT_NAME.String(),
-			Value: val,
 		},
 	}
 	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),

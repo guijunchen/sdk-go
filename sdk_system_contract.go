@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -463,6 +464,19 @@ func (cc *ChainClient) GetMerklePathByTxId(txId string) ([]byte, error) {
 		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
 	}
 	return resp.ContractResult.Result, nil
+}
+
+func (cc *ChainClient) createNativeContractAccessPayload(method string,
+	accessContractList ...string) (*common.Payload, error) {
+	val, _ := json.Marshal(accessContractList)
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   syscontract.ContractAccess_NATIVE_CONTRACT_NAME.String(),
+			Value: val,
+		},
+	}
+	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
+		method, kvs, defaultSeq), nil
 }
 
 func (cc *ChainClient) CreateNativeContractAccessGrantPayload(grantContractList ...string) (*common.Payload, error) {
