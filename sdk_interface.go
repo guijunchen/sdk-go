@@ -262,6 +262,25 @@ type SDKInterface interface {
 	GetMerklePathByTxId(txId string) ([]byte, error)
 	// ```
 
+	// ### 2.17 开放系统合约
+	// **参数说明**
+	//   - grantContractList: 需要开放的系统合约字符串数组
+	// ```go
+	CreateNativeContractAccessGrantPayload(grantContractList ...string) (*common.Payload, error)
+	// ```
+
+	// ### 2.18 弃用系统合约
+	// **参数说明**
+	//   - revokeContractList: 需要弃用的系统合约字符串数组
+	// ```go
+	CreateNativeContractAccessRevokePayload(revokeContractList ...string) (*common.Payload, error)
+	// ```
+
+	// ### 2.19 查询弃用的系统合约名单
+	// ```go
+	CreateGetDisabledNativeContractListPayload() (*common.Payload, error)
+	// ```
+
 	// ## 3 链配置接口
 	// ### 3.1 查询最新链配置
 	// ```go

@@ -51,20 +51,6 @@ func (cc *ChainClient) CreateContractRevokePayload(contractName string) (*common
 	return cc.createContractManagePayload(contractName, syscontract.ContractManageFunction_REVOKE_CONTRACT.String())
 }
 
-func (cc *ChainClient) CreateNativeContractAccessGrantPayload(grantContractList ...string) (*common.Payload, error) {
-	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_GRANT_CONTRACT_ACCESS.String(),
-		grantContractList...)
-}
-
-func (cc *ChainClient) CreateNativeContractAccessRevokePayload(revokeContractList ...string) (*common.Payload, error) {
-	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_REVOKE_CONTRACT_ACCESS.String(),
-		revokeContractList...)
-}
-
-func (cc *ChainClient) CreateGetDisabledNativeContractListPayload() (*common.Payload, error) {
-	return cc.createNativeContractAccessPayload(syscontract.ContractQueryFunction_GET_DISABLED_CONTRACT_LIST.String())
-}
-
 func (cc *ChainClient) createContractManagePayload(contractName, method string) (*common.Payload, error) {
 	kvs := []*common.KeyValuePair{
 		{
