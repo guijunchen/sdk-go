@@ -9,8 +9,6 @@ import (
 )
 
 func (cc *ChainClient) MultiSignContractReq(payload *common.Payload) (*common.TxResponse, error) {
-	cc.logger.Infof("[SDK] begin to multisign req, [contract:%s]/[method:%s]",
-		syscontract.SystemContract_MULTI_SIGN.String(), syscontract.MultiSignFunction_REQ.String())
 
 	fmt.Println("testMultiSignReq timestamp", payload.Timestamp)
 	fmt.Printf("testMultiSignReq txid %s", payload.TxId)
@@ -28,8 +26,6 @@ func (cc *ChainClient) MultiSignContractReq(payload *common.Payload) (*common.Tx
 
 func (cc *ChainClient) MultiSignContractVote(payload1 *common.Payload,
 	endorser *common.EndorsementEntry) (*common.TxResponse, error) {
-	cc.logger.Infof("[SDK] begin to multisign vote, [contract:%s]/[method:%s]",
-		syscontract.SystemContract_MULTI_SIGN.String(), syscontract.MultiSignFunction_VOTE.String())
 
 	fmt.Println("testMultiSignVote timestamp", payload1.Timestamp)
 	fmt.Printf("testMultiSignVote txid %s", payload1.TxId)
@@ -64,8 +60,6 @@ func (cc *ChainClient) MultiSignContractVote(payload1 *common.Payload,
 }
 
 func (cc *ChainClient) MultiSignContractQuery(txId string) (*common.TxResponse, error) {
-	cc.logger.Infof("[SDK] begin to multisign vote, [contract:%s]/[method:%s]",
-		syscontract.SystemContract_MULTI_SIGN.String(), syscontract.MultiSignFunction_VOTE.String())
 
 	pairs := []*common.KeyValuePair{
 		{
@@ -95,7 +89,6 @@ func (cc *ChainClient) CreateContractMultiSignReqPayload(pairs []*common.KeyValu
 }
 
 func (cc *ChainClient) CreateContractMultiSignVotePayload(method string, pairs []*common.KeyValuePair) *common.Payload {
-	cc.logger.Debugf("[SDK] create ContractMultiSignVotePayload, method: %s", method)
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_MULTI_SIGN.String(),
 		syscontract.MultiSignFunction_VOTE.String(), pairs, defaultSeq)
 
@@ -104,7 +97,6 @@ func (cc *ChainClient) CreateContractMultiSignVotePayload(method string, pairs [
 
 func (cc *ChainClient) CreateContractMultiSignQueryPayload(method string,
 	pairs []*common.KeyValuePair) *common.Payload {
-	cc.logger.Debugf("[SDK] create ContractMultiSignVotePayload, method: %s", method)
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_MULTI_SIGN.String(),
 		syscontract.MultiSignFunction_QUERY.String(), pairs, defaultSeq)
 

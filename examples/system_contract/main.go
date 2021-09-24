@@ -40,7 +40,7 @@ func main() {
 	testSystemContract()
 	testSystemContractArchive()
 	testGetMerklePathByTxId()
-	testNativeContractAccessControl(client, false, toAddContractList, usernames...)
+	testNativeContractAccessGrant(client, false, toAddContractList, usernames...)
 	testNativeContractAccessRevoke(client, false, toAddContractList, usernames...)
 	testGetDisabledNativeContractList(client, false, usernames...)
 }
@@ -253,7 +253,7 @@ func testGetMerklePathByTxId() {
 	fmt.Println("GetMerklePathByTxId: ", merklePath)
 }
 
-func testNativeContractAccessControl(client *sdk.ChainClient, withSyncResult bool,
+func testNativeContractAccessGrant(client *sdk.ChainClient, withSyncResult bool,
 	grantContractList []string, usernames ...string) {
 	payload, err := client.CreateNativeContractAccessGrantPayload(grantContractList...)
 	if err != nil {
