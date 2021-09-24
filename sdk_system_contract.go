@@ -479,12 +479,12 @@ func (cc *ChainClient) createNativeContractAccessPayload(method string,
 		method, kvs, defaultSeq), nil
 }
 
-func (cc *ChainClient) CreateNativeContractAccessGrantPayload(grantContractList ...string) (*common.Payload, error) {
+func (cc *ChainClient) CreateNativeContractAccessGrantPayload(grantContractList []string) (*common.Payload, error) {
 	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_GRANT_CONTRACT_ACCESS.String(),
 		grantContractList...)
 }
 
-func (cc *ChainClient) CreateNativeContractAccessRevokePayload(revokeContractList ...string) (*common.Payload, error) {
+func (cc *ChainClient) CreateNativeContractAccessRevokePayload(revokeContractList []string) (*common.Payload, error) {
 	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_REVOKE_CONTRACT_ACCESS.String(),
 		revokeContractList...)
 }

@@ -40,9 +40,9 @@ func main() {
 	testSystemContract()
 	testSystemContractArchive()
 	testGetMerklePathByTxId()
-	testNativeContractAccessGrant(client, false, toAddContractList, usernames...)
-	testNativeContractAccessRevoke(client, false, toAddContractList, usernames...)
-	testGetDisabledNativeContractList(client, false, usernames...)
+	testNativeContractAccessGrant(client, false, toAddContractList, usernames)
+	testNativeContractAccessRevoke(client, false, toAddContractList, usernames)
+	testGetDisabledNativeContractList(client, false, usernames)
 }
 
 // [系统合约]
@@ -254,8 +254,8 @@ func testGetMerklePathByTxId() {
 }
 
 func testNativeContractAccessGrant(client *sdk.ChainClient, withSyncResult bool,
-	grantContractList []string, usernames ...string) {
-	payload, err := client.CreateNativeContractAccessGrantPayload(grantContractList...)
+	grantContractList []string, usernames []string) {
+	payload, err := client.CreateNativeContractAccessGrantPayload(grantContractList)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -280,8 +280,8 @@ func testNativeContractAccessGrant(client *sdk.ChainClient, withSyncResult bool,
 }
 
 func testNativeContractAccessRevoke(client *sdk.ChainClient, withSyncResult bool,
-	revokeContractList []string, usernames ...string) {
-	payload, err := client.CreateNativeContractAccessRevokePayload(revokeContractList...)
+	revokeContractList []string, usernames []string) {
+	payload, err := client.CreateNativeContractAccessRevokePayload(revokeContractList)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -305,7 +305,7 @@ func testNativeContractAccessRevoke(client *sdk.ChainClient, withSyncResult bool
 	fmt.Printf("testNativeContractAccessRevoke resp: %+v\n", resp)
 }
 
-func testGetDisabledNativeContractList(client *sdk.ChainClient, withSyncResult bool, usernames ...string) {
+func testGetDisabledNativeContractList(client *sdk.ChainClient, withSyncResult bool, usernames []string) {
 	payload, err := client.CreateGetDisabledNativeContractListPayload()
 	if err != nil {
 		log.Fatalln(err)
