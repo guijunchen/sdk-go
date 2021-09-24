@@ -10,8 +10,6 @@ import (
 
 func (cc *ChainClient) MultiSignContractReq(payload *common.Payload) (*common.TxResponse, error) {
 
-	fmt.Println("testMultiSignReq timestamp", payload.Timestamp)
-	fmt.Printf("testMultiSignReq txid %s", payload.TxId)
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
 		return resp, fmt.Errorf(errStringFormat, payload.TxType.String(), err.Error())
@@ -27,8 +25,6 @@ func (cc *ChainClient) MultiSignContractReq(payload *common.Payload) (*common.Tx
 func (cc *ChainClient) MultiSignContractVote(payload1 *common.Payload,
 	endorser *common.EndorsementEntry) (*common.TxResponse, error) {
 
-	fmt.Println("testMultiSignVote timestamp", payload1.Timestamp)
-	fmt.Printf("testMultiSignVote txid %s", payload1.TxId)
 	msvi := &syscontract.MultiSignVoteInfo{
 		Vote:        syscontract.VoteStatus_AGREE,
 		Endorsement: endorser,
