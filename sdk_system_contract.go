@@ -467,7 +467,11 @@ func (cc *ChainClient) GetMerklePathByTxId(txId string) ([]byte, error) {
 }
 
 func (cc *ChainClient) createNativeContractAccessPayload(method string,
-	accessContractList ...string) (*common.Payload, error) {
+	accessContractList []string) (*common.Payload, error) {
+	if len(accessContractList) == 0 {
+		return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
+			method, nil, defaultSeq), nil
+	}
 	val, _ := json.Marshal(accessContractList)
 	kvs := []*common.KeyValuePair{
 		{
@@ -481,14 +485,14 @@ func (cc *ChainClient) createNativeContractAccessPayload(method string,
 
 func (cc *ChainClient) CreateNativeContractAccessGrantPayload(grantContractList []string) (*common.Payload, error) {
 	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_GRANT_CONTRACT_ACCESS.String(),
-		grantContractList...)
+		grantContractList)
 }
 
 func (cc *ChainClient) CreateNativeContractAccessRevokePayload(revokeContractList []string) (*common.Payload, error) {
 	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_REVOKE_CONTRACT_ACCESS.String(),
-		revokeContractList...)
+		revokeContractList)
 }
 
 func (cc *ChainClient) CreateGetDisabledNativeContractListPayload() (*common.Payload, error) {
-	return cc.createNativeContractAccessPayload(syscontract.ContractQueryFunction_GET_DISABLED_CONTRACT_LIST.String())
+	return cc.createNativeContractAccessPayload(syscontract.ContractQueryFunction_GET_DISABLED_CONTRACT_LIST.String(), nil)
 }
