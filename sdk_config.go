@@ -598,8 +598,8 @@ func dealUserCrtConfig(config *ChainClientConfig) (err error) {
 	}
 
 	// 将证书转换为证书对象
-	if config.userCrt, err = utils.CertFromPEM(config.userCrtBytes); err != nil {
-		return fmt.Errorf("ParseCert failed, %s", err.Error())
+	if config.userCrt, err = utils.ParseCert(config.userCrtBytes); err != nil {
+		return fmt.Errorf("utils.ParseCert failed, %s", err.Error())
 	}
 
 	return nil
@@ -638,8 +638,8 @@ func dealUserSignCrtConfig(config *ChainClientConfig) (err error) {
 
 	}
 
-	if config.userCrt, err = utils.CertFromPEM(config.userSignCrtBytes); err != nil {
-		return fmt.Errorf("ParseSignCert failed, %s", err.Error())
+	if config.userCrt, err = utils.ParseCert(config.userSignCrtBytes); err != nil {
+		return fmt.Errorf("utils.ParseCert failed, %s", err.Error())
 	}
 
 	return nil
