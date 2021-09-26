@@ -60,13 +60,13 @@ func testMultiSignReq(client *sdk.ChainClient) *common.Payload {
 	return payload
 }
 
-func testMultiSignVote(client *sdk.ChainClient, multisignReqPayload *common.Payload) {
+func testMultiSignVote(client *sdk.ChainClient, multiSignReqPayload *common.Payload) {
 
-	endorser, err := sdkutils.MakeEndorserWithPath(signKeyPath, signCrtPath, multisignReqPayload)
+	endorser, err := sdkutils.MakeEndorserWithPath(signKeyPath, signCrtPath, multiSignReqPayload)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	resp, err := client.MultiSignContractVote(multisignReqPayload, endorser)
+	resp, err := client.MultiSignContractVote(multiSignReqPayload, endorser)
 	if err != nil {
 		log.Fatalln(err)
 	}
