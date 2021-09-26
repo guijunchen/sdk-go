@@ -34,6 +34,7 @@ const (
 )
 
 var (
+	// global thread-safe pkcs11 handler
 	p11Handle *pkcs11.P11Handle
 )
 
