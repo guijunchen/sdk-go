@@ -934,6 +934,6 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - pairs: 发起多签请求所需的参数
 	// ```go
-	CreateContractMultiSignReqPayload(pairs []*common.KeyValuePair) *common.Payload
+	CreateMultiSignReqPayload(pairs []*common.KeyValuePair) *common.Payload
 	// ```
 }
