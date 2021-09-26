@@ -58,6 +58,11 @@ const (
 	KeyProof        = "proof"
 	KeyDeployReq    = "deploy_req"
 	KeyPrivateReq   = "private_req"
+
+	// PubkeyManage keys
+	KeyPubkey       = "pubkey"
+	KeyPubkeyRole 	= "role"
+	KeyPubkeyOrgId 	= "org_id"
 )
 
 //nolint
