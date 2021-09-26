@@ -20,8 +20,8 @@ var (
 	contractName    = ""
 	payload         *common.Payload
 	pairs           []*common.KeyValuePair
-	SignKeyPath     = "../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.sign.key"
-	SignCrtPath     = "../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.sign.crt"
+	signKeyPath     = "../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.sign.key"
+	signCrtPath     = "../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.sign.crt"
 )
 
 const (
@@ -51,7 +51,7 @@ func main() {
 }
 
 func testMultiSignReq(client *sdk.ChainClient) *common.Payload {
-	payload = client.CreateContractMultiSignReqPayload(pairs)
+	payload = client.CreateMultiSignReqPayload(pairs)
 	resp, err := client.MultiSignContractReq(payload)
 	if err != nil {
 		log.Fatalln(err)
@@ -62,7 +62,7 @@ func testMultiSignReq(client *sdk.ChainClient) *common.Payload {
 
 func testMultiSignVote(client *sdk.ChainClient, multisignReqPayload *common.Payload) {
 
-	endorser, err := sdkutils.MakeEndorserWithPath(SignKeyPath, SignCrtPath, multisignReqPayload)
+	endorser, err := sdkutils.MakeEndorserWithPath(signKeyPath, signCrtPath, multisignReqPayload)
 	if err != nil {
 		log.Fatalln(err)
 	}
