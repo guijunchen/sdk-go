@@ -3,7 +3,6 @@ package chainmaker_sdk_go
 import (
 	"encoding/hex"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"io/ioutil"
 
@@ -16,15 +15,16 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
-func SignPayload(keyBytes, crtBytes []byte, payload *common.Payload) (*common.EndorsementEntry, error) {
-	key, err := asym.PrivateKeyFromPEM(keyBytes, nil)
+// Deprecated: SignPayload use ./utils.MakeEndorserWithPem
+func SignPayload(keyPem, certPem []byte, payload *common.Payload) (*common.EndorsementEntry, error) {
+	key, err := asym.PrivateKeyFromPEM(keyPem, nil)
 	if err != nil {
 		return nil, fmt.Errorf("asym.PrivateKeyFromPEM failed, %s", err)
 	}
 
-	blockCrt, rest := pem.Decode(crtBytes)
-	if len(rest) != 0 {
-		return nil, errors.New("pem.Decode failed, invalid cert")
+	blockCrt, _ := pem.Decode(certPem)
+	if blockCrt == nil {
+		return nil, fmt.Errorf("decode pem failed, invalid certificate")
 	}
 	crt, err := bcx509.ParseCertificate(blockCrt.Bytes)
 	if err != nil {
@@ -43,7 +43,7 @@ func SignPayload(keyBytes, crtBytes []byte, payload *common.Payload) (*common.En
 
 	sender := &accesscontrol.Member{
 		OrgId:      orgId,
-		MemberInfo: crtBytes,
+		MemberInfo: certPem,
 		MemberType: accesscontrol.MemberType_CERT,
 	}
 
@@ -55,6 +55,7 @@ func SignPayload(keyBytes, crtBytes []byte, payload *common.Payload) (*common.En
 	return entry, nil
 }
 
+// Deprecated: SignPayloadWithPath use ./utils.MakeEndorserWithPath instead.
 func SignPayloadWithPath(keyFilePath, crtFilePath string, payload *common.Payload) (*common.EndorsementEntry, error) {
 	// 读取私钥
 	keyBytes, err := ioutil.ReadFile(keyFilePath)

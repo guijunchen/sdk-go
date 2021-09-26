@@ -8,16 +8,18 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 
-	"go.uber.org/zap"
-
+	"chainmaker.org/chainmaker/common/v2/cert"
 	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/crypto/asym"
+	"chainmaker.org/chainmaker/common/v2/crypto/pkcs11"
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/common/v2/log"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
+	"go.uber.org/zap"
 )
 
 const (
@@ -29,6 +31,11 @@ const (
 	DefaultSendTxTimeout = 10
 	// DefaultRpcClientMaxReceiveMessageSize 默认grpc客户端接受最大值 4M
 	DefaultRpcClientMaxReceiveMessageSize = 4
+)
+
+var (
+	// global thread-safe pkcs11 handler
+	p11Handle *pkcs11.P11Handle
 )
 
 // NodeConfig 节点配置
@@ -124,6 +131,22 @@ func WithRPCClientMaxReceiveMessageSize(size int) RPCClientOption {
 	}
 }
 
+// Pkcs11Config pkcs11配置
+type Pkcs11Config struct {
+	// 是否开启pkcs11, 如果为 ture 则下面所有的字段都是必填
+	Enabled bool
+	// path to the .so file of pkcs11 interface
+	Library string
+	// label for the slot to be used
+	Label string
+	// password to logon the HSM(Hardware security module)
+	Password string
+	// size of HSM session cache
+	SessionCacheSize int
+	// hash algorithm used to compute SKI, eg, SHA256
+	Hash string
+}
+
 type ChainClientConfig struct {
 	// logger若不设置，将采用默认日志文件输出日志，建议设置，以便采用集成系统的统一日志输出
 	logger utils.Logger
@@ -157,6 +180,9 @@ type ChainClientConfig struct {
 
 	// rpc客户端设置
 	rpcClientConfig *RPCClientConfig
+
+	// pkcs11的配置
+	pkcs11Config *Pkcs11Config
 }
 
 type ChainClientOption func(*ChainClientConfig)
@@ -266,6 +292,13 @@ func WithRPCClientConfig(conf *RPCClientConfig) ChainClientOption {
 	}
 }
 
+// WithPkcs11Config 设置pkcs11配置
+func WithPkcs11Config(conf *Pkcs11Config) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.pkcs11Config = conf
+	}
+}
+
 // 生成SDK配置并校验合法性
 func generateConfig(opts ...ChainClientOption) (*ChainClientConfig, error) {
 	config := &ChainClientConfig{}
@@ -360,6 +393,19 @@ func setRPCClientConfig(config *ChainClientConfig) {
 	}
 }
 
+func setPkcs11Config(config *ChainClientConfig) {
+	if utils.Config.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
+		config.pkcs11Config = NewPkcs11Config(
+			utils.Config.ChainClientConfig.Pkcs11Config.Enabled,
+			utils.Config.ChainClientConfig.Pkcs11Config.Library,
+			utils.Config.ChainClientConfig.Pkcs11Config.Label,
+			utils.Config.ChainClientConfig.Pkcs11Config.Password,
+			utils.Config.ChainClientConfig.Pkcs11Config.SessionCacheSize,
+			utils.Config.ChainClientConfig.Pkcs11Config.Hash,
+		)
+	}
+}
+
 func readConfigFile(config *ChainClientConfig) error {
 	// 若没有配置配置文件
 	if config.confPath == "" {
@@ -379,6 +425,8 @@ func readConfigFile(config *ChainClientConfig) error {
 	setArchiveConfig(config)
 
 	setRPCClientConfig(config)
+
+	setPkcs11Config(config)
 
 	return nil
 }
@@ -412,6 +460,10 @@ func checkConfig(config *ChainClientConfig) error {
 	}
 
 	if err = checkArchiveConfig(config); err != nil {
+		return err
+	}
+
+	if err = checkPkcs11Config(config); err != nil {
 		return err
 	}
 
@@ -479,6 +531,29 @@ func checkArchiveConfig(config *ChainClientConfig) error {
 	return nil
 }
 
+func checkPkcs11Config(config *ChainClientConfig) error {
+	if !config.pkcs11Config.Enabled {
+		return nil
+	}
+	// 如果config.pkcs11Config.Enabled == true 则其他参数不能为空
+	if config.pkcs11Config.Library == "" {
+		return errors.New("config.pkcs11Config.Library must not empty")
+	}
+	if config.pkcs11Config.Label == "" {
+		return errors.New("config.pkcs11Config.Label must not empty")
+	}
+	if config.pkcs11Config.Password == "" {
+		return errors.New("config.pkcs11Config.Password must not empty")
+	}
+	if config.pkcs11Config.SessionCacheSize == 0 {
+		return errors.New("config.pkcs11Config.SessionCacheSize must > 0")
+	}
+	if config.pkcs11Config.Hash == "" {
+		return errors.New("config.pkcs11Config.Hash must not empty")
+	}
+	return nil
+}
+
 func checkRPCClientConfig(config *ChainClientConfig) error {
 	if config.rpcClientConfig == nil {
 		rpcClient := NewRPCClientConfig(
@@ -524,7 +599,7 @@ func dealUserCrtConfig(config *ChainClientConfig) (err error) {
 
 	// 将证书转换为证书对象
 	if config.userCrt, err = utils.ParseCert(config.userCrtBytes); err != nil {
-		return fmt.Errorf("ParseCert failed, %s", err.Error())
+		return fmt.Errorf("utils.ParseCert failed, %s", err.Error())
 	}
 
 	return nil
@@ -564,7 +639,7 @@ func dealUserSignCrtConfig(config *ChainClientConfig) (err error) {
 	}
 
 	if config.userCrt, err = utils.ParseCert(config.userSignCrtBytes); err != nil {
-		return fmt.Errorf("ParseSignCert failed, %s", err.Error())
+		return fmt.Errorf("utils.ParseCert failed, %s", err.Error())
 	}
 
 	return nil
@@ -584,9 +659,21 @@ func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 		}
 	}
 
-	config.privateKey, err = asym.PrivateKeyFromPEM(config.userSignKeyBytes, nil)
-	if err != nil {
-		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
+	if config.pkcs11Config.Enabled {
+		p11Handle, err = pkcs11.New(config.pkcs11Config.Library, config.pkcs11Config.Label,
+			config.pkcs11Config.Password, config.pkcs11Config.SessionCacheSize, config.pkcs11Config.Hash)
+		if err != nil {
+			return fmt.Errorf("failed to initialize pkcs11 handle, %s", err)
+		}
+		config.privateKey, err = cert.ParseP11PrivKey(p11Handle, config.userSignKeyBytes)
+		if err != nil {
+			return fmt.Errorf("cert.ParseP11PrivKey failed, %s", err)
+		}
+	} else {
+		config.privateKey, err = asym.PrivateKeyFromPEM(config.userSignKeyBytes, nil)
+		if err != nil {
+			return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
+		}
 	}
 
 	return nil

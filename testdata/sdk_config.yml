@@ -42,7 +42,13 @@ chain_client:
     type: "mysql"
     dest: "root:123456:localhost:3306"
     secret_key: xxx
-
   rpc_client:
     # grpc客户端最大接受容量(MB)
     max_receive_message_size: 16
+  pkcs11:
+    enabled: false # pkcs11 is not used by default
+    library: /usr/local/lib64/pkcs11/libupkcs11.so # path to the .so file of pkcs11 interface
+    label: HSM # label for the slot to be used
+    password: 11111111 # password to logon the HSM(Hardware security module)
+    session_cache_size: 10 # size of HSM session cache, default to 10
+    hash: "SHA256" # hash algorithm used to compute SKI

@@ -11,9 +11,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gogo/protobuf/proto"
-
-	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/crypto/hash"
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/common/v2/random/uuid"
@@ -27,28 +24,6 @@ const (
 
 func GetRandTxId() string {
 	return uuid.GetUUID() + uuid.GetUUID()
-}
-
-func SignPayload(privateKey crypto.PrivateKey, cert *bcx509.Certificate, payload *common.Payload) ([]byte, error) {
-	payloadBytes, err := proto.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	return SignPayloadBytes(privateKey, cert, payloadBytes)
-}
-
-func SignPayloadBytes(privateKey crypto.PrivateKey, cert *bcx509.Certificate, payloadBytes []byte) ([]byte, error) {
-	var opts crypto.SignOpts
-	hashalgo, err := bcx509.GetHashFromSignatureAlgorithm(cert.SignatureAlgorithm)
-	if err != nil {
-		return nil, fmt.Errorf("invalid algorithm: %v", err)
-	}
-
-	opts.Hash = hashalgo
-	opts.UID = crypto.CRYPTO_DEFAULT_UID
-
-	return privateKey.SignWithOpts(payloadBytes, &opts)
 }
 
 func CheckProposalRequestResp(resp *common.TxResponse, needContractResult bool) error {
