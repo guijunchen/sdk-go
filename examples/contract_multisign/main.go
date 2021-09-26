@@ -1,6 +1,7 @@
 package main
 
 import (
+	sdkutils "chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -21,7 +22,6 @@ var (
 	pairs           []*common.KeyValuePair
 	SignKeyPath     = "../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.sign.key"
 	SignCrtPath     = "../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.sign.crt"
-	//SignKeyPath1= examples.users[examples.UserNameOrg2Admin1].SignKeyPath
 )
 
 const (
@@ -40,7 +40,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	pairs = initContractInitPairs() //构造交易发起pairs1
+	pairs = initContractInitPairs() //构造交易发起pairs
 	payload = testMultiSignReq(client)
 
 	time.Sleep(2 * time.Second)
@@ -60,13 +60,13 @@ func testMultiSignReq(client *sdk.ChainClient) *common.Payload {
 	return payload
 }
 
-func testMultiSignVote(client *sdk.ChainClient, payload1 *common.Payload) {
+func testMultiSignVote(client *sdk.ChainClient, multisignReqPayload *common.Payload) {
 
-	endorser, err := sdk.SignPayloadWithPath(SignKeyPath, SignCrtPath, payload1)
+	endorser, err := sdkutils.MakeEndorserWithPath(SignKeyPath, SignCrtPath, multisignReqPayload)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	resp, err := client.MultiSignContractVote(payload1, endorser)
+	resp, err := client.MultiSignContractVote(multisignReqPayload, endorser)
 	if err != nil {
 		log.Fatalln(err)
 	}

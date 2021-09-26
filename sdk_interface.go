@@ -925,8 +925,15 @@ type SDKInterface interface {
 
 	// ### 11.3 根据txId查询多签状态
 	// **参数说明**
-	//   - txId: 需要查询的交易Id
+	//   - txId: 需要查询的多签请求交易Id
 	// ```go
 	MultiSignContractQuery(txId string) (*common.TxResponse, error)
+	// ```
+
+	// ### 11.4 根据发起多签请求所需的参数构建payload
+	// **参数说明**
+	//   - pairs: 发起多签请求所需的参数
+	// ```go
+	CreateContractMultiSignReqPayload(pairs []*common.KeyValuePair) *common.Payload
 	// ```
 }

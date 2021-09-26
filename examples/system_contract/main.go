@@ -276,7 +276,7 @@ func testNativeContractAccessGrant(client *sdk.ChainClient, withSyncResult bool,
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("testNativeContractAccessControl resp: %+v\n", resp)
+	fmt.Printf("testNativeContractAccessGrant resp: %+v\n", resp)
 }
 
 func testNativeContractAccessRevoke(client *sdk.ChainClient, withSyncResult bool,
