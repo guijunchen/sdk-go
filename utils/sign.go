@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
-	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 
@@ -17,24 +16,6 @@ import (
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"github.com/gogo/protobuf/proto"
 )
-
-func CertFromPEM(crtPem []byte) (*bcx509.Certificate, error) {
-	certBlock, _ := pem.Decode(crtPem)
-	if certBlock == nil {
-		return nil, fmt.Errorf("decode pem failed, invalid certificate")
-	}
-
-	cert, err := bcx509.ParseCertificate(certBlock.Bytes)
-	if err != nil {
-		return nil, fmt.Errorf("x509 parse cert failed, %s", err)
-	}
-
-	return cert, nil
-}
-
-func PrivateKeyFromPEM(key, pwd []byte) (crypto.PrivateKey, error) {
-	return asym.PrivateKeyFromPEM(key, pwd)
-}
 
 func SignPayload(privateKey crypto.PrivateKey, cert *bcx509.Certificate, payload *common.Payload) ([]byte, error) {
 	payloadBytes, err := proto.Marshal(payload)
@@ -71,12 +52,12 @@ func SignPayloadWithPath(keyFilePath, crtFilePath string, payload *common.Payloa
 		return nil, fmt.Errorf("read cert file failed, %s", err)
 	}
 
-	key, err := PrivateKeyFromPEM(keyPem, nil)
+	key, err := asym.PrivateKeyFromPEM(keyPem, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	cert, err := CertFromPEM(certPem)
+	cert, err := ParseCert(certPem)
 	if err != nil {
 		return nil, err
 	}
@@ -96,12 +77,12 @@ func NewEndorser(orgId string, certPem []byte, sig []byte) *common.EndorsementEn
 }
 
 func MakeEndorserWithPem(keyPem, certPem []byte, payload *common.Payload) (*common.EndorsementEntry, error) {
-	key, err := PrivateKeyFromPEM(keyPem, nil)
+	key, err := asym.PrivateKeyFromPEM(keyPem, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	cert, err := CertFromPEM(certPem)
+	cert, err := ParseCert(certPem)
 	if err != nil {
 		return nil, err
 	}

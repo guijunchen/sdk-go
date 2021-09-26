@@ -64,7 +64,6 @@ func GetCertificateIdFromDER(certDER []byte, hashType string) ([]byte, error) {
 	return id, nil
 }
 
-// Deprecated: ParseCert use CertFromPEM instead.
 func ParseCert(crtPEM []byte) (*bcx509.Certificate, error) {
 	certBlock, _ := pem.Decode(crtPEM)
 	if certBlock == nil {
