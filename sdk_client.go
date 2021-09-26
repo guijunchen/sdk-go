@@ -396,7 +396,7 @@ func (cc *ChainClient) Pkcs11Config() *Pkcs11Config {
 
 func CreateChainClient(pool ConnectionPool, userCrtBytes, privKey, userCrtHash []byte, orgId, chainId string,
 	enabledCrtHash int) (*ChainClient, error) {
-	cert, err := utils.CertFromPEM(userCrtBytes)
+	cert, err := utils.ParseCert(userCrtBytes)
 	if err != nil {
 		return nil, err
 	}
