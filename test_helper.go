@@ -178,7 +178,7 @@ func (pool *mockConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]
 
 		return fmt.Errorf("all client connections are busy")
 
-	}, strategy.Wait(retryInterval*time.Millisecond), strategy.Limit(retryLimit))
+	}, strategy.Wait(getNetworkClientRetryInterval*time.Millisecond), strategy.Limit(getNetworkClientRetryLimit))
 
 	if err != nil {
 		return nil, err

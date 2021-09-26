@@ -19,6 +19,7 @@ import (
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/common/v2/log"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
+	"github.com/Rican7/retry/backoff"
 	"go.uber.org/zap"
 )
 
@@ -183,6 +184,10 @@ type ChainClientConfig struct {
 
 	// pkcs11的配置
 	pkcs11Config *Pkcs11Config
+
+	// retry config
+	retryLimit   uint              // if 0 then use DefaultRetryLimit
+	retryBackoff backoff.Algorithm // if nil then use DefaultRetryBackoff
 }
 
 type ChainClientOption func(*ChainClientConfig)
@@ -268,6 +273,20 @@ func WithChainClientOrgId(orgId string) ChainClientOption {
 func WithChainClientChainId(chainId string) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.chainId = chainId
+	}
+}
+
+// WithRetryLimit 设置 chain client 的重试策略的最大重试次数
+func WithRetryLimit(limit uint) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.retryLimit = limit
+	}
+}
+
+// WithRetryBackoff 设置 chain client 的重试策略的backoff函数
+func WithRetryBackoff(b backoff.Algorithm) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.retryBackoff = b
 	}
 }
 
@@ -584,6 +603,10 @@ func dealConfig(config *ChainClientConfig) error {
 		return err
 	}
 
+	if err = dealRetryConfig(config); err != nil {
+		return err
+	}
+
 	return dealUserSignKeyConfig(config)
 }
 
@@ -674,6 +697,19 @@ func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 		if err != nil {
 			return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
 		}
+	}
+
+	return nil
+}
+
+func dealRetryConfig(config *ChainClientConfig) (err error) {
+
+	if config.retryLimit == 0 {
+		config.retryLimit = DefaultRetryLimit
+	}
+
+	if config.retryBackoff == nil {
+		config.retryBackoff = DefaultRetryBackoff
 	}
 
 	return nil

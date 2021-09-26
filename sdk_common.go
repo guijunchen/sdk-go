@@ -9,21 +9,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Rican7/retry"
-	"github.com/Rican7/retry/backoff"
-	"github.com/Rican7/retry/strategy"
-
 	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
+	"github.com/Rican7/retry"
+	"github.com/Rican7/retry/backoff"
+	"github.com/Rican7/retry/strategy"
 )
 
 const (
-	// 轮训交易结果最大次数
-	retryCnt = 10
+	// DefaultRetryLimit 轮训交易结果最大次数
+	DefaultRetryLimit = 10
 	// defaultSeq default sequence
 	defaultSeq = 0
 )
+
+var DefaultRetryBackoff = backoff.Fibonacci(500 * time.Millisecond)
 
 func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error) {
 	var (
@@ -39,8 +40,8 @@ func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error
 
 		return nil
 	},
-		strategy.Limit(retryCnt),
-		strategy.Backoff(backoff.Fibonacci(retryInterval*time.Millisecond)),
+		strategy.Limit(cc.retryLimit),
+		strategy.Backoff(cc.retryBackoff),
 	)
 
 	if err != nil {
