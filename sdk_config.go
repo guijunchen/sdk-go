@@ -283,8 +283,8 @@ func WithRetryLimit(limit uint) ChainClientOption {
 	}
 }
 
-// WithRetryBackoff 设置 chain client 的重试策略的算法
-func WithRetryBackoff(algo backoff.Algorithm) ChainClientOption {
+// WithRetryAlgorithm 设置 chain client 的重试策略的算法
+func WithRetryAlgorithm(algo backoff.Algorithm) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.retryAlgorithm = algo
 	}
