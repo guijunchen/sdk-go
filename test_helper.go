@@ -14,18 +14,17 @@ import (
 	"net"
 	"time"
 
-	"github.com/Rican7/retry"
-	"github.com/Rican7/retry/strategy"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/connectivity"
-	"google.golang.org/grpc/test/bufconn"
-
 	"chainmaker.org/chainmaker/common/v2/ca"
 	cmx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	apipb "chainmaker.org/chainmaker/pb-go/v2/api"
 	cmnpb "chainmaker.org/chainmaker/pb-go/v2/common"
 	confpb "chainmaker.org/chainmaker/pb-go/v2/config"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
+	"github.com/Rican7/retry"
+	"github.com/Rican7/retry/strategy"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/test/bufconn"
 )
 
 const (
@@ -178,7 +177,7 @@ func (pool *mockConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]
 
 		return fmt.Errorf("all client connections are busy")
 
-	}, strategy.Wait(retryInterval*time.Millisecond), strategy.Limit(retryLimit))
+	}, strategy.Wait(networkClientRetryInterval*time.Millisecond), strategy.Limit(networkClientRetryLimit))
 
 	if err != nil {
 		return nil, err
