@@ -54,7 +54,7 @@ func testUserContractClaim() {
 	//fileHash = txId[len(txId)/2:]
 	kvs := []*common.KeyValuePair{
 		{
-			Key:   "method",
+			Key: "method",
 			Value: []byte("findByFileHash"),
 		},
 		{
@@ -120,7 +120,7 @@ func testUserContractClaimInvoke(client *sdk.ChainClient,
 	fileHash := uuid.GetUUID()
 	kvs := []*common.KeyValuePair{
 		{
-			Key:   "method",
+			Key: "method",
 			Value: []byte("save"),
 		},
 		{
