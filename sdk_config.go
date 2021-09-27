@@ -19,7 +19,6 @@ import (
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/common/v2/log"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
-	"github.com/Rican7/retry/backoff"
 	"go.uber.org/zap"
 )
 
@@ -186,8 +185,8 @@ type ChainClientConfig struct {
 	pkcs11Config *Pkcs11Config
 
 	// retry config
-	retryLimit     uint              // if 0 then use DefaultRetryLimit
-	retryAlgorithm backoff.Algorithm // if nil then use DefaultRetryAlgorithm
+	retryLimit    int // if <=0 then use DefaultRetryLimit
+	retryInterval int // if <=0 then use DefaultRetryInterval
 }
 
 type ChainClientOption func(*ChainClientConfig)
@@ -276,17 +275,17 @@ func WithChainClientChainId(chainId string) ChainClientOption {
 	}
 }
 
-// WithRetryLimit 设置 chain client 的重试策略的最大重试次数
-func WithRetryLimit(limit uint) ChainClientOption {
+// WithRetryLimit 设置 chain client 同步模式下，轮训获取交易结果时的最大轮训次数
+func WithRetryLimit(limit int) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.retryLimit = limit
 	}
 }
 
-// WithRetryAlgorithm 设置 chain client 的重试策略的算法
-func WithRetryAlgorithm(algo backoff.Algorithm) ChainClientOption {
+// WithRetryInterval 设置 chain client 同步模式下，每次轮训交易结果时的等待时间，单位：ms
+func WithRetryInterval(interval int) ChainClientOption {
 	return func(config *ChainClientConfig) {
-		config.retryAlgorithm = algo
+		config.retryInterval = interval
 	}
 }
 
@@ -425,6 +424,11 @@ func setPkcs11Config(config *ChainClientConfig) {
 	}
 }
 
+func setRetryConfig(config *ChainClientConfig) {
+	config.retryLimit = utils.Config.ChainClientConfig.RetryLimit
+	config.retryInterval = utils.Config.ChainClientConfig.RetryInterval
+}
+
 func readConfigFile(config *ChainClientConfig) error {
 	// 若没有配置配置文件
 	if config.confPath == "" {
@@ -446,6 +450,8 @@ func readConfigFile(config *ChainClientConfig) error {
 	setRPCClientConfig(config)
 
 	setPkcs11Config(config)
+
+	setRetryConfig(config)
 
 	return nil
 }
@@ -704,12 +710,12 @@ func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 
 func dealRetryConfig(config *ChainClientConfig) (err error) {
 
-	if config.retryLimit == 0 {
+	if config.retryLimit <= 0 {
 		config.retryLimit = DefaultRetryLimit
 	}
 
-	if config.retryAlgorithm == nil {
-		config.retryAlgorithm = DefaultRetryAlgorithm
+	if config.retryInterval <= 0 {
+		config.retryInterval = DefaultRetryInterval
 	}
 
 	return nil

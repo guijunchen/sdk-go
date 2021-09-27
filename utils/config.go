@@ -70,6 +70,10 @@ type chainClientConfigModel struct {
 	UserSignKeyFilePath string `mapstructure:"user_sign_key_file_path"`
 	// 客户端用户交易签名证书路径(若未设置，将使用user_crt_file_path)
 	UserSignCrtFilePath string `mapstructure:"user_sign_crt_file_path"`
+	// 同步交易结果模式下，轮训获取交易结果时的最大轮训次数
+	RetryLimit int `mapstructure:"retry_limit"`
+	// 同步交易结果模式下，每次轮训交易结果时的等待时间 单位：ms
+	RetryInterval int `mapstructure:"retry_interval"`
 	// 节点配置
 	NodesConfig []nodesConfigModel `mapstructure:"nodes"`
 	// 归档特性的配置

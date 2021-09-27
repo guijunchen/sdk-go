@@ -21,7 +21,6 @@ import (
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/Rican7/retry"
-	"github.com/Rican7/retry/backoff"
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -58,8 +57,8 @@ type ChainClient struct {
 	pkcs11Config *Pkcs11Config
 
 	// retry config
-	retryLimit     uint              // if 0 then use DefaultRetryLimit
-	retryAlgorithm backoff.Algorithm // if nil then use DefaultRetryAlgorithm
+	retryLimit    int // if <=0 then use DefaultRetryLimit
+	retryInterval int // if <=0 then use DefaultRetryInterval
 }
 
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
@@ -132,7 +131,7 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		rpcClientConfig: config.rpcClientConfig,
 		pkcs11Config:    config.pkcs11Config,
 		retryLimit:      config.retryLimit,
-		retryAlgorithm:  config.retryAlgorithm,
+		retryInterval:   config.retryInterval,
 	}, nil
 }
 

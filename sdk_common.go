@@ -13,18 +13,17 @@ import (
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/Rican7/retry"
-	"github.com/Rican7/retry/backoff"
 	"github.com/Rican7/retry/strategy"
 )
 
 const (
-	// DefaultRetryLimit 轮训交易结果最大次数
+	// DefaultRetryLimit 默认轮训交易结果最大次数
 	DefaultRetryLimit = 10
+	// DefaultRetryInterval 默认每次轮训交易结果时的等待时间，单位ms
+	DefaultRetryInterval = 500
 	// defaultSeq default sequence
 	defaultSeq = 0
 )
-
-var DefaultRetryAlgorithm = backoff.Fibonacci(500 * time.Millisecond)
 
 func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error) {
 	var (
@@ -40,8 +39,8 @@ func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error
 
 		return nil
 	},
-		strategy.Limit(cc.retryLimit),
-		strategy.Backoff(cc.retryAlgorithm),
+		strategy.Wait(time.Duration(cc.retryInterval)*time.Millisecond),
+		strategy.Limit(uint(cc.retryLimit)),
 	)
 
 	if err != nil {
