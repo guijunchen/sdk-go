@@ -39,6 +39,24 @@ func SignPayloadBytes(privateKey crypto.PrivateKey, cert *bcx509.Certificate, pa
 	return privateKey.SignWithOpts(payloadBytes, &opts)
 }
 
+func SignPayloadV2(privateKey crypto.PrivateKey, hashType crypto.HashType, payload *common.Payload) ([]byte, error) {
+	payloadBytes, err := proto.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return SignPayloadBytesV2(privateKey, hashType, payloadBytes)
+}
+
+func SignPayloadBytesV2(privateKey crypto.PrivateKey, hashType crypto.HashType, payloadBytes []byte) ([]byte, error) {
+
+	var opts crypto.SignOpts
+	opts.Hash = hashType
+	opts.UID = crypto.CRYPTO_DEFAULT_UID
+
+	return privateKey.SignWithOpts(payloadBytes, &opts)
+}
+
 func SignPayloadWithPath(keyFilePath, crtFilePath string, payload *common.Payload) ([]byte, error) {
 	// 读取私钥
 	keyPem, err := ioutil.ReadFile(keyFilePath)

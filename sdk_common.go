@@ -13,6 +13,8 @@ import (
 	"github.com/Rican7/retry/backoff"
 	"github.com/Rican7/retry/strategy"
 
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
@@ -96,22 +98,44 @@ func (cc *ChainClient) createPayload(txId string, txType common.TxType, contract
 }
 
 func (cc *ChainClient) SignPayload(payload *common.Payload) (*common.EndorsementEntry, error) {
+	var (
+		sender    *accesscontrol.Member
+		signBytes []byte
+		err       error
+	)
+	if cc.authType == PermissionedWithCert {
 
-	signBytes, err := utils.SignPayload(cc.privateKey, cc.userCrt, payload)
-	if err != nil {
-		return nil, fmt.Errorf("SignPayload failed, %s", err)
-	}
+		hashalgo, err := bcx509.GetHashFromSignatureAlgorithm(cc.userCrt.SignatureAlgorithm)
+		if err != nil {
+			return nil, fmt.Errorf("invalid algorithm: %s", err.Error())
+		}
 
-	sender := &accesscontrol.Member{
-		OrgId:      cc.orgId,
-		MemberInfo: cc.userCrtBytes,
-		MemberType: accesscontrol.MemberType_CERT,
+		signBytes, err = utils.SignPayloadV2(cc.privateKey, hashalgo, payload)
+		if err != nil {
+			return nil, fmt.Errorf("SignPayload failed, %s", err)
+		}
+
+		sender = &accesscontrol.Member{
+			OrgId:      cc.orgId,
+			MemberInfo: cc.userCrtBytes,
+			MemberType: accesscontrol.MemberType_CERT,
+		}
+
+	} else {
+		signBytes, err = utils.SignPayloadV2(cc.privateKey, crypto.HashAlgoMap[cc.hashType], payload)
+		if err != nil {
+			return nil, fmt.Errorf("SignPayload failed, %s", err.Error())
+		}
+		sender = &accesscontrol.Member{
+			OrgId:      cc.orgId,
+			MemberInfo: cc.pkBytes,
+			MemberType: accesscontrol.MemberType_PUBLIC_KEY,
+		}
 	}
 
 	entry := &common.EndorsementEntry{
 		Signer:    sender,
 		Signature: signBytes,
 	}
-
 	return entry, nil
 }
