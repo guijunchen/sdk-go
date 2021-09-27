@@ -186,8 +186,8 @@ type ChainClientConfig struct {
 	pkcs11Config *Pkcs11Config
 
 	// retry config
-	retryLimit   uint              // if 0 then use DefaultRetryLimit
-	retryBackoff backoff.Algorithm // if nil then use DefaultRetryBackoff
+	retryLimit     uint              // if 0 then use DefaultRetryLimit
+	retryAlgorithm backoff.Algorithm // if nil then use DefaultRetryAlgorithm
 }
 
 type ChainClientOption func(*ChainClientConfig)
@@ -283,10 +283,10 @@ func WithRetryLimit(limit uint) ChainClientOption {
 	}
 }
 
-// WithRetryBackoff 设置 chain client 的重试策略的backoff函数
-func WithRetryBackoff(b backoff.Algorithm) ChainClientOption {
+// WithRetryBackoff 设置 chain client 的重试策略的算法
+func WithRetryBackoff(algo backoff.Algorithm) ChainClientOption {
 	return func(config *ChainClientConfig) {
-		config.retryBackoff = b
+		config.retryAlgorithm = algo
 	}
 }
 
@@ -708,8 +708,8 @@ func dealRetryConfig(config *ChainClientConfig) (err error) {
 		config.retryLimit = DefaultRetryLimit
 	}
 
-	if config.retryBackoff == nil {
-		config.retryBackoff = DefaultRetryBackoff
+	if config.retryAlgorithm == nil {
+		config.retryAlgorithm = DefaultRetryAlgorithm
 	}
 
 	return nil

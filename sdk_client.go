@@ -58,8 +58,8 @@ type ChainClient struct {
 	pkcs11Config *Pkcs11Config
 
 	// retry config
-	retryLimit   uint              // if 0 then use DefaultRetryLimit
-	retryBackoff backoff.Algorithm // if nil then use DefaultRetryBackoff
+	retryLimit     uint              // if 0 then use DefaultRetryLimit
+	retryAlgorithm backoff.Algorithm // if nil then use DefaultRetryAlgorithm
 }
 
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
@@ -132,7 +132,7 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		rpcClientConfig: config.rpcClientConfig,
 		pkcs11Config:    config.pkcs11Config,
 		retryLimit:      config.retryLimit,
-		retryBackoff:    config.retryBackoff,
+		retryAlgorithm:  config.retryAlgorithm,
 	}, nil
 }
 

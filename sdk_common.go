@@ -24,7 +24,7 @@ const (
 	defaultSeq = 0
 )
 
-var DefaultRetryBackoff = backoff.Fibonacci(500 * time.Millisecond)
+var DefaultRetryAlgorithm = backoff.Fibonacci(500 * time.Millisecond)
 
 func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error) {
 	var (
@@ -41,7 +41,7 @@ func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error
 		return nil
 	},
 		strategy.Limit(cc.retryLimit),
-		strategy.Backoff(cc.retryBackoff),
+		strategy.Backoff(cc.retryAlgorithm),
 	)
 
 	if err != nil {
