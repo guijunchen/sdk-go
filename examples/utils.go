@@ -124,7 +124,9 @@ func CreateChainClientWithSDKConf(sdkConfPath string) (*sdk.ChainClient, error) 
 	}
 
 	// Enable certificate compression
-	err = cc.EnableCertHash()
+	if cc.GetAuthType() == sdk.PermissionedWithCert {
+		err = cc.EnableCertHash()
+	}
 	if err != nil {
 		return nil, err
 	}

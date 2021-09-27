@@ -377,8 +377,12 @@ func generateConfig(opts ...ChainClientOption) (*ChainClientConfig, error) {
 }
 
 func setAuthType(config *ChainClientConfig) {
-	if utils.Config.ChainClientConfig.AuthType != "" && config.authType == 0 {
-		config.authType = StringToAuthTypeMap[utils.Config.ChainClientConfig.AuthType]
+	if config.authType == 0 {
+		if utils.Config.ChainClientConfig.AuthType == "" {
+			config.authType = PermissionedWithCert
+		} else {
+			config.authType = StringToAuthTypeMap[utils.Config.ChainClientConfig.AuthType]
+		}
 	}
 
 	/*
@@ -393,6 +397,19 @@ func setAuthType(config *ChainClientConfig) {
 			config.authType = PermissionedWithCert
 		}
 	*/
+}
+
+func setCrypto(config *ChainClientConfig) {
+	if StringToAuthTypeMap[utils.Config.ChainClientConfig.AuthType] == PermissionedWithCert {
+		config.crypto = &CryptoConfig{}
+		return
+	}
+
+	if utils.Config.ChainClientConfig.Crypto != nil && config.crypto == nil {
+		config.crypto = &CryptoConfig{
+			hash: utils.Config.ChainClientConfig.Crypto.Hash,
+		}
+	}
 }
 
 func setChainConfig(config *ChainClientConfig) {
@@ -483,15 +500,25 @@ func setRPCClientConfig(config *ChainClientConfig) {
 }
 
 func setPkcs11Config(config *ChainClientConfig) {
-	if utils.Config.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
-		config.pkcs11Config = NewPkcs11Config(
-			utils.Config.ChainClientConfig.Pkcs11Config.Enabled,
-			utils.Config.ChainClientConfig.Pkcs11Config.Library,
-			utils.Config.ChainClientConfig.Pkcs11Config.Label,
-			utils.Config.ChainClientConfig.Pkcs11Config.Password,
-			utils.Config.ChainClientConfig.Pkcs11Config.SessionCacheSize,
-			utils.Config.ChainClientConfig.Pkcs11Config.Hash,
-		)
+	if StringToAuthTypeMap[utils.Config.ChainClientConfig.AuthType] == PermissionedWithCert {
+		if utils.Config.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
+			config.pkcs11Config = NewPkcs11Config(
+				utils.Config.ChainClientConfig.Pkcs11Config.Enabled,
+				utils.Config.ChainClientConfig.Pkcs11Config.Library,
+				utils.Config.ChainClientConfig.Pkcs11Config.Label,
+				utils.Config.ChainClientConfig.Pkcs11Config.Password,
+				utils.Config.ChainClientConfig.Pkcs11Config.SessionCacheSize,
+				utils.Config.ChainClientConfig.Pkcs11Config.Hash,
+			)
+		}
+	} else {
+		config.pkcs11Config = &Pkcs11Config{
+			Enabled: false,
+		}
+		//if utils.Config.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
+		//	config.pkcs11Config = &Pkcs11Config{
+		//	}
+		//}
 	}
 }
 
@@ -507,6 +534,8 @@ func readConfigFile(config *ChainClientConfig) error {
 
 	setAuthType(config)
 
+	setCrypto(config)
+
 	setChainConfig(config)
 
 	setUserConfig(config)
@@ -518,6 +547,14 @@ func readConfigFile(config *ChainClientConfig) error {
 	setRPCClientConfig(config)
 
 	setPkcs11Config(config)
+
+	fmt.Printf(
+		"\n=== "+
+			"\n===ChainClientConfig:"+
+			"\n==="+
+			"\n%+v\n",
+		config,
+	)
 
 	return nil
 }
@@ -629,6 +666,10 @@ func checkArchiveConfig(config *ChainClientConfig) error {
 }
 
 func checkPkcs11Config(config *ChainClientConfig) error {
+	//if config.pkcs11Config == nil {
+	//	return nil
+	//}
+
 	if !config.pkcs11Config.Enabled {
 		return nil
 	}

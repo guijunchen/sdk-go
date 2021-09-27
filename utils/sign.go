@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
+// Deprecated: This function will be deleted when appropriate. Please use SignPayloadV2
 func SignPayload(privateKey crypto.PrivateKey, cert *bcx509.Certificate, payload *common.Payload) ([]byte, error) {
 	payloadBytes, err := proto.Marshal(payload)
 	if err != nil {
@@ -26,6 +28,7 @@ func SignPayload(privateKey crypto.PrivateKey, cert *bcx509.Certificate, payload
 	return SignPayloadBytes(privateKey, cert, payloadBytes)
 }
 
+// Deprecated: This function will be deleted when appropriate. Please use SignPayloadBytesV2
 func SignPayloadBytes(privateKey crypto.PrivateKey, cert *bcx509.Certificate, payloadBytes []byte) ([]byte, error) {
 	var opts crypto.SignOpts
 	hashalgo, err := bcx509.GetHashFromSignatureAlgorithm(cert.SignatureAlgorithm)
@@ -49,7 +52,6 @@ func SignPayloadV2(privateKey crypto.PrivateKey, hashType crypto.HashType, paylo
 }
 
 func SignPayloadBytesV2(privateKey crypto.PrivateKey, hashType crypto.HashType, payloadBytes []byte) ([]byte, error) {
-
 	var opts crypto.SignOpts
 	opts.Hash = hashType
 	opts.UID = crypto.CRYPTO_DEFAULT_UID
@@ -80,7 +82,26 @@ func SignPayloadWithPath(keyFilePath, crtFilePath string, payload *common.Payloa
 		return nil, err
 	}
 
-	return SignPayload(key, cert, payload)
+	hashAlgo, err := bcx509.GetHashFromSignatureAlgorithm(cert.SignatureAlgorithm)
+	if err != nil {
+		return nil, err
+	}
+
+	return SignPayloadV2(key, hashAlgo, payload)
+}
+
+func SignPayloadWithPkPath(keyFilePath, hashType string, payload *common.Payload) ([]byte, error) {
+	keyPem, err := ioutil.ReadFile(keyFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("read key file failed, %s", err)
+	}
+
+	key, err := asym.PrivateKeyFromPEM(keyPem, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return SignPayloadV2(key, crypto.HashAlgoMap[hashType], payload)
 }
 
 func NewEndorser(orgId string, certPem []byte, sig []byte) *common.EndorsementEntry {
@@ -89,6 +110,28 @@ func NewEndorser(orgId string, certPem []byte, sig []byte) *common.EndorsementEn
 			OrgId:      orgId,
 			MemberInfo: certPem,
 			MemberType: accesscontrol.MemberType_CERT,
+		},
+		Signature: sig,
+	}
+}
+
+func NewPkEndorser(orgId string, pk []byte, sig []byte) *common.EndorsementEntry {
+	return &common.EndorsementEntry{
+		Signer: &accesscontrol.Member{
+			OrgId:      orgId,
+			MemberInfo: pk,
+			MemberType: accesscontrol.MemberType_PUBLIC_KEY,
+		},
+		Signature: sig,
+	}
+}
+
+func NewEndorserV2(orgId string, memberInfo []byte, memberType accesscontrol.MemberType, sig []byte) *common.EndorsementEntry {
+	return &common.EndorsementEntry{
+		Signer: &accesscontrol.Member{
+			OrgId:      orgId,
+			MemberInfo: memberInfo,
+			MemberType: memberType,
 		},
 		Signature: sig,
 	}
@@ -105,7 +148,12 @@ func MakeEndorserWithPem(keyPem, certPem []byte, payload *common.Payload) (*comm
 		return nil, err
 	}
 
-	signature, err := SignPayload(key, cert, payload)
+	hashAlgo, err := bcx509.GetHashFromSignatureAlgorithm(cert.SignatureAlgorithm)
+	if err != nil {
+		return nil, err
+	}
+
+	signature, err := SignPayloadV2(key, hashAlgo, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -115,8 +163,70 @@ func MakeEndorserWithPem(keyPem, certPem []byte, payload *common.Payload) (*comm
 		orgId = cert.Subject.Organization[0]
 	}
 
-	e := NewEndorser(orgId, certPem, signature)
-	return e, nil
+	return NewEndorserV2(orgId, certPem, accesscontrol.MemberType_CERT, signature), nil
+}
+
+func MakePkEndorserWithPem(keyPem []byte, hashType crypto.HashType, orgId string, payload *common.Payload) (*common.EndorsementEntry, error) {
+	key, err := asym.PrivateKeyFromPEM(keyPem, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	signature, err := SignPayloadV2(key, hashType, payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewEndorserV2(orgId, keyPem, accesscontrol.MemberType_PUBLIC_KEY, signature), nil
+}
+
+func MakeEndorserWithPemV2(orgId string, hashType crypto.HashType, keyPem, memberInfo []byte, payload *common.Payload) (*common.EndorsementEntry, error) {
+	var (
+		memberType accesscontrol.MemberType
+		err        error
+		//cert       *bcx509.Certificate
+		key       crypto.PrivateKey
+		signature []byte
+	)
+
+	key, err = asym.PrivateKeyFromPEM(keyPem, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err = ParseCert(memberInfo); err == nil {
+		memberType = accesscontrol.MemberType_CERT
+	}
+
+	if _, err = asym.ParsePublicKey(memberInfo); err == nil {
+		memberType = accesscontrol.MemberType_PUBLIC_KEY
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	switch memberType {
+	case accesscontrol.MemberType_CERT:
+		signature, err = SignPayloadV2(key, hashType, payload)
+		if err != nil {
+			return nil, err
+		}
+		//var orgId string
+		//if len(cert.Subject.Organization) != 0 {
+		//	orgId = cert.Subject.Organization[0]
+		//}
+		return NewEndorserV2(orgId, memberInfo, memberType, signature), nil
+
+	case accesscontrol.MemberType_PUBLIC_KEY:
+		signature, err = SignPayloadV2(key, hashType, payload)
+		if err != nil {
+			return nil, err
+		}
+		return NewEndorserV2(orgId, memberInfo, memberType, signature), nil
+	}
+
+	return nil, errors.New("MakeEndorser failed, invalid memberType")
 }
 
 func MakeEndorserWithPath(keyFilePath, crtFilePath string, payload *common.Payload) (*common.EndorsementEntry, error) {
@@ -132,5 +242,51 @@ func MakeEndorserWithPath(keyFilePath, crtFilePath string, payload *common.Paylo
 		return nil, fmt.Errorf("read cert file failed, %s", err)
 	}
 
-	return MakeEndorserWithPem(keyPem, certPem, payload)
+	cert, err := ParseCert(certPem)
+	if err != nil {
+		return nil, err
+	}
+
+	hashAlgo, err := bcx509.GetHashFromSignatureAlgorithm(cert.SignatureAlgorithm)
+	if err != nil {
+		return nil, err
+	}
+
+	var orgId string
+	if len(cert.Subject.Organization) != 0 {
+		orgId = cert.Subject.Organization[0]
+	}
+
+	return MakeEndorserWithPemV2(orgId, hashAlgo, keyPem, certPem, payload)
+}
+
+func MakePkEndorserWithPath(keyFilePath string, hashType crypto.HashType, orgId string, payload *common.Payload) (*common.EndorsementEntry, error) {
+	keyPem, err := ioutil.ReadFile(keyFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("read key file failed, %s", err)
+	}
+
+	key, err := asym.PrivateKeyFromPEM(keyPem, nil)
+	if err != nil {
+		return nil, fmt.Errorf("")
+	}
+
+	pubKey := key.PublicKey()
+	memberInfo, err := pubKey.String()
+	if err != nil {
+		return nil, err
+	}
+
+	return MakeEndorserWithPemV2(orgId, hashType, keyPem, []byte(memberInfo), payload)
+}
+
+func MakeEndorserWithPathV2(orgId string, hashType crypto.HashType, keyFilePath, useCrtFilePath string, memberType accesscontrol.MemberType, payload *common.Payload) (*common.EndorsementEntry, error) {
+	switch memberType {
+	case accesscontrol.MemberType_CERT:
+		return MakeEndorserWithPath(keyFilePath, useCrtFilePath, payload)
+	case accesscontrol.MemberType_PUBLIC_KEY:
+		return MakePkEndorserWithPath(keyFilePath, hashType, orgId, payload)
+	}
+
+	return nil, errors.New("MakeEndorser failed, invalid memberType")
 }

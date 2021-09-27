@@ -124,13 +124,16 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	var hashType = ""
 	var publicKey crypto.PublicKey
 	var pkBytes []byte
+	var pkPem string
 	if config.authType == PermissionedWithKey || config.authType == Public {
 		hashType = config.crypto.hash
 		publicKey = config.userPk
-		pkBytes, err = publicKey.Bytes()
+		pkPem, err = publicKey.String()
 		if err != nil {
 			return nil, err
 		}
+
+		pkBytes = []byte(pkPem)
 	}
 
 	return &ChainClient{
@@ -300,6 +303,10 @@ func (cc *ChainClient) EnableCertHash() error {
 		err error
 	)
 
+	if cc.GetAuthType() != PermissionedWithCert {
+		return errors.New("cert hash is not supported")
+	}
+
 	// 0.已经启用压缩证书
 	if cc.enabledCrtHash {
 		return nil
@@ -368,6 +375,14 @@ func (cc *ChainClient) GetEnabledCrtHash() bool {
 
 func (cc *ChainClient) GetUserCrtHash() []byte {
 	return cc.userCrtHash
+}
+
+func (cc *ChainClient) GetHashType() string {
+	return cc.hashType
+}
+
+func (cc *ChainClient) GetAuthType() AuthType {
+	return cc.authType
 }
 
 // 检查证书是否成功上链
