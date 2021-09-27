@@ -886,4 +886,41 @@ type SDKInterface interface {
 	// ```go
 	GetChainMakerServerVersion() (string, error)
 	// ```
+
+	// ### 11.1 构造添加公钥身份请求
+	// **参数说明**
+	//   - pubkey: 公钥信息
+	//   - org_id: 组织id
+	//   - role:   角色，支持client,light,common
+	// ```go
+	CreatePubkeyAddPayload(pubkey string, org_id string, role string) *common.Payload
+	// ```
+
+	// ### 11.2 构造删除公钥身份请求
+	// **参数说明**
+	//   - pubkey: 公钥信息
+	//   - org_id: 组织id
+	// ```go
+	CreatePubkeyDelPayload(pubkey string, org_id string) *common.Payload
+	// ```
+
+	// ### 11.3 构造查询公钥身份请求
+	// **参数说明**
+	//   - pubkey: 公钥信息
+	// ```go
+	CreatePubkeyQueryPayload(pubkey string) *common.Payload
+	// ```
+
+	// ### 11.4 发送公钥身份管理请求（添加、删除）
+	// **参数说明**
+	//   - payload: 交易payload
+	//   - endorsers: 背书签名信息列表
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
+	// ```go
+	SendPubkeyManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
+		withSyncResult bool) (*common.TxResponse, error)
+	// ```
 }
