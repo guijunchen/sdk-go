@@ -468,11 +468,10 @@ func (cc *ChainClient) GetMerklePathByTxId(txId string) ([]byte, error) {
 
 func (cc *ChainClient) createNativeContractAccessPayload(method string,
 	accessContractList []string) (*common.Payload, error) {
-	if len(accessContractList) == 0 {
-		return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
-			method, nil, defaultSeq), nil
+	val, err := json.Marshal(accessContractList)
+	if err != nil {
+		return nil, err
 	}
-	val, _ := json.Marshal(accessContractList)
 	kvs := []*common.KeyValuePair{
 		{
 			Key:   syscontract.ContractAccess_NATIVE_CONTRACT_NAME.String(),
@@ -494,5 +493,6 @@ func (cc *ChainClient) CreateNativeContractAccessRevokePayload(revokeContractLis
 }
 
 func (cc *ChainClient) CreateGetDisabledNativeContractListPayload() (*common.Payload, error) {
-	return cc.createNativeContractAccessPayload(syscontract.ContractQueryFunction_GET_DISABLED_CONTRACT_LIST.String(), nil)
+	return cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
+		syscontract.ContractQueryFunction_GET_DISABLED_CONTRACT_LIST.String(), nil, defaultSeq), nil
 }

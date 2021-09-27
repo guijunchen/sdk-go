@@ -91,7 +91,7 @@ func (cc *ChainClient) createMultiSignVotePayload(pairs []*common.KeyValuePair) 
 }
 
 func (cc *ChainClient) createMultiSignQueryPayload(pairs []*common.KeyValuePair) *common.Payload {
-	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_MULTI_SIGN.String(),
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_MULTI_SIGN.String(),
 		syscontract.MultiSignFunction_QUERY.String(), pairs, defaultSeq)
 
 	return payload
