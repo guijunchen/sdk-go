@@ -20,7 +20,7 @@ func (cc *ChainClient) createPubkeyManagePayload(method string, kvs []*common.Ke
 	return payload
 }
 
-func (cc *ChainClient) CreatePubkeyAddPayload(pubkey string, org_id string, role string) *common.Payload {
+func (cc *ChainClient) CreatePubkeyAddPayload(pubkey string, org_id string, role string) (*common.Payload, error) {
 
 	pairs := []*common.KeyValuePair{
 		{
@@ -37,10 +37,10 @@ func (cc *ChainClient) CreatePubkeyAddPayload(pubkey string, org_id string, role
 		},
 	}
 
-	return cc.createPubkeyManagePayload(syscontract.PubkeyManageFunction_PUBKEY_ADD.String(), pairs)
+	return cc.createPubkeyManagePayload(syscontract.PubkeyManageFunction_PUBKEY_ADD.String(), pairs), nil
 }
 
-func (cc *ChainClient) CreatePubkeyDelPayload(pubkey string, org_id string) *common.Payload {
+func (cc *ChainClient) CreatePubkeyDelPayload(pubkey string, org_id string) (*common.Payload, error) {
 	pairs := []*common.KeyValuePair{
 		{
 			Key:   utils.KeyPubkey,
@@ -52,10 +52,10 @@ func (cc *ChainClient) CreatePubkeyDelPayload(pubkey string, org_id string) *com
 		},
 	}
 
-	return cc.createPubkeyManagePayload(syscontract.PubkeyManageFunction_PUBKEY_DELETE.String(), pairs)
+	return cc.createPubkeyManagePayload(syscontract.PubkeyManageFunction_PUBKEY_DELETE.String(), pairs), nil
 }
 
-func (cc *ChainClient) CreatePubkeyQueryPayload(pubkey string) *common.Payload {
+func (cc *ChainClient) CreatePubkeyQueryPayload(pubkey string) (*common.Payload, error) {
 	pairs := []*common.KeyValuePair{
 		{
 			Key:   utils.KeyPubkey,
@@ -64,7 +64,7 @@ func (cc *ChainClient) CreatePubkeyQueryPayload(pubkey string) *common.Payload {
 	}
 
 	return cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PUBKEY_MANAGEMENT.String(),
-		syscontract.PubkeyManageFunction_PUBKEY_QUERY.String(), pairs, defaultSeq)
+		syscontract.PubkeyManageFunction_PUBKEY_QUERY.String(), pairs, defaultSeq), nil
 }
 
 

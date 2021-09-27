@@ -893,7 +893,7 @@ type SDKInterface interface {
 	//   - org_id: 组织id
 	//   - role:   角色，支持client,light,common
 	// ```go
-	CreatePubkeyAddPayload(pubkey string, org_id string, role string) *common.Payload
+	CreatePubkeyAddPayload(pubkey string, org_id string, role string) (*common.Payload, error)
 	// ```
 
 	// ### 11.2 构造删除公钥身份请求
@@ -901,14 +901,14 @@ type SDKInterface interface {
 	//   - pubkey: 公钥信息
 	//   - org_id: 组织id
 	// ```go
-	CreatePubkeyDelPayload(pubkey string, org_id string) *common.Payload
+	CreatePubkeyDelPayload(pubkey string, org_id string) (*common.Payload, error)
 	// ```
 
 	// ### 11.3 构造查询公钥身份请求
 	// **参数说明**
 	//   - pubkey: 公钥信息
 	// ```go
-	CreatePubkeyQueryPayload(pubkey string) *common.Payload
+	CreatePubkeyQueryPayload(pubkey string) (*common.Payload, error)
 	// ```
 
 	// ### 11.4 发送公钥身份管理请求（添加、删除）
