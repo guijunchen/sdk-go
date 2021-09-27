@@ -128,7 +128,7 @@ func (cc *ChainClient) SignPayload(payload *common.Payload) (*common.Endorsement
 		}
 		sender = &accesscontrol.Member{
 			OrgId:      cc.orgId,
-			MemberInfo: cc.userCrtBytes,
+			MemberInfo: cc.pkBytes,
 			MemberType: accesscontrol.MemberType_PUBLIC_KEY,
 		}
 	}
