@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	commonCrt "chainmaker.org/chainmaker/common/v2/cert"
+	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/crypto/asym"
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/common/v2/evmutils"
@@ -55,6 +57,7 @@ func SignPayload(keyPem, certPem []byte, payload *common.Payload) (*common.Endor
 	return entry, nil
 }
 
+/*
 func SignPayloadV2(keyPem, certPem []byte, payload *common.Payload) (*common.EndorsementEntry, error) {
 	key, err := asym.PrivateKeyFromPEM(keyPem, nil)
 	if err != nil {
@@ -98,6 +101,7 @@ func SignPayloadV2(keyPem, certPem []byte, payload *common.Payload) (*common.End
 
 	return entry, nil
 }
+*/
 
 // Deprecated: SignPayloadWithPath use ./utils.MakeEndorserWithPath instead.
 func SignPayloadWithPath(keyFilePath, crtFilePath string, payload *common.Payload) (*common.EndorsementEntry, error) {
@@ -125,6 +129,15 @@ func GetEVMAddressFromCertPath(certFilePath string) (string, error) {
 	return GetEVMAddressFromCertBytes(certBytes)
 }
 
+func GetEVMAddressFromPrivateKeyPath(privateKeyFilePath, hashType string) (string, error) {
+	keyPem, err := ioutil.ReadFile(privateKeyFilePath)
+	if err != nil {
+		return "", fmt.Errorf("readFile failed, %s", err.Error())
+	}
+
+	return GetEVMAddressFromCertBytes(keyPem)
+}
+
 func GetEVMAddressFromCertBytes(certBytes []byte) (string, error) {
 	block, _ := pem.Decode(certBytes)
 	cert, err := bcx509.ParseCertificate(block.Bytes)
@@ -134,6 +147,29 @@ func GetEVMAddressFromCertBytes(certBytes []byte) (string, error) {
 
 	ski := hex.EncodeToString(cert.SubjectKeyId)
 	addrInt, err := evmutils.MakeAddressFromHex(ski)
+	if err != nil {
+		return "", fmt.Errorf("make address from cert SKI failed, %s", err)
+	}
+
+	return addrInt.String(), nil
+}
+
+func GetEVMAddressFromPrivateKeyBytes(privateKeyBytes []byte, hashType string) (string, error) {
+	privateKey, err := asym.PrivateKeyFromPEM(privateKeyBytes, nil)
+	if err != nil {
+		return "", fmt.Errorf("PrivateKeyFromPEM failed, %s", err.Error())
+	}
+
+	publicKey := privateKey.PublicKey()
+
+	ski, err := commonCrt.ComputeSKI(crypto.HashAlgoMap[hashType], publicKey.ToStandardKey())
+	if err != nil {
+		return "", fmt.Errorf("computeSKI from publickey failed")
+	}
+
+	skiStr := hex.EncodeToString(ski)
+
+	addrInt, err := evmutils.MakeAddressFromHex(skiStr)
 	if err != nil {
 		return "", fmt.Errorf("make address from cert SKI failed, %s", err)
 	}
