@@ -370,6 +370,10 @@ func (cc *ChainClient) GetUserCrtHash() []byte {
 	return cc.userCrtHash
 }
 
+func (cc *ChainClient) GetHashType() string {
+	return cc.hashType
+}
+
 // 检查证书是否成功上链
 func (cc *ChainClient) checkUserCertOnChain() error {
 	err := retry.Retry(func(uint) error {
