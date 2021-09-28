@@ -42,6 +42,21 @@ type rpcClientConfigModel struct {
 	MaxRecvMsgSize int `mapstructure:"max_receive_message_size"`
 }
 
+type pkcs11ConfigModel struct {
+	// 是否开启pkcs11
+	Enabled bool `mapstructure:"enabled"`
+	// path to the .so file of pkcs11 interface
+	Library string `mapstructure:"library"`
+	// label for the slot to be used
+	Label string `mapstructure:"label"`
+	// password to logon the HSM(Hardware security module)
+	Password string `mapstructure:"password"`
+	// size of HSM session cache
+	SessionCacheSize int `mapstructure:"session_cache_size"`
+	// hash algorithm used to compute SKI, eg, SHA256
+	Hash string `mapstructure:"hash"`
+}
+
 type chainClientConfigModel struct {
 	// 链ID
 	ChainId string `mapstructure:"chain_id"`
@@ -55,12 +70,18 @@ type chainClientConfigModel struct {
 	UserSignKeyFilePath string `mapstructure:"user_sign_key_file_path"`
 	// 客户端用户交易签名证书路径(若未设置，将使用user_crt_file_path)
 	UserSignCrtFilePath string `mapstructure:"user_sign_crt_file_path"`
+	// 同步交易结果模式下，轮训获取交易结果时的最大轮训次数
+	RetryLimit int `mapstructure:"retry_limit"`
+	// 同步交易结果模式下，每次轮训交易结果时的等待时间 单位：ms
+	RetryInterval int `mapstructure:"retry_interval"`
 	// 节点配置
 	NodesConfig []nodesConfigModel `mapstructure:"nodes"`
 	// 归档特性的配置
 	ArchiveConfig *archiveConfigModel `mapstructure:"archive,omitempty"`
 	// 设置grpc客户端配置
 	RPCClientConfig *rpcClientConfigModel `mapstructure:"rpc_client"`
+	// pkcs11配置(若未设置，则不使用pkcs11)
+	Pkcs11Config *pkcs11ConfigModel `mapstructure:"pkcs11"`
 }
 
 type ChainClientConfigModel struct {

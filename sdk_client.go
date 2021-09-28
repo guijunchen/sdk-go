@@ -14,17 +14,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rican7/retry"
-	"github.com/Rican7/retry/strategy"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/crypto/asym"
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
+	"github.com/Rican7/retry"
+	"github.com/Rican7/retry/strategy"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -51,8 +50,15 @@ type ChainClient struct {
 	// archive config
 	archiveConfig *ArchiveConfig
 
-	//grpc client config
+	// grpc client config
 	rpcClientConfig *RPCClientConfig
+
+	// pkcs11 config
+	pkcs11Config *Pkcs11Config
+
+	// retry config
+	retryLimit    int // if <=0 then use DefaultRetryLimit
+	retryInterval int // if <=0 then use DefaultRetryInterval
 }
 
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
@@ -90,6 +96,18 @@ func NewRPCClientConfig(opts ...RPCClientOption) *RPCClientConfig {
 	return config
 }
 
+func NewPkcs11Config(enabled bool, libPath, label, password string,
+	sessionCacheSize int, hashAlgo string) *Pkcs11Config {
+	return &Pkcs11Config{
+		Enabled:          enabled,
+		Library:          libPath,
+		Label:            label,
+		Password:         password,
+		SessionCacheSize: sessionCacheSize,
+		Hash:             hashAlgo,
+	}
+}
+
 func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	config, err := generateConfig(opts...)
 	if err != nil {
@@ -111,6 +129,9 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		privateKey:      config.privateKey,
 		archiveConfig:   config.archiveConfig,
 		rpcClientConfig: config.rpcClientConfig,
+		pkcs11Config:    config.pkcs11Config,
+		retryLimit:      config.retryLimit,
+		retryInterval:   config.retryInterval,
 	}, nil
 }
 
@@ -372,6 +393,10 @@ func (cc *ChainClient) getCheckCertHash() (bool, error) {
 	}
 
 	return false, nil
+}
+
+func (cc *ChainClient) Pkcs11Config() *Pkcs11Config {
+	return cc.pkcs11Config
 }
 
 func CreateChainClient(pool ConnectionPool, userCrtBytes, privKey, userCrtHash []byte, orgId, chainId string,
