@@ -262,6 +262,25 @@ type SDKInterface interface {
 	GetMerklePathByTxId(txId string) ([]byte, error)
 	// ```
 
+	// ### 2.17 开放系统合约
+	// **参数说明**
+	//   - grantContractList: 需要开放的系统合约字符串数组
+	// ```go
+	CreateNativeContractAccessGrantPayload(grantContractList []string) (*common.Payload, error)
+	// ```
+
+	// ### 2.18 弃用系统合约
+	// **参数说明**
+	//   - revokeContractList: 需要弃用的系统合约字符串数组
+	// ```go
+	CreateNativeContractAccessRevokePayload(revokeContractList []string) (*common.Payload, error)
+	// ```
+
+	// ### 2.19 查询弃用的系统合约名单
+	// ```go
+	CreateGetDisabledNativeContractListPayload() (*common.Payload, error)
+	// ```
+
 	// ## 3 链配置接口
 	// ### 3.1 查询最新链配置
 	// ```go
@@ -885,5 +904,36 @@ type SDKInterface interface {
 	// ### 10.2 获取链版本
 	// ```go
 	GetChainMakerServerVersion() (string, error)
+	// ```
+
+	// ## 11 多签类接口
+
+	// ### 11.1 发起多签请求
+	// **参数说明**
+	//   - payload: 待签名payload
+	// ```go
+	MultiSignContractReq(payload *common.Payload) (*common.TxResponse, error)
+	// ```
+
+	// ### 11.2 发起多签投票
+	// **参数说明**
+	//   - payload: 待签名payload
+	// ```go
+	MultiSignContractVote(payload *common.Payload,
+		endorser *common.EndorsementEntry) (*common.TxResponse, error)
+	// ```
+
+	// ### 11.3 根据txId查询多签状态
+	// **参数说明**
+	//   - txId: 需要查询的多签请求交易Id
+	// ```go
+	MultiSignContractQuery(txId string) (*common.TxResponse, error)
+	// ```
+
+	// ### 11.4 根据发起多签请求所需的参数构建payload
+	// **参数说明**
+	//   - pairs: 发起多签请求所需的参数
+	// ```go
+	CreateMultiSignReqPayload(pairs []*common.KeyValuePair) *common.Payload
 	// ```
 }
