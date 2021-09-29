@@ -377,8 +377,12 @@ func generateConfig(opts ...ChainClientOption) (*ChainClientConfig, error) {
 }
 
 func setAuthType(config *ChainClientConfig) {
-	if utils.Config.ChainClientConfig.AuthType != "" && config.authType == 0 {
-		config.authType = StringToAuthTypeMap[utils.Config.ChainClientConfig.AuthType]
+	if config.authType == 0 {
+		if utils.Config.ChainClientConfig.AuthType == "" {
+			config.authType = PermissionedWithCert
+		} else {
+			config.authType = StringToAuthTypeMap[utils.Config.ChainClientConfig.AuthType]
+		}
 	}
 
 	/*
