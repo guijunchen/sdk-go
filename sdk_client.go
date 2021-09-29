@@ -374,6 +374,10 @@ func (cc *ChainClient) GetHashType() string {
 	return cc.hashType
 }
 
+func (cc *ChainClient) GetAuthType() AuthType {
+	return cc.authType
+}
+
 // 检查证书是否成功上链
 func (cc *ChainClient) checkUserCertOnChain() error {
 	err := retry.Retry(func(uint) error {
