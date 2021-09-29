@@ -300,6 +300,10 @@ func (cc *ChainClient) EnableCertHash() error {
 		err error
 	)
 
+	if cc.GetAuthType() != PermissionedWithCert {
+		return errors.New("cert hash is not supported")
+	}
+
 	// 0.已经启用压缩证书
 	if cc.enabledCrtHash {
 		return nil
