@@ -124,13 +124,16 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	var hashType = ""
 	var publicKey crypto.PublicKey
 	var pkBytes []byte
+	var pkPem string
 	if config.authType == PermissionedWithKey || config.authType == Public {
 		hashType = config.crypto.hash
 		publicKey = config.userPk
-		pkBytes, err = publicKey.Bytes()
+		pkPem, err = publicKey.String()
 		if err != nil {
 			return nil, err
 		}
+
+		pkBytes = []byte(pkPem)
 	}
 
 	return &ChainClient{

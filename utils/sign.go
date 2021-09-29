@@ -198,7 +198,7 @@ func MakeEndorserWithPemV2(orgId string, hashType crypto.HashType, keyPem, membe
 		memberType = accesscontrol.MemberType_CERT
 	}
 
-	if _, err = asym.ParsePublicKey(memberInfo); err == nil {
+	if _, err = asym.PublicKeyFromPEM(memberInfo); err == nil {
 		memberType = accesscontrol.MemberType_PUBLIC_KEY
 	}
 

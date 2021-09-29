@@ -548,6 +548,14 @@ func readConfigFile(config *ChainClientConfig) error {
 
 	setPkcs11Config(config)
 
+	fmt.Printf(
+		"\n=== "+
+			"\n===ChainClientConfig:"+
+			"\n==="+
+			"\n%+v\n",
+		config,
+	)
+
 	return nil
 }
 
