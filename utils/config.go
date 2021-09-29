@@ -108,14 +108,6 @@ func InitConfig(confPath string) error {
 		return fmt.Errorf("Unmarshal config file failed, %s", err)
 	}
 
-	fmt.Printf(
-		"\n=== "+
-			"\n===Config:"+
-			"\n==="+
-			"\n%+v\n",
-		Config,
-	)
-
 	return nil
 }
 
