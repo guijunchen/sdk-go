@@ -221,6 +221,10 @@ type ChainClientConfig struct {
 
 	// AuthType
 	authType AuthType
+
+	// retry config
+	retryLimit    int // if <=0 then use DefaultRetryLimit
+	retryInterval int // if <=0 then use DefaultRetryInterval
 }
 
 type CryptoConfig struct {
@@ -325,6 +329,20 @@ func WithChainClientOrgId(orgId string) ChainClientOption {
 func WithChainClientChainId(chainId string) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.chainId = chainId
+	}
+}
+
+// WithRetryLimit 设置 chain client 同步模式下，轮训获取交易结果时的最大轮训次数
+func WithRetryLimit(limit int) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.retryLimit = limit
+	}
+}
+
+// WithRetryInterval 设置 chain client 同步模式下，每次轮训交易结果时的等待时间，单位：ms
+func WithRetryInterval(interval int) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.retryInterval = interval
 	}
 }
 
@@ -522,6 +540,11 @@ func setPkcs11Config(config *ChainClientConfig) {
 	}
 }
 
+func setRetryConfig(config *ChainClientConfig) {
+	config.retryLimit = utils.Config.ChainClientConfig.RetryLimit
+	config.retryInterval = utils.Config.ChainClientConfig.RetryInterval
+}
+
 func readConfigFile(config *ChainClientConfig) error {
 	// 若没有配置配置文件
 	if config.confPath == "" {
@@ -547,6 +570,8 @@ func readConfigFile(config *ChainClientConfig) error {
 	setRPCClientConfig(config)
 
 	setPkcs11Config(config)
+
+	setRetryConfig(config)
 
 	return nil
 }
@@ -720,6 +745,10 @@ func dealConfig(config *ChainClientConfig) error {
 		return err
 	}
 
+	if err = dealRetryConfig(config); err != nil {
+		return err
+	}
+
 	return dealUserSignKeyConfig(config)
 }
 
@@ -828,6 +857,19 @@ func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 		if err != nil {
 			return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
 		}
+	}
+
+	return nil
+}
+
+func dealRetryConfig(config *ChainClientConfig) (err error) {
+
+	if config.retryLimit <= 0 {
+		config.retryLimit = DefaultRetryLimit
+	}
+
+	if config.retryInterval <= 0 {
+		config.retryInterval = DefaultRetryInterval
 	}
 
 	return nil

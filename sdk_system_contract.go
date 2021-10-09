@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -463,4 +464,35 @@ func (cc *ChainClient) GetMerklePathByTxId(txId string) ([]byte, error) {
 		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
 	}
 	return resp.ContractResult.Result, nil
+}
+
+func (cc *ChainClient) createNativeContractAccessPayload(method string,
+	accessContractList []string) (*common.Payload, error) {
+	val, err := json.Marshal(accessContractList)
+	if err != nil {
+		return nil, err
+	}
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   syscontract.ContractAccess_NATIVE_CONTRACT_NAME.String(),
+			Value: val,
+		},
+	}
+	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
+		method, kvs, defaultSeq), nil
+}
+
+func (cc *ChainClient) CreateNativeContractAccessGrantPayload(grantContractList []string) (*common.Payload, error) {
+	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_GRANT_CONTRACT_ACCESS.String(),
+		grantContractList)
+}
+
+func (cc *ChainClient) CreateNativeContractAccessRevokePayload(revokeContractList []string) (*common.Payload, error) {
+	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_REVOKE_CONTRACT_ACCESS.String(),
+		revokeContractList)
+}
+
+func (cc *ChainClient) CreateGetDisabledNativeContractListPayload() (*common.Payload, error) {
+	return cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
+		syscontract.ContractQueryFunction_GET_DISABLED_CONTRACT_LIST.String(), nil, defaultSeq), nil
 }
