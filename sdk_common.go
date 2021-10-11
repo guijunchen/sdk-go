@@ -17,8 +17,6 @@ import (
 	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
-	"github.com/Rican7/retry"
-	"github.com/Rican7/retry/strategy"
 )
 
 const (
