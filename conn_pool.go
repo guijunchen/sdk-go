@@ -24,8 +24,8 @@ import (
 )
 
 const (
-	retryInterval = 500 // 获取可用客户端连接对象重试时间间隔，单位：ms
-	retryLimit    = 5   // 获取可用客户端连接对象最大重试次数
+	networkClientRetryInterval = 500 // 获取可用客户端连接对象重试时间间隔，单位：ms
+	networkClientRetryLimit    = 5   // 获取可用客户端连接对象最大重试次数
 )
 
 var _ ConnectionPool = (*ClientConnectionPool)(nil)
@@ -169,7 +169,7 @@ func (pool *ClientConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[strin
 
 		return fmt.Errorf("all client connections are busy")
 
-	}, strategy.Wait(retryInterval*time.Millisecond), strategy.Limit(retryLimit))
+	}, strategy.Wait(networkClientRetryInterval*time.Millisecond), strategy.Limit(networkClientRetryLimit))
 
 	if err != nil {
 		return nil, err
