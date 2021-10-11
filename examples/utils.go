@@ -14,6 +14,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
+
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/common/v2/evmutils"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
@@ -84,6 +87,34 @@ var users = map[string]*User{
 	},
 }
 
+var pkUsers = map[string]*PkUsers{
+	"org1client1": {
+		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+	},
+	"org2client1": {
+		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+	},
+	"org1admin1": {
+		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+	},
+	"org2admin1": {
+		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+	},
+	"org3admin1": {
+		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+	},
+	"org4admin1": {
+		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+	},
+	"org5admin1": {
+		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+	},
+}
+
+type PkUsers struct {
+	SignKeyPath string
+}
+
 type User struct {
 	TlsKeyPath, TlsCrtPath   string
 	SignKeyPath, SignCrtPath string
@@ -151,6 +182,45 @@ func GetEndorsers(payload *common.Payload, usernames ...string) ([]*common.Endor
 			return nil, err
 		}
 
+		endorsers = append(endorsers, entry)
+	}
+
+	return endorsers, nil
+}
+
+func GetEndorsersV2(orgId string, hashType crypto.HashType, memberType accesscontrol.MemberType, authType sdk.AuthType, payload *common.Payload, usernames ...string) ([]*common.EndorsementEntry, error) {
+	var endorsers []*common.EndorsementEntry
+
+	for _, name := range usernames {
+		var entry *common.EndorsementEntry
+		var err error
+		switch authType {
+		case sdk.PermissionedWithCert:
+			u, ok := users[name]
+			if !ok {
+				return nil, errors.New("user not found")
+			}
+
+			//entry, err = sdkutils.MakeEndorserWithPath(u.SignKeyPath, u.SignCrtPath, payload)
+			entry, err = sdkutils.MakeEndorserWithPathV2(orgId, hashType, u.SignKeyPath, u.SignCrtPath, memberType, payload)
+			if err != nil {
+				return nil, err
+			}
+		case sdk.PermissionedWithKey:
+			u, ok := pkUsers[name]
+			if !ok {
+				return nil, errors.New("user not found")
+			}
+
+			entry, err = sdkutils.MakeEndorserWithPathV2(orgId, hashType, u.SignKeyPath, "", memberType, payload)
+			if err != nil {
+				return nil, err
+			}
+		case sdk.Public:
+			return nil, nil
+		default:
+			return nil, errors.New("invalid authType")
+		}
 		endorsers = append(endorsers, entry)
 	}
 
