@@ -28,11 +28,31 @@ const (
 	byteCodePath          = "../../testdata/counter-go-demo/rust-counter-1.0.0.wasm"
 	upgradeByteCodePath   = "../../testdata/counter-go-demo/rust-counter-2.0.0.wasm"
 
-	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_pk_config_org1_client1.yml"
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_pk_user1.yml"
 )
 
 func main() {
-	testUserContractCounterGo()
+	testPublicUserContractCounterGo()
+	//testUserContractCounterGo()
+}
+
+func testPublicUserContractCounterGo() {
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("====================== 创建合约（异步）======================")
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	testUserContractCounterGoCreate(client, false, usernames...)
+	time.Sleep(5 * time.Second)
+
+	fmt.Println("====================== 调用合约（异步）======================")
+	testUserContractCounterGoInvoke(client, "increase", nil, false)
+	time.Sleep(5 * time.Second)
+
+	fmt.Println("====================== 执行合约查询接口1 ======================")
+	testUserContractCounterGoQuery(client, "query", nil)
 }
 
 func testUserContractCounterGo() {

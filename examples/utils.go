@@ -108,23 +108,23 @@ var permissionedPkUsers = map[string]*PkUsers{
 }
 
 var pkUsers = map[string]*PkUsers{
-	"user1": {
-		"../../testdata/crypto-config-pk/public/user/user1.key",
+	"org1client1": {
+		"../../testdata/crypto-config-pk/public/user/user1/user1.key",
 	},
-	"user2": {
-		"../../testdata/crypto-config-pk/public/user/user2.key",
+	"org2client1": {
+		"../../testdata/crypto-config-pk/public/user/user2/user2.key",
 	},
-	"admin1": {
-		"../../testdata/crypto-config-pk/public/admin/admin1.key",
+	"org1admin1": {
+		"../../testdata/crypto-config-pk/public/admin/admin1/admin1.key",
 	},
-	"admin2": {
-		"../../testdata/crypto-config-pk/public/admin/admin2.key",
+	"org2admin1": {
+		"../../testdata/crypto-config-pk/public/admin/admin2/admin2.key",
 	},
-	"admin3": {
-		"../../testdata/crypto-config-pk/public/admin/admin3.key",
+	"org3admin1": {
+		"../../testdata/crypto-config-pk/public/admin/admin3/admin3.key",
 	},
-	"admin4": {
-		"../../testdata/crypto-config-pk/public/admin/admin4.key",
+	"org4admin1": {
+		"../../testdata/crypto-config-pk/public/admin/admin4/admin4.key",
 	},
 }
 
