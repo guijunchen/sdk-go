@@ -227,7 +227,7 @@ func GetEndorsersV2(orgId string, hashType crypto.HashType, memberType accesscon
 			if !ok {
 				return nil, errors.New("user not found")
 			}
-			entry, err = sdkutils.MakePkEndorserWithPath(u.SignKeyPath, hashType, orgId, memberType, payload)
+			entry, err = sdkutils.MakePkEndorserWithPath(u.SignKeyPath, hashType, orgId, payload)
 			if err != nil {
 				return nil, err
 			}
@@ -237,7 +237,7 @@ func GetEndorsersV2(orgId string, hashType crypto.HashType, memberType accesscon
 			if !ok {
 				return nil, errors.New("user not found")
 			}
-			entry, err = sdkutils.MakePkEndorserWithPath(u.SignKeyPath, hashType, orgId, memberType, payload)
+			entry, err = sdkutils.MakePkEndorserWithPath(u.SignKeyPath, hashType, orgId, payload)
 			if err != nil {
 				return nil, err
 			}

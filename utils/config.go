@@ -9,6 +9,7 @@ package utils
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -111,6 +112,8 @@ func InitConfig(confPath string) error {
 	if err = confViper.Unmarshal(&Config); err != nil {
 		return fmt.Errorf("Unmarshal config file failed, %s", err)
 	}
+
+	Config.ChainClientConfig.AuthType = strings.ToLower(Config.ChainClientConfig.AuthType)
 
 	return nil
 }
