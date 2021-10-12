@@ -37,6 +37,7 @@ func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error
 	err = retry.Retry(func(uint) error {
 		txInfo, err = cc.GetTxByTxId(txId)
 		if err != nil {
+			cc.logger.Debugf("[SDK] GetTxByTxId %s failed, %s", txId, err)
 			return err
 		}
 

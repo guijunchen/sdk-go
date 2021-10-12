@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 
@@ -180,11 +179,9 @@ func MakePkEndorserWithPem(keyPem []byte, hashType crypto.HashType, orgId string
 	return NewEndorserV2(orgId, keyPem, accesscontrol.MemberType_PUBLIC_KEY, signature), nil
 }
 
-func MakeEndorserWithPemV2(orgId string, hashType crypto.HashType, keyPem, memberInfo []byte, payload *common.Payload) (*common.EndorsementEntry, error) {
+func MakeEndorserWithPemV2(orgId string, hashType crypto.HashType, memberType accesscontrol.MemberType, keyPem, memberInfo []byte, payload *common.Payload) (*common.EndorsementEntry, error) {
 	var (
-		memberType accesscontrol.MemberType
-		err        error
-		//cert       *bcx509.Certificate
+		err       error
 		key       crypto.PrivateKey
 		signature []byte
 	)
@@ -194,39 +191,16 @@ func MakeEndorserWithPemV2(orgId string, hashType crypto.HashType, keyPem, membe
 		return nil, err
 	}
 
-	if _, err = ParseCert(memberInfo); err == nil {
-		memberType = accesscontrol.MemberType_CERT
-	}
-
-	if _, err = asym.PublicKeyFromPEM(memberInfo); err == nil {
-		memberType = accesscontrol.MemberType_PUBLIC_KEY
-	}
-
 	if err != nil {
 		return nil, err
 	}
 
-	switch memberType {
-	case accesscontrol.MemberType_CERT:
-		signature, err = SignPayloadV2(key, hashType, payload)
-		if err != nil {
-			return nil, err
-		}
-		//var orgId string
-		//if len(cert.Subject.Organization) != 0 {
-		//	orgId = cert.Subject.Organization[0]
-		//}
-		return NewEndorserV2(orgId, memberInfo, memberType, signature), nil
-
-	case accesscontrol.MemberType_PUBLIC_KEY:
-		signature, err = SignPayloadV2(key, hashType, payload)
-		if err != nil {
-			return nil, err
-		}
-		return NewEndorserV2(orgId, memberInfo, memberType, signature), nil
+	signature, err = SignPayloadV2(key, hashType, payload)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, errors.New("MakeEndorser failed, invalid memberType")
+	return NewEndorserV2(orgId, memberInfo, memberType, signature), nil
 }
 
 func MakeEndorserWithPath(keyFilePath, crtFilePath string, payload *common.Payload) (*common.EndorsementEntry, error) {
@@ -257,10 +231,10 @@ func MakeEndorserWithPath(keyFilePath, crtFilePath string, payload *common.Paylo
 		orgId = cert.Subject.Organization[0]
 	}
 
-	return MakeEndorserWithPemV2(orgId, hashAlgo, keyPem, certPem, payload)
+	return MakeEndorserWithPemV2(orgId, hashAlgo, accesscontrol.MemberType_CERT, keyPem, certPem, payload)
 }
 
-func MakePkEndorserWithPath(keyFilePath string, hashType crypto.HashType, orgId string, payload *common.Payload) (*common.EndorsementEntry, error) {
+func MakePkEndorserWithPath(keyFilePath string, hashType crypto.HashType, orgId string, memberType accesscontrol.MemberType, payload *common.Payload) (*common.EndorsementEntry, error) {
 	keyPem, err := ioutil.ReadFile(keyFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("read key file failed, %s", err)
@@ -277,16 +251,16 @@ func MakePkEndorserWithPath(keyFilePath string, hashType crypto.HashType, orgId 
 		return nil, err
 	}
 
-	return MakeEndorserWithPemV2(orgId, hashType, keyPem, []byte(memberInfo), payload)
+	return MakeEndorserWithPemV2(orgId, hashType, memberType, keyPem, []byte(memberInfo), payload)
 }
 
-func MakeEndorserWithPathV2(orgId string, hashType crypto.HashType, keyFilePath, useCrtFilePath string, memberType accesscontrol.MemberType, payload *common.Payload) (*common.EndorsementEntry, error) {
-	switch memberType {
-	case accesscontrol.MemberType_CERT:
-		return MakeEndorserWithPath(keyFilePath, useCrtFilePath, payload)
-	case accesscontrol.MemberType_PUBLIC_KEY:
-		return MakePkEndorserWithPath(keyFilePath, hashType, orgId, payload)
-	}
-
-	return nil, errors.New("MakeEndorser failed, invalid memberType")
-}
+//func MakeEndorserWithPathV2(orgId string, hashType crypto.HashType, authType sdk.AuthType, keyFilePath, useCrtFilePath string, memberType accesscontrol.MemberType, payload *common.Payload) (*common.EndorsementEntry, error) {
+//	switch authType {
+//	case sdk.PermissionedWithCert:
+//		return MakeEndorserWithPath(keyFilePath, useCrtFilePath, payload)
+//	case sdk.PermissionedWithKey, sdk.Public:
+//		return MakePkEndorserWithPath(keyFilePath, hashType, orgId, memberType, payload)
+//	default:
+//		return nil, errors.New("makeEndorser failed, invalid authType")
+//	}
+//}
