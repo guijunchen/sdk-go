@@ -35,14 +35,11 @@ func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error
 	)
 
 	err = retry.Retry(func(uint) error {
-		cc.logger.Debugf("[SDK] cc.retryInterval: %d cc.retryLimit: %d", cc.retryInterval, cc.retryLimit)
 		txInfo, err = cc.GetTxByTxId(txId)
 		if err != nil {
-			cc.logger.Debugf("[SDK] GetTxByTxId %s failed, %s", txId, err)
 			return err
 		}
 
-		cc.logger.Debugf("[SDK] GetTxByTxId %s OK", txId)
 		return nil
 	},
 		strategy.Wait(time.Duration(cc.retryInterval)*time.Millisecond),
