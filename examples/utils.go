@@ -86,28 +86,45 @@ var users = map[string]*User{
 		"../../testdata/crypto-config/wx-org5.chainmaker.org/user/admin1/admin1.sign.crt",
 	},
 }
-
-var pkUsers = map[string]*PkUsers{
+var permissionedPkUsers = map[string]*PkUsers{
 	"org1client1": {
-		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org1/public-key/user/client1/client1.key",
 	},
 	"org2client1": {
-		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org2/public-key/user/client1/client1.key",
 	},
 	"org1admin1": {
-		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org1/public-key/user/admin1/admin1.key",
 	},
 	"org2admin1": {
-		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org2/public-key/user/admin1/admin1.key",
 	},
 	"org3admin1": {
-		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org3/public-key/user/admin1/admin1.key",
 	},
 	"org4admin1": {
-		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org4/public-key/user/admin1/admin1.key",
 	},
-	"org5admin1": {
-		"../../testdata/pubKey-config/wx-org1.chainmaker.org/user1/user1.prvKey",
+}
+
+var pkUsers = map[string]*PkUsers{
+	"user1": {
+		"../../testdata/crypto-config-pk/public/user/user1.key",
+	},
+	"user2": {
+		"../../testdata/crypto-config-pk/public/user/user2.key",
+	},
+	"admin1": {
+		"../../testdata/crypto-config-pk/public/admin/admin1.key",
+	},
+	"admin2": {
+		"../../testdata/crypto-config-pk/public/admin/admin2.key",
+	},
+	"admin3": {
+		"../../testdata/crypto-config-pk/public/admin/admin3.key",
+	},
+	"admin4": {
+		"../../testdata/crypto-config-pk/public/admin/admin4.key",
 	},
 }
 
