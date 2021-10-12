@@ -217,24 +217,31 @@ func GetEndorsersV2(orgId string, hashType crypto.HashType, memberType accesscon
 			if !ok {
 				return nil, errors.New("user not found")
 			}
-
-			//entry, err = sdkutils.MakeEndorserWithPath(u.SignKeyPath, u.SignCrtPath, payload)
-			entry, err = sdkutils.MakeEndorserWithPathV2(orgId, hashType, u.SignKeyPath, u.SignCrtPath, memberType, payload)
+			entry, err = sdkutils.MakeEndorserWithPath(u.SignKeyPath, u.SignCrtPath, payload)
 			if err != nil {
 				return nil, err
 			}
+
 		case sdk.PermissionedWithKey:
+			u, ok := permissionedPkUsers[name]
+			if !ok {
+				return nil, errors.New("user not found")
+			}
+			entry, err = sdkutils.MakePkEndorserWithPath(u.SignKeyPath, hashType, orgId, memberType, payload)
+			if err != nil {
+				return nil, err
+			}
+
+		case sdk.Public:
 			u, ok := pkUsers[name]
 			if !ok {
 				return nil, errors.New("user not found")
 			}
-
-			entry, err = sdkutils.MakeEndorserWithPathV2(orgId, hashType, u.SignKeyPath, "", memberType, payload)
+			entry, err = sdkutils.MakePkEndorserWithPath(u.SignKeyPath, hashType, orgId, memberType, payload)
 			if err != nil {
 				return nil, err
 			}
-		case sdk.Public:
-			return nil, nil
+
 		default:
 			return nil, errors.New("invalid authType")
 		}
