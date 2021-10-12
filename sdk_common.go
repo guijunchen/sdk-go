@@ -41,6 +41,7 @@ func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error
 			return err
 		}
 
+		cc.logger.Debugf("[SDK] GetTxByTxId %s OK", txId)
 		return nil
 	},
 		strategy.Wait(time.Duration(cc.retryInterval)*time.Millisecond),
