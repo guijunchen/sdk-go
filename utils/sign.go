@@ -234,7 +234,7 @@ func MakeEndorserWithPath(keyFilePath, crtFilePath string, payload *common.Paylo
 	return MakeEndorserWithPemV2(orgId, hashAlgo, accesscontrol.MemberType_CERT, keyPem, certPem, payload)
 }
 
-func MakePkEndorserWithPath(keyFilePath string, hashType crypto.HashType, orgId string, memberType accesscontrol.MemberType, payload *common.Payload) (*common.EndorsementEntry, error) {
+func MakePkEndorserWithPath(keyFilePath string, hashType crypto.HashType, orgId string, payload *common.Payload) (*common.EndorsementEntry, error) {
 	keyPem, err := ioutil.ReadFile(keyFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("read key file failed, %s", err)
@@ -251,7 +251,7 @@ func MakePkEndorserWithPath(keyFilePath string, hashType crypto.HashType, orgId 
 		return nil, err
 	}
 
-	return MakeEndorserWithPemV2(orgId, hashType, memberType, keyPem, []byte(memberInfo), payload)
+	return MakeEndorserWithPemV2(orgId, hashType, accesscontrol.MemberType_PUBLIC_KEY, keyPem, []byte(memberInfo), payload)
 }
 
 //func MakeEndorserWithPathV2(orgId string, hashType crypto.HashType, authType sdk.AuthType, keyFilePath, useCrtFilePath string, memberType accesscontrol.MemberType, payload *common.Payload) (*common.EndorsementEntry, error) {
