@@ -725,12 +725,15 @@ func checkRPCClientConfig(config *ChainClientConfig) error {
 }
 
 func dealConfig(config *ChainClientConfig) error {
+	var err error
+	if err = dealRetryConfig(config); err != nil {
+		return err
+	}
+
 	// PermissionedWithKey & Public
 	if config.authType == PermissionedWithKey || config.authType == Public {
 		return dealUserSignKeyConfig(config)
 	}
-
-	var err error
 
 	// PermissionedWithCert
 	if err = dealUserCrtConfig(config); err != nil {
@@ -745,11 +748,11 @@ func dealConfig(config *ChainClientConfig) error {
 		return err
 	}
 
-	if err = dealRetryConfig(config); err != nil {
+	if err = dealUserSignKeyConfig(config); err != nil {
 		return err
 	}
 
-	return dealUserSignKeyConfig(config)
+	return nil
 }
 
 func dealUserCrtConfig(config *ChainClientConfig) (err error) {
