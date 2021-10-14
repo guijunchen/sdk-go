@@ -665,9 +665,11 @@ func checkUserConfig(config *ChainClientConfig) error {
 }
 
 func checkChainConfig(config *ChainClientConfig) error {
-	// OrgId不可为空
-	if config.orgId == "" {
-		return fmt.Errorf("orgId cannot be empty")
+	if config.authType == PermissionedWithCert || config.authType == PermissionedWithKey {
+		// OrgId不可为空
+		if config.orgId == "" {
+			return fmt.Errorf("orgId cannot be empty")
+		}
 	}
 
 	// ChainId不可为空
