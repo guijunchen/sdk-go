@@ -259,7 +259,9 @@ func MakePkEndorserWithPath(keyFilePath string, hashType crypto.HashType, orgId 
 		[]byte(memberInfo), payload)
 }
 
-//func MakeEndorserWithPathV2(orgId string, hashType crypto.HashType, authType sdk.AuthType, keyFilePath, useCrtFilePath string, memberType accesscontrol.MemberType, payload *common.Payload) (*common.EndorsementEntry, error) {
+//func MakeEndorserWithPathV2(orgId string, hashType crypto.HashType, authType sdk.AuthType, keyFilePath,
+//	useCrtFilePath string, memberType accesscontrol.MemberType,
+//	payload *common.Payload) (*common.EndorsementEntry, error) {
 //	switch authType {
 //	case sdk.PermissionedWithCert:
 //		return MakeEndorserWithPath(keyFilePath, useCrtFilePath, payload)
