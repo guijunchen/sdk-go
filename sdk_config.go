@@ -746,11 +746,7 @@ func dealConfig(config *ChainClientConfig) error {
 		return err
 	}
 
-	if err = dealUserSignKeyConfig(config); err != nil {
-		return err
-	}
-
-	return nil
+	return dealUserSignKeyConfig(config)
 }
 
 func dealUserCrtConfig(config *ChainClientConfig) (err error) {

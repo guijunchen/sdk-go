@@ -67,7 +67,6 @@ func (cc *ChainClient) CreatePubkeyQueryPayload(pubkey string) (*common.Payload,
 		syscontract.PubkeyManageFunction_PUBKEY_QUERY.String(), pairs, defaultSeq), nil
 }
 
-
 func (cc *ChainClient) SendPubkeyManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	return cc.sendContractRequest(payload, endorsers, timeout, withSyncResult)
