@@ -29,4 +29,4 @@ chain_client:
 
   rpc_client:
     # grpc客户端最大接受容量(MB)
-    max_receive_mesage_size: 16s
+    max_receive_mesage_size: 16

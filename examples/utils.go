@@ -26,6 +26,8 @@ import (
 
 const (
 	OrgId1 = "wx-org1.chainmaker.org"
+	OrgId2 = "wx-org2.chainmaker.org"
+	OrgId3 = "wx-org3.chainmaker.org"
 	OrgId4 = "wx-org4.chainmaker.org"
 	OrgId5 = "wx-org5.chainmaker.org"
 
@@ -86,24 +88,30 @@ var users = map[string]*User{
 		"../../testdata/crypto-config/wx-org5.chainmaker.org/user/admin1/admin1.sign.crt",
 	},
 }
-var permissionedPkUsers = map[string]*PkUsers{
+var permissionedPkUsers = map[string]*PermissionedPkUsers{
 	"org1client1": {
 		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org1/public-key/user/client1/client1.key",
+		OrgId1,
 	},
 	"org2client1": {
 		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org2/public-key/user/client1/client1.key",
+		OrgId2,
 	},
 	"org1admin1": {
 		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org1/public-key/user/admin1/admin1.key",
+		OrgId1,
 	},
 	"org2admin1": {
 		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org2/public-key/user/admin1/admin1.key",
+		OrgId2,
 	},
 	"org3admin1": {
 		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org3/public-key/user/admin1/admin1.key",
+		OrgId3,
 	},
 	"org4admin1": {
 		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org4/public-key/user/admin1/admin1.key",
+		OrgId4,
 	},
 }
 
@@ -130,6 +138,11 @@ var pkUsers = map[string]*PkUsers{
 
 type PkUsers struct {
 	SignKeyPath string
+}
+
+type PermissionedPkUsers struct {
+	SignKeyPath string
+	OrgId       string
 }
 
 type User struct {
@@ -205,7 +218,7 @@ func GetEndorsers(payload *common.Payload, usernames ...string) ([]*common.Endor
 	return endorsers, nil
 }
 
-func GetEndorsersV2(orgId string, hashType crypto.HashType, memberType accesscontrol.MemberType, authType sdk.AuthType, payload *common.Payload, usernames ...string) ([]*common.EndorsementEntry, error) {
+func GetEndorsersV2(hashType crypto.HashType, memberType accesscontrol.MemberType, authType sdk.AuthType, payload *common.Payload, usernames ...string) ([]*common.EndorsementEntry, error) {
 	var endorsers []*common.EndorsementEntry
 
 	for _, name := range usernames {
@@ -227,7 +240,7 @@ func GetEndorsersV2(orgId string, hashType crypto.HashType, memberType accesscon
 			if !ok {
 				return nil, errors.New("user not found")
 			}
-			entry, err = sdkutils.MakePkEndorserWithPath(u.SignKeyPath, hashType, orgId, payload)
+			entry, err = sdkutils.MakePkEndorserWithPath(u.SignKeyPath, hashType, u.OrgId, payload)
 			if err != nil {
 				return nil, err
 			}
@@ -237,7 +250,7 @@ func GetEndorsersV2(orgId string, hashType crypto.HashType, memberType accesscon
 			if !ok {
 				return nil, errors.New("user not found")
 			}
-			entry, err = sdkutils.MakePkEndorserWithPath(u.SignKeyPath, hashType, orgId, payload)
+			entry, err = sdkutils.MakePkEndorserWithPath(u.SignKeyPath, hashType, "", payload)
 			if err != nil {
 				return nil, err
 			}

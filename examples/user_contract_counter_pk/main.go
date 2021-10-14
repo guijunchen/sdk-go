@@ -28,12 +28,13 @@ const (
 	byteCodePath          = "../../testdata/counter-go-demo/rust-counter-1.0.0.wasm"
 	upgradeByteCodePath   = "../../testdata/counter-go-demo/rust-counter-2.0.0.wasm"
 
-	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_pk_user1.yml"
+	//sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_pk_user1.yml"
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_pwk_org1_admin1.yml"
 )
 
 func main() {
-	testPublicUserContractCounterGo()
-	//testUserContractCounterGo()
+	//testPublicUserContractCounterGo()
+	testUserContractCounterGo()
 }
 
 func testPublicUserContractCounterGo() {
@@ -42,16 +43,22 @@ func testPublicUserContractCounterGo() {
 		log.Fatalln(err)
 	}
 
-	fmt.Println("====================== 创建合约（异步）======================")
+	fmt.Println("====================== 创建合约（同步）======================")
 	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
-	testUserContractCounterGoCreate(client, false, usernames...)
+	testUserContractCounterGoCreate(client, true, usernames...)
 	time.Sleep(5 * time.Second)
 
-	fmt.Println("====================== 调用合约（异步）======================")
-	testUserContractCounterGoInvoke(client, "increase", nil, false)
+	fmt.Println("====================== 调用升级合约的接口(报错) ======================")
+	testUserContractCounterGoInvoke(client, "add_two", nil, true)
+
+	fmt.Println("====================== 升级合约 ======================")
+	testUserContractCounterGoUpgrade(client, true, usernames...)
 	time.Sleep(5 * time.Second)
 
-	fmt.Println("====================== 执行合约查询接口1 ======================")
+	fmt.Println("====================== 调用新接口 ======================")
+	testUserContractCounterGoInvoke(client, "add_two", nil, true)
+
+	fmt.Println("====================== 执行合约查询接口 ======================")
 	testUserContractCounterGoQuery(client, "query", nil)
 }
 
@@ -61,26 +68,26 @@ func testUserContractCounterGo() {
 		log.Fatalln(err)
 	}
 
-	fmt.Println("====================== 创建合约（异步）======================")
+	fmt.Println("====================== 创建合约 ======================")
 	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
-	testUserContractCounterGoCreate(client, false, usernames...)
+	testUserContractCounterGoCreate(client, true, usernames...)
 	time.Sleep(5 * time.Second)
 
-	fmt.Println("====================== 调用合约（异步）======================")
-	testUserContractCounterGoInvoke(client, "increase", nil, false)
+	fmt.Println("====================== 调用合约 ======================")
+	testUserContractCounterGoInvoke(client, "increase", nil, true)
 	time.Sleep(5 * time.Second)
 
 	fmt.Println("====================== 执行合约查询接口1 ======================")
 	testUserContractCounterGoQuery(client, "query", nil)
 
 	fmt.Println("====================== 冻结合约 ======================")
-	testUserContractCounterGoFreeze(client, false, usernames...)
+	testUserContractCounterGoFreeze(client, true, usernames...)
 	time.Sleep(5 * time.Second)
 	fmt.Println("====================== 执行合约查询接口2 ======================")
 	testUserContractCounterGoQuery(client, "query", nil)
 
 	fmt.Println("====================== 解冻合约 ======================")
-	testUserContractCounterGoUnfreeze(client, false, usernames...)
+	testUserContractCounterGoUnfreeze(client, true, usernames...)
 	time.Sleep(5 * time.Second)
 	fmt.Println("====================== 执行合约查询接口3 ======================")
 	testUserContractCounterGoQuery(client, "query", nil)
@@ -101,8 +108,8 @@ func testUserContractCounterGo() {
 	testUserContractCounterGoInvoke(client, "add_two", nil, true)
 
 	fmt.Println("====================== 升级合约 ======================")
-	testUserContractCounterGoUpgrade(client, false, usernames...)
-	time.Sleep(5 * time.Second)
+	testUserContractCounterGoUpgrade(client, true, usernames...)
+	time.Sleep(10 * time.Second)
 
 	fmt.Println("====================== 调用新接口 ======================")
 	testUserContractCounterGoInvoke(client, "add_two", nil, true)
@@ -160,8 +167,8 @@ func testUserContractCounterGoUpgrade(client *sdk.ChainClient, withSyncResult bo
 		log.Fatalln(err)
 	}
 
-	//endorsers, err := examples.GetEndorsers(payload, usernames...)dd
-	endorsers, err := examples.GetEndorsersV2(examples.OrgId1, crypto.HashAlgoMap[client.GetHashType()], accesscontrol.MemberType_PUBLIC_KEY, client.GetAuthType(), payload, usernames...)
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()], accesscontrol.MemberType_PUBLIC_KEY, client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -187,7 +194,7 @@ func testUserContractCounterGoFreeze(client *sdk.ChainClient, withSyncResult boo
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersV2(examples.OrgId1, crypto.HashAlgoMap[client.GetHashType()], accesscontrol.MemberType_PUBLIC_KEY, client.GetAuthType(), payload, usernames...)
+	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()], accesscontrol.MemberType_PUBLIC_KEY, client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -214,7 +221,7 @@ func testUserContractCounterGoUnfreeze(client *sdk.ChainClient, withSyncResult b
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersV2(examples.OrgId1, crypto.HashAlgoMap[client.GetHashType()], accesscontrol.MemberType_PUBLIC_KEY, client.GetAuthType(), payload, usernames...)
+	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()], accesscontrol.MemberType_PUBLIC_KEY, client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -241,7 +248,7 @@ func testUserContractCounterGoRevoke(client *sdk.ChainClient, withSyncResult boo
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersV2(examples.OrgId1, crypto.HashAlgoMap[client.GetHashType()], accesscontrol.MemberType_PUBLIC_KEY, client.GetAuthType(), payload, usernames...)
+	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()], accesscontrol.MemberType_PUBLIC_KEY, client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -286,7 +293,7 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersV2(examples.OrgId1, crypto.HashAlgoMap[client.GetHashType()], accesscontrol.MemberType_PUBLIC_KEY, client.GetAuthType(), payload, usernames...)
+	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()], accesscontrol.MemberType_PUBLIC_KEY, client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		return nil, err
 	}

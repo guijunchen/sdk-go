@@ -51,7 +51,7 @@ consensus:
 trust_roots:
   - org_id: "wx-org1.chainmaker.org"
     root:
-      - "../config-pk/permissioned-with-key/wx-org1-solo/public-key/admin/wx-org1.chainmaker.org/admin.pem"
+      - "../config-pk/permissioned-with-key/wx-org1-solo/public-key/admin/wx-org1.chainmaker.org/admin1.pem"
 
 # 权限配置（只能整体添加、修改、删除）
 resource_policies:

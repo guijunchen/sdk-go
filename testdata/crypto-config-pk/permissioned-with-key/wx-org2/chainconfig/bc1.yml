@@ -61,16 +61,16 @@ consensus:
 trust_roots:
   - org_id: "wx-org1.chainmaker.org"
     root:
-      - "../config-pk/permissioned-with-key/wx-org2/public-key/admin/wx-org1.chainmaker.org/admin.pem"
+      - "../config-pk/permissioned-with-key/wx-org2/public-key/admin/wx-org1.chainmaker.org/admin1.pem"
   - org_id: "wx-org2.chainmaker.org"
     root:
-      - "../config-pk/permissioned-with-key/wx-org2/public-key/admin/wx-org2.chainmaker.org/admin.pem"
+      - "../config-pk/permissioned-with-key/wx-org2/public-key/admin/wx-org2.chainmaker.org/admin1.pem"
   - org_id: "wx-org3.chainmaker.org"
     root:
-      - "../config-pk/permissioned-with-key/wx-org2/public-key/admin/wx-org3.chainmaker.org/admin.pem"
+      - "../config-pk/permissioned-with-key/wx-org2/public-key/admin/wx-org3.chainmaker.org/admin1.pem"
   - org_id: "wx-org4.chainmaker.org"
     root:
-      - "../config-pk/permissioned-with-key/wx-org2/public-key/admin/wx-org4.chainmaker.org/admin.pem"
+      - "../config-pk/permissioned-with-key/wx-org2/public-key/admin/wx-org4.chainmaker.org/admin1.pem"
 
 # 权限配置（只能整体添加、修改、删除）
 resource_policies:
