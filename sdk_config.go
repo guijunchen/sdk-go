@@ -418,7 +418,7 @@ func setAuthType(config *ChainClientConfig) {
 }
 
 func setCrypto(config *ChainClientConfig) {
-	if StringToAuthTypeMap[utils.Config.ChainClientConfig.AuthType] == PermissionedWithCert {
+	if config.authType == PermissionedWithCert {
 		config.crypto = &CryptoConfig{}
 		return
 	}
@@ -518,7 +518,7 @@ func setRPCClientConfig(config *ChainClientConfig) {
 }
 
 func setPkcs11Config(config *ChainClientConfig) {
-	if StringToAuthTypeMap[utils.Config.ChainClientConfig.AuthType] == PermissionedWithCert {
+	if config.authType == PermissionedWithCert {
 		if utils.Config.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
 			config.pkcs11Config = NewPkcs11Config(
 				utils.Config.ChainClientConfig.Pkcs11Config.Enabled,

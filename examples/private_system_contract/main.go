@@ -8,8 +8,6 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	sdk "chainmaker.org/chainmaker/sdk-go/v2"
-	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -17,6 +15,10 @@ import (
 	"log"
 	"os"
 	"reflect"
+
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
@@ -364,7 +366,9 @@ func saveEnclaveCACert(client *sdk.ChainClient, enclaveCACert string, txId strin
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		return nil, err
 	}
@@ -479,7 +483,9 @@ func saveEnclaveReport(client *sdk.ChainClient, enclaveId string, report string,
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		return nil, err
 	}

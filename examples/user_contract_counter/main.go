@@ -8,12 +8,14 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"chainmaker.org/chainmaker/pb-go/v2/common"
-	sdk "chainmaker.org/chainmaker/sdk-go/v2"
-	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 	"fmt"
 	"log"
 	"time"
+
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
+	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 )
 
 const (
@@ -24,15 +26,19 @@ const (
 	byteCodePath          = "../../testdata/counter-go-demo/rust-counter-1.0.0.wasm"
 	upgradeByteCodePath   = "../../testdata/counter-go-demo/rust-counter-2.0.0.wasm"
 
-	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+	sdkConfigOrg1Client1Path    = "../sdk_configs/sdk_config_org1_client1.yml"
+	sdkPwkConfigOrg1Client1Path = "../sdk_configs/sdk_config_pwk_org1_admin1.yml"
+	sdkPkConfigUser1Path        = "../sdk_configs/sdk_config_pk_user1.yml"
 )
 
 func main() {
-	testUserContractCounterGo()
+	testUserContractCounterGo(sdkConfigOrg1Client1Path)
+	//testUserContractCounterGo(sdkPwkConfigOrg1Client1Path)
+	//testUserContractCounterGo(sdkPkConfigUser1Path)
 }
 
-func testUserContractCounterGo() {
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+func testUserContractCounterGo(sdkPath string) {
+	client, err := examples.CreateChainClientWithSDKConf(sdkPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -136,7 +142,9 @@ func testUserContractCounterGoUpgrade(client *sdk.ChainClient, withSyncResult bo
 		log.Fatalln(err)
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -161,7 +169,9 @@ func testUserContractCounterGoFreeze(client *sdk.ChainClient, withSyncResult boo
 		log.Fatalln(err)
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -187,7 +197,9 @@ func testUserContractCounterGoUnfreeze(client *sdk.ChainClient, withSyncResult b
 		log.Fatalln(err)
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -213,7 +225,9 @@ func testUserContractCounterGoRevoke(client *sdk.ChainClient, withSyncResult boo
 		log.Fatalln(err)
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -257,7 +271,12 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, usernames...)
+	if err != nil {
+		return nil, err
+	}
 	if err != nil {
 		return nil, err
 	}

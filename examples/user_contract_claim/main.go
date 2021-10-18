@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"time"
 
+	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/random/uuid"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
@@ -89,7 +90,9 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		return nil, err
 	}

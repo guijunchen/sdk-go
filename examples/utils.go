@@ -15,7 +15,6 @@ import (
 	"io/ioutil"
 
 	"chainmaker.org/chainmaker/common/v2/crypto"
-	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
 
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/common/v2/evmutils"
@@ -218,7 +217,7 @@ func GetEndorsers(payload *common.Payload, usernames ...string) ([]*common.Endor
 	return endorsers, nil
 }
 
-func GetEndorsersV2(hashType crypto.HashType, memberType accesscontrol.MemberType, authType sdk.AuthType, payload *common.Payload, usernames ...string) ([]*common.EndorsementEntry, error) {
+func GetEndorsersV2(hashType crypto.HashType, authType sdk.AuthType, payload *common.Payload, usernames ...string) ([]*common.EndorsementEntry, error) {
 	var endorsers []*common.EndorsementEntry
 
 	for _, name := range usernames {
