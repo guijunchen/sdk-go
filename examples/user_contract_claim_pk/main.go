@@ -27,7 +27,7 @@ const (
 	claimVersion          = "1.0.0"
 	claimByteCodePath     = "../../testdata/claim-docker-demo/claim_docker_001.7z"
 
-	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_pk_user1.yml"
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_pwk_org1_admin1.yml"
 )
 
 func main() {

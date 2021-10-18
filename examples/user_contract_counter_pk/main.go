@@ -28,37 +28,30 @@ const (
 	byteCodePath          = "../../testdata/counter-go-demo/rust-counter-1.0.0.wasm"
 	upgradeByteCodePath   = "../../testdata/counter-go-demo/rust-counter-2.0.0.wasm"
 
-	//sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_pk_user1.yml"
+	sdkConfigUser1Path       = "../sdk_configs/sdk_config_pk_user1.yml"
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_pwk_org1_admin1.yml"
 )
 
 func main() {
-	//testPublicUserContractCounterGo()
-	testUserContractCounterGo()
+	//testUserContractCounterGo()
+	testPublicUserContractCounterGo()
 }
 
 func testPublicUserContractCounterGo() {
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigUser1Path)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	// fmt.Println("====================== 创建合约 ======================")
+	// usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	// testUserContractCounterGoCreate(client, true, usernames...)
+	// time.Sleep(5 * time.Second)
 
-	fmt.Println("====================== 创建合约（同步）======================")
-	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
-	testUserContractCounterGoCreate(client, true, usernames...)
+	fmt.Println("====================== 调用合约 ======================")
+	testUserContractCounterGoInvoke(client, "increase", nil, true)
 	time.Sleep(5 * time.Second)
 
-	fmt.Println("====================== 调用升级合约的接口(报错) ======================")
-	testUserContractCounterGoInvoke(client, "add_two", nil, true)
-
-	fmt.Println("====================== 升级合约 ======================")
-	testUserContractCounterGoUpgrade(client, true, usernames...)
-	time.Sleep(5 * time.Second)
-
-	fmt.Println("====================== 调用新接口 ======================")
-	testUserContractCounterGoInvoke(client, "add_two", nil, true)
-
-	fmt.Println("====================== 执行合约查询接口 ======================")
+	fmt.Println("====================== 执行合约查询接口1 ======================")
 	testUserContractCounterGoQuery(client, "query", nil)
 }
 
@@ -68,26 +61,26 @@ func testUserContractCounterGo() {
 		log.Fatalln(err)
 	}
 
-	fmt.Println("====================== 创建合约 ======================")
+	fmt.Println("====================== 创建合约（异步）======================")
 	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
-	testUserContractCounterGoCreate(client, true, usernames...)
+	testUserContractCounterGoCreate(client, false, usernames...)
 	time.Sleep(5 * time.Second)
 
-	fmt.Println("====================== 调用合约 ======================")
-	testUserContractCounterGoInvoke(client, "increase", nil, true)
+	fmt.Println("====================== 调用合约（异步）======================")
+	testUserContractCounterGoInvoke(client, "increase", nil, false)
 	time.Sleep(5 * time.Second)
 
 	fmt.Println("====================== 执行合约查询接口1 ======================")
 	testUserContractCounterGoQuery(client, "query", nil)
 
 	fmt.Println("====================== 冻结合约 ======================")
-	testUserContractCounterGoFreeze(client, true, usernames...)
+	testUserContractCounterGoFreeze(client, false, usernames...)
 	time.Sleep(5 * time.Second)
 	fmt.Println("====================== 执行合约查询接口2 ======================")
 	testUserContractCounterGoQuery(client, "query", nil)
 
 	fmt.Println("====================== 解冻合约 ======================")
-	testUserContractCounterGoUnfreeze(client, true, usernames...)
+	testUserContractCounterGoUnfreeze(client, false, usernames...)
 	time.Sleep(5 * time.Second)
 	fmt.Println("====================== 执行合约查询接口3 ======================")
 	testUserContractCounterGoQuery(client, "query", nil)
@@ -108,8 +101,8 @@ func testUserContractCounterGo() {
 	testUserContractCounterGoInvoke(client, "add_two", nil, true)
 
 	fmt.Println("====================== 升级合约 ======================")
-	testUserContractCounterGoUpgrade(client, true, usernames...)
-	time.Sleep(10 * time.Second)
+	testUserContractCounterGoUpgrade(client, false, usernames...)
+	time.Sleep(5 * time.Second)
 
 	fmt.Println("====================== 调用新接口 ======================")
 	testUserContractCounterGoInvoke(client, "add_two", nil, true)

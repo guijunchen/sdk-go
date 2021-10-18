@@ -90,27 +90,27 @@ var users = map[string]*User{
 }
 var permissionedPkUsers = map[string]*PermissionedPkUsers{
 	"org1client1": {
-		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org1/public-key/user/client1/client1.key",
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org1/user/client1/client1.key",
 		OrgId1,
 	},
 	"org2client1": {
-		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org2/public-key/user/client1/client1.key",
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org2/user/client1/client1.key",
 		OrgId2,
 	},
 	"org1admin1": {
-		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org1/public-key/user/admin1/admin1.key",
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org1/user/admin1/admin1.key",
 		OrgId1,
 	},
 	"org2admin1": {
-		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org2/public-key/user/admin1/admin1.key",
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org2/user/admin1/admin1.key",
 		OrgId2,
 	},
 	"org3admin1": {
-		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org3/public-key/user/admin1/admin1.key",
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org3/user/admin1/admin1.key",
 		OrgId3,
 	},
 	"org4admin1": {
-		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org4/public-key/user/admin1/admin1.key",
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org4/user/admin1/admin1.key",
 		OrgId4,
 	},
 }

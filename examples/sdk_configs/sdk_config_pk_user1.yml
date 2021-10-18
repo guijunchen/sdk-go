@@ -1,8 +1,6 @@
 chain_client:
   # 链ID
   chain_id: "chain1"
-  # 组织ID
-  org_id: "1111"
 
   # 客户端用户交易签名私钥路径
   user_sign_key_file_path: "../../testdata/crypto-config-pk/public/admin/admin1/admin1.key"
