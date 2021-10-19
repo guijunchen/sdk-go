@@ -135,7 +135,7 @@ func GetEVMAddressFromPrivateKeyPath(privateKeyFilePath, hashType string) (strin
 		return "", fmt.Errorf("readFile failed, %s", err.Error())
 	}
 
-	return GetEVMAddressFromCertBytes(keyPem)
+	return GetEVMAddressFromPrivateKeyBytes(keyPem, hashType)
 }
 
 func GetEVMAddressFromCertBytes(certBytes []byte) (string, error) {
