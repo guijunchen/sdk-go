@@ -161,6 +161,7 @@ const (
 )
 
 const (
+	// DefaultAuthType is default cert auth type
 	DefaultAuthType = ""
 )
 
