@@ -111,7 +111,7 @@ func (cc *ChainClient) SignPayload(payload *common.Payload) (*common.Endorsement
 			return nil, fmt.Errorf("invalid algorithm: %s", err.Error())
 		}
 
-		signBytes, err = utils.SignPayloadV2(cc.privateKey, hashalgo, payload)
+		signBytes, err = utils.SignPayloadWithHashType(cc.privateKey, hashalgo, payload)
 		if err != nil {
 			return nil, fmt.Errorf("SignPayload failed, %s", err)
 		}
@@ -123,7 +123,7 @@ func (cc *ChainClient) SignPayload(payload *common.Payload) (*common.Endorsement
 		}
 
 	} else {
-		signBytes, err = utils.SignPayloadV2(cc.privateKey, crypto.HashAlgoMap[cc.hashType], payload)
+		signBytes, err = utils.SignPayloadWithHashType(cc.privateKey, crypto.HashAlgoMap[cc.hashType], payload)
 		if err != nil {
 			return nil, fmt.Errorf("SignPayload failed, %s", err.Error())
 		}

@@ -58,7 +58,7 @@ func SignPayload(keyPem, certPem []byte, payload *common.Payload) (*common.Endor
 }
 
 /*
-func SignPayloadV2(keyPem, certPem []byte, payload *common.Payload) (*common.EndorsementEntry, error) {
+func SignPayloadWithHashType(keyPem, certPem []byte, payload *common.Payload) (*common.EndorsementEntry, error) {
 	key, err := asym.PrivateKeyFromPEM(keyPem, nil)
 	if err != nil {
 		return nil, fmt.Errorf("asym.PrivateKeyFromPEM failed, %s", err)
@@ -78,7 +78,7 @@ func SignPayloadV2(keyPem, certPem []byte, payload *common.Payload) (*common.End
 		return nil, fmt.Errorf("invalid algorithm: %s", err.Error())
 	}
 
-	signature, err := utils.SignPayloadV2(key, hashalgo, payload)
+	signature, err := utils.SignPayloadWithHashType(key, hashalgo, payload)
 	if err != nil {
 		return nil, fmt.Errorf("SignPayload failed, %s", err)
 	}

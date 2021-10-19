@@ -227,12 +227,12 @@ func (cc *ChainClient) generateTxRequest(payload *common.Payload,
 			return nil, fmt.Errorf("invalid algorithm: %v", err.Error())
 		}
 
-		signBytes, err = utils.SignPayloadV2(cc.privateKey, hashalgo, payload)
+		signBytes, err = utils.SignPayloadWithHashType(cc.privateKey, hashalgo, payload)
 		if err != nil {
 			return nil, fmt.Errorf("SignPayload failed, %s", err.Error())
 		}
 	} else {
-		signBytes, err = utils.SignPayloadV2(cc.privateKey, crypto.HashAlgoMap[cc.hashType], payload)
+		signBytes, err = utils.SignPayloadWithHashType(cc.privateKey, crypto.HashAlgoMap[cc.hashType], payload)
 		if err != nil {
 			return nil, fmt.Errorf("SignPayload failed, %s", err.Error())
 		}
