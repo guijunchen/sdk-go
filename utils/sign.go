@@ -6,11 +6,14 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 
+	"chainmaker.org/chainmaker/common/v2/cert"
 	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/crypto/asym"
+	"chainmaker.org/chainmaker/common/v2/crypto/pkcs11"
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
@@ -115,4 +118,46 @@ func MakeEndorserWithPath(keyFilePath, crtFilePath string, payload *common.Paylo
 	}
 
 	return MakeEndorserWithPem(keyPem, certPem, payload)
+}
+
+func MakeEndorserWithPathAndP11Handle(keyFilePath, crtFilePath string, p11Handle *pkcs11.P11Handle,
+	payload *common.Payload) (*common.EndorsementEntry, error) {
+	if p11Handle == nil {
+		return nil, errors.New("p11Handle must not nil")
+	}
+
+	// 读取私钥
+	p11Key, err := ioutil.ReadFile(keyFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("read key file failed, %s", err)
+	}
+
+	// 读取证书
+	certPem, err := ioutil.ReadFile(crtFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("read cert file failed, %s", err)
+	}
+
+	key, err := cert.ParseP11PrivKey(p11Handle, p11Key)
+	if err != nil {
+		return nil, fmt.Errorf("cert.ParseP11PrivKey failed, %s", err)
+	}
+
+	cert, err := ParseCert(certPem)
+	if err != nil {
+		return nil, err
+	}
+
+	signature, err := SignPayload(key, cert, payload)
+	if err != nil {
+		return nil, err
+	}
+
+	var orgId string
+	if len(cert.Subject.Organization) != 0 {
+		orgId = cert.Subject.Organization[0]
+	}
+
+	e := NewEndorser(orgId, certPem, signature)
+	return e, nil
 }
