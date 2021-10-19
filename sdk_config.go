@@ -38,6 +38,10 @@ var (
 	p11Handle *pkcs11.P11Handle
 )
 
+func GetP11Handle() *pkcs11.P11Handle {
+	return p11Handle
+}
+
 // NodeConfig 节点配置
 type NodeConfig struct {
 	// 必填项

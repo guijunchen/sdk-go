@@ -41,7 +41,7 @@ func testUserContractClaim() {
 
 	fmt.Println("====================== 创建合约 ======================")
 	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
-	testUserContractClaimCreate(client, true, true, usernames...)
+	testUserContractClaimCreate(client, true, usernames...)
 
 	fmt.Println("====================== 调用合约 ======================")
 	fileHash, err := testUserContractClaimInvoke(client, "save", true)
@@ -68,14 +68,12 @@ func testUserContractClaim() {
 	//QUERY claim contract resp: message:"SUCCESS" contract_result:<result:"{\"file_hash\":\"8f4c3500833040919ea63bfe1059e117\",\"file_name\":\"file_2021-07-20 19:47:24\",\"time\":\"2021-07-20 19:47:24\"}" gas_used:24597022 > tx_id:"154d3f1bb53d432098de1664b5dbdbfa1e1420cdb4634bd3ba92431ce037ca29"
 }
 
-func testUserContractClaimCreate(client *sdk.ChainClient, withSyncResult bool, isIgnoreSameContract bool, usernames ...string) {
+func testUserContractClaimCreate(client *sdk.ChainClient, withSyncResult bool, usernames ...string) {
 
 	resp, err := createUserContract(client, claimContractName, claimVersion, claimByteCodePath,
 		common.RuntimeType_WASMER, []*common.KeyValuePair{}, withSyncResult, usernames...)
-	if !isIgnoreSameContract {
-		if err != nil {
-			log.Fatalln(err)
-		}
+	if err != nil {
+		log.Fatalln(err)
 	}
 
 	fmt.Printf("CREATE claim contract resp: %+v\n", resp)
