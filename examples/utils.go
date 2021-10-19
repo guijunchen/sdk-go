@@ -206,9 +206,19 @@ func GetEndorsers(payload *common.Payload, usernames ...string) ([]*common.Endor
 			return nil, errors.New("user not found")
 		}
 
-		entry, err := sdkutils.MakeEndorserWithPath(u.SignKeyPath, u.SignCrtPath, payload)
-		if err != nil {
-			return nil, err
+		var err error
+		var entry *common.EndorsementEntry
+		p11Handle := sdk.GetP11Handle()
+		if p11Handle != nil {
+			entry, err = sdkutils.MakeEndorserWithPathAndP11Handle(u.SignKeyPath, u.SignCrtPath, p11Handle, payload)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			entry, err = sdkutils.MakeEndorserWithPath(u.SignKeyPath, u.SignCrtPath, payload)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		endorsers = append(endorsers, entry)
