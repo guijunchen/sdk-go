@@ -113,7 +113,7 @@ func createUserContract(client *sdk.ChainClient, admin1, admin2, admin3, admin4 
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
-	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
 		client.GetAuthType(), payload, admin1, admin2, admin3, admin4)
 	if err != nil {
 		return nil, err

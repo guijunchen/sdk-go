@@ -580,7 +580,7 @@ func testChainConfigConsensusExtDelete(client *sdk.ChainClient, keys []string, u
 func signAndSendRequest(client *sdk.ChainClient, payload *common.Payload, usernames ...string) {
 	// 各组织Admin权限用户签名
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
 		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)

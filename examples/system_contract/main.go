@@ -274,7 +274,7 @@ func testNativeContractAccessGrant(client *sdk.ChainClient, withSyncResult bool,
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
 		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
@@ -302,7 +302,7 @@ func testNativeContractAccessRevoke(client *sdk.ChainClient, withSyncResult bool
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
 		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
@@ -329,7 +329,7 @@ func testGetDisabledNativeContractList(client *sdk.ChainClient, withSyncResult b
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersV2(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
 		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)

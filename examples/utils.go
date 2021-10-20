@@ -227,7 +227,7 @@ func GetEndorsers(payload *common.Payload, usernames ...string) ([]*common.Endor
 	return endorsers, nil
 }
 
-func GetEndorsersV2(hashType crypto.HashType, authType sdk.AuthType, payload *common.Payload, usernames ...string) ([]*common.EndorsementEntry, error) {
+func GetEndorsersWithAuthType(hashType crypto.HashType, authType sdk.AuthType, payload *common.Payload, usernames ...string) ([]*common.EndorsementEntry, error) {
 	var endorsers []*common.EndorsementEntry
 
 	for _, name := range usernames {
