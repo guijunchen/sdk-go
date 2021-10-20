@@ -9,12 +9,17 @@ package utils
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/viper"
 )
 
 // Config global ChainClientConfigModel
 var Config *ChainClientConfigModel
+
+type cryptoModel struct {
+	Hash string `mapstructure:"hash"`
+}
 
 type nodesConfigModel struct {
 	// 节点地址
@@ -66,7 +71,8 @@ type chainClientConfigModel struct {
 	UserKeyFilePath string `mapstructure:"user_key_file_path"`
 	// 客户端用户证书路径
 	UserCrtFilePath string `mapstructure:"user_crt_file_path"`
-	// 客户端用户交易签名私钥路径(若未设置，将使用user_key_file_path)
+	// 证书模式下：客户端用户交易签名私钥路径(若未设置，将使用user_key_file_path)
+	// 公钥模式下：客户端用户交易签名的私钥路径(必须设置)
 	UserSignKeyFilePath string `mapstructure:"user_sign_key_file_path"`
 	// 客户端用户交易签名证书路径(若未设置，将使用user_crt_file_path)
 	UserSignCrtFilePath string `mapstructure:"user_sign_crt_file_path"`
@@ -82,6 +88,10 @@ type chainClientConfigModel struct {
 	RPCClientConfig *rpcClientConfigModel `mapstructure:"rpc_client"`
 	// pkcs11配置(若未设置，则不使用pkcs11)
 	Pkcs11Config *pkcs11ConfigModel `mapstructure:"pkcs11"`
+	// 认证模式
+	AuthType string `mapstructure:"auth_type"`
+	// 需要额外指定的算法类型，当前只用于指定公钥身份模式下的Hash算法
+	Crypto *cryptoModel `mapstructure:"crypto"`
 }
 
 type ChainClientConfigModel struct {
@@ -102,6 +112,8 @@ func InitConfig(confPath string) error {
 	if err = confViper.Unmarshal(&Config); err != nil {
 		return fmt.Errorf("Unmarshal config file failed, %s", err)
 	}
+
+	Config.ChainClientConfig.AuthType = strings.ToLower(Config.ChainClientConfig.AuthType)
 
 	return nil
 }

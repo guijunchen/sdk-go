@@ -906,16 +906,51 @@ type SDKInterface interface {
 	GetChainMakerServerVersion() (string, error)
 	// ```
 
-	// ## 11 多签类接口
+	// ### 11.1 构造添加公钥身份请求
+	// **参数说明**
+	//   - pubkey: 公钥信息
+	//   - org_id: 组织id
+	//   - role:   角色，支持client,light,common
+	// ```go
+	CreatePubkeyAddPayload(pubkey string, org_id string, role string) (*common.Payload, error)
+	// ```
 
-	// ### 11.1 发起多签请求
+	// ### 11.2 构造删除公钥身份请求
+	// **参数说明**
+	//   - pubkey: 公钥信息
+	//   - org_id: 组织id
+	// ```go
+	CreatePubkeyDelPayload(pubkey string, org_id string) (*common.Payload, error)
+	// ```
+
+	// ### 11.3 构造查询公钥身份请求
+	// **参数说明**
+	//   - pubkey: 公钥信息
+	// ```go
+	CreatePubkeyQueryPayload(pubkey string) (*common.Payload, error)
+	// ```
+
+	// ### 11.4 发送公钥身份管理请求（添加、删除）
+	// **参数说明**
+	//   - payload: 交易payload
+	//   - endorsers: 背书签名信息列表
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
+	// ```go
+	SendPubkeyManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
+		withSyncResult bool) (*common.TxResponse, error)
+	// ## 12 多签类接口
+
+	// ### 12.1 发起多签请求
 	// **参数说明**
 	//   - payload: 待签名payload
 	// ```go
 	MultiSignContractReq(payload *common.Payload) (*common.TxResponse, error)
 	// ```
 
-	// ### 11.2 发起多签投票
+	// ### 12.2 发起多签投票
 	// **参数说明**
 	//   - payload: 待签名payload
 	// ```go
@@ -923,14 +958,14 @@ type SDKInterface interface {
 		endorser *common.EndorsementEntry) (*common.TxResponse, error)
 	// ```
 
-	// ### 11.3 根据txId查询多签状态
+	// ### 12.3 根据txId查询多签状态
 	// **参数说明**
 	//   - txId: 需要查询的多签请求交易Id
 	// ```go
 	MultiSignContractQuery(txId string) (*common.TxResponse, error)
 	// ```
 
-	// ### 11.4 根据发起多签请求所需的参数构建payload
+	// ### 12.4 根据发起多签请求所需的参数构建payload
 	// **参数说明**
 	//   - pairs: 发起多签请求所需的参数
 	// ```go

@@ -151,6 +151,36 @@ type Pkcs11Config struct {
 	Hash string
 }
 
+type AuthType uint32
+
+const (
+	// permissioned with certificate
+	PermissionedWithCert AuthType = iota + 1
+
+	// permissioned with public key
+	PermissionedWithKey
+
+	// public key
+	Public
+)
+
+const (
+	// DefaultAuthType is default cert auth type
+	DefaultAuthType = ""
+)
+
+var AuthTypeToStringMap = map[AuthType]string{
+	PermissionedWithCert: "permissionedwithcert",
+	PermissionedWithKey:  "permissionedwithkey",
+	Public:               "public",
+}
+
+var StringToAuthTypeMap = map[string]AuthType{
+	"permissionedwithcert": PermissionedWithCert,
+	"permissionedwithkey":  PermissionedWithKey,
+	"public":               Public,
+}
+
 type ChainClientConfig struct {
 	// logger若不设置，将采用默认日志文件输出日志，建议设置，以便采用集成系统的统一日志输出
 	logger utils.Logger
@@ -167,17 +197,23 @@ type ChainClientConfig struct {
 	// 以下xxxPath和xxxBytes同时指定的话，优先使用Bytes
 	userKeyFilePath     string
 	userCrtFilePath     string
-	userSignKeyFilePath string
+	userSignKeyFilePath string // 公钥模式下使用该字段
 	userSignCrtFilePath string
 
 	userKeyBytes     []byte
 	userCrtBytes     []byte
-	userSignKeyBytes []byte
+	userSignKeyBytes []byte // 公钥模式下使用该字段
 	userSignCrtBytes []byte
 
 	// 以下字段为经过处理后的参数
-	privateKey crypto.PrivateKey
-	userCrt    *bcx509.Certificate
+	privateKey crypto.PrivateKey // 证书和公钥身份模式都使用该字段存储私钥
+
+	// 证书模式下
+	userCrt *bcx509.Certificate
+
+	// 公钥模式下
+	userPk crypto.PublicKey
+	crypto *CryptoConfig
 
 	// 归档特性的配置
 	archiveConfig *ArchiveConfig
@@ -188,12 +224,34 @@ type ChainClientConfig struct {
 	// pkcs11的配置
 	pkcs11Config *Pkcs11Config
 
+	// AuthType
+	authType AuthType
+
 	// retry config
 	retryLimit    int // if <=0 then use DefaultRetryLimit
 	retryInterval int // if <=0 then use DefaultRetryInterval
 }
 
+type CryptoConfig struct {
+	hash string
+}
+
+type CryptoOption func(config *CryptoConfig)
+
+// WithHashType 公钥模式下：添加用户哈希算法配置
+func WithHashAlgo(hashType string) CryptoOption {
+	return func(config *CryptoConfig) {
+		config.hash = hashType
+	}
+}
+
 type ChainClientOption func(*ChainClientConfig)
+
+func WithAuthType(authType string) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.authType = StringToAuthTypeMap[authType]
+	}
+}
 
 // WithConfPath 设置配置文件路径
 func WithConfPath(confPath string) ChainClientOption {
@@ -341,6 +399,42 @@ func generateConfig(opts ...ChainClientOption) (*ChainClientConfig, error) {
 	return config, nil
 }
 
+func setAuthType(config *ChainClientConfig) {
+	if config.authType == 0 {
+		if utils.Config.ChainClientConfig.AuthType == "" {
+			config.authType = PermissionedWithCert
+		} else {
+			config.authType = StringToAuthTypeMap[utils.Config.ChainClientConfig.AuthType]
+		}
+	}
+
+	/*
+		switch utils.Config.ChainClientConfig.AuthType {
+		case DefaultAuthType, AuthTypeToStringMap[PermissionedWithCert]:
+			config.authType = PermissionedWithCert
+		case AuthTypeToStringMap[PermissionedWithKey]:
+			config.authType = PermissionedWithKey
+		case AuthTypeToStringMap[Public]:
+			config.authType = Public
+		default:
+			config.authType = PermissionedWithCert
+		}
+	*/
+}
+
+func setCrypto(config *ChainClientConfig) {
+	if config.authType == PermissionedWithCert {
+		config.crypto = &CryptoConfig{}
+		return
+	}
+
+	if utils.Config.ChainClientConfig.Crypto != nil && config.crypto == nil {
+		config.crypto = &CryptoConfig{
+			hash: utils.Config.ChainClientConfig.Crypto.Hash,
+		}
+	}
+}
+
 func setChainConfig(config *ChainClientConfig) {
 	if utils.Config.ChainClientConfig.ChainId != "" && config.chainId == "" {
 		config.chainId = utils.Config.ChainClientConfig.ChainId
@@ -353,6 +447,14 @@ func setChainConfig(config *ChainClientConfig) {
 
 // 如果参数没有设置，便使用配置文件的配置
 func setUserConfig(config *ChainClientConfig) {
+	if config.authType == PermissionedWithKey || config.authType == Public { // 公钥身份或公链模式
+		if utils.Config.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyBytes == nil {
+			config.userSignKeyFilePath = utils.Config.ChainClientConfig.UserSignKeyFilePath
+		}
+		return
+	}
+
+	// 默认证书模式
 	if utils.Config.ChainClientConfig.UserKeyFilePath != "" && config.userKeyFilePath == "" &&
 		config.userKeyBytes == nil {
 		config.userKeyFilePath = utils.Config.ChainClientConfig.UserKeyFilePath
@@ -377,6 +479,11 @@ func setUserConfig(config *ChainClientConfig) {
 func setNodeList(config *ChainClientConfig) {
 	if len(utils.Config.ChainClientConfig.NodesConfig) > 0 && len(config.nodeList) == 0 {
 		for _, conf := range utils.Config.ChainClientConfig.NodesConfig {
+			// 只允许证书模式下启用TLS
+			if config.authType == PermissionedWithKey || config.authType == Public {
+				conf.EnableTLS = false
+			}
+
 			node := NewNodeConfig(
 				// 节点地址，格式：127.0.0.1:12301
 				WithNodeAddr(conf.NodeAddr),
@@ -416,15 +523,25 @@ func setRPCClientConfig(config *ChainClientConfig) {
 }
 
 func setPkcs11Config(config *ChainClientConfig) {
-	if utils.Config.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
-		config.pkcs11Config = NewPkcs11Config(
-			utils.Config.ChainClientConfig.Pkcs11Config.Enabled,
-			utils.Config.ChainClientConfig.Pkcs11Config.Library,
-			utils.Config.ChainClientConfig.Pkcs11Config.Label,
-			utils.Config.ChainClientConfig.Pkcs11Config.Password,
-			utils.Config.ChainClientConfig.Pkcs11Config.SessionCacheSize,
-			utils.Config.ChainClientConfig.Pkcs11Config.Hash,
-		)
+	if config.authType == PermissionedWithCert {
+		if utils.Config.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
+			config.pkcs11Config = NewPkcs11Config(
+				utils.Config.ChainClientConfig.Pkcs11Config.Enabled,
+				utils.Config.ChainClientConfig.Pkcs11Config.Library,
+				utils.Config.ChainClientConfig.Pkcs11Config.Label,
+				utils.Config.ChainClientConfig.Pkcs11Config.Password,
+				utils.Config.ChainClientConfig.Pkcs11Config.SessionCacheSize,
+				utils.Config.ChainClientConfig.Pkcs11Config.Hash,
+			)
+		}
+	} else {
+		config.pkcs11Config = &Pkcs11Config{
+			Enabled: false,
+		}
+		//if utils.Config.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
+		//	config.pkcs11Config = &Pkcs11Config{
+		//	}
+		//}
 	}
 }
 
@@ -442,6 +559,10 @@ func readConfigFile(config *ChainClientConfig) error {
 	if err := utils.InitConfig(config.confPath); err != nil {
 		return fmt.Errorf("init config failed, %s", err.Error())
 	}
+
+	setAuthType(config)
+
+	setCrypto(config)
 
 	setChainConfig(config)
 
@@ -529,23 +650,31 @@ func checkNodeListConfig(config *ChainClientConfig) error {
 }
 
 func checkUserConfig(config *ChainClientConfig) error {
-	// 用户私钥不可为空
-	if config.userKeyFilePath == "" && config.userKeyBytes == nil {
-		return fmt.Errorf("user key cannot be empty")
-	}
+	if config.authType == PermissionedWithCert {
+		// 用户私钥不可为空
+		if config.userKeyFilePath == "" && config.userKeyBytes == nil {
+			return fmt.Errorf("user key cannot be empty")
+		}
 
-	// 用户证书不可为空
-	if config.userCrtFilePath == "" && config.userCrtBytes == nil {
-		return fmt.Errorf("user crt cannot be empty")
+		// 用户证书不可为空
+		if config.userCrtFilePath == "" && config.userCrtBytes == nil {
+			return fmt.Errorf("user crt cannot be empty")
+		}
+	} else {
+		if config.userSignKeyFilePath == "" && config.userSignKeyBytes == nil {
+			return fmt.Errorf("user key cannot be empty")
+		}
 	}
 
 	return nil
 }
 
 func checkChainConfig(config *ChainClientConfig) error {
-	// OrgId不可为空
-	if config.orgId == "" {
-		return fmt.Errorf("orgId cannot be empty")
+	if config.authType == PermissionedWithCert || config.authType == PermissionedWithKey {
+		// OrgId不可为空
+		if config.orgId == "" {
+			return fmt.Errorf("orgId cannot be empty")
+		}
 	}
 
 	// ChainId不可为空
@@ -600,7 +729,16 @@ func checkRPCClientConfig(config *ChainClientConfig) error {
 
 func dealConfig(config *ChainClientConfig) error {
 	var err error
+	if err = dealRetryConfig(config); err != nil {
+		return err
+	}
 
+	// PermissionedWithKey & Public
+	if config.authType == PermissionedWithKey || config.authType == Public {
+		return dealUserSignKeyConfig(config)
+	}
+
+	// PermissionedWithCert
 	if err = dealUserCrtConfig(config); err != nil {
 		return err
 	}
@@ -610,10 +748,6 @@ func dealConfig(config *ChainClientConfig) error {
 	}
 
 	if err = dealUserSignCrtConfig(config); err != nil {
-		return err
-	}
-
-	if err = dealRetryConfig(config); err != nil {
 		return err
 	}
 
@@ -679,7 +813,25 @@ func dealUserSignCrtConfig(config *ChainClientConfig) (err error) {
 }
 
 func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
+	// PermissionedWithKey, Public
+	if config.authType == PermissionedWithKey || config.authType == Public {
+		if config.userSignKeyBytes == nil {
+			config.userSignKeyBytes, err = ioutil.ReadFile(config.userSignKeyFilePath)
+			if err != nil {
+				return fmt.Errorf("read user private Key file failed, %s", err.Error())
+			}
 
+			config.privateKey, err = asym.PrivateKeyFromPEM(config.userSignKeyBytes, nil)
+			if err != nil {
+				return fmt.Errorf("PrivateKeyFromPEM failed, %s", err.Error())
+			}
+
+			config.userPk = config.privateKey.PublicKey()
+		}
+		return nil
+	}
+
+	// PermissionedWithCert
 	if config.userSignKeyBytes == nil {
 		if config.userSignKeyFilePath == "" {
 			config.userSignKeyBytes = config.userKeyBytes
