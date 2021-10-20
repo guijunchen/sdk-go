@@ -810,14 +810,14 @@ type SDKInterface interface {
 
 	// ### 9.6 获取Enclave的report
 	// **参数说明**
-	//   - enclaveId: Enclave的Id，当前固定为
+	//   - enclaveId: Enclave的Id，当前固定为"global_enclave_id"
 	// ```go
 	GetEnclaveReport(enclaveId string) ([]byte, error)
 	// ```
 
-	// ### 9.7 获取隐私证明材
+	// ### 9.7 获取隐私证明材料
 	// **参数说明**
-	//   - enclaveId: Enclave的Id，当前固定为
+	//   - enclaveId: Enclave的Id，当前固定为"global_enclave_id"
 	// ```go
 	GetEnclaveProof(enclaveId string) ([]byte, error)
 	// ```
