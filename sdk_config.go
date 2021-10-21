@@ -407,19 +407,6 @@ func setAuthType(config *ChainClientConfig) {
 			config.authType = StringToAuthTypeMap[utils.Config.ChainClientConfig.AuthType]
 		}
 	}
-
-	/*
-		switch utils.Config.ChainClientConfig.AuthType {
-		case DefaultAuthType, AuthTypeToStringMap[PermissionedWithCert]:
-			config.authType = PermissionedWithCert
-		case AuthTypeToStringMap[PermissionedWithKey]:
-			config.authType = PermissionedWithKey
-		case AuthTypeToStringMap[Public]:
-			config.authType = Public
-		default:
-			config.authType = PermissionedWithCert
-		}
-	*/
 }
 
 func setCrypto(config *ChainClientConfig) {
@@ -448,7 +435,8 @@ func setChainConfig(config *ChainClientConfig) {
 // 如果参数没有设置，便使用配置文件的配置
 func setUserConfig(config *ChainClientConfig) {
 	if config.authType == PermissionedWithKey || config.authType == Public { // 公钥身份或公链模式
-		if utils.Config.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyBytes == nil {
+		if utils.Config.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyFilePath == "" &&
+			config.userSignKeyBytes == nil {
 			config.userSignKeyFilePath = utils.Config.ChainClientConfig.UserSignKeyFilePath
 		}
 		return
