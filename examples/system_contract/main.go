@@ -11,6 +11,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"time"
 
 	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
@@ -33,9 +34,9 @@ const (
 
 func main() {
 	//testMain(sdkConfigOrg1Client1Path)
-	//testNativeContract()
+	testNativeContract()
 	//testMain(sdkPwkConfigOrg1Client1Path)
-	testMain(sdkPkConfigUser1Path)
+	//testMain(sdkPkConfigUser1Path)
 }
 
 func testMain(sdkPath string) {
@@ -54,8 +55,12 @@ func testNativeContract() {
 	toAddContractList := []string{syscontract.SystemContract_DPOS_ERC20.String(),
 		syscontract.SystemContract_DPOS_STAKE.String()}
 	testNativeContractAccessGrant(client, false, toAddContractList, usernames)
+	time.Sleep(time.Second * 3)
+	testGetNativeContractInfo(client, toAddContractList[0])
+	testGetNativeContractList(client)
 	testNativeContractAccessRevoke(client, false, toAddContractList, usernames)
-	testGetDisabledNativeContractList(client, false, usernames)
+	time.Sleep(time.Second * 3)
+	testGetDisabledNativeContractList(client)
 }
 
 // [系统合约]
@@ -322,25 +327,26 @@ func testNativeContractAccessRevoke(client *sdk.ChainClient, withSyncResult bool
 	fmt.Printf("testNativeContractAccessRevoke resp: %+v\n", resp)
 }
 
-func testGetDisabledNativeContractList(client *sdk.ChainClient, withSyncResult bool, usernames []string) {
-	payload, err := client.CreateGetDisabledNativeContractListPayload()
+func testGetNativeContractInfo(client *sdk.ChainClient, contractName string) {
+	resp, err := client.GetContractInfo(contractName)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
-		client.GetAuthType(), payload, usernames...)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
-	fmt.Printf("resp: %+v\n", resp)
+	fmt.Printf("testGetNativeContractInfo resp: %+v\n", resp)
+}
+
+func testGetNativeContractList(client *sdk.ChainClient) {
+	resp, err := client.GetContractList()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = examples.CheckProposalRequestResp(resp, false)
+	fmt.Printf("testGetNativeContractList resp: %+v\n", resp)
+}
+
+func testGetDisabledNativeContractList(client *sdk.ChainClient) {
+	resp, err := client.GetDisabledNativeContractList()
 	if err != nil {
 		log.Fatalln(err)
 	}
