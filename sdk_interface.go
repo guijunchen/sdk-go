@@ -276,9 +276,25 @@ type SDKInterface interface {
 	CreateNativeContractAccessRevokePayload(revokeContractList []string) (*common.Payload, error)
 	// ```
 
-	// ### 2.19 查询弃用的系统合约名单
+	// ### 2.19 查询指定合约的信息，包括系统合约和用户合约
+	// **参数说明**
+	//   - contractName: 指定查询的合约名字，包括系统合约和用户合约
 	// ```go
-	CreateGetDisabledNativeContractListPayload() (*common.Payload, error)
+	GetContractInfo(contractName string) (*common.Contract, error)
+	// ```
+
+	// ### 2.20 查询所有的合约名单，包括系统合约和用户合约
+	// **返回值说明**
+	//   - []*common.Contract: 链上所有的合约列表，包括系统合约和用户合约
+	// ```go
+	GetContractList() ([]*common.Contract, error)
+	// ```
+
+	// ### 2.21 查询已禁用的系统合约名单
+	// **返回值说明**
+	//   - []string: 链上已禁用的系统合约名字列表
+	// ```go
+	GetDisabledNativeContractList() ([]string, error)
 	// ```
 
 	// ## 3 链配置接口
@@ -906,21 +922,22 @@ type SDKInterface interface {
 	GetChainMakerServerVersion() (string, error)
 	// ```
 
+	// ## 11 公钥身份类接口
 	// ### 11.1 构造添加公钥身份请求
 	// **参数说明**
 	//   - pubkey: 公钥信息
-	//   - org_id: 组织id
+	//   - orgId: 组织id
 	//   - role:   角色，支持client,light,common
 	// ```go
-	CreatePubkeyAddPayload(pubkey string, org_id string, role string) (*common.Payload, error)
+	CreatePubkeyAddPayload(pubkey string, orgId string, role string) (*common.Payload, error)
 	// ```
 
 	// ### 11.2 构造删除公钥身份请求
 	// **参数说明**
 	//   - pubkey: 公钥信息
-	//   - org_id: 组织id
+	//   - orgId: 组织id
 	// ```go
-	CreatePubkeyDelPayload(pubkey string, org_id string) (*common.Payload, error)
+	CreatePubkeyDelPayload(pubkey string, orgId string) (*common.Payload, error)
 	// ```
 
 	// ### 11.3 构造查询公钥身份请求
@@ -941,8 +958,9 @@ type SDKInterface interface {
 	// ```go
 	SendPubkeyManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
 		withSyncResult bool) (*common.TxResponse, error)
-	// ## 12 多签类接口
+	// ```
 
+	// ## 12 多签类接口
 	// ### 12.1 发起多签请求
 	// **参数说明**
 	//   - payload: 待签名payload
@@ -953,6 +971,7 @@ type SDKInterface interface {
 	// ### 12.2 发起多签投票
 	// **参数说明**
 	//   - payload: 待签名payload
+	//   - endorser: 投票人对多签请求 payload 的签名信息
 	// ```go
 	MultiSignContractVote(payload *common.Payload,
 		endorser *common.EndorsementEntry) (*common.TxResponse, error)
