@@ -76,15 +76,17 @@ func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, met
 		}
 
 		if runtime == common.RuntimeType_EVM { // evm contract hex need decode to bytes
-			codeBytes = make([]byte, hex.DecodedLen(len(bz)))
-			if _, err = hex.Decode(codeBytes, bz); err != nil {
+			codeBytesStr := strings.TrimSpace(string(bz))
+			if codeBytes, err = hex.DecodeString(codeBytesStr); err != nil {
 				return nil, fmt.Errorf("decode evm contract hex to bytes failed, %s", err)
 			}
 		} else { // wasm bin file no need decode
 			codeBytes = bz
 		}
 	} else {
-		byteCodeStringOrFilePath = strings.TrimSpace(byteCodeStringOrFilePath)
+		if runtime == common.RuntimeType_EVM {
+			byteCodeStringOrFilePath = strings.TrimSpace(byteCodeStringOrFilePath)
+		}
 
 		if codeBytes, err = hex.DecodeString(byteCodeStringOrFilePath); err != nil {
 			if codeBytes, err = base64.StdEncoding.DecodeString(byteCodeStringOrFilePath); err != nil {
