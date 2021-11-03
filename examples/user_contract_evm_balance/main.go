@@ -115,14 +115,8 @@ func testUserContractBalanceEVM(sdkPath string) {
 }
 
 func testUserContractBalanceEVMCreate(client *sdk.ChainClient, withSyncResult bool, isIgnoreSameContract bool, usernames ...string) {
-
-	byteCode, err := ioutil.ReadFile(balanceByteCodePath)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	resp, err := createUserContract(client, examples.CalcContractName(balanceContractName), balanceVersion,
-		string(byteCode), common.RuntimeType_EVM, nil, withSyncResult, usernames...)
+		balanceByteCodePath, common.RuntimeType_EVM, nil, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
 			log.Fatalln(err)
