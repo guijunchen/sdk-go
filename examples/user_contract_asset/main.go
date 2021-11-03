@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 
+	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
@@ -22,8 +23,8 @@ const (
 	issueLimit            = "100000000"
 	issueSupply           = "100000000"
 
-	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 	sdkConfigOrg2Client1Path = "../sdk_configs/sdk_config_org2_client1.yml"
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
 var (
@@ -243,7 +244,9 @@ func createUserContract(client *sdk.ChainClient, contractName, version,
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		return nil, err
 	}

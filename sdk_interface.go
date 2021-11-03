@@ -276,9 +276,25 @@ type SDKInterface interface {
 	CreateNativeContractAccessRevokePayload(revokeContractList []string) (*common.Payload, error)
 	// ```
 
-	// ### 2.19 查询弃用的系统合约名单
+	// ### 2.19 查询指定合约的信息，包括系统合约和用户合约
+	// **参数说明**
+	//   - contractName: 指定查询的合约名字，包括系统合约和用户合约
 	// ```go
-	CreateGetDisabledNativeContractListPayload() (*common.Payload, error)
+	GetContractInfo(contractName string) (*common.Contract, error)
+	// ```
+
+	// ### 2.20 查询所有的合约名单，包括系统合约和用户合约
+	// **返回值说明**
+	//   - []*common.Contract: 链上所有的合约列表，包括系统合约和用户合约
+	// ```go
+	GetContractList() ([]*common.Contract, error)
+	// ```
+
+	// ### 2.21 查询已禁用的系统合约名单
+	// **返回值说明**
+	//   - []string: 链上已禁用的系统合约名字列表
+	// ```go
+	GetDisabledNativeContractList() ([]string, error)
 	// ```
 
 	// ## 3 链配置接口
@@ -810,14 +826,14 @@ type SDKInterface interface {
 
 	// ### 9.6 获取Enclave的report
 	// **参数说明**
-	//   - enclaveId: Enclave的Id，当前固定为
+	//   - enclaveId: Enclave的Id，当前固定为"global_enclave_id"
 	// ```go
 	GetEnclaveReport(enclaveId string) ([]byte, error)
 	// ```
 
-	// ### 9.7 获取隐私证明材
+	// ### 9.7 获取隐私证明材料
 	// **参数说明**
-	//   - enclaveId: Enclave的Id，当前固定为
+	//   - enclaveId: Enclave的Id，当前固定为"global_enclave_id"
 	// ```go
 	GetEnclaveProof(enclaveId string) ([]byte, error)
 	// ```
@@ -906,31 +922,69 @@ type SDKInterface interface {
 	GetChainMakerServerVersion() (string, error)
 	// ```
 
-	// ## 11 多签类接口
+	// ## 11 公钥身份类接口
+	// ### 11.1 构造添加公钥身份请求
+	// **参数说明**
+	//   - pubkey: 公钥信息
+	//   - orgId: 组织id
+	//   - role:   角色，支持client,light,common
+	// ```go
+	CreatePubkeyAddPayload(pubkey string, orgId string, role string) (*common.Payload, error)
+	// ```
 
-	// ### 11.1 发起多签请求
+	// ### 11.2 构造删除公钥身份请求
+	// **参数说明**
+	//   - pubkey: 公钥信息
+	//   - orgId: 组织id
+	// ```go
+	CreatePubkeyDelPayload(pubkey string, orgId string) (*common.Payload, error)
+	// ```
+
+	// ### 11.3 构造查询公钥身份请求
+	// **参数说明**
+	//   - pubkey: 公钥信息
+	// ```go
+	CreatePubkeyQueryPayload(pubkey string) (*common.Payload, error)
+	// ```
+
+	// ### 11.4 发送公钥身份管理请求（添加、删除）
+	// **参数说明**
+	//   - payload: 交易payload
+	//   - endorsers: 背书签名信息列表
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
+	// ```go
+	SendPubkeyManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
+		withSyncResult bool) (*common.TxResponse, error)
+	// ```
+
+	// ## 12 多签类接口
+	// ### 12.1 发起多签请求
 	// **参数说明**
 	//   - payload: 待签名payload
 	// ```go
 	MultiSignContractReq(payload *common.Payload) (*common.TxResponse, error)
 	// ```
 
-	// ### 11.2 发起多签投票
+	// ### 12.2 发起多签投票
 	// **参数说明**
 	//   - payload: 待签名payload
+	//   - endorser: 投票人对多签请求 payload 的签名信息
 	// ```go
 	MultiSignContractVote(payload *common.Payload,
 		endorser *common.EndorsementEntry) (*common.TxResponse, error)
 	// ```
 
-	// ### 11.3 根据txId查询多签状态
+	// ### 12.3 根据txId查询多签状态
 	// **参数说明**
 	//   - txId: 需要查询的多签请求交易Id
 	// ```go
 	MultiSignContractQuery(txId string) (*common.TxResponse, error)
 	// ```
 
-	// ### 11.4 根据发起多签请求所需的参数构建payload
+	// ### 12.4 根据发起多签请求所需的参数构建payload
 	// **参数说明**
 	//   - pairs: 发起多签请求所需的参数
 	// ```go

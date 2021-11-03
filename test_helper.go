@@ -70,6 +70,7 @@ func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverTxError error,
 		privateKey:      conf.privateKey,
 		archiveConfig:   conf.archiveConfig,
 		rpcClientConfig: conf.rpcClientConfig,
+		authType:        conf.authType,
 	}, nil
 }
 
