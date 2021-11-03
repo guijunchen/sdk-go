@@ -74,14 +74,14 @@ func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, met
 		if err != nil {
 			return nil, fmt.Errorf("read from byteCode file %s failed, %s", byteCodeStringOrFilePath, err)
 		}
+		codeBytesStr := strings.TrimSpace(string(bz))
 
 		if runtime == common.RuntimeType_EVM { // evm contract hex need decode to bytes
-			codeBytes = make([]byte, hex.DecodedLen(len(bz)))
-			if _, err = hex.Decode(codeBytes, bz); err != nil {
+			if codeBytes, err = hex.DecodeString(codeBytesStr); err != nil {
 				return nil, fmt.Errorf("decode evm contract hex to bytes failed, %s", err)
 			}
 		} else { // wasm bin file no need decode
-			codeBytes = bz
+			codeBytes = []byte(codeBytesStr)
 		}
 	} else {
 		byteCodeStringOrFilePath = strings.TrimSpace(byteCodeStringOrFilePath)
