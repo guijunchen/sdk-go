@@ -1,14 +1,14 @@
-# ChainMaker Go SDK 接口说明 v2.0.0
+# ChainMaker Go SDK 接口说明
 ## 1 用户合约接口
 ### 1.1 创建合约待签名payload生成
 **参数说明**
   - contractName: 合约名
   - version: 版本号
-  - byteCode: 支持传入合约二进制文件路径或Hex或Base64编码的二进制内容
+  - byteCodeStringOrFilePath: 支持传入合约二进制文件路径或Hex或Base64编码的string
   - runtime: 合约运行环境
   - kvs: 合约初始化参数
 ```go
-CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType,
+CreateContractCreatePayload(contractName, version, byteCodeStringOrFilePath string, runtime common.RuntimeType,
       kvs []*common.KeyValuePair) (*common.Payload, error)
 ```
 
@@ -16,11 +16,11 @@ CreateContractCreatePayload(contractName, version, byteCode string, runtime comm
 **参数说明**
   - contractName: 合约名
   - version: 版本号
-  - byteCode: 支持传入合约二进制文件路径或Hex或Base64编码的二进制内容
+  - byteCodeStringOrFilePath: 支持传入合约二进制文件路径或Hex或Base64编码的string
   - runtime: 合约运行环境
   - kvs: 合约升级参数
 ```go
-CreateContractUpgradePayload(contractName, version, byteCode string, runtime common.RuntimeType,
+CreateContractUpgradePayload(contractName, version, byteCodeStringOrFilePath string, runtime common.RuntimeType,
       kvs []*common.KeyValuePair) (*common.Payload, error)
 ```
 
