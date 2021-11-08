@@ -78,20 +78,20 @@ func (cc *ChainClient) MultiSignContractQuery(txId string) (*common.TxResponse, 
 
 func (cc *ChainClient) CreateMultiSignReqPayload(pairs []*common.KeyValuePair) *common.Payload {
 
-	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_MULTI_SIGN.String(),
+	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_MULTI_SIGN.String(),
 		syscontract.MultiSignFunction_REQ.String(), pairs, defaultSeq)
 	return payload
 }
 
 func (cc *ChainClient) createMultiSignVotePayload(pairs []*common.KeyValuePair) *common.Payload {
-	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_MULTI_SIGN.String(),
+	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_MULTI_SIGN.String(),
 		syscontract.MultiSignFunction_VOTE.String(), pairs, defaultSeq)
 
 	return payload
 }
 
 func (cc *ChainClient) createMultiSignQueryPayload(pairs []*common.KeyValuePair) *common.Payload {
-	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_MULTI_SIGN.String(),
+	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_MULTI_SIGN.String(),
 		syscontract.MultiSignFunction_QUERY.String(), pairs, defaultSeq)
 
 	return payload

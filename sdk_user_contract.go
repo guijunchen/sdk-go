@@ -57,7 +57,7 @@ func (cc *ChainClient) createContractManagePayload(contractName, method string) 
 			Value: []byte(contractName),
 		},
 	}
-	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
+	return cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
 		method, kvs, defaultSeq), nil
 }
 
@@ -88,7 +88,7 @@ func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, met
 		return nil, fmt.Errorf("use reserved word")
 	}
 
-	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT,
+	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT,
 		syscontract.SystemContract_CONTRACT_MANAGE.String(), method, kvs, defaultSeq)
 
 	payload.Parameters = append(payload.Parameters, &common.KeyValuePair{
@@ -146,7 +146,7 @@ func (cc *ChainClient) InvokeContract(contractName, method, txId string, kvs []*
 	cc.logger.Debugf("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, kvs)
 
-	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, defaultSeq)
+	payload := cc.CreatePayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, defaultSeq)
 
 	return cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 }
@@ -157,7 +157,7 @@ func (cc *ChainClient) QueryContract(contractName, method string, kvs []*common.
 	cc.logger.Debugf("[SDK] begin to QUERY contract, [contractName:%s]/[method:%s]/[params:%+v]",
 		contractName, method, kvs)
 
-	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, contractName, method, kvs, defaultSeq)
+	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, contractName, method, kvs, defaultSeq)
 
 	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {
@@ -176,9 +176,9 @@ func (cc *ChainClient) GetTxRequest(contractName, method, txId string,
 	cc.logger.Debugf("[SDK] begin to create TxRequest, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, kvs)
 
-	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, defaultSeq)
+	payload := cc.CreatePayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, defaultSeq)
 
-	req, err := cc.generateTxRequest(payload, nil)
+	req, err := cc.GenerateTxRequest(payload, nil)
 	if err != nil {
 		return nil, err
 	}

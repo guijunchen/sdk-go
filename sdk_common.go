@@ -78,7 +78,7 @@ func (cc *ChainClient) sendContractRequest(payload *common.Payload, endorsers []
 	return resp, nil
 }
 
-func (cc *ChainClient) createPayload(txId string, txType common.TxType, contractName, method string,
+func (cc *ChainClient) CreatePayload(txId string, txType common.TxType, contractName, method string,
 	kvs []*common.KeyValuePair, seq uint64) *common.Payload {
 	if txId == "" {
 		txId = utils.GetRandTxId()

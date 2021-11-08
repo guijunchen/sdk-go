@@ -172,7 +172,7 @@ func (cc *ChainClient) proposalRequest(payload *common.Payload,
 func (cc *ChainClient) proposalRequestWithTimeout(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64) (*common.TxResponse, error) {
 
-	req, err := cc.generateTxRequest(payload, endorsers)
+	req, err := cc.GenerateTxRequest(payload, endorsers)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func (cc *ChainClient) proposalRequestWithTimeout(payload *common.Payload, endor
 	return cc.sendTxRequest(req, timeout)
 }
 
-func (cc *ChainClient) generateTxRequest(payload *common.Payload,
+func (cc *ChainClient) GenerateTxRequest(payload *common.Payload,
 	endorsers []*common.EndorsementEntry) (*common.TxRequest, error) {
 	var (
 		signer    *accesscontrol.Member

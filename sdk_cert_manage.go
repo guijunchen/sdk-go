@@ -44,7 +44,7 @@ func (cc *ChainClient) QueryCert(certHashes []string) (*common.CertInfos, error)
 		},
 	}
 
-	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CERT_MANAGE.String(),
+	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CERT_MANAGE.String(),
 		syscontract.CertManageFunction_CERTS_QUERY.String(), pairs, defaultSeq)
 
 	resp, err := cc.proposalRequest(payload, nil)
@@ -119,7 +119,7 @@ func (cc *ChainClient) DeleteCert(certHashes []string) (*common.TxResponse, erro
 
 func (cc *ChainClient) CreateCertManagePayload(method string, kvs []*common.KeyValuePair) *common.Payload {
 	cc.logger.Debugf("[SDK] create CertManagePayload, method: %s", method)
-	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CERT_MANAGE.String(),
+	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CERT_MANAGE.String(),
 		method, kvs, defaultSeq)
 	return payload
 }

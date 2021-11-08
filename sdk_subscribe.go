@@ -23,7 +23,7 @@ import (
 func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRWSet,
 	onlyHeader bool) (<-chan interface{}, error) {
 
-	payload := cc.createPayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
+	payload := cc.CreatePayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
 		syscontract.SubscribeFunction_SUBSCRIBE_BLOCK.String(), []*common.KeyValuePair{
 			{
 				Key:   syscontract.SubscribeBlock_START_BLOCK.String(),
@@ -50,7 +50,7 @@ func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock 
 func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int64, contractName string,
 	txIds []string) (<-chan interface{}, error) {
 
-	payload := cc.createPayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
+	payload := cc.CreatePayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
 		syscontract.SubscribeFunction_SUBSCRIBE_TX.String(), []*common.KeyValuePair{
 			{
 				Key:   syscontract.SubscribeTx_START_BLOCK.String(),
@@ -77,7 +77,7 @@ func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int
 func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, topic string,
 	contractName string) (<-chan interface{}, error) {
 
-	payload := cc.createPayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
+	payload := cc.CreatePayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
 		syscontract.SubscribeFunction_SUBSCRIBE_CONTRACT_EVENT.String(), []*common.KeyValuePair{
 			{
 				Key:   syscontract.SubscribeContractEvent_TOPIC.String(),
@@ -95,7 +95,7 @@ func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, topic string,
 
 func (cc *ChainClient) Subscribe(ctx context.Context, payload *common.Payload) (<-chan interface{}, error) {
 
-	req, err := cc.generateTxRequest(payload, nil)
+	req, err := cc.GenerateTxRequest(payload, nil)
 	if err != nil {
 		return nil, err
 	}
