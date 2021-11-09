@@ -598,10 +598,12 @@ type SDKInterface interface {
 
 	// ### 5.3 合约事件订阅
 	// **参数说明**
-	//   - topic ：指定订阅主题
+	//   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
+	//   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
 	//   - contractName ：指定订阅的合约名称
+	//   - topic ：指定订阅主题
 	// ```go
-	SubscribeContractEvent(ctx context.Context, topic string, contractName string) (<-chan interface{}, error)
+	SubscribeContractEvent(ctx context.Context, startBlock, endBlock int64, contractName, topic string) (<-chan interface{}, error)
 	// ```
 
 	// ### 5.4 多合一订阅

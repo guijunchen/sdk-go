@@ -74,18 +74,26 @@ func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int
 	return cc.Subscribe(ctx, payload)
 }
 
-func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, topic string,
-	contractName string) (<-chan interface{}, error) {
+func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, startBlock, endBlock int64,
+	contractName, topic string) (<-chan interface{}, error) {
 
 	payload := cc.createPayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
 		syscontract.SubscribeFunction_SUBSCRIBE_CONTRACT_EVENT.String(), []*common.KeyValuePair{
 			{
-				Key:   syscontract.SubscribeContractEvent_TOPIC.String(),
-				Value: []byte(topic),
+				Key:   syscontract.SubscribeContractEvent_START_BLOCK.String(),
+				Value: utils.I64ToBytes(startBlock),
+			},
+			{
+				Key:   syscontract.SubscribeContractEvent_END_BLOCK.String(),
+				Value: utils.I64ToBytes(endBlock),
 			},
 			{
 				Key:   syscontract.SubscribeContractEvent_CONTRACT_NAME.String(),
 				Value: []byte(contractName),
+			},
+			{
+				Key:   syscontract.SubscribeContractEvent_TOPIC.String(),
+				Value: []byte(topic),
 			},
 		}, 0,
 	)
