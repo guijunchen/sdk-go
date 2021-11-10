@@ -603,7 +603,8 @@ type SDKInterface interface {
 	//   - contractName ：指定订阅的合约名称
 	//   - topic ：指定订阅主题
 	// ```go
-	SubscribeContractEvent(ctx context.Context, startBlock, endBlock int64, contractName, topic string) (<-chan interface{}, error)
+	SubscribeContractEvent(ctx context.Context, startBlock, endBlock int64, contractName,
+		topic string) (<-chan interface{}, error)
 	// ```
 
 	// ### 5.4 多合一订阅
