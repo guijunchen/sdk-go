@@ -129,7 +129,36 @@ func testSubscribeContractEvent(client *sdk.ChainClient) {
 	defer cancel()
 
 	//订阅指定合约的合约事件
-	c, err := client.SubscribeContractEvent(ctx, 0, -1, "claim005", "topic_vx")
+	// 1. 获取所有历史+实时
+	// c, err := client.SubscribeContractEvent(ctx, 0, -1, "claim005", "topic_vx")
+
+	// 2. 获取实时
+	//c, err := client.SubscribeContractEvent(ctx, -1, -1, "claim005", "topic_vx")
+
+	// 3. 获取实时(兼容老版本)
+	//c, err := client.SubscribeContractEvent(ctx, 0, 0, "claim005", "topic_vx")
+
+	// 4. 获取历史到指定历史高度
+	//c, err := client.SubscribeContractEvent(ctx, 0, 10, "claim005", "topic_vx")
+
+	// 5. 获取历史到指定实时高度
+	//c, err := client.SubscribeContractEvent(ctx, 0, 28, "claim005", "topic_vx")
+
+	// 6. 获取实时直到指定高度
+	//c, err := client.SubscribeContractEvent(ctx, -1, 25, "claim005", "topic_vx")
+
+	// 7. 订阅所有topic
+	c, err := client.SubscribeContractEvent(ctx, 0, -1, "claim005", "")
+
+	// 7. 报错：起始高度高于当前区块高度，直接退出
+	//c, err := client.SubscribeContractEvent(ctx, 25, 30, "claim005", "topic_vx")
+
+	// 8. 报错：起始高度低于终止高度
+	//c, err := client.SubscribeContractEvent(ctx, 25, 20, "claim005", "topic_vx")
+
+	// 9. 报错：起始高度/终止高度低于-1
+	//c, err := client.SubscribeContractEvent(ctx, -2, 20, "claim005", "topic_vx")
+
 	//c, err := client.SubscribeContractEvent(ctx, 0, 0, "claim005", "")
 	//c, err := client.SubscribeContractEvent(ctx, "64f50d594c2a739c7088f9fc6785e1934030e17b52f1a894baec61b98633a59f", "9c01b4c21d1907ab27aa23343493b3c9872777e3")
 
