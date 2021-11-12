@@ -32,7 +32,7 @@ func (cc *ChainClient) CreateArchiveBlockPayload(targetBlockHeight uint64) (*com
 	}
 
 	payload := cc.createPayload("", common.TxType_ARCHIVE, syscontract.SystemContract_ARCHIVE_MANAGE.String(),
-		syscontract.ArchiveFunction_ARCHIVE_BLOCK.String(), pairs, defaultSeq)
+		syscontract.ArchiveFunction_ARCHIVE_BLOCK.String(), pairs, defaultSeq, nil)
 
 	return payload, nil
 }
@@ -48,7 +48,7 @@ func (cc *ChainClient) CreateRestoreBlockPayload(fullBlock []byte) (*common.Payl
 	}
 
 	payload := cc.createPayload("", common.TxType_ARCHIVE, syscontract.SystemContract_ARCHIVE_MANAGE.String(),
-		syscontract.ArchiveFunction_RESTORE_BLOCK.String(), pairs, defaultSeq)
+		syscontract.ArchiveFunction_RESTORE_BLOCK.String(), pairs, defaultSeq, nil)
 
 	return payload, nil
 }

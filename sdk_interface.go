@@ -99,9 +99,10 @@ type SDKInterface interface {
 	//   - withSyncResult: 是否同步获取交易执行结果
 	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
 	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
+	//   - limit: transaction limitation，执行交易时的资源消耗上限，设为nil则不设置上限
 	// ```go
 	InvokeContract(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64,
-		withSyncResult bool) (*common.TxResponse, error)
+		withSyncResult bool, limit *common.Limit) (*common.TxResponse, error)
 	// ```
 
 	// ### 1.9 合约查询接口调用
@@ -110,8 +111,10 @@ type SDKInterface interface {
 	//   - method: 合约方法
 	//   - kvs: 合约参数
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - limit: transaction limitation，执行交易时的资源消耗上限，设为nil则不设置上限
 	// ```go
-	QueryContract(contractName, method string, kvs []*common.KeyValuePair, timeout int64) (*common.TxResponse, error)
+	QueryContract(contractName, method string, kvs []*common.KeyValuePair, timeout int64,
+		limit *common.Limit) (*common.TxResponse, error)
 	// ```
 
 	// ### 1.10 构造待发送交易体
@@ -122,8 +125,10 @@ type SDKInterface interface {
 	//           格式要求：长度为64字节，字符在a-z0-9
 	//           可为空，若为空字符串，将自动生成txId
 	//   - kvs: 合约参数
+	//   - limit: transaction limitation，执行交易时的资源消耗上限，设为nil则不设置上限
 	// ```go
-	GetTxRequest(contractName, method, txId string, kvs []*common.KeyValuePair) (*common.TxRequest, error)
+	GetTxRequest(contractName, method, txId string, kvs []*common.KeyValuePair,
+		limit *common.Limit) (*common.TxRequest, error)
 	// ```
 
 	// ### 1.11 发送已构造好的交易体
@@ -657,10 +662,11 @@ type SDKInterface interface {
 	//   - txId: 以交易 Id 作为链上存储 hibeMsg 的 Key, 如果不提供存储的信息可能被覆盖
 	//   - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 	//   - timeout: （内部查询 HibeParams 的）超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - limit: transaction limitation，执行交易时的资源消耗上限，设为nil则不设置上限
 	// ```go
 	CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte,
 		receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType,
-		timeout int64) ([]*common.KeyValuePair, error)
+		timeout int64, limit *common.Limit) ([]*common.KeyValuePair, error)
 	// ```
 
 	// ### 7.4 查询某一组织的加密公共参数，返回其序列化后的byte数组
@@ -669,8 +675,9 @@ type SDKInterface interface {
 	//   - method: 查询的合约方法名
 	//   - orgId: 参与方 id
 	//   - timeout: 查询超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - limit: transaction limitation，执行交易时的资源消耗上限，设为nil则不设置上限
 	// ```go
-	QueryHibeParamsWithOrgId(contractName, method, orgId string, timeout int64) ([]byte, error)
+	QueryHibeParamsWithOrgId(contractName, method, orgId string, timeout int64, limit *common.Limit) ([]byte, error)
 	// ```
 
 	// ### 7.5 已知交易id，根据私钥解密密文交易
