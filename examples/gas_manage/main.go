@@ -12,13 +12,13 @@ import (
 )
 
 const (
-	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_pk_user1.yml"
+	sdkConfigPKUser1Path = "../sdk_configs/sdk_config_pk_user1.yml"
 
 	gasAdminPubKeyPem = "-----BEGIN PUBLIC KEY-----\nMIIBCgKCAQEAx+IzSqBDeZMPaEhbBg9i4vgXbbaWUZ5ISWvQqgajt910xEAaNW1x\n9XldcJn8G3HynPgyhBEruKDNEmMH3KszCGUXEbY0VssfXD/OaeFJqXBdfYq4lmKd\nnypO+CCrJh6Cu0QuUi2DgI0ZsnM/VJ2JKby8JSAFhBQOPN9QdyFVQRY4fAqQ4p9T\nxv4x2KMliJKLHDqonW7Puk9UUYA2AIpehBapGDR4Zwj2S4ExPCD38uR/y7cB/0KN\ntcNamFqO5GRuZfO5KC9CUZzbFi0iKq/N8lShRoAWFAmR5FzTlUwZ5R2Wn+ckZHZE\nu7LJiX56XcS8d19c/7k7LAM6cl7EcigNeQIDAQAB\n-----END PUBLIC KEY-----"
 )
 
 func main() {
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigPKUser1Path)
 	if err != nil {
 		log.Fatalln(err)
 	}
