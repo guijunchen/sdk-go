@@ -60,9 +60,17 @@ const (
 	KeyPrivateReq   = "private_req"
 
 	// PubkeyManage keys
-	KeyPubkey       = "pubkey"
-	KeyPubkeyRole 	= "role"
-	KeyPubkeyOrgId 	= "org_id"
+	KeyPubkey      = "pubkey"
+	KeyPubkeyRole  = "role"
+	KeyPubkeyOrgId = "org_id"
+
+	// Gas management
+	KeyGasPublicKey        = "public_key"
+	KeyGasBatchRecharge    = "batch_recharge"
+	KeyGasBalancePublicKey = "balance_public_key"
+	KeyGasChargePublicKey  = "charge_public_key"
+	KeyGasChargeGasAmount  = "charge_gas_amount"
+	KeyGasFrozenPublicKey  = "frozen_public_key"
 )
 
 //nolint
