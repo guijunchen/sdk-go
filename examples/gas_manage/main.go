@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"chainmaker.org/chainmaker/common/v2/crypto"
-	"chainmaker.org/chainmaker/common/v2/crypto/asym"
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
@@ -13,27 +12,16 @@ import (
 
 const (
 	sdkConfigPKUser1Path = "../sdk_configs/sdk_config_pk_user1.yml"
-
-	gasAdminPubKeyPem = "-----BEGIN PUBLIC KEY-----\nMIIBCgKCAQEAx+IzSqBDeZMPaEhbBg9i4vgXbbaWUZ5ISWvQqgajt910xEAaNW1x\n9XldcJn8G3HynPgyhBEruKDNEmMH3KszCGUXEbY0VssfXD/OaeFJqXBdfYq4lmKd\nnypO+CCrJh6Cu0QuUi2DgI0ZsnM/VJ2JKby8JSAFhBQOPN9QdyFVQRY4fAqQ4p9T\nxv4x2KMliJKLHDqonW7Puk9UUYA2AIpehBapGDR4Zwj2S4ExPCD38uR/y7cB/0KN\ntcNamFqO5GRuZfO5KC9CUZzbFi0iKq/N8lShRoAWFAmR5FzTlUwZ5R2Wn+ckZHZE\nu7LJiX56XcS8d19c/7k7LAM6cl7EcigNeQIDAQAB\n-----END PUBLIC KEY-----"
 )
 
 func main() {
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigPKUser1Path)
 	if err != nil {
-		log.Fatalln(err)
-	}
-
-	adminPubKey, err := asym.PublicKeyFromPEM([]byte(gasAdminPubKeyPem))
-	if err != nil {
-		log.Fatal(err)
-	}
-	adminPubKeyBytes, err := adminPubKey.Bytes()
-	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("====================== 设置 gas admin ======================")
-	if err := setGasAdmin(client, adminPubKey); err != nil {
+	fmt.Println("====================== 设置client自己为 gas admin ======================")
+	if err := setGasAdmin(client, client.GetPublicKey()); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("====================== 获取 gas admin ======================")
@@ -41,45 +29,45 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("====================== 充值gas账户 100个gas ======================")
+	gasAdminPubKeyBytes, err := client.GetPublicKey().Bytes()
+	if err != nil {
+		log.Fatal(err)
+	}
 	rechargeGasList := []*syscontract.RechargeGas{
 		{
-			PublicKey: adminPubKeyBytes,
+			PublicKey: gasAdminPubKeyBytes,
 			GasAmount: 100,
 		},
 	}
 	if err := rechargeGas(client, rechargeGasList); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("====================== 扣除gas账户 10个gas ======================")
-	if err := chargeGas(client, adminPubKey, 10); err != nil {
-		log.Fatal(err)
-	}
 	fmt.Println("====================== 查询gas账户余额 ======================")
-	if err := getGasBalance(client, adminPubKey); err != nil {
+	if err := getGasBalance(client, client.GetPublicKey()); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("====================== 退还gas账户 5个gas ======================")
-	if err := refundGas(client, adminPubKey, 5); err != nil {
+	if err := refundGas(client, client.GetPublicKey(), 5); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("====================== 查询gas账户余额 ======================")
-	if err := getGasBalance(client, adminPubKey); err != nil {
+	if err := getGasBalance(client, client.GetPublicKey()); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("====================== 冻结指定gas账户 ======================")
-	if err := frozenGasAccount(client, adminPubKey); err != nil {
+	if err := frozenGasAccount(client, client.GetPublicKey()); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("====================== 查询gas账户的状态 ======================")
-	if err := getGasAccountStatus(client, adminPubKey); err != nil {
+	if err := getGasAccountStatus(client, client.GetPublicKey()); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("====================== 解冻指定gas账户 ======================")
-	if err := unfrozenGasAccount(client, adminPubKey); err != nil {
+	if err := unfrozenGasAccount(client, client.GetPublicKey()); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("====================== 查询gas账户的状态 ======================")
-	if err := getGasAccountStatus(client, adminPubKey); err != nil {
+	if err := getGasAccountStatus(client, client.GetPublicKey()); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -89,7 +77,12 @@ func setGasAdmin(cc *sdk.ChainClient, key crypto.PublicKey) error {
 	if err != nil {
 		return err
 	}
-	resp, err := cc.SendGasManageRequest(payload, nil, -1, true)
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[cc.GetHashType()],
+		cc.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
+	if err != nil {
+		return err
+	}
+	resp, err := cc.SendGasManageRequest(payload, endorsers, -1, true)
 	if err != nil {
 		return err
 	}
@@ -118,20 +111,6 @@ func rechargeGas(cc *sdk.ChainClient, rechargeGasList []*syscontract.RechargeGas
 	}
 
 	fmt.Printf("recharge gas resp: %+v\n", resp)
-	return nil
-}
-
-func chargeGas(cc *sdk.ChainClient, pubKey crypto.PublicKey, amount int64) error {
-	payload, err := cc.CreateChargeGasPayload(pubKey, amount)
-	if err != nil {
-		return err
-	}
-	resp, err := cc.SendGasManageRequest(payload, nil, -1, true)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("charge gas resp: %+v\n", resp)
 	return nil
 }
 

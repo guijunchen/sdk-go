@@ -69,12 +69,6 @@ func (cc *ChainClient) CreateRechargeGasPayload(rechargeGasList []*syscontract.R
 		syscontract.GasAccountFunction_RECHARGE_GAS.String(), pairs, defaultSeq, nil), nil
 }
 
-func (cc *ChainClient) CreateChargeGasPayload(pubKey crypto.PublicKey, amount int64) (*common.Payload, error) {
-	cc.logger.Debugf("[SDK] create [CreateChargeGasPayload] payload")
-
-	return cc.createChargeOrRefundGasPayload(syscontract.GasAccountFunction_CHARGE_GAS.String(), pubKey, amount)
-}
-
 func (cc *ChainClient) GetGasBalance(pubKey crypto.PublicKey) (int64, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		syscontract.GasAccountFunction_GET_BALANCE)
@@ -112,7 +106,28 @@ func (cc *ChainClient) GetGasBalance(pubKey crypto.PublicKey) (int64, error) {
 func (cc *ChainClient) CreateRefundGasPayload(pubKey crypto.PublicKey, amount int64) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [CreateRefundGasPayload] payload")
 
-	return cc.createChargeOrRefundGasPayload(syscontract.GasAccountFunction_REFUND_GAS.String(), pubKey, amount)
+	pubKeyBytes, err := pubKey.Bytes()
+	if err != nil {
+		return nil, err
+	}
+
+	if amount <= 0 {
+		return nil, errors.New("amount must > 0")
+	}
+
+	pairs := []*common.KeyValuePair{
+		{
+			Key:   utils.KeyGasChargePublicKey,
+			Value: pubKeyBytes,
+		},
+		{
+			Key:   utils.KeyGasChargeGasAmount,
+			Value: []byte(strconv.FormatInt(amount, 10)),
+		},
+	}
+
+	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
+		syscontract.GasAccountFunction_REFUND_GAS.String(), pairs, defaultSeq, nil), nil
 }
 
 func (cc *ChainClient) CreateFrozenGasAccountPayload(pubKey crypto.PublicKey) (*common.Payload, error) {
@@ -153,33 +168,6 @@ func (cc *ChainClient) SendGasManageRequest(payload *common.Payload, endorsers [
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	cc.logger.Debug("[SDK] begin to get chain config")
 	return cc.sendContractRequest(payload, endorsers, timeout, withSyncResult)
-}
-
-func (cc *ChainClient) createChargeOrRefundGasPayload(method string, pubKey crypto.PublicKey,
-	amount int64) (*common.Payload, error) {
-
-	pubKeyBytes, err := pubKey.Bytes()
-	if err != nil {
-		return nil, err
-	}
-
-	if amount <= 0 {
-		return nil, errors.New("amount must > 0")
-	}
-
-	pairs := []*common.KeyValuePair{
-		{
-			Key:   utils.KeyGasChargePublicKey,
-			Value: pubKeyBytes,
-		},
-		{
-			Key:   utils.KeyGasChargeGasAmount,
-			Value: []byte(strconv.FormatInt(amount, 10)),
-		},
-	}
-
-	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
-		method, pairs, defaultSeq, nil), nil
 }
 
 func (cc *ChainClient) createFrozenUnfrozenGasAccountPayload(method string,

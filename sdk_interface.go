@@ -1020,22 +1020,14 @@ type SDKInterface interface {
 	CreateRechargeGasPayload(rechargeGasList []*syscontract.RechargeGas) (*common.Payload, error)
 	// ```
 
-	// ### 13.4 构造 扣除gas账户的gas数量 payload
-	// **参数说明**
-	//   - pubKey: 扣除gas的账户公钥
-	//   - amount: 扣除gas的数量
-	// ```go
-	CreateChargeGasPayload(pubKey crypto.PublicKey, amount int64) (*common.Payload, error)
-	// ```
-
-	// ### 13.5 查询gas账户余额（根据公钥）
+	// ### 13.4 查询gas账户余额（根据公钥）
 	// **参数说明**
 	//   - pubKey: 查询gas余额的账户公钥
 	// ```go
 	GetGasBalance(pubKey crypto.PublicKey) (int64, error)
 	// ```
 
-	// ### 13.6 构造 退还gas账户的gas payload
+	// ### 13.5 构造 退还gas账户的gas payload
 	// **参数说明**
 	//   - pubKey: 退还gas的账户公钥
 	//   - amount: 退还gas的数量
@@ -1043,21 +1035,21 @@ type SDKInterface interface {
 	CreateRefundGasPayload(pubKey crypto.PublicKey, amount int64) (*common.Payload, error)
 	// ```
 
-	// ### 13.7 构造 冻结指定gas账户 payload
+	// ### 13.6 构造 冻结指定gas账户 payload
 	// **参数说明**
 	//   - pubKey: 冻结指定gas账户的账户公钥
 	// ```go
 	CreateFrozenGasAccountPayload(pubKey crypto.PublicKey) (*common.Payload, error)
 	// ```
 
-	// ### 13.8 构造 解冻指定gas账户 payload
+	// ### 13.7 构造 解冻指定gas账户 payload
 	// **参数说明**
 	//   - pubKey: 解冻指定gas账户的账户公钥
 	// ```go
 	CreateUnfrozenGasAccountPayload(pubKey crypto.PublicKey) (*common.Payload, error)
 	// ```
 
-	// ### 13.9 查询gas账户的状态
+	// ### 13.8 查询gas账户的状态
 	// **参数说明**
 	//   - pubKey: 解冻指定gas账户的账户公钥
 	// **返回值说明**
@@ -1066,7 +1058,7 @@ type SDKInterface interface {
 	GetGasAccountStatus(pubKey crypto.PublicKey) (bool, error)
 	// ```
 
-	// ### 13.10 发送gas管理类请求
+	// ### 13.9 发送gas管理类请求
 	// **参数说明**
 	//   - payload: 交易payload
 	//   - endorsers: 背书签名信息列表
