@@ -12,6 +12,7 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"time"
 
 	"chainmaker.org/chainmaker/pb-go/v2/api"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
@@ -43,7 +44,7 @@ func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock 
 				Key:   syscontract.SubscribeBlock_ONLY_HEADER.String(),
 				Value: []byte(strconv.FormatBool(onlyHeader)),
 			},
-		}, 0,
+		}, defaultSeq,
 	)
 
 	return cc.Subscribe(ctx, payload)
@@ -70,7 +71,7 @@ func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int
 				Key:   syscontract.SubscribeTx_TX_IDS.String(),
 				Value: []byte(strings.Join(txIds, ",")),
 			},
-		}, 0,
+		}, defaultSeq,
 	)
 
 	return cc.Subscribe(ctx, payload)
@@ -97,7 +98,7 @@ func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, startBlock, e
 				Key:   syscontract.SubscribeContractEvent_TOPIC.String(),
 				Value: []byte(topic),
 			},
-		}, 0,
+		}, defaultSeq,
 	)
 
 	return cc.Subscribe(ctx, payload)
@@ -128,7 +129,8 @@ func (cc *ChainClient) Subscribe(ctx context.Context, payload *common.Payload) (
 			select {
 			case <-reconnectC:
 				cc.logger.Debug("[SDK] Subscriber reconnecting...")
-				// always get a new stream
+				// always get a new stream, set payload.Timestamp to the current time
+				payload.Timestamp = time.Now().Unix()
 				stream, err := cc.getSubscribeStream(ctx, payload)
 				if err != nil {
 					cc.logger.Error(err)
