@@ -133,21 +133,23 @@ func (cc *ChainClient) CreateRefundGasPayload(pubKey crypto.PublicKey, amount in
 func (cc *ChainClient) CreateFrozenGasAccountPayload(pubKey crypto.PublicKey) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [CreateFrozenGasAccountPayload] payload")
 
-	return cc.createFrozenUnfrozenGasAccountPayload(syscontract.GasAccountFunction_FROZEN_ACCOUNT.String(), pubKey)
+	return cc.createGasAccountFrozenUnfrozenAndStatusPayload(syscontract.GasAccountFunction_FROZEN_ACCOUNT.String(),
+		pubKey)
 }
 
 func (cc *ChainClient) CreateUnfrozenGasAccountPayload(pubKey crypto.PublicKey) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [CreateFrozenGasAccountPayload] payload")
 
-	return cc.createFrozenUnfrozenGasAccountPayload(syscontract.GasAccountFunction_UNFROZEN_ACCOUNT.String(), pubKey)
+	return cc.createGasAccountFrozenUnfrozenAndStatusPayload(syscontract.GasAccountFunction_UNFROZEN_ACCOUNT.String(),
+		pubKey)
 }
 
 func (cc *ChainClient) GetGasAccountStatus(pubKey crypto.PublicKey) (bool, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		syscontract.GasAccountFunction_ACCOUNT_STATUS)
 
-	payload, err := cc.createFrozenUnfrozenGasAccountPayload(syscontract.GasAccountFunction_ACCOUNT_STATUS.String(),
-		pubKey)
+	payload, err := cc.createGasAccountFrozenUnfrozenAndStatusPayload(
+		syscontract.GasAccountFunction_ACCOUNT_STATUS.String(), pubKey)
 	if err != nil {
 		return false, err
 	}
@@ -170,7 +172,7 @@ func (cc *ChainClient) SendGasManageRequest(payload *common.Payload, endorsers [
 	return cc.sendContractRequest(payload, endorsers, timeout, withSyncResult)
 }
 
-func (cc *ChainClient) createFrozenUnfrozenGasAccountPayload(method string,
+func (cc *ChainClient) createGasAccountFrozenUnfrozenAndStatusPayload(method string,
 	pubKey crypto.PublicKey) (*common.Payload, error) {
 
 	pubKeyStr, err := pubKey.String()
