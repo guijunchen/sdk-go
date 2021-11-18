@@ -29,13 +29,13 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("====================== 充值gas账户 100个gas ======================")
-	gasAdminPubKeyBytes, err := client.GetPublicKey().Bytes()
+	gasAdminPubKeyStr, err := client.GetPublicKey().String()
 	if err != nil {
 		log.Fatal(err)
 	}
 	rechargeGasList := []*syscontract.RechargeGas{
 		{
-			PublicKey: gasAdminPubKeyBytes,
+			PublicKey: []byte(gasAdminPubKeyStr),
 			GasAmount: 100,
 		},
 	}

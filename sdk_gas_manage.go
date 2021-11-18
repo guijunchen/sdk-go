@@ -14,7 +14,7 @@ import (
 func (cc *ChainClient) CreateSetGasAdminPayload(adminPubKey crypto.PublicKey) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [CreateSetGasAdminPayload] payload")
 
-	bz, err := adminPubKey.Bytes()
+	pubKeyStr, err := adminPubKey.String()
 	if err != nil {
 		return nil, err
 	}
@@ -22,7 +22,7 @@ func (cc *ChainClient) CreateSetGasAdminPayload(adminPubKey crypto.PublicKey) (*
 	pairs := []*common.KeyValuePair{
 		{
 			Key:   utils.KeyGasPublicKey,
-			Value: bz,
+			Value: []byte(pubKeyStr),
 		},
 	}
 
@@ -73,7 +73,7 @@ func (cc *ChainClient) GetGasBalance(pubKey crypto.PublicKey) (int64, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		syscontract.GasAccountFunction_GET_BALANCE)
 
-	pubKeyBytes, err := pubKey.Bytes()
+	pubKeyStr, err := pubKey.String()
 	if err != nil {
 		return 0, err
 	}
@@ -82,7 +82,7 @@ func (cc *ChainClient) GetGasBalance(pubKey crypto.PublicKey) (int64, error) {
 		syscontract.GasAccountFunction_GET_BALANCE.String(), []*common.KeyValuePair{
 			{
 				Key:   utils.KeyGasBalancePublicKey,
-				Value: pubKeyBytes,
+				Value: []byte(pubKeyStr),
 			},
 		}, defaultSeq, nil)
 
@@ -106,7 +106,7 @@ func (cc *ChainClient) GetGasBalance(pubKey crypto.PublicKey) (int64, error) {
 func (cc *ChainClient) CreateRefundGasPayload(pubKey crypto.PublicKey, amount int64) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [CreateRefundGasPayload] payload")
 
-	pubKeyBytes, err := pubKey.Bytes()
+	pubKeyStr, err := pubKey.String()
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (cc *ChainClient) CreateRefundGasPayload(pubKey crypto.PublicKey, amount in
 	pairs := []*common.KeyValuePair{
 		{
 			Key:   utils.KeyGasChargePublicKey,
-			Value: pubKeyBytes,
+			Value: []byte(pubKeyStr),
 		},
 		{
 			Key:   utils.KeyGasChargeGasAmount,
@@ -173,7 +173,7 @@ func (cc *ChainClient) SendGasManageRequest(payload *common.Payload, endorsers [
 func (cc *ChainClient) createFrozenUnfrozenGasAccountPayload(method string,
 	pubKey crypto.PublicKey) (*common.Payload, error) {
 
-	bz, err := pubKey.Bytes()
+	pubKeyStr, err := pubKey.String()
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +181,7 @@ func (cc *ChainClient) createFrozenUnfrozenGasAccountPayload(method string,
 	pairs := []*common.KeyValuePair{
 		{
 			Key:   utils.KeyGasFrozenPublicKey,
-			Value: bz,
+			Value: []byte(pubKeyStr),
 		},
 	}
 
