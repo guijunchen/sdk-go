@@ -256,7 +256,7 @@ func testUserContractCounterGoInvoke(client *sdk.ChainClient, method string, kvs
 }
 
 func testUserContractCounterGoQuery(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair) {
-	resp, err := client.QueryContract(contractName, method, kvs, -1)
+	resp, err := client.QueryContract(contractName, method, kvs, -1, nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -296,7 +296,7 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 
 func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, kvs []*common.KeyValuePair, withSyncResult bool) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult, nil)
 	if err != nil {
 		return err
 	}
@@ -316,7 +316,7 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 
 func invokeUserContractStepByStep(client *sdk.ChainClient, contractName, method, txId string,
 	kvs []*common.KeyValuePair, withSyncResult bool) error {
-	req, err := client.GetTxRequest(contractName, method, "", kvs)
+	req, err := client.GetTxRequest(contractName, method, "", kvs, nil)
 	if err != nil {
 		return err
 	}

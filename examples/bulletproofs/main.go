@@ -140,7 +140,7 @@ func testBulletproofsSet(client *sdk.ChainClient, method string, opType string, 
 	if err != nil {
 		return
 	}
-	resp, err := client.InvokeContract(bulletproofsContractName, method, "", payloadParams, -1, b)
+	resp, err := client.InvokeContract(bulletproofsContractName, method, "", payloadParams, -1, b, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -239,7 +239,7 @@ func queryBulletProofsCommitmentByHandleType(client *sdk.ChainClient, contractNa
 		{Key: "handletype", Value: []byte(bpMethod)},
 	}
 
-	resp, err := client.QueryContract(contractName, method, pair, timeout)
+	resp, err := client.QueryContract(contractName, method, pair, timeout, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +256,7 @@ func testBulletproofsVerify(client *sdk.ChainClient, method string, opType strin
 	if err != nil {
 		return
 	}
-	resp, err := client.InvokeContract(bulletproofsContractName, method, "", payloadParams, -1, b)
+	resp, err := client.InvokeContract(bulletproofsContractName, method, "", payloadParams, -1, b, nil)
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -170,7 +170,7 @@ func testUserContractAssetInvokeRegister(client *sdk.ChainClient, method string,
 }
 
 func testUserContractAssetQuery(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair) string {
-	resp, err := client.QueryContract(assetContractName, method, kvs, -1)
+	resp, err := client.QueryContract(assetContractName, method, kvs, -1, nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -217,7 +217,7 @@ func getBalance(client *sdk.ChainClient, addr string) {
 func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string,
 	kvs []*common.KeyValuePair, withSyncResult bool) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult, nil)
 	if err != nil {
 		return err
 	}

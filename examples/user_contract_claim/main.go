@@ -140,7 +140,7 @@ func testUserContractClaimInvoke(client *sdk.ChainClient,
 func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string,
 	kvs []*common.KeyValuePair, withSyncResult bool) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult, nil)
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 }
 
 func testUserContractClaimQuery(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair) {
-	resp, err := client.QueryContract(claimContractName, method, kvs, -1)
+	resp, err := client.QueryContract(claimContractName, method, kvs, -1, nil)
 	if err != nil {
 		log.Fatalln(err)
 	}

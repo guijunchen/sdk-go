@@ -228,7 +228,7 @@ func testUserContractBalanceEVMUpdateBalance(client *sdk.ChainClient, address st
 
 func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, kvs []*common.KeyValuePair, withSyncResult bool) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult, nil)
 	if err != nil {
 		return err
 	}
@@ -289,7 +289,7 @@ func testUserContractBalanceEVMGetBalance(client *sdk.ChainClient, address strin
 func invokeUserContractWithResult(client *sdk.ChainClient, contractName, method, txId string,
 	kvs []*common.KeyValuePair, withSyncResult bool) ([]byte, error) {
 
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult, nil)
 	if err != nil {
 		return nil, err
 	}
