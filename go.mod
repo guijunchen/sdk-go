@@ -4,12 +4,13 @@ go 1.16
 
 require (
 	chainmaker.org/chainmaker/common/v2 v2.0.1-0.20211103043138-367d59e247cc
-	chainmaker.org/chainmaker/pb-go/v2 v2.1.1-0.20211108095306-fa2113969981
+	chainmaker.org/chainmaker/pb-go/v2 v2.1.1-0.20211116082859-f2fa0299ac38
 	github.com/Rican7/retry v0.1.0
 	github.com/ethereum/go-ethereum v1.10.4
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.4.3
+	github.com/gorilla/websocket v1.4.2
 	github.com/hokaccha/go-prettyjson v0.0.0-20201222001619-a42f9ac2ec8e
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1

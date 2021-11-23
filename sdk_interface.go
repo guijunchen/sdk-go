@@ -993,4 +993,36 @@ type SDKInterface interface {
 	// ```go
 	CreateMultiSignReqPayload(pairs []*common.KeyValuePair) *common.Payload
 	// ```
+
+	// ### 13 别名相关接口
+	// ### 13.1 添加别名
+	// ```go
+	AddAlias() (*common.TxResponse, error)
+	// ```
+
+	// ### 13.2 构造修改别名payload
+	// ```go
+	CreateUpdateAliasPayload(alias, certPEM string) *common.Payload
+	// ```
+
+	// ### 13.3 签署别名payload
+	// ```go
+	SignUpdateAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
+	// ```
+
+	// ### 13.4 发起更新别名交易
+	// ```go
+	UpdateAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
+		timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	// ```
+
+	// ### 13.5 查询别名详细信息
+	// ```go
+	QueryCurrentAlias(alias string) (*syscontract.AliasInfo, error)
+	// ```
+
+	// ### 13.6 根据高度查别名信息
+	// ```go
+	QueryCertByAliasAndBlockHeight(alias, blockHeight string) (*syscontract.AliasCertInfo, error)
+	// ```
 }

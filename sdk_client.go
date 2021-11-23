@@ -63,6 +63,10 @@ type ChainClient struct {
 	// retry config
 	retryLimit    int // if <=0 then use DefaultRetryLimit
 	retryInterval int // if <=0 then use DefaultRetryInterval
+
+	// alias support
+	enabledAlias bool
+	alias        string
 }
 
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
@@ -138,11 +142,12 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		pkBytes = []byte(pkPem)
 	}
 
-	return &ChainClient{
+	cc := &ChainClient{
 		pool:            pool,
 		logger:          config.logger,
 		chainId:         config.chainId,
 		orgId:           config.orgId,
+		alias:           config.alias,
 		userCrtBytes:    config.userSignCrtBytes,
 		userCrt:         config.userCrt,
 		privateKey:      config.privateKey,
@@ -157,7 +162,16 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 
 		retryLimit:    config.retryLimit,
 		retryInterval: config.retryInterval,
-	}, nil
+	}
+
+	// 若设置了别名，便启用
+	if len(cc.alias) > 0 {
+		if err := cc.EnableAlias(); err != nil {
+			return nil, err
+		}
+	}
+
+	return cc, nil
 }
 
 func (cc *ChainClient) Stop() error {
@@ -191,7 +205,13 @@ func (cc *ChainClient) generateTxRequest(payload *common.Payload,
 	// 构造Sender
 	if cc.authType == PermissionedWithCert {
 
-		if cc.enabledCrtHash && len(cc.userCrtHash) > 0 {
+		if cc.enabledAlias && len(cc.alias) > 0 {
+			signer = &accesscontrol.Member{
+				OrgId:      cc.orgId,
+				MemberInfo: []byte(cc.alias),
+				MemberType: accesscontrol.MemberType_CERT_HASH,
+			}
+		} else if cc.enabledCrtHash && len(cc.userCrtHash) > 0 {
 			signer = &accesscontrol.Member{
 				OrgId:      cc.orgId,
 				MemberInfo: cc.userCrtHash,
@@ -307,6 +327,11 @@ func (cc *ChainClient) EnableCertHash() error {
 	var (
 		err error
 	)
+
+	// 优先使用别名，如果开启了别名，直接忽略压缩证书
+	if cc.enabledAlias {
+		return nil
+	}
 
 	if cc.GetAuthType() != PermissionedWithCert {
 		return errors.New("cert hash is not supported")
@@ -482,4 +507,97 @@ func CreateChainClient(pool ConnectionPool, userCrtBytes, privKey, userCrtHash [
 	}
 
 	return chain, nil
+}
+
+func (cc *ChainClient) EnableAlias() error {
+	var (
+		err error
+	)
+
+	// 已经启用别名，直接返回
+	if cc.enabledAlias {
+		return nil
+	}
+
+	// 查询别名是否上链
+	ok, err := cc.getCheckAlias()
+	if err != nil {
+		errMsg := fmt.Sprintf("enable alias, get and check alias failed, %s", err.Error())
+		cc.logger.Debugf(sdkErrStringFormat, errMsg)
+		//return errors.New(errMsg)
+	}
+
+	// 别名已上链
+	if ok {
+		cc.enabledAlias = true
+		return nil
+	}
+
+	// 添加别名
+	resp, err := cc.AddAlias()
+	if err != nil {
+		errMsg := fmt.Sprintf("enable alias AddAlias failed, %s", err.Error())
+		cc.logger.Errorf(sdkErrStringFormat, errMsg)
+		return errors.New(errMsg)
+	}
+
+	if err = checkProposalRequestResp(resp, true); err != nil {
+		errMsg := fmt.Sprintf("enable alias AddAlias got invalid resp, %s", err.Error())
+		cc.logger.Errorf(sdkErrStringFormat, errMsg)
+		return errors.New(errMsg)
+	}
+
+	// 循环检查别名是否成功上链
+	err = cc.checkAliasOnChain()
+	if err != nil {
+		errMsg := fmt.Sprintf("check alias on chain failed, %s", err.Error())
+		cc.logger.Errorf(sdkErrStringFormat, errMsg)
+		return errors.New(errMsg)
+	}
+
+	cc.enabledAlias = true
+
+	return nil
+}
+
+func (cc *ChainClient) getCheckAlias() (bool, error) {
+	aliasInfo, err := cc.QueryCurrentAlias(cc.alias)
+	if err != nil {
+		errMsg := fmt.Sprintf("QueryCurrentAlias failed, %s", err.Error())
+		cc.logger.Errorf(sdkErrStringFormat, errMsg)
+		return false, errors.New(errMsg)
+	}
+
+	if aliasInfo.Alias != cc.alias {
+		return false, errors.New("alias not equal")
+	}
+
+	return true, nil
+}
+
+func (cc *ChainClient) checkAliasOnChain() error {
+	err := retry.Retry(func(uint) error {
+		ok, err := cc.getCheckAlias()
+		if err != nil {
+			errMsg := fmt.Sprintf("check alias on chain, get and check alias failed, %s", err.Error())
+			cc.logger.Errorf(sdkErrStringFormat, errMsg)
+			return errors.New(errMsg)
+		}
+
+		if !ok {
+			errMsg := fmt.Sprintf("alias havenot on chain yet, and try again")
+			cc.logger.Debugf(sdkErrStringFormat, errMsg)
+			return errors.New(errMsg)
+		}
+
+		return nil
+	}, strategy.Limit(10), strategy.Wait(time.Second))
+
+	if err != nil {
+		errMsg := fmt.Sprintf("check upload alias on chain failed, try again later, %s", err.Error())
+		cc.logger.Errorf(sdkErrStringFormat, errMsg)
+		return errors.New(errMsg)
+	}
+
+	return nil
 }
