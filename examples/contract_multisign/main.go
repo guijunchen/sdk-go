@@ -1,93 +1,77 @@
 package main
 
 import (
-	sdkutils "chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"time"
 
+	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
-	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 )
 
-var (
-	WasmPath        = ""
-	WasmUpgradePath = ""
-	runtimeType     common.RuntimeType
-	contractName    = ""
-	payload         *common.Payload
-	pairs           []*common.KeyValuePair
-	signKeyPath     = "../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.sign.key"
-	signCrtPath     = "../../testdata/crypto-config/wx-org3.chainmaker.org/user/admin1/admin1.sign.crt"
-)
-
 const (
-	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+	contractByteCodePath = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
+	contractName         = "claim123"
+	contractVersion      = "v1.0.0"
+
+	sdkConfigPKUser1Path = "../sdk_configs/sdk_config_pk_user1.yml"
 )
 
-func init() {
-	WasmPath = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
-	WasmUpgradePath = WasmPath
-	contractName = "contract101"
-	runtimeType = common.RuntimeType_WASMER
-}
+var (
+	contractRuntimeType = common.RuntimeType_WASMER.String()
+)
 
 func main() {
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+	cc, err := examples.CreateChainClientWithSDKConf(sdkConfigPKUser1Path)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	pairs = initContractInitPairs() //构造交易发起pairs
-	payload = testMultiSignReq(client)
 
-	time.Sleep(2 * time.Second)
-	testMultiSignVote(client, payload)
+	fmt.Println("====================== 发送线上多签部署合约的交易 ======================")
+	kvs := newContractInitPairs() //构造交易发起 kv pairs
+	payload := cc.CreateMultiSignReqPayload(kvs)
+	resp, err := cc.MultiSignContractReq(payload)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Printf("send MultiSignContractReq resp: %+v\n", resp)
 
-	time.Sleep(2 * time.Second)
-	testMultiSignQuery(client, payload.TxId)
+	fmt.Println("====================== 各链管理员开始投票 ======================")
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[cc.GetHashType()],
+		cc.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for _, e := range endorsers {
+		fmt.Printf("====================== %s 投票 ======================\n", e.Signer.MemberInfo)
+		time.Sleep(3 * time.Second)
+
+		resp, err = cc.MultiSignContractVote(payload, e)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Printf("send MultiSignContractVote resp: %+v\n", resp)
+
+		fmt.Println("====================== 查询本多签交易的投票情况 ======================")
+		time.Sleep(3 * time.Second)
+		resp, err = cc.MultiSignContractQuery(payload.TxId)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Printf("query MultiSignContractQuery resp: %+v\n", resp)
+	}
 }
 
-func testMultiSignReq(client *sdk.ChainClient) *common.Payload {
-	payload = client.CreateMultiSignReqPayload(pairs)
-	resp, err := client.MultiSignContractReq(payload)
+func newContractInitPairs() []*common.KeyValuePair {
+	wasmBin, err := ioutil.ReadFile(contractByteCodePath)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Printf("testMultiSignReq resp: %+v\n", resp)
-	return payload
-}
-
-func testMultiSignVote(client *sdk.ChainClient, multiSignReqPayload *common.Payload) {
-
-	endorser, err := sdkutils.MakeEndorserWithPath(signKeyPath, signCrtPath, multiSignReqPayload)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	resp, err := client.MultiSignContractVote(multiSignReqPayload, endorser)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	fmt.Printf("testMultiSignVote resp: %+v\n", resp)
-}
-
-func testMultiSignQuery(client *sdk.ChainClient, txId string) {
-	resp, err := client.MultiSignContractQuery(txId)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	fmt.Printf("testMultiSignQuery resp: %+v\n", resp)
-}
-
-func initContractInitPairs() []*common.KeyValuePair {
-	wasmBin, err := ioutil.ReadFile(WasmPath)
-	if err != nil {
-		panic(err)
-	}
-	pairs := []*common.KeyValuePair{
+	return []*common.KeyValuePair{
 		{
 			Key:   syscontract.MultiReq_SYS_CONTRACT_NAME.String(),
 			Value: []byte(syscontract.SystemContract_CONTRACT_MANAGE.String()),
@@ -102,7 +86,7 @@ func initContractInitPairs() []*common.KeyValuePair {
 		},
 		{
 			Key:   syscontract.InitContract_CONTRACT_VERSION.String(),
-			Value: []byte("1.0"),
+			Value: []byte(contractVersion),
 		},
 		{
 			Key:   syscontract.InitContract_CONTRACT_BYTECODE.String(),
@@ -110,9 +94,7 @@ func initContractInitPairs() []*common.KeyValuePair {
 		},
 		{
 			Key:   syscontract.InitContract_CONTRACT_RUNTIME_TYPE.String(),
-			Value: []byte(runtimeType.String()),
+			Value: []byte(contractRuntimeType),
 		},
 	}
-
-	return pairs
 }
