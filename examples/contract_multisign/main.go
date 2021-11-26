@@ -4,17 +4,20 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strconv"
 	"time"
 
 	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/common/v2/random/uuid"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 )
 
 const (
 	contractByteCodePath = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
-	contractName         = "claim123"
+	contractName         = "claim1234"
 	contractVersion      = "v1.0.0"
 
 	sdkConfigPKUser1Path = "../sdk_configs/sdk_config_pk_user1.yml"
@@ -46,8 +49,8 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	for _, e := range endorsers {
-		fmt.Printf("====================== %s 投票 ======================\n", e.Signer.MemberInfo)
+	for i, e := range endorsers {
+		fmt.Printf("====================== 链管理员 %d 投票 ======================\n", i)
 		time.Sleep(3 * time.Second)
 
 		resp, err = cc.MultiSignContractVote(payload, e)
@@ -64,6 +67,10 @@ func main() {
 		}
 		fmt.Printf("query MultiSignContractQuery resp: %+v\n", resp)
 	}
+
+	fmt.Println("====================== 调用上边创建的合约 ======================")
+	time.Sleep(time.Second * 3)
+	invokeUserContract(cc, false)
 }
 
 func newContractInitPairs() []*common.KeyValuePair {
@@ -97,4 +104,41 @@ func newContractInitPairs() []*common.KeyValuePair {
 			Value: []byte(contractRuntimeType),
 		},
 	}
+}
+
+func invokeUserContract(client *sdk.ChainClient, withSyncResult bool) {
+
+	curTime := strconv.FormatInt(time.Now().Unix(), 10)
+	fileHash := uuid.GetUUID()
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   "time",
+			Value: []byte(curTime),
+		},
+		{
+			Key:   "file_hash",
+			Value: []byte(fileHash),
+		},
+		{
+			Key:   "file_name",
+			Value: []byte(fmt.Sprintf("file_%s", curTime)),
+		},
+	}
+
+	resp, err := client.InvokeContract(contractName, "save", "", kvs, -1, withSyncResult, nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if resp.Code != common.TxStatusCode_SUCCESS {
+		log.Fatalln(fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message))
+	}
+
+	fmt.Printf("query invokeUserContract resp: %+v\n", resp)
+
+	//if !withSyncResult {
+	//	fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
+	//} else {
+	//	fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%s]\n", resp.Code, resp.Message, resp.ContractResult)
+	//}
 }
