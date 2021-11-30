@@ -25,7 +25,7 @@ const (
 	claimVersion          = "1.0.0"
 	claimByteCodePath     = "../../testdata/claim-docker-demo/claim_docker_001.7z"
 
-	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+	sdkConfigPKUser1Path = "../sdk_configs/sdk_config_pk_user1.yml"
 )
 
 func main() {
@@ -34,7 +34,7 @@ func main() {
 
 func testUserContractClaim() {
 	fmt.Println("====================== create client ======================")
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigPKUser1Path)
 	if err != nil {
 		log.Fatalln(err)
 	}
