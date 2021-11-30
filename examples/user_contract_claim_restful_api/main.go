@@ -6,29 +6,49 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"crypto/md5"
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"strconv"
+	"time"
+
 	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/httputils"
 	"chainmaker.org/chainmaker/common/v2/random/uuid"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
-	"crypto/md5"
-	"fmt"
 	"github.com/golang/protobuf/proto"
-	"log"
-	"strconv"
-	"time"
 )
 
 const (
-	claimContractName     = "claim_restful_001"
-	claimVersion          = "2.0.0"
-	claimByteCodePath     = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
+	claimContractName = "claim_restful_001"
+	claimVersion      = "2.0.0"
+	claimByteCodePath = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
+	useTLS            = true
+	//useTLS = false
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+	caCertPath               = "../../testdata/crypto-config/wx-org1.chainmaker.org/ca/ca.crt"
+	userTlsCrtPath           = "../../testdata/crypto-config/wx-org1.chainmaker.org/user/client1/client1.tls.crt"
+	userTlsKeyPath           = "../../testdata/crypto-config/wx-org1.chainmaker.org/user/client1/client1.tls.key"
+)
+
+var (
+	customClient *http.Client
+	url          string
 )
 
 func main() {
+	url = "http://localhost:12301/v1/sendrequest"
+	if useTLS {
+		customClient = createHTTPSClient()
+		url = "https://localhost:12301/v1/sendrequest"
+	}
 	testUserContractClaim()
 }
 
@@ -49,7 +69,7 @@ func testUserContractClaim() {
 	time.Sleep(3 * time.Second)
 
 	fmt.Println("====================== 调用合约 ======================")
-	fileHash, err := testUserContractClaimInvoke(client, "save", true)
+	fileHash, err := testUserContractClaimInvoke(client, "save")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -67,7 +87,7 @@ func testUserContractClaim() {
 }
 
 func testUserContractClaimInvoke(client *sdk.ChainClient,
-	method string, withSyncResult bool) (string, error) {
+	method string) (string, error) {
 
 	curTime := strconv.FormatInt(time.Now().Unix(), 10)
 
@@ -94,9 +114,7 @@ func testUserContractClaimInvoke(client *sdk.ChainClient,
 		log.Fatalln(err)
 	}
 
-	url := "http://localhost:12301/v1/sendrequest"
-
-	resp, err := httputils.POST(nil, url, req)
+	resp, err := httputils.POST(customClient, url, req)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -122,9 +140,7 @@ func testUserContractClaimQuery(client *sdk.ChainClient, method string, kvs []*c
 	}
 	fmt.Printf("reqByte: [len:%d] %s\n\n", len(reqBytes), fmt.Sprintf("%x", md5.Sum(reqBytes)))
 
-	url := "http://localhost:12301/v1/sendrequest"
-
-	resp, err := httputils.POST(nil, url, req)
+	resp, err := httputils.POST(customClient, url, req)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -150,12 +166,35 @@ func testUserContractClaimCreate(client *sdk.ChainClient, usernames ...string) {
 		log.Fatalln(err)
 	}
 
-	url := "http://localhost:12301/v1/sendrequest"
-
-	resp, err := httputils.POST(nil, url, req)
+	resp, err := httputils.POST(customClient, url, req)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	fmt.Printf("CREATE claim contract resp: %+v\n", string(resp))
+}
+
+func createHTTPSClient() *http.Client {
+	pool := x509.NewCertPool()
+
+	caCrt, err := ioutil.ReadFile(caCertPath)
+	if err != nil {
+		log.Fatal("ReadFile err:", err)
+	}
+	pool.AppendCertsFromPEM(caCrt)
+
+	cliCrt, err := tls.LoadX509KeyPair(userTlsCrtPath, userTlsKeyPath)
+	if err != nil {
+		log.Fatal("LoadX509KeyPair err:", err)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			//ServerName: "chainmaker.org",
+			RootCAs:      pool,
+			Certificates: []tls.Certificate{cliCrt},
+		},
+	}
+
+	return &http.Client{Transport: tr}
 }
