@@ -614,11 +614,7 @@ func checkConfig(config *ChainClientConfig) error {
 		return err
 	}
 
-	if err = checkRPCClientConfig(config); err != nil {
-		return err
-	}
-
-	return nil
+	return checkRPCClientConfig(config)
 }
 
 func checkNodeListConfig(config *ChainClientConfig) error {

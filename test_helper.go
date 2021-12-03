@@ -38,11 +38,12 @@ var _ ConnectionPool = (*mockConnectionPool)(nil)
 var _mockServer = &mockRpcNodeServer{}
 
 type mockConnectionPool struct {
-	connections                    []*networkClient
-	logger                         utils.Logger
-	userKeyBytes                   []byte
-	userCrtBytes                   []byte
-	rpcClientMaxReceiveMessageSize int
+	connections       []*networkClient
+	logger            utils.Logger
+	userKeyBytes      []byte
+	userCrtBytes      []byte
+	rpcMaxRecvMsgSize int
+	rpcMaxSendMsgSize int
 }
 
 func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverTxError error,
@@ -76,21 +77,24 @@ func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverTxError error,
 
 func newMockConnPool(config *ChainClientConfig) (*mockConnectionPool, error) {
 	pool := &mockConnectionPool{
-		logger:                         config.logger,
-		userKeyBytes:                   config.userKeyBytes,
-		userCrtBytes:                   config.userCrtBytes,
-		rpcClientMaxReceiveMessageSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize,
+		logger:            config.logger,
+		userKeyBytes:      config.userKeyBytes,
+		userCrtBytes:      config.userCrtBytes,
+		rpcMaxRecvMsgSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize * 1024 * 1024,
+		rpcMaxSendMsgSize: config.rpcClientConfig.rpcClientMaxSendMessageSize * 1024 * 1024,
 	}
 
 	for idx, node := range config.nodeList {
 		for i := 0; i < node.connCnt; i++ {
 			cli := &networkClient{
-				nodeAddr:    node.addr,
-				useTLS:      node.useTLS,
-				caPaths:     node.caPaths,
-				caCerts:     node.caCerts,
-				tlsHostName: node.tlsHostName,
-				ID:          fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
+				nodeAddr:          node.addr,
+				useTLS:            node.useTLS,
+				caPaths:           node.caPaths,
+				caCerts:           node.caCerts,
+				tlsHostName:       node.tlsHostName,
+				ID:                fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
+				rpcMaxRecvMsgSize: pool.rpcMaxRecvMsgSize,
+				rpcMaxSendMsgSize: pool.rpcMaxSendMsgSize,
 			}
 			pool.connections = append(pool.connections, cli)
 		}
@@ -105,7 +109,6 @@ func newMockConnPool(config *ChainClientConfig) (*mockConnectionPool, error) {
 func (pool *mockConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string,
 	tlsHostName string) (*grpc.ClientConn, error) {
 	var tlsClient ca.CAClient
-	maxCallRecvMsgSize := pool.rpcClientMaxReceiveMessageSize * 1024 * 1024
 	if useTLS {
 		if len(caCerts) != 0 {
 			tlsClient = ca.CAClient{
@@ -130,11 +133,11 @@ func (pool *mockConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, ca
 			return nil, err
 		}
 		return grpc.Dial("", grpc.WithTransportCredentials(*c),
-			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)),
+			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)),
 			grpc.WithContextDialer(dialer(useTLS, caPaths, caCerts)))
 	}
 	return grpc.Dial("", grpc.WithInsecure(),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)),
 		grpc.WithContextDialer(dialer(useTLS, caPaths, caCerts)))
 }
 
