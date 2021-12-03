@@ -40,49 +40,55 @@ type ConnectionPool interface {
 
 // 客户端连接结构定义
 type networkClient struct {
-	rpcNode     api.RpcNodeClient
-	conn        *grpc.ClientConn
-	nodeAddr    string
-	useTLS      bool
-	caPaths     []string
-	caCerts     []string
-	tlsHostName string
-	ID          string
+	rpcNode           api.RpcNodeClient
+	conn              *grpc.ClientConn
+	nodeAddr          string
+	useTLS            bool
+	caPaths           []string
+	caCerts           []string
+	tlsHostName       string
+	ID                string
+	rpcMaxRecvMsgSize int
+	rpcMaxSendMsgSize int
 }
 
 func (cli *networkClient) sendRequestWithTimeout(txReq *common.TxRequest, timeout int64) (*common.TxResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel() // releases resources if SendRequest completes before timeout elapses
-	return cli.rpcNode.SendRequest(ctx, txReq)
+	return cli.rpcNode.SendRequest(ctx, txReq, grpc.MaxCallSendMsgSize(cli.rpcMaxSendMsgSize))
 }
 
 // ClientConnectionPool 客户端连接池结构定义
 type ClientConnectionPool struct {
-	connections                    []*networkClient
-	logger                         utils.Logger
-	userKeyBytes                   []byte
-	userCrtBytes                   []byte
-	rpcClientMaxReceiveMessageSize int
+	connections       []*networkClient
+	logger            utils.Logger
+	userKeyBytes      []byte
+	userCrtBytes      []byte
+	rpcMaxRecvMsgSize int
+	rpcMaxSendMsgSize int
 }
 
 // NewConnPool 创建连接池
 func NewConnPool(config *ChainClientConfig) (*ClientConnectionPool, error) {
 	pool := &ClientConnectionPool{
-		logger:                         config.logger,
-		userKeyBytes:                   config.userKeyBytes,
-		userCrtBytes:                   config.userCrtBytes,
-		rpcClientMaxReceiveMessageSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize,
+		logger:            config.logger,
+		userKeyBytes:      config.userKeyBytes,
+		userCrtBytes:      config.userCrtBytes,
+		rpcMaxRecvMsgSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize * 1024 * 1024,
+		rpcMaxSendMsgSize: config.rpcClientConfig.rpcClientMaxSendMessageSize * 1024 * 1024,
 	}
 
 	for idx, node := range config.nodeList {
 		for i := 0; i < node.connCnt; i++ {
 			cli := &networkClient{
-				nodeAddr:    node.addr,
-				useTLS:      node.useTLS,
-				caPaths:     node.caPaths,
-				caCerts:     node.caCerts,
-				tlsHostName: node.tlsHostName,
-				ID:          fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
+				nodeAddr:          node.addr,
+				useTLS:            node.useTLS,
+				caPaths:           node.caPaths,
+				caCerts:           node.caCerts,
+				tlsHostName:       node.tlsHostName,
+				ID:                fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
+				rpcMaxRecvMsgSize: pool.rpcMaxRecvMsgSize,
+				rpcMaxSendMsgSize: pool.rpcMaxSendMsgSize,
 			}
 			pool.connections = append(pool.connections, cli)
 		}
@@ -98,7 +104,6 @@ func NewConnPool(config *ChainClientConfig) (*ClientConnectionPool, error) {
 func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string,
 	tlsHostName string) (*grpc.ClientConn, error) {
 	var tlsClient ca.CAClient
-	maxCallRecvMsgSize := pool.rpcClientMaxReceiveMessageSize * 1024 * 1024
 	if useTLS {
 		if len(caCerts) != 0 {
 			tlsClient = ca.CAClient{
@@ -123,10 +128,10 @@ func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, 
 			return nil, err
 		}
 		return grpc.Dial(nodeAddr, grpc.WithTransportCredentials(*c),
-			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)))
+			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)))
 	}
 	return grpc.Dial(nodeAddr, grpc.WithInsecure(),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)))
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)))
 }
 
 // 获取空闲的可用客户端连接对象

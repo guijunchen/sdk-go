@@ -29,8 +29,10 @@ const (
 	DefaultGetTxTimeout = 10
 	// DefaultSendTxTimeout 发送交易超时时间
 	DefaultSendTxTimeout = 10
-	// DefaultRpcClientMaxReceiveMessageSize 默认grpc客户端接受最大值 4M
+	// DefaultRpcClientMaxReceiveMessageSize 默认grpc客户端接收message最大值 4M
 	DefaultRpcClientMaxReceiveMessageSize = 4
+	// DefaultRpcClientMaxSendMessageSize 默认grpc客户端发送message最大值 4M
+	DefaultRpcClientMaxSendMessageSize = 4
 )
 
 var (
@@ -121,9 +123,8 @@ func WithSecretKey(key string) ArchiveOption {
 
 // RPCClientConfig RPC Client 链接配置
 type RPCClientConfig struct {
-
-	//pc客户端最大接受大小 (MB)
-	rpcClientMaxReceiveMessageSize int
+	// grpc客户端接收和发送消息时，允许单条message大小的最大值(MB)
+	rpcClientMaxReceiveMessageSize, rpcClientMaxSendMessageSize int
 }
 
 type RPCClientOption func(config *RPCClientConfig)
@@ -132,6 +133,13 @@ type RPCClientOption func(config *RPCClientConfig)
 func WithRPCClientMaxReceiveMessageSize(size int) RPCClientOption {
 	return func(config *RPCClientConfig) {
 		config.rpcClientMaxReceiveMessageSize = size
+	}
+}
+
+// WithRPCClientMaxSendMessageSize 设置RPC Client的Max Receive Message Size
+func WithRPCClientMaxSendMessageSize(size int) RPCClientOption {
+	return func(config *RPCClientConfig) {
+		config.rpcClientMaxSendMessageSize = size
 	}
 }
 
@@ -505,6 +513,7 @@ func setRPCClientConfig(config *ChainClientConfig) {
 	if utils.Config.ChainClientConfig.RPCClientConfig != nil && config.rpcClientConfig == nil {
 		rpcClient := NewRPCClientConfig(
 			WithRPCClientMaxReceiveMessageSize(utils.Config.ChainClientConfig.RPCClientConfig.MaxRecvMsgSize),
+			WithRPCClientMaxSendMessageSize(utils.Config.ChainClientConfig.RPCClientConfig.MaxSendMsgSize),
 		)
 		config.rpcClientConfig = rpcClient
 	}
@@ -605,7 +614,11 @@ func checkConfig(config *ChainClientConfig) error {
 		return err
 	}
 
-	return checkRPCClientConfig(config)
+	if err = checkRPCClientConfig(config); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func checkNodeListConfig(config *ChainClientConfig) error {
@@ -704,12 +717,15 @@ func checkRPCClientConfig(config *ChainClientConfig) error {
 	if config.rpcClientConfig == nil {
 		rpcClient := NewRPCClientConfig(
 			WithRPCClientMaxReceiveMessageSize(DefaultRpcClientMaxReceiveMessageSize),
+			WithRPCClientMaxSendMessageSize(DefaultRpcClientMaxSendMessageSize),
 		)
 		config.rpcClientConfig = rpcClient
 	} else {
-		if config.rpcClientConfig.rpcClientMaxReceiveMessageSize <= 0 ||
-			config.rpcClientConfig.rpcClientMaxReceiveMessageSize > 100 {
+		if config.rpcClientConfig.rpcClientMaxReceiveMessageSize <= 0 {
 			config.rpcClientConfig.rpcClientMaxReceiveMessageSize = DefaultRpcClientMaxReceiveMessageSize
+		}
+		if config.rpcClientConfig.rpcClientMaxSendMessageSize <= 0 {
+			config.rpcClientConfig.rpcClientMaxSendMessageSize = DefaultRpcClientMaxSendMessageSize
 		}
 	}
 	return nil
