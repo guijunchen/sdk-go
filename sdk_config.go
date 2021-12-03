@@ -136,7 +136,7 @@ func WithRPCClientMaxReceiveMessageSize(size int) RPCClientOption {
 	}
 }
 
-// WithRPCClientMaxSendMessageSize 设置RPC Client的Max Receive Message Size
+// WithRPCClientMaxSendMessageSize 设置RPC Client的Max Send Message Size
 func WithRPCClientMaxSendMessageSize(size int) RPCClientOption {
 	return func(config *RPCClientConfig) {
 		config.rpcClientMaxSendMessageSize = size
