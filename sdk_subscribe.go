@@ -20,10 +20,10 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
-func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRWSet,
-	onlyHeader bool) (<-chan interface{}, error) {
+func (cc *ChainClient) CreateSubscribeBlockPayload(startBlock, endBlock int64,
+	withRWSet, onlyHeader bool) *common.Payload {
 
-	payload := cc.CreatePayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
+	return cc.CreatePayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
 		syscontract.SubscribeFunction_SUBSCRIBE_BLOCK.String(), []*common.KeyValuePair{
 			{
 				Key:   syscontract.SubscribeBlock_START_BLOCK.String(),
@@ -43,14 +43,12 @@ func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock 
 			},
 		}, 0,
 	)
-
-	return cc.Subscribe(ctx, payload)
 }
 
-func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int64, contractName string,
-	txIds []string) (<-chan interface{}, error) {
+func (cc *ChainClient) CreateSubscribeTxPayload(startBlock, endBlock int64,
+	contractName string, txIds []string) *common.Payload {
 
-	payload := cc.CreatePayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
+	return cc.CreatePayload("", common.TxType_SUBSCRIBE, syscontract.SystemContract_SUBSCRIBE_MANAGE.String(),
 		syscontract.SubscribeFunction_SUBSCRIBE_TX.String(), []*common.KeyValuePair{
 			{
 				Key:   syscontract.SubscribeTx_START_BLOCK.String(),
@@ -70,6 +68,20 @@ func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int
 			},
 		}, 0,
 	)
+}
+
+func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRWSet,
+	onlyHeader bool) (<-chan interface{}, error) {
+
+	payload := cc.CreateSubscribeBlockPayload(startBlock, endBlock, withRWSet, onlyHeader)
+
+	return cc.Subscribe(ctx, payload)
+}
+
+func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int64, contractName string,
+	txIds []string) (<-chan interface{}, error) {
+
+	payload := cc.CreateSubscribeTxPayload(startBlock, endBlock, contractName, txIds)
 
 	return cc.Subscribe(ctx, payload)
 }
