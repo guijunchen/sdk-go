@@ -26,11 +26,11 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - contractName: 合约名
 	//   - version: 版本号
-	//   - byteCode: 支持传入合约二进制文件路径或Hex或Base64编码的二进制内容
+	//   - byteCodeStringOrFilePath: 支持传入合约二进制文件路径或Hex或Base64编码的string
 	//   - runtime: 合约运行环境
 	//   - kvs: 合约初始化参数
 	// ```go
-	CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType,
+	CreateContractCreatePayload(contractName, version, byteCodeStringOrFilePath string, runtime common.RuntimeType,
 		kvs []*common.KeyValuePair) (*common.Payload, error)
 	// ```
 
@@ -38,11 +38,11 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - contractName: 合约名
 	//   - version: 版本号
-	//   - byteCode: 支持传入合约二进制文件路径或Hex或Base64编码的二进制内容
+	//   - byteCodeStringOrFilePath: 支持传入合约二进制文件路径或Hex或Base64编码的string
 	//   - runtime: 合约运行环境
 	//   - kvs: 合约升级参数
 	// ```go
-	CreateContractUpgradePayload(contractName, version, byteCode string, runtime common.RuntimeType,
+	CreateContractUpgradePayload(contractName, version, byteCodeStringOrFilePath string, runtime common.RuntimeType,
 		kvs []*common.KeyValuePair) (*common.Payload, error)
 	// ```
 
@@ -598,10 +598,13 @@ type SDKInterface interface {
 
 	// ### 5.3 合约事件订阅
 	// **参数说明**
-	//   - topic ：指定订阅主题
+	//   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
+	//   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
 	//   - contractName ：指定订阅的合约名称
+	//   - topic ：指定订阅主题
 	// ```go
-	SubscribeContractEvent(ctx context.Context, topic string, contractName string) (<-chan interface{}, error)
+	SubscribeContractEvent(ctx context.Context, startBlock, endBlock int64, contractName,
+		topic string) (<-chan interface{}, error)
 	// ```
 
 	// ### 5.4 多合一订阅
