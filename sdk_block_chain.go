@@ -12,6 +12,7 @@ import (
 	"fmt"
 
 	"chainmaker.org/chainmaker/pb-go/v2/config"
+	"google.golang.org/grpc"
 )
 
 func (cc *ChainClient) CheckNewBlockChainConfig() error {
@@ -22,7 +23,7 @@ func (cc *ChainClient) CheckNewBlockChainConfig() error {
 		return err
 	}
 	ctx := context.Background()
-	res, err := client.rpcNode.CheckNewBlockChainConfig(ctx, req)
+	res, err := client.rpcNode.CheckNewBlockChainConfig(ctx, req, grpc.MaxCallSendMsgSize(client.rpcMaxSendMsgSize))
 	if err != nil {
 		return err
 	}

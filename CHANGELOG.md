@@ -44,7 +44,11 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ### Deprecated
 
-## v2.2.0_qc - 2021-11-22
+## v2.2.0_qc - 2021-12-03
+
+### Features
+
+* (Grpc client) grpc客户端发送消息时，可设置允许单条message大小的最大值(MB)
 
 ### Improvements
 

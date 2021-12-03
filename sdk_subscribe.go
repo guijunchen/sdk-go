@@ -19,6 +19,7 @@ import (
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/gogo/protobuf/proto"
+	"google.golang.org/grpc"
 	grpccodes "google.golang.org/grpc/codes"
 	grpcstatus "google.golang.org/grpc/status"
 )
@@ -240,5 +241,5 @@ func (cc *ChainClient) getSubscribeStream(ctx context.Context,
 		return nil, err
 	}
 
-	return networkCli.rpcNode.Subscribe(ctx, req)
+	return networkCli.rpcNode.Subscribe(ctx, req, grpc.MaxCallSendMsgSize(networkCli.rpcMaxSendMsgSize))
 }
