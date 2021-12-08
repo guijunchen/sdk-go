@@ -57,52 +57,6 @@ func SignPayload(keyPem, certPem []byte, payload *common.Payload) (*common.Endor
 	return entry, nil
 }
 
-/*
-func SignPayloadWithHashType(keyPem, certPem []byte, payload *common.Payload) (*common.EndorsementEntry, error) {
-	key, err := asym.PrivateKeyFromPEM(keyPem, nil)
-	if err != nil {
-		return nil, fmt.Errorf("asym.PrivateKeyFromPEM failed, %s", err)
-	}
-
-	blockCrt, _ := pem.Decode(certPem)
-	if blockCrt == nil {
-		return nil, fmt.Errorf("decode pem failed, invalid certificate")
-	}
-	crt, err := bcx509.ParseCertificate(blockCrt.Bytes)
-	if err != nil {
-		return nil, fmt.Errorf("bcx509.ParseCertificate failed, %s", err)
-	}
-
-	hashalgo, err := bcx509.GetHashFromSignatureAlgorithm(crt.SignatureAlgorithm)
-	if err != nil {
-		return nil, fmt.Errorf("invalid algorithm: %s", err.Error())
-	}
-
-	signature, err := utils.SignPayloadWithHashType(key, hashalgo, payload)
-	if err != nil {
-		return nil, fmt.Errorf("SignPayload failed, %s", err)
-	}
-
-	var orgId string
-	if len(crt.Subject.Organization) != 0 {
-		orgId = crt.Subject.Organization[0]
-	}
-
-	sender := &accesscontrol.Member{
-		OrgId:      orgId,
-		MemberInfo: certPem,
-		MemberType: accesscontrol.MemberType_CERT,
-	}
-
-	entry := &common.EndorsementEntry{
-		Signer:    sender,
-		Signature: signature,
-	}
-
-	return entry, nil
-}
-*/
-
 // Deprecated: SignPayloadWithPath use ./utils.MakeEndorserWithPath instead.
 func SignPayloadWithPath(keyFilePath, crtFilePath string, payload *common.Payload) (*common.EndorsementEntry, error) {
 	// 读取私钥
@@ -179,4 +133,25 @@ func GetEVMAddressFromPrivateKeyBytes(privateKeyBytes []byte, hashType string) (
 
 func (cc *ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string][]byte {
 	return serialize.EasyCodecItemToParamsMap(items)
+}
+
+func GetZXAddressFromPKHex(pkHex string) (string, error) {
+	pk, err := hex.DecodeString(pkHex)
+	if err != nil {
+		return "", err
+	}
+
+	return evmutils.ZXAddressFromPublicKeyDER(pk)
+}
+
+func GetZXAddressFromPKPEM(pkPEM string) (string, error) {
+	return evmutils.ZXAddressFromPublicKeyPEM([]byte(pkPEM))
+}
+
+func GetZXAddressFromCertPEM(certPEM string) (string, error) {
+	return evmutils.ZXAddressFromCertificatePEM([]byte(certPEM))
+}
+
+func GetZXAddressFromCertPath(certPath string) (string, error) {
+	return evmutils.ZXAddressFromCertificatePath(certPath)
 }
