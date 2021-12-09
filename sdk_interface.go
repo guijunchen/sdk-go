@@ -500,6 +500,18 @@ type SDKInterface interface {
 	CreateChainConfigConsensusExtDeletePayload(keys []string) (*common.Payload, error)
 	// ```
 
+	// ### 3.25 修改地址类型payload生成
+	// **参数说明**
+	//   - addrType: 地址类型，0-ChainMaker; 1-ZXL
+	// ```go
+	CreateChainConfigAlterAddrTypePayload(addrType string) (*common.Payload, error)
+	// ```
+
+	// ### 3.26 启用或停用Gas计费开关payload生成
+	// ```go
+	CreateChainConfigEnableOrDisableGasPayload() (*common.Payload, error)
+	// ```
+
 	// ## 4 证书管理接口
 	// ### 4.1 用户证书添加
 	// **参数说明**

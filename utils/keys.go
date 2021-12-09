@@ -11,6 +11,7 @@ const (
 	// System Chain Config Contract keys
 	KeyChainConfigContractRoot              = "root"
 	KeyChainConfigContractOrgId             = "org_id"
+	KeyChainConfigAddrType                  = "addr_type"
 	KeyChainConfigContractNodeId            = "node_id"
 	KeyChainConfigContractNewNodeId         = "new_node_id"
 	KeyChainConfigContractNodeIds           = "node_ids"

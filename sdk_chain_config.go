@@ -607,6 +607,45 @@ func (cc *ChainClient) CreateChainConfigConsensusExtDeletePayload(keys []string)
 	return payload, nil
 }
 
+func (cc *ChainClient) CreateChainConfigAlterAddrTypePayload(addrType string) (*common.Payload, error) {
+	cc.logger.Debug("[SDK] begin to create [AlterAddrType] to be signed payload")
+
+	if addrType != "0" && addrType != "1" {
+		return nil, fmt.Errorf("unknown addr type [%s], only support: 0-ChainMaker; 1-ZXL", addrType)
+	}
+
+	pairs := []*common.KeyValuePair{
+		{
+			Key:   utils.KeyChainConfigAddrType,
+			Value: []byte(addrType),
+		},
+	}
+
+	seq, err := cc.GetChainConfigSequence()
+	if err != nil {
+		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
+	}
+
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
+		syscontract.ChainConfigFunction_ALTER_ADDR_TYPE.String(), pairs, seq+1, nil)
+
+	return payload, nil
+}
+
+func (cc *ChainClient) CreateChainConfigEnableOrDisableGasPayload() (*common.Payload, error) {
+	cc.logger.Debug("[SDK] begin to create [EnableOrDisable] to be signed payload")
+
+	seq, err := cc.GetChainConfigSequence()
+	if err != nil {
+		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
+	}
+
+	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
+		syscontract.ChainConfigFunction_ENABLE_OR_DISABLE_GAS.String(), nil, seq+1, nil)
+
+	return payload, nil
+}
+
 func (cc *ChainClient) SendChainConfigUpdateRequest(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	return cc.sendContractRequest(payload, endorsers, timeout, withSyncResult)
