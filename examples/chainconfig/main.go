@@ -41,7 +41,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	testChainConfig(client)
+	//testChainConfig(client)
 	testChainConfigGasEnable(client)
 	testChainConfigAlterAddrType(client)
 }
@@ -584,6 +584,11 @@ func testChainConfigConsensusExtDelete(client *sdk.ChainClient, keys []string, u
 func testChainConfigGasEnable(client *sdk.ChainClient) {
 	fmt.Println("====================== 启用/停用Gas计费 ======================")
 	chainConfig := testGetChainConfig(client)
+	if chainConfig.AccountConfig == nil {
+		fmt.Println("unsupport gas")
+		return
+	}
+
 	isGasEnabled := chainConfig.AccountConfig.EnableGas
 	fmt.Printf("is gas enable: %+v\n", isGasEnabled)
 	payload, err := client.CreateChainConfigEnableOrDisableGasPayload()
