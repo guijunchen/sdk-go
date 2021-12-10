@@ -316,7 +316,7 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 
 func invokeUserContractStepByStep(client *sdk.ChainClient, contractName, method, txId string,
 	kvs []*common.KeyValuePair, withSyncResult bool) error {
-	req, err := client.GetTxRequest(contractName, method, "", kvs, nil)
+	req, err := client.GetTxRequest(contractName, method, "", kvs)
 	if err != nil {
 		return err
 	}

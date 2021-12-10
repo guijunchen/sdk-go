@@ -170,7 +170,7 @@ func testUserContractAssetInvokeRegister(client *sdk.ChainClient, method string,
 }
 
 func testUserContractAssetQuery(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair) string {
-	resp, err := client.QueryContract(assetContractName, method, kvs, -1, nil)
+	resp, err := client.QueryContract(assetContractName, method, kvs, -1)
 	if err != nil {
 		log.Fatalln(err)
 	}

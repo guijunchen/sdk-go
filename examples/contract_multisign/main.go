@@ -125,7 +125,7 @@ func invokeUserContract(client *sdk.ChainClient, withSyncResult bool) {
 		},
 	}
 
-	resp, err := client.InvokeContract(contractName, "save", "", kvs, -1, withSyncResult, nil)
+	resp, err := client.InvokeContract(contractName, "save", "", kvs, -1, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -110,7 +110,7 @@ func testPaillierOperation(client *sdk.ChainClient, s string, b bool) {
 		log.Fatalln(err)
 	}
 	payloadParams, err := CreatePaillierTransactionPayloadParams(pubKeyBytes, 1, 1000000)
-	resp, err := client.InvokeContract(paillierContractName, s, "", payloadParams, -1, b, nil)
+	resp, err := client.InvokeContract(paillierContractName, s, "", payloadParams, -1, b)
 	//require.Nil(t, err)
 	if err != nil {
 		log.Fatalln(err)
@@ -258,7 +258,7 @@ func QueryPaillierResultById(c *sdk.ChainClient, contractName, method, paillierM
 		pairsMap["handletype"] = paillierMethod
 	*/
 
-	resp, err := c.QueryContract(contractName, method, pairs, timeout, nil)
+	resp, err := c.QueryContract(contractName, method, pairs, timeout)
 	if err != nil {
 		return nil, err
 	}

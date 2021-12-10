@@ -123,7 +123,7 @@ func testUserHibeContractParamsGoInvoke(client *sdk.ChainClient, method string, 
 
 // params 查询
 func testUserHibeContractParamsGoQuery(client *sdk.ChainClient, method string, params map[string]string) {
-	hibeParams, err := client.QueryHibeParamsWithOrgId(hibeContractName, findParamsByOrgId, examples.OrgId1, -1, nil)
+	hibeParams, err := client.QueryHibeParamsWithOrgId(hibeContractName, findParamsByOrgId, examples.OrgId1, -1)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -221,7 +221,7 @@ func invokeUserHibeContractParams(client *sdk.ChainClient, contractName, method,
 	payloadParams, err := client.CreateHibeInitParamsTxPayloadParams(examples.OrgId1, localParams)
 
 	// resp, err := client.InvokeContract(contractName, method, txId, payloadParams, -1, withSyncResult)
-	resp, err := client.InvokeContract(contractName, method, txId, payloadParams, -1, withSyncResult, nil)
+	resp, err := client.InvokeContract(contractName, method, txId, payloadParams, -1, withSyncResult)
 	if err != nil {
 		return err
 	}
@@ -255,7 +255,7 @@ func invokeUserHibeContractMsg(client *sdk.ChainClient, contractName, method, tx
 	// query params
 	var paramsBytesList [][]byte
 	for _, id := range org {
-		hibeParamsBytes, err := client.QueryHibeParamsWithOrgId(hibeContractName, findParamsByOrgId, id, -1, nil)
+		hibeParamsBytes, err := client.QueryHibeParamsWithOrgId(hibeContractName, findParamsByOrgId, id, -1)
 		if err != nil {
 			//t.Logf("QUERY hibe-contract-go-1 contract resp: %+v\n", hibeParams)
 			return fmt.Errorf("client.QueryHibeParamsWithOrgId(hibeContractName, id, -1) failed, err: %v\n", err)
@@ -275,7 +275,7 @@ func invokeUserHibeContractMsg(client *sdk.ChainClient, contractName, method, tx
 		return err
 	}
 
-	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult, nil)
+	resp, err := client.InvokeContract(contractName, method, txId, params, -1, withSyncResult)
 	if err != nil {
 		return err
 	}

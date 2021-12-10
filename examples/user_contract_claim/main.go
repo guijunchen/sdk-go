@@ -159,7 +159,7 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 }
 
 func testUserContractClaimQuery(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair) {
-	resp, err := client.QueryContract(claimContractName, method, kvs, -1, nil)
+	resp, err := client.QueryContract(claimContractName, method, kvs, -1)
 	if err != nil {
 		log.Fatalln(err)
 	}
