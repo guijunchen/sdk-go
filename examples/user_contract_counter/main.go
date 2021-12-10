@@ -256,7 +256,7 @@ func testUserContractCounterGoInvoke(client *sdk.ChainClient, method string, kvs
 }
 
 func testUserContractCounterGoQuery(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair) {
-	resp, err := client.QueryContract(contractName, method, kvs, -1, nil)
+	resp, err := client.QueryContract(contractName, method, kvs, -1)
 	if err != nil {
 		log.Fatalln(err)
 	}
