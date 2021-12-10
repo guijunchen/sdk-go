@@ -46,6 +46,7 @@ var successNum int64
 var totalNum int64
 
 var randSize = 2
+
 //var randSize = int(^uint(0) >> 1)
 
 func init() {
@@ -305,7 +306,7 @@ func testUserContractBalanceEVMIncreaseBalance(client *sdk.ChainClient, address 
 
 func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, kvs []*common.KeyValuePair, withSyncResult bool) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult, nil)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
 		return err
 	}

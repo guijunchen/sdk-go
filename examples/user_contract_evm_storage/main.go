@@ -142,7 +142,7 @@ func testUserContractStorageEVMSet(client *sdk.ChainClient, data int64, withSync
 
 func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, kvs []*common.KeyValuePair, withSyncResult bool) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult, nil)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
 		return err
 	}
@@ -202,7 +202,7 @@ func testUserContractStorageEVMGet(client *sdk.ChainClient, withSyncResult bool)
 func invokeUserContractWithResult(client *sdk.ChainClient, contractName, method, txId string,
 	kvs []*common.KeyValuePair, withSyncResult bool) ([]byte, error) {
 
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult, nil)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
 		return nil, err
 	}

@@ -21,11 +21,12 @@ import (
 
 const (
 	createContractTimeout = 5
-	claimContractName     = "claim_docker_001"
+	claimContractName     = "claim_zxl_002"
 	claimVersion          = "1.0.0"
-	claimByteCodePath     = "../../testdata/claim-docker-demo/claim_docker_001.7z"
+	claimByteCodePath     = "../../testdata/claim-docker-demo/claim_zxl_002.7z"
 
-	sdkConfigPKUser1Path = "../sdk_configs/sdk_config_pk_user1.yml"
+	sdkConfigPKUser1Path     = "../sdk_configs/sdk_config_pk_user1.yml"
+	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
 func main() {
@@ -35,12 +36,14 @@ func main() {
 func testUserContractClaim() {
 	fmt.Println("====================== create client ======================")
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigPKUser1Path)
+	//client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	fmt.Println("====================== 创建合约 ======================")
-	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1,
+		examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
 	//usernames := []string{examples.UserNameOrg1Admin1}
 	testUserContractClaimCreate(client, true, true, usernames...)
 
@@ -95,6 +98,10 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 		return nil, err
 	}
 
+	payload = client.AttachGasLimit(payload, &common.Limit{
+		GasLimit: 60000000,
+	})
+
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
 	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
 		client.GetAuthType(), payload, usernames...)
@@ -140,7 +147,7 @@ func testUserContractClaimInvoke(client *sdk.ChainClient,
 		},
 	}
 
-	err := invokeUserContract(client, claimContractName, method, "", kvs, withSyncResult)
+	err := invokeUserContract(client, claimContractName, method, "", kvs, withSyncResult, &common.Limit{GasLimit: 200000})
 	if err != nil {
 		return "", err
 	}
@@ -149,9 +156,9 @@ func testUserContractClaimInvoke(client *sdk.ChainClient,
 }
 
 func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string,
-	kvs []*common.KeyValuePair, withSyncResult bool) error {
+	kvs []*common.KeyValuePair, withSyncResult bool, limit *common.Limit) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult, nil)
+	resp, err := client.InvokeContractWithLimit(contractName, method, txId, kvs, -1, withSyncResult, limit)
 	if err != nil {
 		return err
 	}
@@ -170,7 +177,7 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 }
 
 func testUserContractClaimQuery(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair) {
-	resp, err := client.QueryContract(claimContractName, method, kvs, -1, nil)
+	resp, err := client.QueryContract(claimContractName, method, kvs, -1)
 	if err != nil {
 		log.Fatalln(err)
 	}

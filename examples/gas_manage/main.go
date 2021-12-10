@@ -36,7 +36,7 @@ func main() {
 	rechargeGasList := []*syscontract.RechargeGas{
 		{
 			PublicKey: []byte(gasAdminPubKeyStr),
-			GasAmount: 100,
+			GasAmount: 900000000,
 		},
 	}
 	if err := rechargeGas(client, rechargeGasList); err != nil {
@@ -78,7 +78,8 @@ func setGasAdmin(cc *sdk.ChainClient, key crypto.PublicKey) error {
 		return err
 	}
 	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[cc.GetHashType()],
-		cc.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
+		cc.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1,
+		examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		return err
 	}

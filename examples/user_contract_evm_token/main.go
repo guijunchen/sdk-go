@@ -264,7 +264,7 @@ func testUserContractTokenEVMBalanceOf(client *sdk.ChainClient, address string, 
 
 func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, kvs []*common.KeyValuePair, withSyncResult bool) error {
 
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult, nil)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
 		return err
 	}
@@ -285,7 +285,7 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 func invokeUserContractWithResult(client *sdk.ChainClient, contractName, method, txId string,
 	kvs []*common.KeyValuePair, withSyncResult bool) ([]byte, error) {
 
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult, nil)
+	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
 		return nil, err
 	}

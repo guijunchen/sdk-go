@@ -197,3 +197,8 @@ func (cc *ChainClient) createFrozenUnfrozenGasAccountPayload(method string,
 	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
 		method, pairs, defaultSeq, nil), nil
 }
+
+func (cc *ChainClient) AttachGasLimit(payload *common.Payload, limit *common.Limit) *common.Payload {
+	payload.Limit = limit
+	return payload
+}

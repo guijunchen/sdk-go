@@ -114,10 +114,10 @@ func (cc *ChainClient) CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte,
 
 func (cc *ChainClient) CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string,
 	plaintext []byte, receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType,
-	timeout int64, limit *common.Limit) ([]*common.KeyValuePair, error) {
+	timeout int64) ([]*common.KeyValuePair, error) {
 	hibeParamsBytesList := make([][]byte, len(receiverOrgIds))
 	for i, id := range receiverOrgIds {
-		hibeParamsBytes, err := cc.QueryHibeParamsWithOrgId(contractName, queryParamsMethod, id, timeout, limit)
+		hibeParamsBytes, err := cc.QueryHibeParamsWithOrgId(contractName, queryParamsMethod, id, timeout)
 		if err != nil {
 			return nil, err
 		}
@@ -132,8 +132,7 @@ func (cc *ChainClient) CreateHibeTxPayloadParamsWithoutHibeParams(contractName, 
 	return cc.CreateHibeTxPayloadParamsWithHibeParams(plaintext, receiverIds, hibeParamsBytesList, txId, keyType)
 }
 
-func (cc *ChainClient) QueryHibeParamsWithOrgId(contractName, method, orgId string, timeout int64,
-	limit *common.Limit) ([]byte, error) {
+func (cc *ChainClient) QueryHibeParamsWithOrgId(contractName, method, orgId string, timeout int64) ([]byte, error) {
 	if err := hibe.ValidateId(orgId); err != nil {
 		return nil, err
 	}
@@ -145,7 +144,7 @@ func (cc *ChainClient) QueryHibeParamsWithOrgId(contractName, method, orgId stri
 		},
 	}
 
-	resp, err := cc.QueryContract(contractName, method, pairs, timeout, limit)
+	resp, err := cc.QueryContract(contractName, method, pairs, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("send %s failed, %s", common.TxType_QUERY_CONTRACT.String(), err.Error())
 	}
