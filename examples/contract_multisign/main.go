@@ -17,10 +17,12 @@ import (
 
 const (
 	contractByteCodePath = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
-	contractName         = "claim1234"
+	contractName         = "claim010"
 	contractVersion      = "v1.0.0"
 
 	sdkConfigPKUser1Path = "../sdk_configs/sdk_config_pk_user1.yml"
+
+	needEndorserCount = 1
 )
 
 var (
@@ -44,7 +46,8 @@ func main() {
 
 	fmt.Println("====================== 各链管理员开始投票 ======================")
 	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[cc.GetHashType()],
-		cc.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
+		cc.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1,
+		examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -59,18 +62,31 @@ func main() {
 		}
 		fmt.Printf("send MultiSignContractVote resp: %+v\n", resp)
 
-		fmt.Println("====================== 查询本多签交易的投票情况 ======================")
-		time.Sleep(3 * time.Second)
-		resp, err = cc.MultiSignContractQuery(payload.TxId)
-		if err != nil {
-			log.Fatalln(err)
+		//fmt.Println("====================== 查询本多签交易的投票情况 ======================")
+		//time.Sleep(3 * time.Second)
+		//resp, err = cc.MultiSignContractQuery(payload.TxId)
+		//if err != nil {
+		//	log.Fatalln(err)
+		//}
+		//fmt.Printf("query MultiSignContractQuery resp: %+v\n", resp)
+
+		if i+1 == needEndorserCount {
+			break
 		}
-		fmt.Printf("query MultiSignContractQuery resp: %+v\n", resp)
 	}
 
 	fmt.Println("====================== 调用上边创建的合约 ======================")
 	time.Sleep(time.Second * 3)
-	invokeUserContract(cc, false)
+	fileHash := invokeUserContract(cc, true)
+
+	fmt.Println("====================== 执行合约查询接口 ======================")
+	kvs = []*common.KeyValuePair{
+		{
+			Key:   "file_hash",
+			Value: []byte(fileHash),
+		},
+	}
+	testUserContractClaimQuery(cc, "find_by_file_hash", kvs)
 }
 
 func newContractInitPairs() []*common.KeyValuePair {
@@ -106,7 +122,7 @@ func newContractInitPairs() []*common.KeyValuePair {
 	}
 }
 
-func invokeUserContract(client *sdk.ChainClient, withSyncResult bool) {
+func invokeUserContract(client *sdk.ChainClient, withSyncResult bool) string {
 
 	curTime := strconv.FormatInt(time.Now().Unix(), 10)
 	fileHash := uuid.GetUUID()
@@ -125,7 +141,8 @@ func invokeUserContract(client *sdk.ChainClient, withSyncResult bool) {
 		},
 	}
 
-	resp, err := client.InvokeContract(contractName, "save", "", kvs, -1, withSyncResult)
+	resp, err := client.InvokeContractWithLimit(contractName, "save", "", kvs, -1, withSyncResult,
+		&common.Limit{GasLimit: 100000000})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -141,4 +158,15 @@ func invokeUserContract(client *sdk.ChainClient, withSyncResult bool) {
 	//} else {
 	//	fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%s]\n", resp.Code, resp.Message, resp.ContractResult)
 	//}
+
+	return fileHash
+}
+
+func testUserContractClaimQuery(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair) {
+	resp, err := client.QueryContract(contractName, method, kvs, -1)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("QUERY claim contract resp: %+v\n", resp)
 }
