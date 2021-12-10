@@ -156,8 +156,8 @@ func (cc *ChainClient) InvokeContract(contractName, method, txId string, kvs []*
 	return cc.InvokeContractWithLimit(contractName, method, txId, kvs, timeout, withSyncResult, nil)
 }
 
-func (cc *ChainClient) InvokeContractWithLimit(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64,
-	withSyncResult bool, limit *common.Limit) (*common.TxResponse, error) {
+func (cc *ChainClient) InvokeContractWithLimit(contractName, method, txId string, kvs []*common.KeyValuePair,
+	timeout int64, withSyncResult bool, limit *common.Limit) (*common.TxResponse, error) {
 
 	cc.logger.Debugf("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
 		contractName, method, txId, kvs)
@@ -183,7 +183,8 @@ func (cc *ChainClient) QueryContract(contractName, method string, kvs []*common.
 	return resp, nil
 }
 
-func (cc *ChainClient) GetTxRequest(contractName, method, txId string, kvs []*common.KeyValuePair) (*common.TxRequest, error) {
+func (cc *ChainClient) GetTxRequest(contractName, method, txId string, kvs []*common.KeyValuePair) (
+	*common.TxRequest, error) {
 	if txId == "" {
 		txId = utils.GetRandTxId()
 	}
