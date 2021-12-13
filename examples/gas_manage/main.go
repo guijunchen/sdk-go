@@ -12,6 +12,7 @@ import (
 
 const (
 	sdkConfigPKUser1Path = "../sdk_configs/sdk_config_pk_user1.yml"
+	amount               = 900000000
 )
 
 func main() {
@@ -19,61 +20,73 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Println("====================== 设置client自己为 gas admin ======================")
-	if err := setGasAdmin(client, client.GetPublicKey()); err != nil {
+	pk, err := client.GetPublicKey().String()
+	if err != nil {
 		log.Fatal(err)
 	}
+
+	addr, err := sdk.GetZXAddressFromPKPEM(pk)
+	fmt.Printf("addr: %s\n", addr)
+
+	fmt.Println("====================== 设置client自己为 gas admin ======================")
+	if err := setGasAdmin(client, addr); err != nil {
+		log.Fatal(err)
+	}
+
 	fmt.Println("====================== 获取 gas admin ======================")
 	if err := getGasAdmin(client); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("====================== 充值gas账户 100个gas ======================")
-	gasAdminPubKeyStr, err := client.GetPublicKey().String()
-	if err != nil {
-		log.Fatal(err)
-	}
+
+	fmt.Printf("====================== 充值gas账户%d个gas ======================\n", amount)
 	rechargeGasList := []*syscontract.RechargeGas{
 		{
-			PublicKey: []byte(gasAdminPubKeyStr),
-			GasAmount: 900000000,
+			Address:   addr,
+			GasAmount: amount,
 		},
 	}
 	if err := rechargeGas(client, rechargeGasList); err != nil {
 		log.Fatal(err)
 	}
+
 	fmt.Println("====================== 查询gas账户余额 ======================")
-	if err := getGasBalance(client, client.GetPublicKey()); err != nil {
+	if err := getGasBalance(client, addr); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("====================== 退还gas账户 5个gas ======================")
-	if err := refundGas(client, client.GetPublicKey(), 5); err != nil {
+
+	fmt.Println("====================== 退还gas账户5个gas ======================")
+	if err := refundGas(client, addr, 5); err != nil {
 		log.Fatal(err)
 	}
+
 	fmt.Println("====================== 查询gas账户余额 ======================")
-	if err := getGasBalance(client, client.GetPublicKey()); err != nil {
+	if err := getGasBalance(client, addr); err != nil {
 		log.Fatal(err)
 	}
+
 	fmt.Println("====================== 冻结指定gas账户 ======================")
-	if err := frozenGasAccount(client, client.GetPublicKey()); err != nil {
+	if err := frozenGasAccount(client, addr); err != nil {
 		log.Fatal(err)
 	}
+
 	fmt.Println("====================== 查询gas账户的状态 ======================")
-	if err := getGasAccountStatus(client, client.GetPublicKey()); err != nil {
+	if err := getGasAccountStatus(client, addr); err != nil {
 		log.Fatal(err)
 	}
+
 	fmt.Println("====================== 解冻指定gas账户 ======================")
-	if err := unfrozenGasAccount(client, client.GetPublicKey()); err != nil {
+	if err := unfrozenGasAccount(client, addr); err != nil {
 		log.Fatal(err)
 	}
+
 	fmt.Println("====================== 查询gas账户的状态 ======================")
-	if err := getGasAccountStatus(client, client.GetPublicKey()); err != nil {
+	if err := getGasAccountStatus(client, addr); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func setGasAdmin(cc *sdk.ChainClient, key crypto.PublicKey) error {
-	payload, err := cc.CreateSetGasAdminPayload(key)
+func setGasAdmin(cc *sdk.ChainClient, address string) error {
+	payload, err := cc.CreateSetGasAdminPayload(address)
 	if err != nil {
 		return err
 	}
@@ -115,8 +128,8 @@ func rechargeGas(cc *sdk.ChainClient, rechargeGasList []*syscontract.RechargeGas
 	return nil
 }
 
-func getGasBalance(cc *sdk.ChainClient, pubKey crypto.PublicKey) error {
-	balance, err := cc.GetGasBalance(pubKey)
+func getGasBalance(cc *sdk.ChainClient, address string) error {
+	balance, err := cc.GetGasBalance(address)
 	if err != nil {
 		return err
 	}
@@ -125,8 +138,8 @@ func getGasBalance(cc *sdk.ChainClient, pubKey crypto.PublicKey) error {
 	return nil
 }
 
-func refundGas(cc *sdk.ChainClient, pubKey crypto.PublicKey, amount int64) error {
-	payload, err := cc.CreateRefundGasPayload(pubKey, amount)
+func refundGas(cc *sdk.ChainClient, address string, amount int64) error {
+	payload, err := cc.CreateRefundGasPayload(address, amount)
 	if err != nil {
 		return err
 	}
@@ -139,8 +152,8 @@ func refundGas(cc *sdk.ChainClient, pubKey crypto.PublicKey, amount int64) error
 	return nil
 }
 
-func frozenGasAccount(cc *sdk.ChainClient, pubKey crypto.PublicKey) error {
-	payload, err := cc.CreateFrozenGasAccountPayload(pubKey)
+func frozenGasAccount(cc *sdk.ChainClient, address string) error {
+	payload, err := cc.CreateFrozenGasAccountPayload(address)
 	if err != nil {
 		return err
 	}
@@ -153,8 +166,8 @@ func frozenGasAccount(cc *sdk.ChainClient, pubKey crypto.PublicKey) error {
 	return nil
 }
 
-func unfrozenGasAccount(cc *sdk.ChainClient, pubKey crypto.PublicKey) error {
-	payload, err := cc.CreateUnfrozenGasAccountPayload(pubKey)
+func unfrozenGasAccount(cc *sdk.ChainClient, address string) error {
+	payload, err := cc.CreateUnfrozenGasAccountPayload(address)
 	if err != nil {
 		return err
 	}
@@ -167,8 +180,8 @@ func unfrozenGasAccount(cc *sdk.ChainClient, pubKey crypto.PublicKey) error {
 	return nil
 }
 
-func getGasAccountStatus(cc *sdk.ChainClient, pubKey crypto.PublicKey) error {
-	status, err := cc.GetGasAccountStatus(pubKey)
+func getGasAccountStatus(cc *sdk.ChainClient, address string) error {
+	status, err := cc.GetGasAccountStatus(address)
 	if err != nil {
 		return err
 	}

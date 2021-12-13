@@ -1012,9 +1012,9 @@ type SDKInterface interface {
 	// ## 13 gas管理相关接口
 	// ### 13.1 构造设置gas管理员payload
 	// **参数说明**
-	//   - adminPubKey: gas管理员的公钥
+	//   - address: gas管理员的地址
 	// ```go
-	CreateSetGasAdminPayload(adminPubKey crypto.PublicKey) (*common.Payload, error)
+	CreateSetGasAdminPayload(address string) (*common.Payload, error)
 	// ```
 
 	// ### 13.2 查询gas管理员
@@ -1033,40 +1033,40 @@ type SDKInterface interface {
 
 	// ### 13.4 查询gas账户余额（根据公钥）
 	// **参数说明**
-	//   - pubKey: 查询gas余额的账户公钥
+	//   - address: 查询gas余额的账户地址
 	// ```go
-	GetGasBalance(pubKey crypto.PublicKey) (int64, error)
+	GetGasBalance(address string) (int64, error)
 	// ```
 
 	// ### 13.5 构造 退还gas账户的gas payload
 	// **参数说明**
-	//   - pubKey: 退还gas的账户公钥
+	//   - address: 退还gas的账户地址
 	//   - amount: 退还gas的数量
 	// ```go
-	CreateRefundGasPayload(pubKey crypto.PublicKey, amount int64) (*common.Payload, error)
+	CreateRefundGasPayload(address string, amount int64) (*common.Payload, error)
 	// ```
 
 	// ### 13.6 构造 冻结指定gas账户 payload
 	// **参数说明**
-	//   - pubKey: 冻结指定gas账户的账户公钥
+	//   - address: 冻结指定gas账户的账户地址
 	// ```go
-	CreateFrozenGasAccountPayload(pubKey crypto.PublicKey) (*common.Payload, error)
+	CreateFrozenGasAccountPayload(address string) (*common.Payload, error)
 	// ```
 
 	// ### 13.7 构造 解冻指定gas账户 payload
 	// **参数说明**
-	//   - pubKey: 解冻指定gas账户的账户公钥
+	//   - address: 解冻指定gas账户的账户地址
 	// ```go
-	CreateUnfrozenGasAccountPayload(pubKey crypto.PublicKey) (*common.Payload, error)
+	CreateUnfrozenGasAccountPayload(address string) (*common.Payload, error)
 	// ```
 
 	// ### 13.8 查询gas账户的状态
 	// **参数说明**
-	//   - pubKey: 解冻指定gas账户的账户公钥
+	//   - address: 解冻指定gas账户的账户地址
 	// **返回值说明**
 	//   - bool: true表示账号未被冻结，false表示账号已被冻结
 	// ```go
-	GetGasAccountStatus(pubKey crypto.PublicKey) (bool, error)
+	GetGasAccountStatus(address string) (bool, error)
 	// ```
 
 	// ### 13.9 发送gas管理类请求

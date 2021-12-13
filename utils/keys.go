@@ -66,6 +66,7 @@ const (
 	KeyPubkeyOrgId = "org_id"
 
 	// Gas management
+	KeyGasAddressKey       = "address_key"
 	KeyGasPublicKey        = "public_key"
 	KeyGasBatchRecharge    = "batch_recharge"
 	KeyGasBalancePublicKey = "balance_public_key"
