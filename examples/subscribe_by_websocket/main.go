@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 
 	"github.com/gogo/protobuf/proto"
@@ -49,7 +50,15 @@ const (
 
 var subType = flag.Int("subscribeType", 1, "1-block; 2-blockHeader; 3-tx; 4-event")
 
+type StreamError struct {
+	GrpcCode   int32  `json:"grpc_code,omitempty"`
+	HttpCode   int32  `json:"http_code,omitempty"`
+	Message    string `json:"message,omitempty"`
+	HttpStatus string `json:"http_status,omitempty"`
+}
+
 type WSResp struct {
+	Error  StreamError            `json:"error,omitempty"`
 	Result common.SubscribeResult `json:"result"`
 }
 
@@ -62,13 +71,13 @@ func main() {
 	}
 
 	if *subType == subscribeTypeBlock {
-		testSubscribeBlock(client, -1, -1, false, false)
+		testSubscribeBlock(client, 0, -1, false, false)
 	} else if *subType == subscribeTypeBlockHeader {
-		testSubscribeBlock(client, -1, -1, false, true)
+		testSubscribeBlock(client, 0, -1, false, true)
 	} else if *subType == subscribeTypeTx {
-		testSubscribeTx(client, -1, -1, "", nil)
+		testSubscribeTx(client, 0, -1, "", nil)
 	} else if *subType == subscribeTypeEvent {
-
+		testSubscribeContractEvent(client, 0, -1, "claim_restful_001", "")
 	}
 }
 
@@ -88,6 +97,14 @@ func receiveHandler(connection *websocket.Conn, done chan struct{}) {
 		err = json.Unmarshal(data, &result)
 		if err != nil {
 			log.Println("json unmarshal failed, ", err)
+			return
+		}
+
+		//log.Printf("received result: %+v\n", result)
+
+		if result.Error.HttpCode != http.StatusOK && result.Error.GrpcCode != 0 {
+			log.Printf("subscribe by websocket failed, [httpCode:%d]/[httpStatus:%s]/[grpcCode:%d]/[errMsg:%s]\n",
+				result.Error.HttpCode, result.Error.HttpStatus, result.Error.GrpcCode, result.Error.Message)
 			return
 		}
 
@@ -114,7 +131,12 @@ func receiveHandler(connection *websocket.Conn, done chan struct{}) {
 			}
 			log.Printf(">>> tx: %+v\n", tx)
 		} else if *subType == subscribeTypeEvent {
-
+			events := &common.ContractEventInfoList{}
+			if err = proto.Unmarshal(result.Result.Data, events); err != nil {
+				log.Println("unmarshal data failed:", err)
+				return
+			}
+			log.Printf(">>> enents: %+v\n", events)
 		}
 
 		fmt.Printf("\n\n")
@@ -134,6 +156,13 @@ func testSubscribeTx(client *sdk.ChainClient, startBlock, endBlock int64, contra
 	txIds []string) {
 
 	payload := client.CreateSubscribeTxPayload(startBlock, endBlock, contractName, txIds)
+
+	subscribe(client, payload)
+}
+
+func testSubscribeContractEvent(client *sdk.ChainClient, startBlock, endBlock int64, contractName, topic string) {
+
+	payload := client.CreateSubscribeContractEventPayload(startBlock, endBlock, contractName, topic)
 
 	subscribe(client, payload)
 }
