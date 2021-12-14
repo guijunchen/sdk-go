@@ -11,6 +11,7 @@ const (
 	// System Chain Config Contract keys
 	KeyChainConfigContractRoot              = "root"
 	KeyChainConfigContractOrgId             = "org_id"
+	KeyChainConfigAddrType                  = "addr_type"
 	KeyChainConfigContractNodeId            = "node_id"
 	KeyChainConfigContractNewNodeId         = "new_node_id"
 	KeyChainConfigContractNodeIds           = "node_ids"
@@ -60,9 +61,18 @@ const (
 	KeyPrivateReq   = "private_req"
 
 	// PubkeyManage keys
-	KeyPubkey       = "pubkey"
-	KeyPubkeyRole 	= "role"
-	KeyPubkeyOrgId 	= "org_id"
+	KeyPubkey      = "pubkey"
+	KeyPubkeyRole  = "role"
+	KeyPubkeyOrgId = "org_id"
+
+	// Gas management
+	KeyGasAddressKey       = "address_key"
+	KeyGasPublicKey        = "public_key"
+	KeyGasBatchRecharge    = "batch_recharge"
+	KeyGasBalancePublicKey = "balance_public_key"
+	KeyGasChargePublicKey  = "charge_public_key"
+	KeyGasChargeGasAmount  = "charge_gas_amount"
+	KeyGasFrozenPublicKey  = "frozen_public_key"
 )
 
 //nolint

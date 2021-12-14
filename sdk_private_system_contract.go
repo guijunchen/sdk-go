@@ -47,7 +47,7 @@ func (cc *ChainClient) SaveDir(orderId, txId string,
 	})
 
 	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_DIR.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_DIR.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {
@@ -81,7 +81,7 @@ func (cc *ChainClient) GetContract(contractName, codeHash string) (*common.Priva
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_CONTRACT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_CONTRACT.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -165,7 +165,7 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, isD
 	pairs := paramsMap2KVPairs(pairsMap)
 
 	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_DATA.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_DATA.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {
@@ -198,7 +198,7 @@ func (cc *ChainClient) GetData(contractName, key string) ([]byte, error) {
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_DATA.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_DATA.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -224,7 +224,7 @@ func (cc *ChainClient) GetDir(orderId string) ([]byte, error) {
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_DIR.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_DIR.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -261,7 +261,7 @@ func (cc *ChainClient) CheckCallerCertAuth(payload string, orgIds []string, sign
 	})
 
 	payloadBytes := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_CHECK_CALLER_CERT_AUTH.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_CHECK_CALLER_CERT_AUTH.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payloadBytes, nil)
 	if err != nil {
@@ -293,7 +293,7 @@ func (cc *ChainClient) SaveEnclaveCACert(
 	})
 
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {
@@ -336,7 +336,7 @@ func (cc *ChainClient) SaveEnclaveReport(
 	})
 
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_ENCLAVE_REPORT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_ENCLAVE_REPORT.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {
@@ -377,7 +377,7 @@ func (cc *ChainClient) CreateSaveEnclaveCACertPayload(enclaveCACert string, txId
 	})
 
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(), pairs, defaultSeq, nil)
 
 	return payload, nil
 }
@@ -392,7 +392,7 @@ func (cc *ChainClient) GetEnclaveCACert() ([]byte, error) {
 	pairs := paramsMap2KVPairs(map[string][]byte{})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_CA_CERT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_CA_CERT.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -424,7 +424,7 @@ func (cc *ChainClient) CreateSaveEnclaveReportPayload(enclaveId, report, txId st
 	})
 
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_ENCLAVE_REPORT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_ENCLAVE_REPORT.String(), pairs, defaultSeq, nil)
 
 	return payload, nil
 }
@@ -447,7 +447,7 @@ func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncRe
 	})
 
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_REMOTE_ATTESTATION.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_REMOTE_ATTESTATION.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
 	if err != nil {
@@ -483,7 +483,7 @@ func (cc *ChainClient) GetEnclaveEncryptPubKey(enclaveId string) ([]byte, error)
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_ENCLAVE_ENCRYPT_PUB_KEY.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_ENCLAVE_ENCRYPT_PUB_KEY.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -509,7 +509,7 @@ func (cc *ChainClient) GetEnclaveVerificationPubKey(enclaveId string) ([]byte, e
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_ENCLAVE_VERIFICATION_PUB_KEY.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_ENCLAVE_VERIFICATION_PUB_KEY.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -535,7 +535,7 @@ func (cc *ChainClient) GetEnclaveReport(enclaveId string) ([]byte, error) {
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_ENCLAVE_REPORT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_ENCLAVE_REPORT.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -561,7 +561,7 @@ func (cc *ChainClient) GetEnclaveChallenge(enclaveId string) ([]byte, error) {
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_ENCLAVE_CHALLENGE.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_ENCLAVE_CHALLENGE.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -587,7 +587,7 @@ func (cc *ChainClient) GetEnclaveSignature(enclaveId string) ([]byte, error) {
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_ENCLAVE_SIGNATURE.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_ENCLAVE_SIGNATURE.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -613,7 +613,7 @@ func (cc *ChainClient) GetEnclaveProof(enclaveId string) ([]byte, error) {
 	})
 
 	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_ENCLAVE_PROOF.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_ENCLAVE_PROOF.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {

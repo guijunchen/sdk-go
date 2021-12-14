@@ -45,7 +45,7 @@ func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock 
 				Key:   syscontract.SubscribeBlock_ONLY_HEADER.String(),
 				Value: []byte(strconv.FormatBool(onlyHeader)),
 			},
-		}, defaultSeq,
+		}, defaultSeq, nil,
 	)
 
 	return cc.Subscribe(ctx, payload)
@@ -72,7 +72,7 @@ func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int
 				Key:   syscontract.SubscribeTx_TX_IDS.String(),
 				Value: []byte(strings.Join(txIds, ",")),
 			},
-		}, defaultSeq,
+		}, defaultSeq, nil,
 	)
 
 	return cc.Subscribe(ctx, payload)
@@ -99,7 +99,7 @@ func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, startBlock, e
 				Key:   syscontract.SubscribeContractEvent_TOPIC.String(),
 				Value: []byte(topic),
 			},
-		}, defaultSeq,
+		}, defaultSeq, nil,
 	)
 
 	return cc.Subscribe(ctx, payload)
