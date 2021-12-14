@@ -8,24 +8,22 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/common/v2/crypto/asym"
+	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
+	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"chainmaker.org/chainmaker/common/crypto"
-	"chainmaker.org/chainmaker/common/crypto/asym"
-	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
-	"chainmaker.org/chainmaker/pb-go/accesscontrol"
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/sdk-go/utils"
 )
 
 const (
@@ -52,8 +50,19 @@ type ChainClient struct {
 	// archive config
 	archiveConfig *ArchiveConfig
 
-	//grpc client config
+	// grpc client config
 	rpcClientConfig *RPCClientConfig
+
+	// pkcs11 config
+	pkcs11Config *Pkcs11Config
+
+	publicKey crypto.PublicKey
+	pkBytes   []byte
+	hashType  string
+	authType  AuthType
+	// retry config
+	retryLimit    int // if <=0 then use DefaultRetryLimit
+	retryInterval int // if <=0 then use DefaultRetryInterval
 }
 
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
@@ -91,6 +100,18 @@ func NewRPCClientConfig(opts ...RPCClientOption) *RPCClientConfig {
 	return config
 }
 
+func NewPkcs11Config(enabled bool, libPath, label, password string,
+	sessionCacheSize int, hashAlgo string) *Pkcs11Config {
+	return &Pkcs11Config{
+		Enabled:          enabled,
+		Library:          libPath,
+		Label:            label,
+		Password:         password,
+		SessionCacheSize: sessionCacheSize,
+		Hash:             hashAlgo,
+	}
+}
+
 func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	config, err := generateConfig(opts...)
 	if err != nil {
@@ -100,6 +121,21 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	pool, err := NewConnPool(config)
 	if err != nil {
 		return nil, err
+	}
+
+	var hashType = ""
+	var publicKey crypto.PublicKey
+	var pkBytes []byte
+	var pkPem string
+	if config.authType == PermissionedWithKey || config.authType == Public {
+		hashType = config.crypto.hash
+		publicKey = config.userPk
+		pkPem, err = publicKey.String()
+		if err != nil {
+			return nil, err
+		}
+
+		pkBytes = []byte(pkPem)
 	}
 
 	return &ChainClient{
@@ -112,6 +148,15 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		privateKey:      config.privateKey,
 		archiveConfig:   config.archiveConfig,
 		rpcClientConfig: config.rpcClientConfig,
+		pkcs11Config:    config.pkcs11Config,
+
+		publicKey: publicKey,
+		hashType:  hashType,
+		authType:  config.authType,
+		pkBytes:   pkBytes,
+
+		retryLimit:    config.retryLimit,
+		retryInterval: config.retryInterval,
 	}, nil
 }
 
@@ -138,21 +183,32 @@ func (cc *ChainClient) proposalRequestWithTimeout(payload *common.Payload, endor
 func (cc *ChainClient) generateTxRequest(payload *common.Payload,
 	endorsers []*common.EndorsementEntry) (*common.TxRequest, error) {
 	var (
-		signer *accesscontrol.Member
+		signer    *accesscontrol.Member
+		signBytes []byte
+		err       error
 	)
 
 	// 构造Sender
-	if cc.enabledCrtHash && len(cc.userCrtHash) > 0 {
-		signer = &accesscontrol.Member{
-			OrgId:      cc.orgId,
-			MemberInfo: cc.userCrtHash,
-			MemberType: accesscontrol.MemberType_CERT_HASH,
+	if cc.authType == PermissionedWithCert {
+
+		if cc.enabledCrtHash && len(cc.userCrtHash) > 0 {
+			signer = &accesscontrol.Member{
+				OrgId:      cc.orgId,
+				MemberInfo: cc.userCrtHash,
+				MemberType: accesscontrol.MemberType_CERT_HASH,
+			}
+		} else {
+			signer = &accesscontrol.Member{
+				OrgId:      cc.orgId,
+				MemberInfo: cc.userCrtBytes,
+				MemberType: accesscontrol.MemberType_CERT,
+			}
 		}
 	} else {
 		signer = &accesscontrol.Member{
 			OrgId:      cc.orgId,
-			MemberInfo: cc.userCrtBytes,
-			MemberType: accesscontrol.MemberType_CERT,
+			MemberInfo: cc.pkBytes,
+			MemberType: accesscontrol.MemberType_PUBLIC_KEY,
 		}
 	}
 
@@ -165,9 +221,21 @@ func (cc *ChainClient) generateTxRequest(payload *common.Payload,
 		Endorsers: endorsers,
 	}
 
-	signBytes, err := utils.SignPayload(cc.privateKey, cc.userCrt, payload)
-	if err != nil {
-		return nil, fmt.Errorf("SignPayload failed, %s", err)
+	if cc.authType == PermissionedWithCert {
+		hashalgo, err := bcx509.GetHashFromSignatureAlgorithm(cc.userCrt.SignatureAlgorithm)
+		if err != nil {
+			return nil, fmt.Errorf("invalid algorithm: %v", err.Error())
+		}
+
+		signBytes, err = utils.SignPayloadWithHashType(cc.privateKey, hashalgo, payload)
+		if err != nil {
+			return nil, fmt.Errorf("SignPayload failed, %s", err.Error())
+		}
+	} else {
+		signBytes, err = utils.SignPayloadWithHashType(cc.privateKey, crypto.HashAlgoMap[cc.hashType], payload)
+		if err != nil {
+			return nil, fmt.Errorf("SignPayload failed, %s", err.Error())
+		}
 	}
 
 	req.Sender.Signature = signBytes
@@ -199,10 +267,7 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 			cc.logger.Debugf("[SDK] begin try to connect node [%s]", client.ID)
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
-		defer cancel()
-
-		resp, err := client.rpcNode.SendRequest(ctx, txRequest)
+		resp, err := client.sendRequestWithTimeout(txRequest, timeout)
 		if err != nil {
 			resp := &common.TxResponse{
 				Message: err.Error(),
@@ -242,6 +307,10 @@ func (cc *ChainClient) EnableCertHash() error {
 	var (
 		err error
 	)
+
+	if cc.GetAuthType() != PermissionedWithCert {
+		return errors.New("cert hash is not supported")
+	}
 
 	// 0.已经启用压缩证书
 	if cc.enabledCrtHash {
@@ -313,6 +382,14 @@ func (cc *ChainClient) GetUserCrtHash() []byte {
 	return cc.userCrtHash
 }
 
+func (cc *ChainClient) GetHashType() string {
+	return cc.hashType
+}
+
+func (cc *ChainClient) GetAuthType() AuthType {
+	return cc.authType
+}
+
 // 检查证书是否成功上链
 func (cc *ChainClient) checkUserCertOnChain() error {
 	err := retry.Retry(func(uint) error {
@@ -376,6 +453,10 @@ func (cc *ChainClient) getCheckCertHash() (bool, error) {
 	}
 
 	return false, nil
+}
+
+func (cc *ChainClient) Pkcs11Config() *Pkcs11Config {
+	return cc.pkcs11Config
 }
 
 func CreateChainClient(pool ConnectionPool, userCrtBytes, privKey, userCrtHash []byte, orgId, chainId string,

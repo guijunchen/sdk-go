@@ -10,17 +10,20 @@ import (
 	"time"
 
 	"github.com/Rican7/retry"
-	"github.com/Rican7/retry/backoff"
 	"github.com/Rican7/retry/strategy"
 
-	"chainmaker.org/chainmaker/pb-go/accesscontrol"
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/sdk-go/utils"
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
+	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
 const (
-	// 轮训交易结果最大次数
-	retryCnt = 10
+	// DefaultRetryLimit 默认轮训交易结果最大次数
+	DefaultRetryLimit = 10
+	// DefaultRetryInterval 默认每次轮训交易结果时的等待时间，单位ms
+	DefaultRetryInterval = 500
 	// defaultSeq default sequence
 	defaultSeq = 0
 )
@@ -39,8 +42,8 @@ func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error
 
 		return nil
 	},
-		strategy.Limit(retryCnt),
-		strategy.Backoff(backoff.Fibonacci(retryInterval*time.Millisecond)),
+		strategy.Wait(time.Duration(cc.retryInterval)*time.Millisecond),
+		strategy.Limit(uint(cc.retryLimit)),
 	)
 
 	if err != nil {
@@ -96,22 +99,44 @@ func (cc *ChainClient) createPayload(txId string, txType common.TxType, contract
 }
 
 func (cc *ChainClient) SignPayload(payload *common.Payload) (*common.EndorsementEntry, error) {
+	var (
+		sender    *accesscontrol.Member
+		signBytes []byte
+		err       error
+	)
+	if cc.authType == PermissionedWithCert {
 
-	signBytes, err := utils.SignPayload(cc.privateKey, cc.userCrt, payload)
-	if err != nil {
-		return nil, fmt.Errorf("SignPayload failed, %s", err)
-	}
+		hashalgo, err := bcx509.GetHashFromSignatureAlgorithm(cc.userCrt.SignatureAlgorithm)
+		if err != nil {
+			return nil, fmt.Errorf("invalid algorithm: %s", err.Error())
+		}
 
-	sender := &accesscontrol.Member{
-		OrgId:      cc.orgId,
-		MemberInfo: cc.userCrtBytes,
-		MemberType: accesscontrol.MemberType_CERT,
+		signBytes, err = utils.SignPayloadWithHashType(cc.privateKey, hashalgo, payload)
+		if err != nil {
+			return nil, fmt.Errorf("SignPayload failed, %s", err)
+		}
+
+		sender = &accesscontrol.Member{
+			OrgId:      cc.orgId,
+			MemberInfo: cc.userCrtBytes,
+			MemberType: accesscontrol.MemberType_CERT,
+		}
+
+	} else {
+		signBytes, err = utils.SignPayloadWithHashType(cc.privateKey, crypto.HashAlgoMap[cc.hashType], payload)
+		if err != nil {
+			return nil, fmt.Errorf("SignPayload failed, %s", err.Error())
+		}
+		sender = &accesscontrol.Member{
+			OrgId:      cc.orgId,
+			MemberInfo: cc.pkBytes,
+			MemberType: accesscontrol.MemberType_PUBLIC_KEY,
+		}
 	}
 
 	entry := &common.EndorsementEntry{
 		Signer:    sender,
 		Signature: signBytes,
 	}
-
 	return entry, nil
 }

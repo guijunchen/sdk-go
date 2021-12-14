@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"chainmaker.org/chainmaker/common/crypto"
-	"chainmaker.org/chainmaker/common/crypto/hibe"
-	"chainmaker.org/chainmaker/pb-go/common"
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/common/v2/crypto/hibe"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
 )
 
 // hibe msg's Keys

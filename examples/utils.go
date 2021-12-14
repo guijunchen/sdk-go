@@ -14,14 +14,19 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	bcx509 "chainmaker.org/chainmaker/common/crypto/x509"
-	"chainmaker.org/chainmaker/common/evmutils"
-	"chainmaker.org/chainmaker/pb-go/common"
-	sdk "chainmaker.org/chainmaker/sdk-go"
+	"chainmaker.org/chainmaker/common/v2/crypto"
+
+	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
+	"chainmaker.org/chainmaker/common/v2/evmutils"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
+	sdkutils "chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
 const (
 	OrgId1 = "wx-org1.chainmaker.org"
+	OrgId2 = "wx-org2.chainmaker.org"
+	OrgId3 = "wx-org3.chainmaker.org"
 	OrgId4 = "wx-org4.chainmaker.org"
 	OrgId5 = "wx-org5.chainmaker.org"
 
@@ -82,6 +87,62 @@ var users = map[string]*User{
 		"../../testdata/crypto-config/wx-org5.chainmaker.org/user/admin1/admin1.sign.crt",
 	},
 }
+var permissionedPkUsers = map[string]*PermissionedPkUsers{
+	"org1client1": {
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org1/user/client1/client1.key",
+		OrgId1,
+	},
+	"org2client1": {
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org2/user/client1/client1.key",
+		OrgId2,
+	},
+	"org1admin1": {
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org1/user/admin1/admin1.key",
+		OrgId1,
+	},
+	"org2admin1": {
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org2/user/admin1/admin1.key",
+		OrgId2,
+	},
+	"org3admin1": {
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org3/user/admin1/admin1.key",
+		OrgId3,
+	},
+	"org4admin1": {
+		"../../testdata/crypto-config-pk/permissioned-with-key/wx-org4/user/admin1/admin1.key",
+		OrgId4,
+	},
+}
+
+var pkUsers = map[string]*PkUsers{
+	"org1client1": {
+		"../../testdata/crypto-config-pk/public/user/user1/user1.key",
+	},
+	"org2client1": {
+		"../../testdata/crypto-config-pk/public/user/user2/user2.key",
+	},
+	"org1admin1": {
+		"../../testdata/crypto-config-pk/public/admin/admin1/admin1.key",
+	},
+	"org2admin1": {
+		"../../testdata/crypto-config-pk/public/admin/admin2/admin2.key",
+	},
+	"org3admin1": {
+		"../../testdata/crypto-config-pk/public/admin/admin3/admin3.key",
+	},
+	"org4admin1": {
+		"../../testdata/crypto-config-pk/public/admin/admin4/admin4.key",
+	},
+}
+
+type PkUsers struct {
+	SignKeyPath string
+}
+
+type PermissionedPkUsers struct {
+	SignKeyPath string
+	OrgId       string
+}
 
 type User struct {
 	TlsKeyPath, TlsCrtPath   string
@@ -123,7 +184,9 @@ func CreateChainClientWithSDKConf(sdkConfPath string) (*sdk.ChainClient, error) 
 	}
 
 	// Enable certificate compression
-	err = cc.EnableCertHash()
+	if cc.GetAuthType() == sdk.PermissionedWithCert {
+		err = cc.EnableCertHash()
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -143,11 +206,67 @@ func GetEndorsers(payload *common.Payload, usernames ...string) ([]*common.Endor
 			return nil, errors.New("user not found")
 		}
 
-		entry, err := sdk.SignPayloadWithPath(u.SignKeyPath, u.SignCrtPath, payload)
-		if err != nil {
-			return nil, err
+		var err error
+		var entry *common.EndorsementEntry
+		p11Handle := sdk.GetP11Handle()
+		if p11Handle != nil {
+			entry, err = sdkutils.MakeEndorserWithPathAndP11Handle(u.SignKeyPath, u.SignCrtPath, p11Handle, payload)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			entry, err = sdkutils.MakeEndorserWithPath(u.SignKeyPath, u.SignCrtPath, payload)
+			if err != nil {
+				return nil, err
+			}
 		}
 
+		endorsers = append(endorsers, entry)
+	}
+
+	return endorsers, nil
+}
+
+func GetEndorsersWithAuthType(hashType crypto.HashType, authType sdk.AuthType, payload *common.Payload, usernames ...string) ([]*common.EndorsementEntry, error) {
+	var endorsers []*common.EndorsementEntry
+
+	for _, name := range usernames {
+		var entry *common.EndorsementEntry
+		var err error
+		switch authType {
+		case sdk.PermissionedWithCert:
+			u, ok := users[name]
+			if !ok {
+				return nil, errors.New("user not found")
+			}
+			entry, err = sdkutils.MakeEndorserWithPath(u.SignKeyPath, u.SignCrtPath, payload)
+			if err != nil {
+				return nil, err
+			}
+
+		case sdk.PermissionedWithKey:
+			u, ok := permissionedPkUsers[name]
+			if !ok {
+				return nil, errors.New("user not found")
+			}
+			entry, err = sdkutils.MakePkEndorserWithPath(u.SignKeyPath, hashType, u.OrgId, payload)
+			if err != nil {
+				return nil, err
+			}
+
+		case sdk.Public:
+			u, ok := pkUsers[name]
+			if !ok {
+				return nil, errors.New("user not found")
+			}
+			entry, err = sdkutils.MakePkEndorserWithPath(u.SignKeyPath, hashType, "", payload)
+			if err != nil {
+				return nil, err
+			}
+
+		default:
+			return nil, errors.New("invalid authType")
+		}
 		endorsers = append(endorsers, entry)
 	}
 

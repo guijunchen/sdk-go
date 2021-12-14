@@ -10,13 +10,13 @@ package chainmaker_sdk_go
 import (
 	"context"
 
-	"chainmaker.org/chainmaker/common/crypto"
-	"chainmaker.org/chainmaker/pb-go/accesscontrol"
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/pb-go/config"
-	"chainmaker.org/chainmaker/pb-go/discovery"
-	"chainmaker.org/chainmaker/pb-go/store"
-	"chainmaker.org/chainmaker/pb-go/syscontract"
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/pb-go/v2/config"
+	"chainmaker.org/chainmaker/pb-go/v2/discovery"
+	"chainmaker.org/chainmaker/pb-go/v2/store"
+	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
 )
 
 // SDKInterface # ChainMaker Go SDK 接口说明
@@ -26,11 +26,11 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - contractName: 合约名
 	//   - version: 版本号
-	//   - byteCode: 支持传入合约二进制文件路径或Hex或Base64编码的二进制内容
+	//   - byteCodeStringOrFilePath: 支持传入合约二进制文件路径或Hex或Base64编码的string
 	//   - runtime: 合约运行环境
 	//   - kvs: 合约初始化参数
 	// ```go
-	CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType,
+	CreateContractCreatePayload(contractName, version, byteCodeStringOrFilePath string, runtime common.RuntimeType,
 		kvs []*common.KeyValuePair) (*common.Payload, error)
 	// ```
 
@@ -38,11 +38,11 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - contractName: 合约名
 	//   - version: 版本号
-	//   - byteCode: 支持传入合约二进制文件路径或Hex或Base64编码的二进制内容
+	//   - byteCodeStringOrFilePath: 支持传入合约二进制文件路径或Hex或Base64编码的string
 	//   - runtime: 合约运行环境
 	//   - kvs: 合约升级参数
 	// ```go
-	CreateContractUpgradePayload(contractName, version, byteCode string, runtime common.RuntimeType,
+	CreateContractUpgradePayload(contractName, version, byteCodeStringOrFilePath string, runtime common.RuntimeType,
 		kvs []*common.KeyValuePair) (*common.Payload, error)
 	// ```
 
@@ -262,6 +262,41 @@ type SDKInterface interface {
 	GetMerklePathByTxId(txId string) ([]byte, error)
 	// ```
 
+	// ### 2.17 开放系统合约
+	// **参数说明**
+	//   - grantContractList: 需要开放的系统合约字符串数组
+	// ```go
+	CreateNativeContractAccessGrantPayload(grantContractList []string) (*common.Payload, error)
+	// ```
+
+	// ### 2.18 弃用系统合约
+	// **参数说明**
+	//   - revokeContractList: 需要弃用的系统合约字符串数组
+	// ```go
+	CreateNativeContractAccessRevokePayload(revokeContractList []string) (*common.Payload, error)
+	// ```
+
+	// ### 2.19 查询指定合约的信息，包括系统合约和用户合约
+	// **参数说明**
+	//   - contractName: 指定查询的合约名字，包括系统合约和用户合约
+	// ```go
+	GetContractInfo(contractName string) (*common.Contract, error)
+	// ```
+
+	// ### 2.20 查询所有的合约名单，包括系统合约和用户合约
+	// **返回值说明**
+	//   - []*common.Contract: 链上所有的合约列表，包括系统合约和用户合约
+	// ```go
+	GetContractList() ([]*common.Contract, error)
+	// ```
+
+	// ### 2.21 查询已禁用的系统合约名单
+	// **返回值说明**
+	//   - []string: 链上已禁用的系统合约名字列表
+	// ```go
+	GetDisabledNativeContractList() ([]string, error)
+	// ```
+
 	// ## 3 链配置接口
 	// ### 3.1 查询最新链配置
 	// ```go
@@ -357,14 +392,14 @@ type SDKInterface interface {
 	// ```go
 	CreateChainConfigTrustMemberAddPayload(trustMemberOrgId, trustMemberNodeId,
 		trustMemberRole, trustMemberInfo string) (*common.Payload, error)
-	// `
+	// ```
 
 	// ### 3.12 删除信任成员证书待签名payload生成
 	// **参数说明**
 	//   - trustMemberInfo: 成员信息内容
 	// ```go
 	CreateChainConfigTrustMemberDeletePayload(trustMemberInfo string) (*common.Payload, error)
-	// `
+	// ```
 
 	// ### 3.13 添加权限配置待签名payload生成
 	// **参数说明**
@@ -446,14 +481,14 @@ type SDKInterface interface {
 	CreateChainConfigConsensusExtAddPayload(kvs []*common.KeyValuePair) (*common.Payload, error)
 	// ```
 
-	// ### 3.23 添加共识扩展字段待签名payload生成
+	// ### 3.23 更新共识扩展字段待签名payload生成
 	// **参数说明**
 	//   - kvs: 字段key、value对
 	// ```go
 	CreateChainConfigConsensusExtUpdatePayload(kvs []*common.KeyValuePair) (*common.Payload, error)
 	// ```
 
-	// ### 3.24 添加共识扩展字段待签名payload生成
+	// ### 3.24 删除共识扩展字段待签名payload生成
 	// **参数说明**
 	//   - keys: 待删除字段
 	// ```go
@@ -563,10 +598,13 @@ type SDKInterface interface {
 
 	// ### 5.3 合约事件订阅
 	// **参数说明**
-	//   - topic ：指定订阅主题
+	//   - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
+	//   - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
 	//   - contractName ：指定订阅的合约名称
+	//   - topic ：指定订阅主题
 	// ```go
-	SubscribeContractEvent(ctx context.Context, topic string, contractName string) (<-chan interface{}, error)
+	SubscribeContractEvent(ctx context.Context, startBlock, endBlock int64, contractName,
+		topic string) (<-chan interface{}, error)
 	// ```
 
 	// ### 5.4 多合一订阅
@@ -771,8 +809,6 @@ type SDKInterface interface {
 	// **参数说明**
 	//   - caCert: Enclave CA证书
 	//   - txId: 交易Id
-	//   - withSyncResult: 是否同步返回调用结果
-	//   - timeout: 交易发送超时时间
 	// ```go
 	CreateSaveEnclaveCACertPayload(caCert, txId string) (*common.Payload, error)
 	// ```
@@ -793,14 +829,14 @@ type SDKInterface interface {
 
 	// ### 9.6 获取Enclave的report
 	// **参数说明**
-	//   - enclaveId: Enclave的Id，当前固定为
+	//   - enclaveId: Enclave的Id，当前固定为"global_enclave_id"
 	// ```go
 	GetEnclaveReport(enclaveId string) ([]byte, error)
 	// ```
 
-	// ### 9.7 获取隐私证明材
+	// ### 9.7 获取隐私证明材料
 	// **参数说明**
-	//   - enclaveId: Enclave的Id，当前固定为
+	//   - enclaveId: Enclave的Id，当前固定为"global_enclave_id"
 	// ```go
 	GetEnclaveProof(enclaveId string) ([]byte, error)
 	// ```
@@ -845,8 +881,6 @@ type SDKInterface interface {
 	//   - enclaveId: 隐私计算环境的标识
 	//   - report: 隐私计算环境的report
 	//   - txId: 交易ID
-	//   - withSyncResult: 是否同步等待交易结果
-	//   - timeout: 等待交易结果的超时时间
 	// ```go
 	CreateSaveEnclaveReportPayload(enclaveId, report, txId string) (*common.Payload, error)
 	// ```
@@ -889,5 +923,74 @@ type SDKInterface interface {
 	// ### 10.2 获取链版本
 	// ```go
 	GetChainMakerServerVersion() (string, error)
+	// ```
+
+	// ## 11 公钥身份类接口
+	// ### 11.1 构造添加公钥身份请求
+	// **参数说明**
+	//   - pubkey: 公钥信息
+	//   - orgId: 组织id
+	//   - role:   角色，支持client,light,common
+	// ```go
+	CreatePubkeyAddPayload(pubkey string, orgId string, role string) (*common.Payload, error)
+	// ```
+
+	// ### 11.2 构造删除公钥身份请求
+	// **参数说明**
+	//   - pubkey: 公钥信息
+	//   - orgId: 组织id
+	// ```go
+	CreatePubkeyDelPayload(pubkey string, orgId string) (*common.Payload, error)
+	// ```
+
+	// ### 11.3 构造查询公钥身份请求
+	// **参数说明**
+	//   - pubkey: 公钥信息
+	// ```go
+	CreatePubkeyQueryPayload(pubkey string) (*common.Payload, error)
+	// ```
+
+	// ### 11.4 发送公钥身份管理请求（添加、删除）
+	// **参数说明**
+	//   - payload: 交易payload
+	//   - endorsers: 背书签名信息列表
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
+	// ```go
+	SendPubkeyManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
+		withSyncResult bool) (*common.TxResponse, error)
+	// ```
+
+	// ## 12 多签类接口
+	// ### 12.1 发起多签请求
+	// **参数说明**
+	//   - payload: 待签名payload
+	// ```go
+	MultiSignContractReq(payload *common.Payload) (*common.TxResponse, error)
+	// ```
+
+	// ### 12.2 发起多签投票
+	// **参数说明**
+	//   - payload: 待签名payload
+	//   - endorser: 投票人对多签请求 payload 的签名信息
+	// ```go
+	MultiSignContractVote(payload *common.Payload,
+		endorser *common.EndorsementEntry) (*common.TxResponse, error)
+	// ```
+
+	// ### 12.3 根据txId查询多签状态
+	// **参数说明**
+	//   - txId: 需要查询的多签请求交易Id
+	// ```go
+	MultiSignContractQuery(txId string) (*common.TxResponse, error)
+	// ```
+
+	// ### 12.4 根据发起多签请求所需的参数构建payload
+	// **参数说明**
+	//   - pairs: 发起多签请求所需的参数
+	// ```go
+	CreateMultiSignReqPayload(pairs []*common.KeyValuePair) *common.Payload
 	// ```
 }

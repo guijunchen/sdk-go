@@ -12,11 +12,11 @@ import (
 	"log"
 	"time"
 
-	"chainmaker.org/chainmaker/common/crypto"
-	"chainmaker.org/chainmaker/pb-go/common"
-	sdk "chainmaker.org/chainmaker/sdk-go"
-	"chainmaker.org/chainmaker/sdk-go/examples"
-	"chainmaker.org/chainmaker/sdk-go/utils"
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
+	"chainmaker.org/chainmaker/sdk-go/v2/examples"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
 // test contract functionName
@@ -191,7 +191,9 @@ func createUserHibeContract(client *sdk.ChainClient, admin1, admin2, admin3, adm
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
+	//endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, admin1, admin2, admin3, admin4)
 	if err != nil {
 		return nil, err
 	}

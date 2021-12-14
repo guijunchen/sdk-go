@@ -17,11 +17,12 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"chainmaker.org/chainmaker/pb-go/accesscontrol"
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/pb-go/config"
-	sdk "chainmaker.org/chainmaker/sdk-go"
-	"chainmaker.org/chainmaker/sdk-go/examples"
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/pb-go/v2/config"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
+	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 )
 
 const (
@@ -33,16 +34,16 @@ const (
 )
 
 func main() {
-	testChainConfig()
+	testChainConfig(sdkConfigOrg1Client1Path)
 }
 
-func testChainConfig() {
+func testChainConfig(sdkPath string) {
 	var (
 		chainConfig *config.ChainConfig
 		ok          bool
 	)
 
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+	client, err := examples.CreateChainClientWithSDKConf(sdkPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -578,7 +579,9 @@ func testChainConfigConsensusExtDelete(client *sdk.ChainClient, keys []string, u
 
 func signAndSendRequest(client *sdk.ChainClient, payload *common.Payload, usernames ...string) {
 	// 各组织Admin权限用户签名
-	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -14,25 +14,25 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/pb-go/syscontract"
-	"chainmaker.org/chainmaker/sdk-go/utils"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
-func (cc *ChainClient) CreateContractCreatePayload(contractName, version, byteCode string, runtime common.RuntimeType,
-	kvs []*common.KeyValuePair) (*common.Payload, error) {
+func (cc *ChainClient) CreateContractCreatePayload(contractName, version, byteCodeStringOrFilePath string,
+	runtime common.RuntimeType, kvs []*common.KeyValuePair) (*common.Payload, error) {
 
 	cc.logger.Debugf("[SDK] create [ContractCreate] to be signed payload")
 	return cc.createContractManageWithByteCodePayload(contractName,
-		syscontract.ContractManageFunction_INIT_CONTRACT.String(), version, byteCode, runtime, kvs)
+		syscontract.ContractManageFunction_INIT_CONTRACT.String(), version, byteCodeStringOrFilePath, runtime, kvs)
 }
 
-func (cc *ChainClient) CreateContractUpgradePayload(contractName, version, byteCode string, runtime common.RuntimeType,
-	kvs []*common.KeyValuePair) (*common.Payload, error) {
+func (cc *ChainClient) CreateContractUpgradePayload(contractName, version, byteCodeStringOrFilePath string,
+	runtime common.RuntimeType, kvs []*common.KeyValuePair) (*common.Payload, error) {
 
 	cc.logger.Debugf("[SDK] create [ContractUpgrade] to be signed payload")
 	return cc.createContractManageWithByteCodePayload(contractName,
-		syscontract.ContractManageFunction_UPGRADE_CONTRACT.String(), version, byteCode, runtime, kvs)
+		syscontract.ContractManageFunction_UPGRADE_CONTRACT.String(), version, byteCodeStringOrFilePath, runtime, kvs)
 }
 
 func (cc *ChainClient) CreateContractFreezePayload(contractName string) (*common.Payload, error) {
@@ -61,25 +61,36 @@ func (cc *ChainClient) createContractManagePayload(contractName, method string) 
 		method, kvs, defaultSeq), nil
 }
 
-func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, method, version, byteCode string,
-	runtime common.RuntimeType, kvs []*common.KeyValuePair) (*common.Payload, error) {
+func (cc *ChainClient) createContractManageWithByteCodePayload(contractName, method, version,
+	byteCodeStringOrFilePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair) (*common.Payload, error) {
 	var (
 		err       error
 		codeBytes []byte
 	)
 
-	exists := utils.Exists(byteCode)
-	if exists {
-		codeBytes, err = ioutil.ReadFile(byteCode)
+	isFile := utils.Exists(byteCodeStringOrFilePath)
+	if isFile {
+		bz, err := ioutil.ReadFile(byteCodeStringOrFilePath)
 		if err != nil {
-			return nil, fmt.Errorf("read from byteCode file %s failed, %s", byteCode, err)
+			return nil, fmt.Errorf("read from byteCode file %s failed, %s", byteCodeStringOrFilePath, err)
+		}
+
+		if runtime == common.RuntimeType_EVM { // evm contract hex need decode to bytes
+			codeBytesStr := strings.TrimSpace(string(bz))
+			if codeBytes, err = hex.DecodeString(codeBytesStr); err != nil {
+				return nil, fmt.Errorf("decode evm contract hex to bytes failed, %s", err)
+			}
+		} else { // wasm bin file no need decode
+			codeBytes = bz
 		}
 	} else {
-		byteCode = strings.TrimSpace(byteCode)
+		if runtime == common.RuntimeType_EVM {
+			byteCodeStringOrFilePath = strings.TrimSpace(byteCodeStringOrFilePath)
+		}
 
-		if codeBytes, err = hex.DecodeString(byteCode); err != nil {
-			if codeBytes, err = base64.StdEncoding.DecodeString(byteCode); err != nil {
-				return nil, fmt.Errorf("decode byteCode failed, %s", err)
+		if codeBytes, err = hex.DecodeString(byteCodeStringOrFilePath); err != nil {
+			if codeBytes, err = base64.StdEncoding.DecodeString(byteCodeStringOrFilePath); err != nil {
+				return nil, fmt.Errorf("decode byteCode string failed, %s", err)
 			}
 		}
 	}

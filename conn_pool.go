@@ -8,13 +8,15 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"time"
 
-	"chainmaker.org/chainmaker/common/ca"
-	"chainmaker.org/chainmaker/pb-go/api"
-	"chainmaker.org/chainmaker/sdk-go/utils"
+	"chainmaker.org/chainmaker/common/v2/ca"
+	"chainmaker.org/chainmaker/pb-go/v2/api"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc"
@@ -22,8 +24,8 @@ import (
 )
 
 const (
-	retryInterval = 500 // 获取可用客户端连接对象重试时间间隔，单位：ms
-	retryLimit    = 5   // 获取可用客户端连接对象最大重试次数
+	networkClientRetryInterval = 500 // 获取可用客户端连接对象重试时间间隔，单位：ms
+	networkClientRetryLimit    = 5   // 获取可用客户端连接对象最大重试次数
 )
 
 var _ ConnectionPool = (*ClientConnectionPool)(nil)
@@ -38,43 +40,55 @@ type ConnectionPool interface {
 
 // 客户端连接结构定义
 type networkClient struct {
-	rpcNode     api.RpcNodeClient
-	conn        *grpc.ClientConn
-	nodeAddr    string
-	useTLS      bool
-	caPaths     []string
-	caCerts     []string
-	tlsHostName string
-	ID          string
+	rpcNode           api.RpcNodeClient
+	conn              *grpc.ClientConn
+	nodeAddr          string
+	useTLS            bool
+	caPaths           []string
+	caCerts           []string
+	tlsHostName       string
+	ID                string
+	rpcMaxRecvMsgSize int
+	rpcMaxSendMsgSize int
+}
+
+func (cli *networkClient) sendRequestWithTimeout(txReq *common.TxRequest, timeout int64) (*common.TxResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+	defer cancel() // releases resources if SendRequest completes before timeout elapses
+	return cli.rpcNode.SendRequest(ctx, txReq, grpc.MaxCallSendMsgSize(cli.rpcMaxSendMsgSize))
 }
 
 // ClientConnectionPool 客户端连接池结构定义
 type ClientConnectionPool struct {
-	connections                    []*networkClient
-	logger                         utils.Logger
-	userKeyBytes                   []byte
-	userCrtBytes                   []byte
-	rpcClientMaxReceiveMessageSize int
+	connections       []*networkClient
+	logger            utils.Logger
+	userKeyBytes      []byte
+	userCrtBytes      []byte
+	rpcMaxRecvMsgSize int
+	rpcMaxSendMsgSize int
 }
 
 // NewConnPool 创建连接池
 func NewConnPool(config *ChainClientConfig) (*ClientConnectionPool, error) {
 	pool := &ClientConnectionPool{
-		logger:                         config.logger,
-		userKeyBytes:                   config.userKeyBytes,
-		userCrtBytes:                   config.userCrtBytes,
-		rpcClientMaxReceiveMessageSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize,
+		logger:            config.logger,
+		userKeyBytes:      config.userKeyBytes,
+		userCrtBytes:      config.userCrtBytes,
+		rpcMaxRecvMsgSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize * 1024 * 1024,
+		rpcMaxSendMsgSize: config.rpcClientConfig.rpcClientMaxSendMessageSize * 1024 * 1024,
 	}
 
 	for idx, node := range config.nodeList {
 		for i := 0; i < node.connCnt; i++ {
 			cli := &networkClient{
-				nodeAddr:    node.addr,
-				useTLS:      node.useTLS,
-				caPaths:     node.caPaths,
-				caCerts:     node.caCerts,
-				tlsHostName: node.tlsHostName,
-				ID:          fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
+				nodeAddr:          node.addr,
+				useTLS:            node.useTLS,
+				caPaths:           node.caPaths,
+				caCerts:           node.caCerts,
+				tlsHostName:       node.tlsHostName,
+				ID:                fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
+				rpcMaxRecvMsgSize: pool.rpcMaxRecvMsgSize,
+				rpcMaxSendMsgSize: pool.rpcMaxSendMsgSize,
 			}
 			pool.connections = append(pool.connections, cli)
 		}
@@ -90,7 +104,6 @@ func NewConnPool(config *ChainClientConfig) (*ClientConnectionPool, error) {
 func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string,
 	tlsHostName string) (*grpc.ClientConn, error) {
 	var tlsClient ca.CAClient
-	maxCallRecvMsgSize := pool.rpcClientMaxReceiveMessageSize * 1024 * 1024
 	if useTLS {
 		if len(caCerts) != 0 {
 			tlsClient = ca.CAClient{
@@ -115,10 +128,10 @@ func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, 
 			return nil, err
 		}
 		return grpc.Dial(nodeAddr, grpc.WithTransportCredentials(*c),
-			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)))
+			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)))
 	}
 	return grpc.Dial(nodeAddr, grpc.WithInsecure(),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)))
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)))
 }
 
 // 获取空闲的可用客户端连接对象
@@ -161,7 +174,7 @@ func (pool *ClientConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[strin
 
 		return fmt.Errorf("all client connections are busy")
 
-	}, strategy.Wait(retryInterval*time.Millisecond), strategy.Limit(retryLimit))
+	}, strategy.Wait(networkClientRetryInterval*time.Millisecond), strategy.Limit(networkClientRetryLimit))
 
 	if err != nil {
 		return nil, err

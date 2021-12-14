@@ -8,22 +8,23 @@ package chainmaker_sdk_go
 
 import (
 	"context"
+	"crypto/x509"
 	"fmt"
 	"log"
 	"net"
 	"time"
 
+	"chainmaker.org/chainmaker/common/v2/ca"
+	cmx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
+	apipb "chainmaker.org/chainmaker/pb-go/v2/api"
+	cmnpb "chainmaker.org/chainmaker/pb-go/v2/common"
+	confpb "chainmaker.org/chainmaker/pb-go/v2/config"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/test/bufconn"
-
-	"chainmaker.org/chainmaker/common/ca"
-	apipb "chainmaker.org/chainmaker/pb-go/api"
-	cmnpb "chainmaker.org/chainmaker/pb-go/common"
-	confpb "chainmaker.org/chainmaker/pb-go/config"
-	"chainmaker.org/chainmaker/sdk-go/utils"
 )
 
 const (
@@ -37,11 +38,12 @@ var _ ConnectionPool = (*mockConnectionPool)(nil)
 var _mockServer = &mockRpcNodeServer{}
 
 type mockConnectionPool struct {
-	connections                    []*networkClient
-	logger                         utils.Logger
-	userKeyBytes                   []byte
-	userCrtBytes                   []byte
-	rpcClientMaxReceiveMessageSize int
+	connections       []*networkClient
+	logger            utils.Logger
+	userKeyBytes      []byte
+	userCrtBytes      []byte
+	rpcMaxRecvMsgSize int
+	rpcMaxSendMsgSize int
 }
 
 func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverTxError error,
@@ -69,26 +71,30 @@ func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverTxError error,
 		privateKey:      conf.privateKey,
 		archiveConfig:   conf.archiveConfig,
 		rpcClientConfig: conf.rpcClientConfig,
+		authType:        conf.authType,
 	}, nil
 }
 
 func newMockConnPool(config *ChainClientConfig) (*mockConnectionPool, error) {
 	pool := &mockConnectionPool{
-		logger:                         config.logger,
-		userKeyBytes:                   config.userKeyBytes,
-		userCrtBytes:                   config.userCrtBytes,
-		rpcClientMaxReceiveMessageSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize,
+		logger:            config.logger,
+		userKeyBytes:      config.userKeyBytes,
+		userCrtBytes:      config.userCrtBytes,
+		rpcMaxRecvMsgSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize * 1024 * 1024,
+		rpcMaxSendMsgSize: config.rpcClientConfig.rpcClientMaxSendMessageSize * 1024 * 1024,
 	}
 
 	for idx, node := range config.nodeList {
 		for i := 0; i < node.connCnt; i++ {
 			cli := &networkClient{
-				nodeAddr:    node.addr,
-				useTLS:      node.useTLS,
-				caPaths:     node.caPaths,
-				caCerts:     node.caCerts,
-				tlsHostName: node.tlsHostName,
-				ID:          fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
+				nodeAddr:          node.addr,
+				useTLS:            node.useTLS,
+				caPaths:           node.caPaths,
+				caCerts:           node.caCerts,
+				tlsHostName:       node.tlsHostName,
+				ID:                fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
+				rpcMaxRecvMsgSize: pool.rpcMaxRecvMsgSize,
+				rpcMaxSendMsgSize: pool.rpcMaxSendMsgSize,
 			}
 			pool.connections = append(pool.connections, cli)
 		}
@@ -103,7 +109,6 @@ func newMockConnPool(config *ChainClientConfig) (*mockConnectionPool, error) {
 func (pool *mockConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string,
 	tlsHostName string) (*grpc.ClientConn, error) {
 	var tlsClient ca.CAClient
-	maxCallRecvMsgSize := pool.rpcClientMaxReceiveMessageSize * 1024 * 1024
 	if useTLS {
 		if len(caCerts) != 0 {
 			tlsClient = ca.CAClient{
@@ -128,11 +133,11 @@ func (pool *mockConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, ca
 			return nil, err
 		}
 		return grpc.Dial("", grpc.WithTransportCredentials(*c),
-			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)),
+			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)),
 			grpc.WithContextDialer(dialer(useTLS, caPaths, caCerts)))
 	}
 	return grpc.Dial("", grpc.WithInsecure(),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize)),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)),
 		grpc.WithContextDialer(dialer(useTLS, caPaths, caCerts)))
 }
 
@@ -176,7 +181,7 @@ func (pool *mockConnectionPool) getClientWithIgnoreAddrs(ignoreAddrs map[string]
 
 		return fmt.Errorf("all client connections are busy")
 
-	}, strategy.Wait(retryInterval*time.Millisecond), strategy.Limit(retryLimit))
+	}, strategy.Wait(networkClientRetryInterval*time.Millisecond), strategy.Limit(networkClientRetryLimit))
 
 	if err != nil {
 		return nil, err
@@ -260,7 +265,12 @@ func dialer(useTLS bool, caPaths, caCerts []string) func(context.Context, string
 			}
 		}
 
-		c, err := tlsRPCServer.GetCredentialsByCA(true)
+		customVerify := ca.CustomVerify{
+			VerifyPeerCertificate:   createVerifyPeerCertificateFunc(),
+			GMVerifyPeerCertificate: createGMVerifyPeerCertificateFunc(),
+		}
+
+		c, err := tlsRPCServer.GetCredentialsByCA(true, customVerify)
 		if err != nil {
 			log.Fatalf("new gRPC failed, GetTLSCredentialsByCA err: %v\n", err)
 		}
@@ -281,5 +291,17 @@ func dialer(useTLS bool, caPaths, caCerts []string) func(context.Context, string
 
 	return func(context.Context, string) (net.Conn, error) {
 		return listener.Dial()
+	}
+}
+
+func createVerifyPeerCertificateFunc() func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+	return func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+		return nil
+	}
+}
+
+func createGMVerifyPeerCertificateFunc() func(rawCerts [][]byte, verifiedChains [][]*cmx509.Certificate) error {
+	return func(rawCerts [][]byte, verifiedChains [][]*cmx509.Certificate) error {
+		return nil
 	}
 }

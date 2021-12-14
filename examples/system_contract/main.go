@@ -11,31 +11,61 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"time"
 
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/pb-go/v2/consensus"
+	"chainmaker.org/chainmaker/pb-go/v2/discovery"
+	"chainmaker.org/chainmaker/pb-go/v2/store"
+	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
+	"chainmaker.org/chainmaker/sdk-go/v2/examples"
+	sdkutils "chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/hokaccha/go-prettyjson"
-
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/pb-go/consensus"
-	"chainmaker.org/chainmaker/pb-go/discovery"
-	"chainmaker.org/chainmaker/pb-go/store"
-	sdk "chainmaker.org/chainmaker/sdk-go"
-	"chainmaker.org/chainmaker/sdk-go/examples"
-	sdkutils "chainmaker.org/chainmaker/sdk-go/utils"
 )
 
 const (
-	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+	createContractTimeout       = 5
+	sdkConfigOrg1Client1Path    = "../sdk_configs/sdk_config_org1_client1.yml"
+	sdkPwkConfigOrg1Client1Path = "../sdk_configs/sdk_config_pwk_org1_admin1.yml"
+	sdkPkConfigUser1Path        = "../sdk_configs/sdk_config_pk_user1.yml"
 )
 
 func main() {
-	testSystemContract()
-	testSystemContractArchive()
-	testGetMerklePathByTxId()
+	//testMain(sdkConfigOrg1Client1Path)
+	testNativeContract()
+	//testMain(sdkPwkConfigOrg1Client1Path)
+	//testMain(sdkPkConfigUser1Path)
+}
+
+func testMain(sdkPath string) {
+	testSystemContract(sdkPath)
+	testSystemContractArchive(sdkPath)
+	testGetMerklePathByTxId(sdkPath)
+}
+
+func testNativeContract() {
+	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1,
+		examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	toAddContractList := []string{syscontract.SystemContract_DPOS_ERC20.String(),
+		syscontract.SystemContract_DPOS_STAKE.String()}
+	testNativeContractAccessGrant(client, false, toAddContractList, usernames)
+	time.Sleep(time.Second * 3)
+	testGetNativeContractInfo(client, toAddContractList[0])
+	testGetNativeContractList(client)
+	testNativeContractAccessRevoke(client, false, toAddContractList, usernames)
+	time.Sleep(time.Second * 3)
+	testGetDisabledNativeContractList(client)
 }
 
 // [系统合约]
-func testSystemContract() {
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+func testSystemContract(sdkPath string) {
+	client, err := examples.CreateChainClientWithSDKConf(sdkPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -50,7 +80,7 @@ func testSystemContract() {
 	testSystemContractGetLastBlock(client)
 	testSystemContractGetChainInfo(client)
 
-	systemChainClient, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+	systemChainClient, err := examples.CreateChainClientWithSDKConf(sdkPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -58,8 +88,8 @@ func testSystemContract() {
 	testSystemContractGetNodeChainList(systemChainClient)
 }
 
-func testSystemContractArchive() {
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+func testSystemContractArchive(sdkPath string) {
+	client, err := examples.CreateChainClientWithSDKConf(sdkPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -224,8 +254,8 @@ func testSystemContractGetBlockHeaderByHeight(client *sdk.ChainClient) {
 	}
 }
 
-func testGetMerklePathByTxId() {
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+func testGetMerklePathByTxId(sdkPath string) {
+	client, err := examples.CreateChainClientWithSDKConf(sdkPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -239,4 +269,87 @@ func testGetMerklePathByTxId() {
 	}
 
 	fmt.Println("GetMerklePathByTxId: ", merklePath)
+}
+
+func testNativeContractAccessGrant(client *sdk.ChainClient, withSyncResult bool,
+	grantContractList []string, usernames []string) {
+	payload, err := client.CreateNativeContractAccessGrantPayload(grantContractList)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, usernames...)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
+	fmt.Printf("resp: %+v\n", resp)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = examples.CheckProposalRequestResp(resp, false)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("testNativeContractAccessGrant resp: %+v\n", resp)
+}
+
+func testNativeContractAccessRevoke(client *sdk.ChainClient, withSyncResult bool,
+	revokeContractList []string, usernames []string) {
+	payload, err := client.CreateNativeContractAccessRevokePayload(revokeContractList)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, usernames...)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
+	fmt.Printf("resp: %+v\n", resp)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = examples.CheckProposalRequestResp(resp, false)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("testNativeContractAccessRevoke resp: %+v\n", resp)
+}
+
+func testGetNativeContractInfo(client *sdk.ChainClient, contractName string) {
+	resp, err := client.GetContractInfo(contractName)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("testGetNativeContractInfo resp: %+v\n", resp)
+}
+
+func testGetNativeContractList(client *sdk.ChainClient) {
+	resp, err := client.GetContractList()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("testGetNativeContractList resp: %+v\n", resp)
+}
+
+func testGetDisabledNativeContractList(client *sdk.ChainClient) {
+	resp, err := client.GetDisabledNativeContractList()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("testGetDisabledNativeContractList resp: %+v\n", resp)
 }

@@ -17,10 +17,11 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 
-	"chainmaker.org/chainmaker/common/evmutils"
-	"chainmaker.org/chainmaker/pb-go/common"
-	sdk "chainmaker.org/chainmaker/sdk-go"
-	"chainmaker.org/chainmaker/sdk-go/examples"
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/common/v2/evmutils"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
+	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 )
 
 const (
@@ -62,12 +63,12 @@ func init() {
 }
 
 func main() {
-	testUserContractBalanceEVM()
+	testUserContractBalanceEVM(sdkConfigOrg1Client1Path)
 }
 
-func testUserContractBalanceEVM() {
+func testUserContractBalanceEVM(sdkPath string) {
 	fmt.Println("====================== create client ======================")
-	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
+	client, err := examples.CreateChainClientWithSDKConf(sdkPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -114,14 +115,8 @@ func testUserContractBalanceEVM() {
 }
 
 func testUserContractBalanceEVMCreate(client *sdk.ChainClient, withSyncResult bool, isIgnoreSameContract bool, usernames ...string) {
-
-	byteCode, err := ioutil.ReadFile(balanceByteCodePath)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	resp, err := createUserContract(client, examples.CalcContractName(balanceContractName), balanceVersion,
-		string(byteCode), common.RuntimeType_EVM, nil, withSyncResult, usernames...)
+		balanceByteCodePath, common.RuntimeType_EVM, nil, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
 			log.Fatalln(err)
@@ -139,7 +134,9 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 		return nil, err
 	}
 
-	endorsers, err := examples.GetEndorsers(payload, usernames...)
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		return nil, err
 	}

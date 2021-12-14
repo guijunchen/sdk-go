@@ -8,17 +8,17 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
 
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/pb-go/v2/discovery"
+	"chainmaker.org/chainmaker/pb-go/v2/store"
+	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/gogo/protobuf/proto"
-
-	"chainmaker.org/chainmaker/pb-go/common"
-	"chainmaker.org/chainmaker/pb-go/discovery"
-	"chainmaker.org/chainmaker/pb-go/store"
-	"chainmaker.org/chainmaker/pb-go/syscontract"
-	"chainmaker.org/chainmaker/sdk-go/utils"
 )
 
 func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error) {
@@ -463,4 +463,108 @@ func (cc *ChainClient) GetMerklePathByTxId(txId string) ([]byte, error) {
 		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
 	}
 	return resp.ContractResult.Result, nil
+}
+
+func (cc *ChainClient) createNativeContractAccessPayload(method string,
+	accessContractList []string) (*common.Payload, error) {
+	val, err := json.Marshal(accessContractList)
+	if err != nil {
+		return nil, err
+	}
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   syscontract.ContractAccess_NATIVE_CONTRACT_NAME.String(),
+			Value: val,
+		},
+	}
+	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
+		method, kvs, defaultSeq), nil
+}
+
+func (cc *ChainClient) CreateNativeContractAccessGrantPayload(grantContractList []string) (*common.Payload, error) {
+	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_GRANT_CONTRACT_ACCESS.String(),
+		grantContractList)
+}
+
+func (cc *ChainClient) CreateNativeContractAccessRevokePayload(revokeContractList []string) (*common.Payload, error) {
+	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_REVOKE_CONTRACT_ACCESS.String(),
+		revokeContractList)
+}
+
+func (cc *ChainClient) GetContractInfo(contractName string) (*common.Contract, error) {
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
+		syscontract.ContractQueryFunction_GET_CONTRACT_INFO)
+
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
+		syscontract.ContractQueryFunction_GET_CONTRACT_INFO.String(), []*common.KeyValuePair{
+			{
+				Key:   syscontract.GetContractInfo_CONTRACT_NAME.String(),
+				Value: []byte(contractName),
+			},
+		}, defaultSeq,
+	)
+
+	resp, err := cc.proposalRequest(payload, nil)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
+	}
+
+	if err = utils.CheckProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
+	}
+
+	contract := &common.Contract{}
+	if err = json.Unmarshal(resp.ContractResult.Result, contract); err != nil {
+		return nil, fmt.Errorf("GetContractInfo unmarshal failed, %s", err)
+	}
+
+	return contract, nil
+}
+
+func (cc *ChainClient) GetContractList() ([]*common.Contract, error) {
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
+		syscontract.ContractQueryFunction_GET_CONTRACT_LIST)
+
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
+		syscontract.ContractQueryFunction_GET_CONTRACT_LIST.String(), nil, defaultSeq)
+
+	resp, err := cc.proposalRequest(payload, nil)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
+	}
+
+	if err = utils.CheckProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
+	}
+
+	var contracts []*common.Contract
+	if err = json.Unmarshal(resp.ContractResult.Result, &contracts); err != nil {
+		return nil, fmt.Errorf("GetContractList unmarshal failed, %s", err)
+	}
+
+	return contracts, nil
+}
+
+func (cc *ChainClient) GetDisabledNativeContractList() ([]string, error) {
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
+		syscontract.ContractQueryFunction_GET_DISABLED_CONTRACT_LIST)
+
+	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CONTRACT_MANAGE.String(),
+		syscontract.ContractQueryFunction_GET_DISABLED_CONTRACT_LIST.String(), nil, defaultSeq)
+
+	resp, err := cc.proposalRequest(payload, nil)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
+	}
+
+	if err = utils.CheckProposalRequestResp(resp, true); err != nil {
+		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
+	}
+
+	var contractNames []string
+	if err = json.Unmarshal(resp.ContractResult.Result, &contractNames); err != nil {
+		return nil, fmt.Errorf("GetDisabledNativeContractList unmarshal failed, %s", err)
+	}
+
+	return contractNames, nil
 }
