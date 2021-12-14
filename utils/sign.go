@@ -202,10 +202,6 @@ func MakeEndorser(orgId string, hashType crypto.HashType, memberType accesscontr
 		return nil, err
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
 	signature, err = SignPayloadWithHashType(key, hashType, payload)
 	if err != nil {
 		return nil, err
