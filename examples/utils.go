@@ -160,6 +160,9 @@ func GetUser(username string) (*User, error) {
 
 func CheckProposalRequestResp(resp *common.TxResponse, needContractResult bool) error {
 	if resp.Code != common.TxStatusCode_SUCCESS {
+		if resp.Message == "" {
+			resp.Message = resp.Code.String()
+		}
 		return errors.New(resp.Message)
 	}
 
