@@ -28,7 +28,7 @@ const (
 	defaultSeq = 0
 )
 
-func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error) {
+func (cc *ChainClient) getSyncResult(txId string) (*common.Result, error) {
 	var (
 		txInfo *common.TransactionInfo
 		err    error
@@ -54,7 +54,7 @@ func (cc *ChainClient) getSyncResult(txId string) (*common.ContractResult, error
 		return nil, fmt.Errorf("get result by txId [%s] failed, %+v", txId, txInfo)
 	}
 
-	return txInfo.Transaction.Result.ContractResult, nil
+	return txInfo.Transaction.Result, nil
 }
 
 func (cc *ChainClient) sendContractRequest(payload *common.Payload, endorsers []*common.EndorsementEntry,
@@ -67,11 +67,14 @@ func (cc *ChainClient) sendContractRequest(payload *common.Payload, endorsers []
 
 	if resp.Code == common.TxStatusCode_SUCCESS {
 		if withSyncResult {
-			contractResult, err := cc.getSyncResult(payload.TxId)
+			result, err := cc.getSyncResult(payload.TxId)
 			if err != nil {
 				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
 			}
-			resp.ContractResult = contractResult
+			resp.Code = result.Code
+			resp.Message = result.Message
+			resp.ContractResult = result.ContractResult
+			resp.TxId = payload.TxId
 		}
 	}
 
