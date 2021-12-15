@@ -49,19 +49,9 @@ func (cc *ChainClient) SaveDir(orderId, txId string,
 	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
 		syscontract.PrivateComputeFunction_SAVE_DIR.String(), pairs, defaultSeq, nil)
 
-	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
+	resp, err := cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if withSyncResult {
-			contractResult, err := cc.getSyncResult(payload.TxId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
+		return resp, err
 	}
 
 	return resp, nil
@@ -167,19 +157,9 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, isD
 	payload := cc.createPayload(txId, common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
 		syscontract.PrivateComputeFunction_SAVE_DATA.String(), pairs, defaultSeq, nil)
 
-	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
+	resp, err := cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if withSyncResult {
-			contractResult, err := cc.getSyncResult(payload.TxId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
+		return resp, err
 	}
 
 	return resp, nil
@@ -295,19 +275,9 @@ func (cc *ChainClient) SaveEnclaveCACert(
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
 		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(), pairs, defaultSeq, nil)
 
-	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
+	resp, err := cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if withSyncResult {
-			contractResult, err := cc.getSyncResult(payload.TxId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
+		return resp, err
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
@@ -338,19 +308,9 @@ func (cc *ChainClient) SaveEnclaveReport(
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
 		syscontract.PrivateComputeFunction_SAVE_ENCLAVE_REPORT.String(), pairs, defaultSeq, nil)
 
-	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
+	resp, err := cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if withSyncResult {
-			contractResult, err := cc.getSyncResult(payload.TxId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
+		return resp, err
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
@@ -449,19 +409,9 @@ func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncRe
 	payload := cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
 		syscontract.PrivateComputeFunction_SAVE_REMOTE_ATTESTATION.String(), pairs, defaultSeq, nil)
 
-	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
+	resp, err := cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if withSyncResult {
-			contractResult, err := cc.getSyncResult(payload.TxId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
+		return resp, err
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
@@ -659,20 +609,5 @@ func checkProposalRequestResp(resp *common.TxResponse, needContractResult bool) 
 func (cc *ChainClient) SendMultiSigningRequest(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 
-	resp, err := cc.proposalRequestWithTimeout(payload, endorsers, timeout)
-	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if withSyncResult {
-			contractResult, err := cc.getSyncResult(payload.TxId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
-	}
-
-	return resp, nil
+	return cc.sendContractRequest(payload, endorsers, timeout, withSyncResult)
 }

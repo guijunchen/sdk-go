@@ -214,17 +214,17 @@ func (cc *ChainClient) SendTxRequest(txRequest *common.TxRequest, timeout int64,
 		if !withSyncResult {
 			resp.TxId = txRequest.Payload.TxId
 		} else {
-			contractResult, err := cc.getSyncResult(txRequest.Payload.TxId)
+			result, err := cc.getSyncResult(txRequest.Payload.TxId)
 			if err != nil {
 				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
 			}
 
-			if contractResult.Code != utils.SUCCESS {
+			if result.ContractResult.Code != utils.SUCCESS {
 				resp.Code = common.TxStatusCode_CONTRACT_FAIL
-				resp.Message = contractResult.Message
+				resp.Message = result.ContractResult.Message
 			}
 
-			resp.ContractResult = contractResult
+			resp.ContractResult = result.ContractResult
 		}
 	}
 
