@@ -214,7 +214,7 @@ func (cc *ChainClient) SendTxRequest(txRequest *common.TxRequest, timeout int64,
 		if !withSyncResult {
 			resp.TxId = txRequest.Payload.TxId
 		} else {
-			result, err := cc.getSyncResult(txRequest.Payload.TxId)
+			result, err := cc.GetSyncResult(txRequest.Payload.TxId)
 			if err != nil {
 				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
 			}

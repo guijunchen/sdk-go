@@ -62,13 +62,22 @@ func main() {
 		}
 		fmt.Printf("send MultiSignContractVote resp: %+v\n", resp)
 
-		//fmt.Println("====================== 查询本多签交易的投票情况 ======================")
-		//time.Sleep(3 * time.Second)
+		time.Sleep(3 * time.Second)
+		fmt.Println("====================== 查询本多签交易的投票情况 ======================")
 		//resp, err = cc.MultiSignContractQuery(payload.TxId)
 		//if err != nil {
 		//	log.Fatalln(err)
 		//}
 		//fmt.Printf("query MultiSignContractQuery resp: %+v\n", resp)
+
+		result, err := cc.GetSyncResult(resp.TxId)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		fmt.Printf("result code:%d, msg:%s\n", result.Code, result.Code.String())
+		fmt.Printf("contract result code:%d, msg:%s\n",
+			result.ContractResult.Code, result.ContractResult.Message)
 
 		if i+1 == needEndorserCount {
 			break
