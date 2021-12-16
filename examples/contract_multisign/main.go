@@ -62,13 +62,18 @@ func main() {
 		}
 		fmt.Printf("send MultiSignContractVote resp: %+v\n", resp)
 
-		//fmt.Println("====================== 查询本多签交易的投票情况 ======================")
-		//time.Sleep(3 * time.Second)
+		time.Sleep(3 * time.Second)
+		fmt.Println("====================== 查询本多签交易的投票情况 ======================")
 		//resp, err = cc.MultiSignContractQuery(payload.TxId)
 		//if err != nil {
 		//	log.Fatalln(err)
 		//}
 		//fmt.Printf("query MultiSignContractQuery resp: %+v\n", resp)
+
+		tx := testContractGetTxByTxId(cc, resp.TxId)
+		fmt.Printf("result code:%d, msg:%s\n", tx.Transaction.Result.Code, tx.Transaction.Result.Code.String())
+		fmt.Printf("contract result code:%d, msg:%s\n",
+			tx.Transaction.Result.ContractResult.Code, tx.Transaction.Result.ContractResult.Message)
 
 		if i+1 == needEndorserCount {
 			break
@@ -169,4 +174,12 @@ func testUserContractClaimQuery(client *sdk.ChainClient, method string, kvs []*c
 	}
 
 	fmt.Printf("QUERY claim contract resp: %+v\n", resp)
+}
+
+func testContractGetTxByTxId(client *sdk.ChainClient, txId string) *common.TransactionInfo {
+	transactionInfo, err := client.GetTxByTxId(txId)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return transactionInfo
 }
