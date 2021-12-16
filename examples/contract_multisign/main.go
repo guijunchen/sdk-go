@@ -70,10 +70,14 @@ func main() {
 		//}
 		//fmt.Printf("query MultiSignContractQuery resp: %+v\n", resp)
 
-		tx := testContractGetTxByTxId(cc, resp.TxId)
-		fmt.Printf("result code:%d, msg:%s\n", tx.Transaction.Result.Code, tx.Transaction.Result.Code.String())
+		result, err := cc.GetSyncResult(resp.TxId)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		fmt.Printf("result code:%d, msg:%s\n", result.Code, result.Code.String())
 		fmt.Printf("contract result code:%d, msg:%s\n",
-			tx.Transaction.Result.ContractResult.Code, tx.Transaction.Result.ContractResult.Message)
+			result.ContractResult.Code, result.ContractResult.Message)
 
 		if i+1 == needEndorserCount {
 			break
@@ -174,12 +178,4 @@ func testUserContractClaimQuery(client *sdk.ChainClient, method string, kvs []*c
 	}
 
 	fmt.Printf("QUERY claim contract resp: %+v\n", resp)
-}
-
-func testContractGetTxByTxId(client *sdk.ChainClient, txId string) *common.TransactionInfo {
-	transactionInfo, err := client.GetTxByTxId(txId)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return transactionInfo
 }
