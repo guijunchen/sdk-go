@@ -131,6 +131,7 @@ func TestChainClient_CreateSaveEnclaveCACertPayload(t *testing.T) {
 			got, err := cli.CreateSaveEnclaveCACertPayload(tt.args.enclaveCACert, tt.args.txId)
 			tt.want.Timestamp = got.Timestamp
 			tt.want.TxId = got.TxId
+			tt.want.Parameters = got.Parameters
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateSaveEnclaveCACertPayload() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -198,6 +199,7 @@ func TestChainClient_CreateSaveEnclaveReportPayload(t *testing.T) {
 			got, err := cli.CreateSaveEnclaveReportPayload(tt.args.enclaveId, tt.args.report, tt.args.txId)
 			tt.want.Timestamp = got.Timestamp
 			tt.want.TxId = got.TxId
+			tt.want.Parameters = got.Parameters
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateSaveEnclaveReportPayload() error = %v, wantErr %v", err, tt.wantErr)
 				return
