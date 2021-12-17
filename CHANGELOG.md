@@ -44,10 +44,14 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ### Deprecated
 
-## v2.2.0_qc - 2021-12-03
+## v2.2.0 - 2021-12-17
 
 ### Features
 
+* (gas) 新增启用/停用gas计费开关API
+* (gas) 新增 attach `Limit` API
+* (通用) 新增修改地址类型API
+* (通用) 提供至信链地址生成相关API
 * (Grpc client) grpc客户端发送消息时，可设置允许单条message大小的最大值(MB)
 
 ### Improvements
