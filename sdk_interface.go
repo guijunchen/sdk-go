@@ -113,7 +113,6 @@ type SDKInterface interface {
 	//   - method: 合约方法
 	//   - kvs: 合约参数
 	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	//   - limit: transaction limitation，执行交易时的资源消耗上限，设为nil则不设置上限
 	// ```go
 	QueryContract(contractName, method string, kvs []*common.KeyValuePair, timeout int64) (*common.TxResponse, error)
 	// ```
@@ -126,7 +125,6 @@ type SDKInterface interface {
 	//           格式要求：长度为64字节，字符在a-z0-9
 	//           可为空，若为空字符串，将自动生成txId
 	//   - kvs: 合约参数
-	//   - limit: transaction limitation，执行交易时的资源消耗上限，设为nil则不设置上限
 	// ```go
 	GetTxRequest(contractName, method, txId string, kvs []*common.KeyValuePair) (*common.TxRequest, error)
 	// ```
@@ -677,7 +675,6 @@ type SDKInterface interface {
 	//   - txId: 以交易 Id 作为链上存储 hibeMsg 的 Key, 如果不提供存储的信息可能被覆盖
 	//   - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 	//   - timeout: （内部查询 HibeParams 的）超时时间，单位：s，若传入-1，将使用默认超时时间：10s
-	//   - limit: transaction limitation，执行交易时的资源消耗上限，设为nil则不设置上限
 	// ```go
 	CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte,
 		receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType,
@@ -1034,7 +1031,7 @@ type SDKInterface interface {
 	CreateRechargeGasPayload(rechargeGasList []*syscontract.RechargeGas) (*common.Payload, error)
 	// ```
 
-	// ### 13.4 查询gas账户余额（根据公钥）
+	// ### 13.4 查询gas账户余额
 	// **参数说明**
 	//   - address: 查询gas余额的账户地址
 	// ```go
@@ -1088,7 +1085,7 @@ type SDKInterface interface {
 	// ### 13.10 为payload添加gas limit
 	// **参数说明**
 	//   - payload: 交易payload
-	//   - limit: gas limit
+	//   - limit: transaction limitation，执行交易时的资源消耗上限
 	// ```go
 	AttachGasLimit(payload *common.Payload, limit *common.Limit) *common.Payload
 	// ```
