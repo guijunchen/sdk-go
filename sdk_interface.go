@@ -992,7 +992,7 @@ type SDKInterface interface {
 	//   - endorser: 投票人对多签请求 payload 的签名信息
 	// ```go
 	MultiSignContractVote(payload *common.Payload,
-		endorser *common.EndorsementEntry) (*common.TxResponse, error)
+		endorser *common.EndorsementEntry, isAgree bool) (*common.TxResponse, error)
 	// ```
 
 	// ### 12.3 根据txId查询多签状态
