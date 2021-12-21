@@ -56,7 +56,7 @@ func main() {
 		fmt.Printf("====================== 链管理员 %d 投票 ======================\n", i)
 		time.Sleep(3 * time.Second)
 
-		resp, err = cc.MultiSignContractVote(payload, e)
+		resp, err = cc.MultiSignContractVote(payload, e, true)
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -64,11 +64,20 @@ func main() {
 
 		time.Sleep(3 * time.Second)
 		fmt.Println("====================== 查询本多签交易的投票情况 ======================")
+
 		//resp, err = cc.MultiSignContractQuery(payload.TxId)
 		//if err != nil {
 		//	log.Fatalln(err)
 		//}
 		//fmt.Printf("query MultiSignContractQuery resp: %+v\n", resp)
+
+		//查看详细投票信息
+		//multiSignInfo := &syscontract.MultiSignInfo{}
+		//err = proto.Unmarshal(resp.ContractResult.Result, multiSignInfo)
+		//if err != nil {
+		//	fmt.Printf(" multiSignInfoDB Unmarshal error: %s", err)
+		//}
+		//fmt.Printf("multi sign query finished, vote info: %v", multiSignInfo.VoteInfos)
 
 		result, err := cc.GetSyncResult(resp.TxId)
 		if err != nil {

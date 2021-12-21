@@ -23,10 +23,13 @@ func (cc *ChainClient) MultiSignContractReq(payload *common.Payload) (*common.Tx
 }
 
 func (cc *ChainClient) MultiSignContractVote(multiSignReqPayload *common.Payload,
-	endorser *common.EndorsementEntry) (*common.TxResponse, error) {
-
+	endorser *common.EndorsementEntry, isAgree bool) (*common.TxResponse, error) {
+	agree := syscontract.VoteStatus_AGREE
+	if !isAgree {
+		agree = syscontract.VoteStatus_REJECT
+	}
 	msvi := &syscontract.MultiSignVoteInfo{
-		Vote:        syscontract.VoteStatus_AGREE,
+		Vote:        agree,
 		Endorsement: endorser,
 	}
 	msviByte, _ := msvi.Marshal()
