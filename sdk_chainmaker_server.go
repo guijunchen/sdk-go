@@ -12,6 +12,7 @@ import (
 	"fmt"
 
 	"chainmaker.org/chainmaker/pb-go/v2/config"
+	"google.golang.org/grpc"
 )
 
 func (cc *ChainClient) GetChainMakerServerVersion() (string, error) {
@@ -22,7 +23,7 @@ func (cc *ChainClient) GetChainMakerServerVersion() (string, error) {
 		return "", err
 	}
 	ctx := context.Background()
-	res, err := client.rpcNode.GetChainMakerVersion(ctx, req)
+	res, err := client.rpcNode.GetChainMakerVersion(ctx, req, grpc.MaxCallSendMsgSize(client.rpcMaxSendMsgSize))
 	if err != nil {
 		return "", err
 	}

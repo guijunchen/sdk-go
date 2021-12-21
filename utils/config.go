@@ -45,6 +45,7 @@ type archiveConfigModel struct {
 
 type rpcClientConfigModel struct {
 	MaxRecvMsgSize int `mapstructure:"max_receive_message_size"`
+	MaxSendMsgSize int `mapstructure:"max_send_message_size"`
 }
 
 type pkcs11ConfigModel struct {

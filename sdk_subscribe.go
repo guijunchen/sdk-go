@@ -19,6 +19,7 @@ import (
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/gogo/protobuf/proto"
+	"google.golang.org/grpc"
 	grpccodes "google.golang.org/grpc/codes"
 	grpcstatus "google.golang.org/grpc/status"
 )
@@ -183,7 +184,7 @@ func (cc *ChainClient) getSubscribeStream(ctx context.Context,
 		return nil, err
 	}
 
-	return networkCli.rpcNode.Subscribe(ctx, req)
+	return networkCli.rpcNode.Subscribe(ctx, req, grpc.MaxCallSendMsgSize(networkCli.rpcMaxSendMsgSize))
 }
 
 func (cc *ChainClient) CreateSubscribeBlockPayload(startBlock, endBlock int64,
@@ -207,7 +208,7 @@ func (cc *ChainClient) CreateSubscribeBlockPayload(startBlock, endBlock int64,
 				Key:   syscontract.SubscribeBlock_ONLY_HEADER.String(),
 				Value: []byte(strconv.FormatBool(onlyHeader)),
 			},
-		}, defaultSeq,
+		}, defaultSeq, nil,
 	)
 }
 
@@ -232,7 +233,7 @@ func (cc *ChainClient) CreateSubscribeTxPayload(startBlock, endBlock int64,
 				Key:   syscontract.SubscribeTx_TX_IDS.String(),
 				Value: []byte(strings.Join(txIds, ",")),
 			},
-		}, defaultSeq,
+		}, defaultSeq, nil,
 	)
 }
 
@@ -257,6 +258,6 @@ func (cc *ChainClient) CreateSubscribeContractEventPayload(startBlock, endBlock 
 				Key:   syscontract.SubscribeContractEvent_TOPIC.String(),
 				Value: []byte(topic),
 			},
-		}, defaultSeq,
+		}, defaultSeq, nil,
 	)
 }

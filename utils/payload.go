@@ -91,7 +91,7 @@ func WithSequence(sequence uint64) PayloadOption {
 }
 
 // WithLimit set Limit of payload
-func WithLimit(limit []byte) PayloadOption {
+func WithLimit(limit *commonPb.Limit) PayloadOption {
 	return func(config *commonPb.Payload) {
 		config.Limit = limit
 	}

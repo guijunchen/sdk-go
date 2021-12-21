@@ -99,9 +99,12 @@ type SDKInterface interface {
 	//   - withSyncResult: 是否同步获取交易执行结果
 	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
 	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
+	//   - limit: transaction limitation，执行交易时的资源消耗上限，设为nil则不设置上限
 	// ```go
 	InvokeContract(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64,
 		withSyncResult bool) (*common.TxResponse, error)
+	InvokeContractWithLimit(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64,
+		withSyncResult bool, limit *common.Limit) (*common.TxResponse, error)
 	// ```
 
 	// ### 1.9 合约查询接口调用
@@ -493,6 +496,18 @@ type SDKInterface interface {
 	//   - keys: 待删除字段
 	// ```go
 	CreateChainConfigConsensusExtDeletePayload(keys []string) (*common.Payload, error)
+	// ```
+
+	// ### 3.25 修改地址类型payload生成
+	// **参数说明**
+	//   - addrType: 地址类型，0-ChainMaker; 1-ZXL
+	// ```go
+	CreateChainConfigAlterAddrTypePayload(addrType string) (*common.Payload, error)
+	// ```
+
+	// ### 3.26 启用或停用Gas计费开关payload生成
+	// ```go
+	CreateChainConfigEnableOrDisableGasPayload() (*common.Payload, error)
 	// ```
 
 	// ## 4 证书管理接口
@@ -992,5 +1007,86 @@ type SDKInterface interface {
 	//   - pairs: 发起多签请求所需的参数
 	// ```go
 	CreateMultiSignReqPayload(pairs []*common.KeyValuePair) *common.Payload
+	// ```
+
+	// ## 13 gas管理相关接口
+	// ### 13.1 构造设置gas管理员payload
+	// **参数说明**
+	//   - address: gas管理员的地址
+	// ```go
+	CreateSetGasAdminPayload(address string) (*common.Payload, error)
+	// ```
+
+	// ### 13.2 查询gas管理员
+	// **返回值说明**
+	//   - string: gas管理员的账号地址
+	// ```go
+	GetGasAdmin() (string, error)
+	// ```
+
+	// ### 13.3 构造 充值gas账户 payload
+	// **参数说明**
+	//   - rechargeGasList: 一个或多个gas账户充值指定gas数量
+	// ```go
+	CreateRechargeGasPayload(rechargeGasList []*syscontract.RechargeGas) (*common.Payload, error)
+	// ```
+
+	// ### 13.4 查询gas账户余额
+	// **参数说明**
+	//   - address: 查询gas余额的账户地址
+	// ```go
+	GetGasBalance(address string) (int64, error)
+	// ```
+
+	// ### 13.5 构造 退还gas账户的gas payload
+	// **参数说明**
+	//   - address: 退还gas的账户地址
+	//   - amount: 退还gas的数量
+	// ```go
+	CreateRefundGasPayload(address string, amount int64) (*common.Payload, error)
+	// ```
+
+	// ### 13.6 构造 冻结指定gas账户 payload
+	// **参数说明**
+	//   - address: 冻结指定gas账户的账户地址
+	// ```go
+	CreateFrozenGasAccountPayload(address string) (*common.Payload, error)
+	// ```
+
+	// ### 13.7 构造 解冻指定gas账户 payload
+	// **参数说明**
+	//   - address: 解冻指定gas账户的账户地址
+	// ```go
+	CreateUnfrozenGasAccountPayload(address string) (*common.Payload, error)
+	// ```
+
+	// ### 13.8 查询gas账户的状态
+	// **参数说明**
+	//   - address: 解冻指定gas账户的账户地址
+	// **返回值说明**
+	//   - bool: true表示账号未被冻结，false表示账号已被冻结
+	// ```go
+	GetGasAccountStatus(address string) (bool, error)
+	// ```
+
+	// ### 13.9 发送gas管理类请求
+	// **参数说明**
+	//   - payload: 交易payload
+	//   - endorsers: 背书签名信息列表
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
+	// ```go
+	SendGasManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
+		withSyncResult bool) (*common.TxResponse, error)
+	// ```
+
+	// ### 13.10 为payload添加gas limit
+	// **参数说明**
+	//   - payload: 交易payload
+	//   - limit: transaction limitation，执行交易时的资源消耗上限
+	// ```go
+	AttachGasLimit(payload *common.Payload, limit *common.Limit) *common.Payload
 	// ```
 }

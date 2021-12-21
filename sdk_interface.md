@@ -9,7 +9,7 @@
   - kvs: 合约初始化参数
 ```go
 CreateContractCreatePayload(contractName, version, byteCodeStringOrFilePath string, runtime common.RuntimeType,
-      kvs []*common.KeyValuePair) (*common.Payload, error)
+	kvs []*common.KeyValuePair) (*common.Payload, error)
 ```
 
 ### 1.2 升级合约待签名payload生成
@@ -21,7 +21,7 @@ CreateContractCreatePayload(contractName, version, byteCodeStringOrFilePath stri
   - kvs: 合约升级参数
 ```go
 CreateContractUpgradePayload(contractName, version, byteCodeStringOrFilePath string, runtime common.RuntimeType,
-      kvs []*common.KeyValuePair) (*common.Payload, error)
+	kvs []*common.KeyValuePair) (*common.Payload, error)
 ```
 
 ### 1.3 冻结合约payload生成
@@ -62,7 +62,7 @@ SignContractManagePayload(payload *common.Payload) (*common.EndorsementEntry, er
            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 ```go
 SendContractManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
-      withSyncResult bool) (*common.TxResponse, error)
+	withSyncResult bool) (*common.TxResponse, error)
 ```
 
 ### 1.8 合约调用
@@ -77,9 +77,12 @@ SendContractManageRequest(payload *common.Payload, endorsers []*common.Endorseme
   - withSyncResult: 是否同步获取交易执行结果
            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
+  - limit: transaction limitation，执行交易时的资源消耗上限，设为nil则不设置上限
 ```go
 InvokeContract(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64,
-      withSyncResult bool) (*common.TxResponse, error)
+	withSyncResult bool) (*common.TxResponse, error)
+InvokeContractWithLimit(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64,
+	withSyncResult bool, limit *common.Limit) (*common.TxResponse, error)
 ```
 
 ### 1.9 合约查询接口调用
@@ -220,7 +223,7 @@ GetBlockHeaderByHeight(blockHeight uint64) (*common.BlockHeader, error)
            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 ```go
 InvokeSystemContract(contractName, method, txId string, kvs []*common.KeyValuePair, timeout int64,
-      withSyncResult bool) (*common.TxResponse, error)
+	withSyncResult bool) (*common.TxResponse, error)
 ```
 
 ### 2.15 系统合约查询接口调用
@@ -312,7 +315,7 @@ SignChainConfigPayload(payload *common.Payload) (*common.EndorsementEntry, error
            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 ```go
 SendChainConfigUpdateRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
-      withSyncResult bool) (*common.TxResponse, error)
+	withSyncResult bool) (*common.TxResponse, error)
 ```
 
 > 以下CreateChainConfigXXXXXXPayload方法，用于生成链配置待签名payload，在进行多签收集后(需机构Admin权限账号签名)，用于链配置的更新
@@ -335,7 +338,7 @@ CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeou
   - blockInterval: 出块间隔，单位:ms，其值范围为[10, +∞]
 ```go
 CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize,
-      blockInterval uint32) (*common.Payload, error)
+	blockInterval uint32) (*common.Payload, error)
 ```
 
 ### 3.8 添加信任组织根证书待签名payload生成
@@ -369,7 +372,7 @@ CreateChainConfigTrustRootDeletePayload(trustRootOrgId string) (*common.Payload,
   - trustMemberInfo: 成员信息内容
 ```go
 CreateChainConfigTrustMemberAddPayload(trustMemberOrgId, trustMemberNodeId,
-      trustMemberRole, trustMemberInfo string) (*common.Payload, error)
+	trustMemberRole, trustMemberInfo string) (*common.Payload, error)
 ```
 
 ### 3.12 删除信任成员证书待签名payload生成
@@ -385,7 +388,7 @@ CreateChainConfigTrustMemberDeletePayload(trustMemberInfo string) (*common.Paylo
   - policy: 权限规则
 ```go
 CreateChainConfigPermissionAddPayload(permissionResourceName string,
-      policy *accesscontrol.Policy) (*common.Payload, error)
+	policy *accesscontrol.Policy) (*common.Payload, error)
 ```
 
 ### 3.14 更新权限配置待签名payload生成
@@ -394,7 +397,7 @@ CreateChainConfigPermissionAddPayload(permissionResourceName string,
   - policy: 权限规则
 ```go
 CreateChainConfigPermissionUpdatePayload(permissionResourceName string,
-      policy *accesscontrol.Policy) (*common.Payload, error)
+	policy *accesscontrol.Policy) (*common.Payload, error)
 ```
 
 ### 3.15 删除权限配置待签名payload生成
@@ -473,6 +476,18 @@ CreateChainConfigConsensusExtUpdatePayload(kvs []*common.KeyValuePair) (*common.
 CreateChainConfigConsensusExtDeletePayload(keys []string) (*common.Payload, error)
 ```
 
+### 3.25 修改地址类型payload生成
+**参数说明**
+  - addrType: 地址类型，0-ChainMaker; 1-ZXL
+```go
+CreateChainConfigAlterAddrTypePayload(addrType string) (*common.Payload, error)
+```
+
+### 3.26 启用或停用Gas计费开关payload生成
+```go
+CreateChainConfigEnableOrDisableGasPayload() (*common.Payload, error)
+```
+
 ## 4 证书管理接口
 ### 4.1 用户证书添加
 **参数说明**
@@ -549,7 +564,7 @@ SignCertManagePayload(payload *common.Payload) (*common.EndorsementEntry, error)
            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 ```go
 SendCertManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
-      withSyncResult bool) (*common.TxResponse, error)
+	withSyncResult bool) (*common.TxResponse, error)
 ```
 
 ## 5 消息订阅接口
@@ -571,15 +586,18 @@ SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRWSet, onlyH
   - txIds: 订阅txId列表，若为空，表示订阅所有txId
 ```go
 SubscribeTx(ctx context.Context, startBlock, endBlock int64, contractName string,
-      txIds []string) (<-chan interface{}, error)
+	txIds []string) (<-chan interface{}, error)
 ```
 
 ### 5.3 合约事件订阅
 **参数说明**
-  - topic ：指定订阅主题
+  - startBlock: 订阅起始区块高度，若为-1，表示订阅实时最新区块
+  - endBlock: 订阅结束区块高度，若为-1，表示订阅实时最新区块
   - contractName ：指定订阅的合约名称
+  - topic ：指定订阅主题
 ```go
-SubscribeContractEvent(ctx context.Context, topic string, contractName string) (<-chan interface{}, error)
+SubscribeContractEvent(ctx context.Context, startBlock, endBlock int64, contractName,
+	topic string) (<-chan interface{}, error)
 ```
 
 ### 5.4 多合一订阅
@@ -621,7 +639,7 @@ CreateHibeInitParamsTxPayloadParams(orgId string, hibeParams []byte) ([]*common.
   - keyType: 对明文进行对称加密的方法，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 ```go
 CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, paramsBytesList [][]byte, txId string,
-      keyType crypto.KeyType) ([]*common.KeyValuePair, error)
+	keyType crypto.KeyType) ([]*common.KeyValuePair, error)
 ```
 
 ### 7.3 生成层级属性加密交易 payload，参数由链上查询得出
@@ -637,8 +655,8 @@ CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string, 
   - timeout: （内部查询 HibeParams 的）超时时间，单位：s，若传入-1，将使用默认超时时间：10s
 ```go
 CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string, plaintext []byte,
-      receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType,
-      timeout int64) ([]*common.KeyValuePair, error)
+	receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType,
+	timeout int64) ([]*common.KeyValuePair, error)
 ```
 
 ### 7.4 查询某一组织的加密公共参数，返回其序列化后的byte数组
@@ -660,7 +678,7 @@ QueryHibeParamsWithOrgId(contractName, method, orgId string, timeout int64) ([]b
   - keyType: 对加密信息进行对称解密的方法，请和加密时使用的方法保持一致，请传入 common 中 crypto 包提供的方法，目前提供AES和SM4两种方法
 ```go
 DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string,
-      keyType crypto.KeyType) ([]byte, error)
+	keyType crypto.KeyType) ([]byte, error)
 ```
 
 ## 8 数据归档接口
@@ -766,8 +784,8 @@ GetArchivedBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
   - timeout: 发送交易的超时时间
 ```go
 SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte, reportHash []byte,
-      result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet, sign []byte,
-      events *common.StrSlice, privateReq []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error)
+	result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet, sign []byte,
+	events *common.StrSlice, privateReq []byte, withSyncResult bool, timeout int64) (*common.TxResponse, error)
 ```
 
 ### 9.2 保存远程证明
@@ -833,7 +851,7 @@ GetData(contractName, key string) ([]byte, error)
   - timeout: 等待交易结果的超时时间
 ```go
 SaveDir(orderId, txId string, privateDir *common.StrSlice, withSyncResult bool,
-      timeout int64) (*common.TxResponse, error)
+	timeout int64) (*common.TxResponse, error)
 ```
 
 ### 9.10 获取用户部署的隐私合约
@@ -935,7 +953,7 @@ CreatePubkeyQueryPayload(pubkey string) (*common.Payload, error)
            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 ```go
 SendPubkeyManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
-      withSyncResult bool) (*common.TxResponse, error)
+	withSyncResult bool) (*common.TxResponse, error)
 ```
 
 ## 12 多签类接口
@@ -952,7 +970,7 @@ MultiSignContractReq(payload *common.Payload) (*common.TxResponse, error)
   - endorser: 投票人对多签请求 payload 的签名信息
 ```go
 MultiSignContractVote(payload *common.Payload,
-      endorser *common.EndorsementEntry) (*common.TxResponse, error)
+	endorser *common.EndorsementEntry) (*common.TxResponse, error)
 ```
 
 ### 12.3 根据txId查询多签状态
@@ -967,4 +985,85 @@ MultiSignContractQuery(txId string) (*common.TxResponse, error)
   - pairs: 发起多签请求所需的参数
 ```go
 CreateMultiSignReqPayload(pairs []*common.KeyValuePair) *common.Payload
+```
+
+## 13 gas管理相关接口
+### 13.1 构造设置gas管理员payload
+**参数说明**
+  - address: gas管理员的地址
+```go
+CreateSetGasAdminPayload(address string) (*common.Payload, error)
+```
+
+### 13.2 查询gas管理员
+**返回值说明**
+  - string: gas管理员的账号地址
+```go
+GetGasAdmin() (string, error)
+```
+
+### 13.3 构造 充值gas账户 payload
+**参数说明**
+  - rechargeGasList: 一个或多个gas账户充值指定gas数量
+```go
+CreateRechargeGasPayload(rechargeGasList []*syscontract.RechargeGas) (*common.Payload, error)
+```
+
+### 13.4 查询gas账户余额
+**参数说明**
+  - address: 查询gas余额的账户地址
+```go
+GetGasBalance(address string) (int64, error)
+```
+
+### 13.5 构造 退还gas账户的gas payload
+**参数说明**
+  - address: 退还gas的账户地址
+  - amount: 退还gas的数量
+```go
+CreateRefundGasPayload(address string, amount int64) (*common.Payload, error)
+```
+
+### 13.6 构造 冻结指定gas账户 payload
+**参数说明**
+  - address: 冻结指定gas账户的账户地址
+```go
+CreateFrozenGasAccountPayload(address string) (*common.Payload, error)
+```
+
+### 13.7 构造 解冻指定gas账户 payload
+**参数说明**
+  - address: 解冻指定gas账户的账户地址
+```go
+CreateUnfrozenGasAccountPayload(address string) (*common.Payload, error)
+```
+
+### 13.8 查询gas账户的状态
+**参数说明**
+  - address: 解冻指定gas账户的账户地址
+**返回值说明**
+  - bool: true表示账号未被冻结，false表示账号已被冻结
+```go
+GetGasAccountStatus(address string) (bool, error)
+```
+
+### 13.9 发送gas管理类请求
+**参数说明**
+  - payload: 交易payload
+  - endorsers: 背书签名信息列表
+  - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+  - withSyncResult: 是否同步获取交易执行结果
+           当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+           当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
+```go
+SendGasManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry, timeout int64,
+	withSyncResult bool) (*common.TxResponse, error)
+```
+
+### 13.10 为payload添加gas limit
+**参数说明**
+  - payload: 交易payload
+  - limit: transaction limitation，执行交易时的资源消耗上限
+```go
+AttachGasLimit(payload *common.Payload, limit *common.Limit) *common.Payload
 ```

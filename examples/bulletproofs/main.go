@@ -66,7 +66,8 @@ func TestBulletproofsContractCounterGo() {
 	require.Nil(t, err)
 
 	fmt.Println("======================================= 创建合约（异步）=======================================")
-	testUserBulletproofsContractCounterGoCreate(client, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1, false)
+	testUserBulletproofsContractCounterGoCreate(client, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1,
+		examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1, false)
 	time.Sleep(5 * time.Second)
 
 	funcName := BulletProofsOpTypePedersenAddNum
@@ -105,7 +106,8 @@ func testUserBulletproofsContractCounterGoCreate(client *sdk.ChainClient, admin1
 }
 
 func createUserContract(client *sdk.ChainClient, admin1, admin2, admin3, admin4 string,
-	contractName, version, byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair, withSyncResult bool) (*common.TxResponse, error) {
+	contractName, version, byteCodePath string, runtime common.RuntimeType, kvs []*common.KeyValuePair,
+	withSyncResult bool) (*common.TxResponse, error) {
 
 	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
 	if err != nil {
@@ -217,7 +219,8 @@ func testBulletProofsGetOpResult(t *testing.T, client *sdk.ChainClient, method s
 	fmt.Printf("QUERY %s contract resp -> : %s\n", bulletproofsContractName, commitmentA2)
 }
 
-func queryBulletproofsCommitment(client *sdk.ChainClient, contractName, method, bpMethod string, timeout int64) ([]byte, error) {
+func queryBulletproofsCommitment(client *sdk.ChainClient, contractName, method,
+	bpMethod string, timeout int64) ([]byte, error) {
 
 	resultBytes, err := queryBulletProofsCommitmentByHandleType(client, contractName, method, bpMethod, timeout)
 	if err != nil {
@@ -234,7 +237,8 @@ func queryBulletproofsCommitment(client *sdk.ChainClient, contractName, method, 
 	return resultBytes, nil
 }
 
-func queryBulletProofsCommitmentByHandleType(client *sdk.ChainClient, contractName, method, bpMethod string, timeout int64) ([]byte, error) {
+func queryBulletProofsCommitmentByHandleType(client *sdk.ChainClient, contractName, method,
+	bpMethod string, timeout int64) ([]byte, error) {
 	pair := []*common.KeyValuePair{
 		{Key: "handletype", Value: []byte(bpMethod)},
 	}

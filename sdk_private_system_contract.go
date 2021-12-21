@@ -47,21 +47,11 @@ func (cc *ChainClient) SaveDir(orderId, txId string,
 	})
 
 	payload := cc.CreatePayload(txId, common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_DIR.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_DIR.String(), pairs, defaultSeq, nil)
 
-	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
+	resp, err := cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if withSyncResult {
-			contractResult, err := cc.getSyncResult(payload.TxId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
+		return resp, err
 	}
 
 	return resp, nil
@@ -81,7 +71,7 @@ func (cc *ChainClient) GetContract(contractName, codeHash string) (*common.Priva
 	})
 
 	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_CONTRACT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_CONTRACT.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -165,21 +155,11 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, isD
 	pairs := paramsMap2KVPairs(pairsMap)
 
 	payload := cc.CreatePayload(txId, common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_DATA.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_DATA.String(), pairs, defaultSeq, nil)
 
-	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
+	resp, err := cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if withSyncResult {
-			contractResult, err := cc.getSyncResult(payload.TxId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
+		return resp, err
 	}
 
 	return resp, nil
@@ -198,7 +178,7 @@ func (cc *ChainClient) GetData(contractName, key string) ([]byte, error) {
 	})
 
 	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_DATA.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_DATA.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -224,7 +204,7 @@ func (cc *ChainClient) GetDir(orderId string) ([]byte, error) {
 	})
 
 	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_DIR.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_DIR.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -261,7 +241,7 @@ func (cc *ChainClient) CheckCallerCertAuth(payload string, orgIds []string, sign
 	})
 
 	payloadBytes := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_CHECK_CALLER_CERT_AUTH.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_CHECK_CALLER_CERT_AUTH.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payloadBytes, nil)
 	if err != nil {
@@ -293,21 +273,11 @@ func (cc *ChainClient) SaveEnclaveCACert(
 	})
 
 	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(), pairs, defaultSeq, nil)
 
-	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
+	resp, err := cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if withSyncResult {
-			contractResult, err := cc.getSyncResult(payload.TxId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
+		return resp, err
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
@@ -336,21 +306,11 @@ func (cc *ChainClient) SaveEnclaveReport(
 	})
 
 	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_ENCLAVE_REPORT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_ENCLAVE_REPORT.String(), pairs, defaultSeq, nil)
 
-	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
+	resp, err := cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if withSyncResult {
-			contractResult, err := cc.getSyncResult(payload.TxId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
+		return resp, err
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
@@ -377,7 +337,7 @@ func (cc *ChainClient) CreateSaveEnclaveCACertPayload(enclaveCACert string, txId
 	})
 
 	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(), pairs, defaultSeq, nil)
 
 	return payload, nil
 }
@@ -392,7 +352,7 @@ func (cc *ChainClient) GetEnclaveCACert() ([]byte, error) {
 	pairs := paramsMap2KVPairs(map[string][]byte{})
 
 	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_CA_CERT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_CA_CERT.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -424,7 +384,7 @@ func (cc *ChainClient) CreateSaveEnclaveReportPayload(enclaveId, report, txId st
 	})
 
 	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_ENCLAVE_REPORT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_ENCLAVE_REPORT.String(), pairs, defaultSeq, nil)
 
 	return payload, nil
 }
@@ -447,21 +407,11 @@ func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncRe
 	})
 
 	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_SAVE_REMOTE_ATTESTATION.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_SAVE_REMOTE_ATTESTATION.String(), pairs, defaultSeq, nil)
 
-	resp, err := cc.proposalRequestWithTimeout(payload, nil, timeout)
+	resp, err := cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if withSyncResult {
-			contractResult, err := cc.getSyncResult(payload.TxId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
+		return resp, err
 	}
 
 	if err = checkProposalRequestResp(resp, true); err != nil {
@@ -483,7 +433,7 @@ func (cc *ChainClient) GetEnclaveEncryptPubKey(enclaveId string) ([]byte, error)
 	})
 
 	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_ENCLAVE_ENCRYPT_PUB_KEY.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_ENCLAVE_ENCRYPT_PUB_KEY.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -509,7 +459,7 @@ func (cc *ChainClient) GetEnclaveVerificationPubKey(enclaveId string) ([]byte, e
 	})
 
 	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_ENCLAVE_VERIFICATION_PUB_KEY.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_ENCLAVE_VERIFICATION_PUB_KEY.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -535,7 +485,7 @@ func (cc *ChainClient) GetEnclaveReport(enclaveId string) ([]byte, error) {
 	})
 
 	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_ENCLAVE_REPORT.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_ENCLAVE_REPORT.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -561,7 +511,7 @@ func (cc *ChainClient) GetEnclaveChallenge(enclaveId string) ([]byte, error) {
 	})
 
 	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_ENCLAVE_CHALLENGE.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_ENCLAVE_CHALLENGE.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -587,7 +537,7 @@ func (cc *ChainClient) GetEnclaveSignature(enclaveId string) ([]byte, error) {
 	})
 
 	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_ENCLAVE_SIGNATURE.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_ENCLAVE_SIGNATURE.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -613,7 +563,7 @@ func (cc *ChainClient) GetEnclaveProof(enclaveId string) ([]byte, error) {
 	})
 
 	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
-		syscontract.PrivateComputeFunction_GET_ENCLAVE_PROOF.String(), pairs, 0)
+		syscontract.PrivateComputeFunction_GET_ENCLAVE_PROOF.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -659,20 +609,5 @@ func checkProposalRequestResp(resp *common.TxResponse, needContractResult bool) 
 func (cc *ChainClient) SendMultiSigningRequest(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 
-	resp, err := cc.proposalRequestWithTimeout(payload, endorsers, timeout)
-	if err != nil {
-		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
-	}
-
-	if resp.Code == common.TxStatusCode_SUCCESS {
-		if withSyncResult {
-			contractResult, err := cc.getSyncResult(payload.TxId)
-			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
-			}
-			resp.ContractResult = contractResult
-		}
-	}
-
-	return resp, nil
+	return cc.sendContractRequest(payload, endorsers, timeout, withSyncResult)
 }

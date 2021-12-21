@@ -390,6 +390,14 @@ func (cc *ChainClient) GetAuthType() AuthType {
 	return cc.authType
 }
 
+func (cc *ChainClient) GetPublicKey() crypto.PublicKey {
+	return cc.publicKey
+}
+
+func (cc *ChainClient) GetPrivateKey() crypto.PrivateKey {
+	return cc.privateKey
+}
+
 // 检查证书是否成功上链
 func (cc *ChainClient) checkUserCertOnChain() error {
 	err := retry.Retry(func(uint) error {
