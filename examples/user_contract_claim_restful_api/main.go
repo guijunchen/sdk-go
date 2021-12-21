@@ -107,7 +107,7 @@ func testUserContractClaimInvoke(client *sdk.ChainClient,
 		},
 	}
 
-	payload := client.CreatePayload("", common.TxType_INVOKE_CONTRACT, claimContractName, method, kvs, 0)
+	payload := client.CreatePayload("", common.TxType_INVOKE_CONTRACT, claimContractName, method, kvs, 0, nil)
 
 	req, err := client.GenerateTxRequest(payload, nil)
 	if err != nil {
@@ -126,7 +126,7 @@ func testUserContractClaimInvoke(client *sdk.ChainClient,
 
 func testUserContractClaimQuery(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair) {
 
-	payload := client.CreatePayload("", common.TxType_QUERY_CONTRACT, claimContractName, method, kvs, 0)
+	payload := client.CreatePayload("", common.TxType_QUERY_CONTRACT, claimContractName, method, kvs, 0, nil)
 
 	req, err := client.GenerateTxRequest(payload, nil)
 	if err != nil {
