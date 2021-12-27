@@ -680,7 +680,7 @@ func TestCreateNativeContractAccessRevokePayload(t *testing.T) {
 }
 
 func TestGetContractInfo(t *testing.T) {
-	contractName := "contract1"
+	contractName := "contract123"
 	raw, err := json.Marshal(&common.Contract{
 		Name: contractName,
 	})
@@ -716,7 +716,7 @@ func TestGetContractInfo(t *testing.T) {
 }
 
 func TestGetContractList(t *testing.T) {
-	contractName := "contract1"
+	contractName := "contract111"
 	raw, err := json.Marshal([]*common.Contract{
 		{
 			Name: contractName,
