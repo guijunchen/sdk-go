@@ -9,6 +9,7 @@ package chainmaker_sdk_go
 
 import (
 	"encoding/hex"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"strings"
@@ -35,13 +36,16 @@ var _ SDKInterface = (*ChainClient)(nil)
 
 type ChainClient struct {
 	// common config
-	logger       utils.Logger
-	pool         ConnectionPool
-	chainId      string
-	orgId        string
+	logger  utils.Logger
+	pool    ConnectionPool
+	chainId string
+	orgId   string
+
 	userCrtBytes []byte
 	userCrt      *bcx509.Certificate
 	privateKey   crypto.PrivateKey
+	publicKey    crypto.PublicKey
+	pkBytes      []byte
 
 	// cert hash config
 	enabledCrtHash bool
@@ -56,10 +60,8 @@ type ChainClient struct {
 	// pkcs11 config
 	pkcs11Config *Pkcs11Config
 
-	publicKey crypto.PublicKey
-	pkBytes   []byte
-	hashType  string
-	authType  AuthType
+	hashType string
+	authType AuthType
 	// retry config
 	retryLimit    int // if <=0 then use DefaultRetryLimit
 	retryInterval int // if <=0 then use DefaultRetryInterval
@@ -396,6 +398,26 @@ func (cc *ChainClient) GetPublicKey() crypto.PublicKey {
 
 func (cc *ChainClient) GetPrivateKey() crypto.PrivateKey {
 	return cc.privateKey
+}
+
+// ChangeSigner change ChainClient siger. signerCrt passes nil in Public or PermissionedWithKey mode
+func (cc *ChainClient) ChangeSigner(signerPrivKey crypto.PrivateKey, signerCrt *bcx509.Certificate) error {
+	signerPubKey := signerPrivKey.PublicKey()
+	pkPem, err := signerPubKey.String()
+	if err != nil {
+		return err
+	}
+
+	cc.pkBytes = []byte(pkPem)
+	cc.publicKey = signerPubKey
+	cc.privateKey = signerPrivKey
+
+	if signerCrt != nil {
+		crtPem := pem.EncodeToMemory(&pem.Block{Bytes: signerCrt.Raw, Type: "CERTIFICATE"})
+		cc.userCrtBytes = crtPem
+		cc.userCrt = signerCrt
+	}
+	return nil
 }
 
 // 检查证书是否成功上链
