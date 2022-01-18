@@ -20,7 +20,7 @@ func (cc *ChainClient) CreateSetGasAdminPayload(address string) (*common.Payload
 		},
 	}
 
-	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
+	return cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
 		syscontract.GasAccountFunction_SET_ADMIN.String(), pairs, defaultSeq, nil), nil
 }
 
@@ -28,7 +28,7 @@ func (cc *ChainClient) GetGasAdmin() (string, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		syscontract.GasAccountFunction_GET_ADMIN)
 
-	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
+	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
 		syscontract.GasAccountFunction_GET_ADMIN.String(), nil, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
@@ -59,7 +59,7 @@ func (cc *ChainClient) CreateRechargeGasPayload(rechargeGasList []*syscontract.R
 		},
 	}
 
-	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
+	return cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
 		syscontract.GasAccountFunction_RECHARGE_GAS.String(), pairs, defaultSeq, nil), nil
 }
 
@@ -67,7 +67,7 @@ func (cc *ChainClient) GetGasBalance(address string) (int64, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		syscontract.GasAccountFunction_GET_BALANCE)
 
-	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
+	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
 		syscontract.GasAccountFunction_GET_BALANCE.String(), []*common.KeyValuePair{
 			{
 				Key:   utils.KeyGasAddressKey,
@@ -110,7 +110,7 @@ func (cc *ChainClient) CreateRefundGasPayload(address string, amount int64) (*co
 		},
 	}
 
-	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
+	return cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
 		syscontract.GasAccountFunction_REFUND_GAS.String(), pairs, defaultSeq, nil), nil
 }
 
@@ -137,7 +137,7 @@ func (cc *ChainClient) GetGasAccountStatus(address string) (bool, error) {
 		},
 	}
 
-	payload := cc.createPayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
+	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
 		syscontract.GasAccountFunction_ACCOUNT_STATUS.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
@@ -168,7 +168,7 @@ func (cc *ChainClient) createFrozenUnfrozenGasAccountPayload(method string,
 		},
 	}
 
-	return cc.createPayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
+	return cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
 		method, pairs, defaultSeq, nil), nil
 }
 

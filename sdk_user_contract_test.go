@@ -10,9 +10,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSendTxRequest(t *testing.T) {
@@ -58,6 +57,320 @@ func TestSendTxRequest(t *testing.T) {
 			} else {
 				require.Equal(t, tt.serverTxResp.Code, txResp.Code)
 			}
+		})
+	}
+}
+
+func TestCreateContractCreatePayload(t *testing.T) {
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverTxErr  error
+	}{
+		{
+			"good",
+			&common.TxResponse{ContractResult: &common.ContractResult{
+				Result:  []byte{},
+				Message: "OK",
+			}},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverTxErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			_, err = cc.CreateContractCreatePayload("claim", "v1",
+				"./testdata/claim-wasm-demo/rust-fact-2.0.0.wasm", common.RuntimeType_WASMER,
+				[]*common.KeyValuePair{})
+			require.Nil(t, err)
+		})
+	}
+}
+
+func TestCreateContractUpgradePayload(t *testing.T) {
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverTxErr  error
+	}{
+		{
+			"good",
+			&common.TxResponse{ContractResult: &common.ContractResult{
+				Result:  []byte{},
+				Message: "OK",
+			}},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverTxErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			_, err = cc.CreateContractUpgradePayload("claim", "v1",
+				"./testdata/claim-wasm-demo/rust-fact-2.0.0.wasm", common.RuntimeType_WASMER,
+				[]*common.KeyValuePair{})
+			require.Nil(t, err)
+		})
+	}
+}
+
+func TestCreateContractFreezePayload(t *testing.T) {
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverTxErr  error
+	}{
+		{
+			"good",
+			&common.TxResponse{ContractResult: &common.ContractResult{
+				Result:  []byte{},
+				Message: "OK",
+			}},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverTxErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			_, err = cc.CreateContractFreezePayload("claim")
+			require.Nil(t, err)
+		})
+	}
+}
+
+func TestCreateContractUnfreezePayload(t *testing.T) {
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverTxErr  error
+	}{
+		{
+			"good",
+			&common.TxResponse{ContractResult: &common.ContractResult{
+				Result:  []byte{},
+				Message: "OK",
+			}},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverTxErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			_, err = cc.CreateContractUnfreezePayload("claim")
+			require.Nil(t, err)
+		})
+	}
+}
+
+func TestCreateContractRevokePayload(t *testing.T) {
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverTxErr  error
+	}{
+		{
+			"good",
+			&common.TxResponse{ContractResult: &common.ContractResult{
+				Result:  []byte{},
+				Message: "OK",
+			}},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverTxErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			_, err = cc.CreateContractRevokePayload("claim")
+			require.Nil(t, err)
+		})
+	}
+}
+
+func TestSignContractManagePayload(t *testing.T) {
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverTxErr  error
+	}{
+		{
+			"good",
+			&common.TxResponse{ContractResult: &common.ContractResult{
+				Result:  []byte{},
+				Message: "OK",
+			}},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverTxErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			_, err = cc.SignContractManagePayload(&common.Payload{})
+			require.Nil(t, err)
+		})
+	}
+}
+
+func TestSendContractManageRequest(t *testing.T) {
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverTxErr  error
+	}{
+		{
+			"good",
+			&common.TxResponse{ContractResult: &common.ContractResult{
+				Result:  []byte{},
+				Message: "OK",
+			}},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverTxErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			_, err = cc.SendContractManageRequest(&common.Payload{}, nil, -1, false)
+			require.Nil(t, err)
+		})
+	}
+}
+
+func TestInvokeContract(t *testing.T) {
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverTxErr  error
+	}{
+		{
+			"good",
+			&common.TxResponse{ContractResult: &common.ContractResult{
+				Result:  []byte{},
+				Message: "OK",
+			}},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverTxErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			_, err = cc.InvokeContract("claim", "save", "",
+				[]*common.KeyValuePair{}, -1, false)
+			require.Nil(t, err)
+		})
+	}
+}
+
+func TestInvokeContractWithLimit(t *testing.T) {
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverTxErr  error
+	}{
+		{
+			"good",
+			&common.TxResponse{ContractResult: &common.ContractResult{
+				Result:  []byte{},
+				Message: "OK",
+			}},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverTxErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			_, err = cc.InvokeContractWithLimit("claim", "save", "",
+				[]*common.KeyValuePair{}, -1, false, &common.Limit{GasLimit: 1000000})
+			require.Nil(t, err)
+		})
+	}
+}
+
+func TestQueryContract(t *testing.T) {
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverTxErr  error
+	}{
+		{
+			"good",
+			&common.TxResponse{ContractResult: &common.ContractResult{
+				Result:  []byte{},
+				Message: "OK",
+			}},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverTxErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			_, err = cc.QueryContract("claim", "save", []*common.KeyValuePair{}, -1)
+			require.Nil(t, err)
+		})
+	}
+}
+
+func TestGetTxRequest(t *testing.T) {
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverTxErr  error
+	}{
+		{
+			"good",
+			&common.TxResponse{ContractResult: &common.ContractResult{
+				Result:  []byte{},
+				Message: "OK",
+			}},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverTxErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			_, err = cc.GetTxRequest("claim", "save", "", []*common.KeyValuePair{})
+			require.Nil(t, err)
 		})
 	}
 }
