@@ -72,6 +72,71 @@ func TestGetTxByTxId(t *testing.T) {
 	}
 }
 
+func TestGetTxWithRWSetByTxId(t *testing.T) {
+	var txID = "b374f23e4e6747e4b5fcb3ca975ef1655ad56555adfd4534ae8676cd9f1eb145"
+
+	goodTxInfoBz, err := proto.Marshal(&common.TransactionInfoWithRWSet{
+		Transaction: &common.Transaction{
+			Payload: &common.Payload{
+				TxId: txID,
+			},
+		},
+		RwSet: &common.TxRWSet{
+			TxId:     txID,
+			TxReads:  []*common.TxRead{{}},
+			TxWrites: []*common.TxWrite{{}},
+		},
+	})
+	require.Nil(t, err)
+
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverTxErr  error
+		wantErr      bool
+	}{
+		{
+			"bad",
+			&common.TxResponse{
+				Code: common.TxStatusCode_SUCCESS,
+				ContractResult: &common.ContractResult{
+					Result: []byte("this is a bad *common.TransactionInfo bytes"),
+				},
+			},
+			nil,
+			true,
+		},
+		{
+			"good",
+			&common.TxResponse{
+				Code: common.TxStatusCode_SUCCESS,
+				ContractResult: &common.ContractResult{
+					Result: goodTxInfoBz,
+				},
+			},
+			nil,
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cli, err := newMockChainClient(tt.serverTxResp, tt.serverTxErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cli.Stop()
+
+			txInfo, err := cli.GetTxWithRWSetByTxId(txID)
+			require.Equal(t, tt.wantErr, err != nil)
+
+			if txInfo != nil {
+				bz, err := proto.Marshal(txInfo)
+				require.Nil(t, err)
+				require.Equal(t, tt.serverTxResp.ContractResult.Result, bz)
+			}
+		})
+	}
+}
+
 func TestGetBlockByHeight(t *testing.T) {
 	var height uint64 = 1
 	rawBlkInfo, err := proto.Marshal(&common.BlockInfo{
