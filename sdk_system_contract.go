@@ -54,6 +54,43 @@ func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error)
 	return transactionInfo, nil
 }
 
+func (cc *ChainClient) GetTxWithRWSetByTxId(txId string) (*common.TransactionInfoWithRWSet, error) {
+	cc.logger.Debugf("[SDK] begin GetTxWithRWSetByTxId, [method:%s]/[txId:%s]",
+		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID, txId)
+
+	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
+		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID.String(), []*common.KeyValuePair{
+			{
+				Key:   utils.KeyBlockContractTxId,
+				Value: []byte(txId),
+			},
+			{
+				Key:   utils.KeyBlockContractWithRWSet,
+				Value: []byte("true"),
+			},
+		}, defaultSeq, nil,
+	)
+
+	resp, err := cc.proposalRequest(payload, nil)
+	if err != nil {
+		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
+	}
+
+	if err = utils.CheckProposalRequestResp(resp, true); err != nil {
+		if utils.IsArchived(resp.Code) {
+			return nil, errors.New(resp.Code.String())
+		}
+		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
+	}
+
+	tx := &common.TransactionInfoWithRWSet{}
+	if err = proto.Unmarshal(resp.ContractResult.Result, tx); err != nil {
+		return nil, fmt.Errorf("GetTxWithRWSetByTxId unmarshal failed, %s", err)
+	}
+
+	return tx, nil
+}
+
 func (cc *ChainClient) GetBlockByHeight(blockHeight uint64, withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%t]",
 		syscontract.ChainQueryFunction_GET_BLOCK_BY_HEIGHT, blockHeight, withRWSet)

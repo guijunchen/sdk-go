@@ -300,6 +300,13 @@ type SDKInterface interface {
 	GetDisabledNativeContractList() ([]string, error)
 	// ```
 
+	// ### 2.22 根据交易Id查询包含rwset的交易
+	// **参数说明**
+	//   - txId: 交易ID
+	// ```go
+	GetTxWithRWSetByTxId(txId string) (*common.TransactionInfoWithRWSet, error)
+	// ```
+
 	// ## 3 链配置接口
 	// ### 3.1 查询最新链配置
 	// ```go
