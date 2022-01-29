@@ -148,7 +148,14 @@ type SDKInterface interface {
 	GetTxByTxId(txId string) (*common.TransactionInfo, error)
 	// ```
 
-	// ### 2.2 根据区块高度查询区块
+	// ### 2.2 根据交易Id查询包含rwset的交易
+	// **参数说明**
+	//   - txId: 交易ID
+	// ```go
+	GetTxWithRWSetByTxId(txId string) (*common.TransactionInfoWithRWSet, error)
+	// ```
+
+	// ### 2.3 根据区块高度查询区块
 	// **参数说明**
 	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
 	//   - withRWSet: 是否返回读写集
@@ -156,14 +163,14 @@ type SDKInterface interface {
 	GetBlockByHeight(blockHeight uint64, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.3 根据区块高度查询完整区块
+	// ### 2.4 根据区块高度查询完整区块
 	// **参数说明**
 	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块
 	// ```go
 	GetFullBlockByHeight(blockHeight uint64) (*store.BlockWithRWSet, error)
 	// ```
 
-	// ### 2.4 根据区块哈希查询区块
+	// ### 2.5 根据区块哈希查询区块
 	// **参数说明**
 	//   - blockHash: 指定区块Hash
 	//   - withRWSet: 是否返回读写集
@@ -171,7 +178,7 @@ type SDKInterface interface {
 	GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.5 根据交易Id查询区块
+	// ### 2.6 根据交易Id查询区块
 	// **参数说明**
 	//   - txId: 交易ID
 	//   - withRWSet: 是否返回读写集
@@ -179,59 +186,59 @@ type SDKInterface interface {
 	GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.6 查询最新的配置块
+	// ### 2.7 查询最新的配置块
 	// **参数说明**
 	//   - withRWSet: 是否返回读写集
 	// ```go
 	GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.7 查询最新区块
+	// ### 2.8 查询最新区块
 	// **参数说明**
 	//   - withRWSet: 是否返回读写集
 	// ```go
 	GetLastBlock(withRWSet bool) (*common.BlockInfo, error)
 	// ```
 
-	// ### 2.8 查询节点加入的链信息
+	// ### 2.9 查询节点加入的链信息
 	//    - 返回ChainId清单
 	// ```go
 	GetNodeChainList() (*discovery.ChainList, error)
 	// ```
 
-	// ### 2.9 查询链信息
+	// ### 2.10 查询链信息
 	//   - 包括：当前链最新高度，链节点信息
 	// ```go
 	GetChainInfo() (*discovery.ChainInfo, error)
 	// ```
 
-	// ### 2.10 根据交易Id获取区块高度
+	// ### 2.11 根据交易Id获取区块高度
 	// **参数说明**
 	//   - txId: 交易ID
 	// ```go
 	GetBlockHeightByTxId(txId string) (uint64, error)
 	// ```
 
-	// ### 2.11 根据区块Hash获取区块高度
+	// ### 2.12 根据区块Hash获取区块高度
 	// **参数说明**
 	//   - blockHash: 指定区块Hash
 	// ```go
 	GetBlockHeightByHash(blockHash string) (uint64, error)
 	// ```
 
-	// ### 2.12 查询当前最新区块高度
+	// ### 2.13 查询当前最新区块高度
 	// ```go
 	GetCurrentBlockHeight() (uint64, error)
 	// ```
 
-	// ### 2.13 根据区块高度查询区块头
+	// ### 2.14 根据区块高度查询区块头
 	// **参数说明**
 	//   - blockHeight: 指定区块高度，若为-1，将返回最新区块头
 	// ```go
 	GetBlockHeaderByHeight(blockHeight uint64) (*common.BlockHeader, error)
 	// ```
 
-	// ### 2.14 系统合约调用
+	// ### 2.15 系统合约调用
 	// **参数说明**
 	//   - contractName: 合约名称
 	//   - method: 合约方法
@@ -248,7 +255,7 @@ type SDKInterface interface {
 		withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
-	// ### 2.15 系统合约查询接口调用
+	// ### 2.16 系统合约查询接口调用
 	// **参数说明**
 	//   - contractName: 合约名称
 	//   - method: 合约方法
@@ -258,42 +265,42 @@ type SDKInterface interface {
 	QuerySystemContract(contractName, method string, kvs []*common.KeyValuePair, timeout int64) (*common.TxResponse, error)
 	// ```
 
-	// ### 2.16 根据交易Id获取Merkle路径
+	// ### 2.17 根据交易Id获取Merkle路径
 	// **参数说明**
 	//   - txId: 交易ID
 	// ```go
 	GetMerklePathByTxId(txId string) ([]byte, error)
 	// ```
 
-	// ### 2.17 开放系统合约
+	// ### 2.18 开放系统合约
 	// **参数说明**
 	//   - grantContractList: 需要开放的系统合约字符串数组
 	// ```go
 	CreateNativeContractAccessGrantPayload(grantContractList []string) (*common.Payload, error)
 	// ```
 
-	// ### 2.18 弃用系统合约
+	// ### 2.19 弃用系统合约
 	// **参数说明**
 	//   - revokeContractList: 需要弃用的系统合约字符串数组
 	// ```go
 	CreateNativeContractAccessRevokePayload(revokeContractList []string) (*common.Payload, error)
 	// ```
 
-	// ### 2.19 查询指定合约的信息，包括系统合约和用户合约
+	// ### 2.20 查询指定合约的信息，包括系统合约和用户合约
 	// **参数说明**
 	//   - contractName: 指定查询的合约名字，包括系统合约和用户合约
 	// ```go
 	GetContractInfo(contractName string) (*common.Contract, error)
 	// ```
 
-	// ### 2.20 查询所有的合约名单，包括系统合约和用户合约
+	// ### 2.21 查询所有的合约名单，包括系统合约和用户合约
 	// **返回值说明**
 	//   - []*common.Contract: 链上所有的合约列表，包括系统合约和用户合约
 	// ```go
 	GetContractList() ([]*common.Contract, error)
 	// ```
 
-	// ### 2.21 查询已禁用的系统合约名单
+	// ### 2.22 查询已禁用的系统合约名单
 	// **返回值说明**
 	//   - []string: 链上已禁用的系统合约名字列表
 	// ```go
