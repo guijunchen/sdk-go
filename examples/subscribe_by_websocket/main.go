@@ -17,6 +17,9 @@ import (
 	"net/http"
 	"net/url"
 
+	"chainmaker.org/chainmaker/common/v2/crypto/tls/config"
+	wss "chainmaker.org/chainmaker/common/v2/crypto/tls/wss"
+
 	"github.com/gogo/protobuf/proto"
 
 	"chainmaker.org/chainmaker/pb-go/v2/common"
@@ -30,8 +33,8 @@ const (
 	userTlsCrtPath           = "../../testdata/crypto-config/wx-org1.chainmaker.org/user/client1/client1.tls.crt"
 	userTlsKeyPath           = "../../testdata/crypto-config/wx-org1.chainmaker.org/user/client1/client1.tls.key"
 
-	//enableTLS = false
-	enableTLS = true
+	enableTLS = false
+	//enableTLS = true
 
 	schemeWS  = "ws"
 	schemeWSS = "wss"
@@ -169,9 +172,9 @@ func testSubscribeContractEvent(client *sdk.ChainClient, startBlock, endBlock in
 
 func subscribe(client *sdk.ChainClient, payload *common.Payload) {
 	var (
-		scheme    string
-		tlsConfig *tls.Config
-		dial      *websocket.Dialer
+		scheme string
+		//tlsConfig *tls.Config
+		dial *websocket.Dialer
 	)
 
 	req, err := client.GenerateTxRequest(payload, nil)
@@ -190,8 +193,12 @@ func subscribe(client *sdk.ChainClient, payload *common.Payload) {
 	scheme = schemeWS
 	if enableTLS {
 		scheme = schemeWSS
-		tlsConfig = createTLSConfig()
-		dial = &websocket.Dialer{TLSClientConfig: tlsConfig}
+		//tlsConfig = createTLSConfig()
+		//dial = &websocket.Dialer{TLSClientConfig: tlsConfig}
+
+		cfg, _ := config.GetConfig(userTlsCrtPath, userTlsKeyPath, caCertPath, false)
+		dial = wss.NewDial(cfg)
+
 	} else {
 		dial = websocket.DefaultDialer
 	}

@@ -7,10 +7,12 @@ package main
 
 import (
 	"crypto/md5"
-	"crypto/tls"
-	"crypto/x509"
+
+	"chainmaker.org/chainmaker/common/v2/crypto/tls/config"
+
+	cmhttp "chainmaker.org/chainmaker/common/v2/crypto/tls/http"
+
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -29,8 +31,8 @@ const (
 	claimContractName = "claim_restful_001"
 	claimVersion      = "2.0.0"
 	claimByteCodePath = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
-	useTLS            = true
-	//useTLS = false
+	//useTLS            = true
+	useTLS = false
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 	caCertPath               = "../../testdata/crypto-config/wx-org1.chainmaker.org/ca/ca.crt"
@@ -175,26 +177,10 @@ func testUserContractClaimCreate(client *sdk.ChainClient, usernames ...string) {
 }
 
 func createHTTPSClient() *http.Client {
-	pool := x509.NewCertPool()
-
-	caCrt, err := ioutil.ReadFile(caCertPath)
+	config, err := config.GetConfig(userTlsCrtPath, userTlsKeyPath, caCertPath, false)
 	if err != nil {
-		log.Fatal("ReadFile err:", err)
-	}
-	pool.AppendCertsFromPEM(caCrt)
-
-	cliCrt, err := tls.LoadX509KeyPair(userTlsCrtPath, userTlsKeyPath)
-	if err != nil {
-		log.Fatal("LoadX509KeyPair err:", err)
+		log.Fatal("cmhttp get config failed, ", err)
 	}
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			//ServerName: "chainmaker.org",
-			RootCAs:      pool,
-			Certificates: []tls.Certificate{cliCrt},
-		},
-	}
-
-	return &http.Client{Transport: tr}
+	return cmhttp.NewClient(config)
 }
