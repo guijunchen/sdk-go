@@ -33,8 +33,8 @@ const (
 	userTlsCrtPath           = "../../testdata/crypto-config/wx-org1.chainmaker.org/user/client1/client1.tls.crt"
 	userTlsKeyPath           = "../../testdata/crypto-config/wx-org1.chainmaker.org/user/client1/client1.tls.key"
 
-	enableTLS = false
-	//enableTLS = true
+	//enableTLS = false
+	enableTLS = true
 
 	schemeWS  = "ws"
 	schemeWSS = "wss"

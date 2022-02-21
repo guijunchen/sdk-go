@@ -31,8 +31,8 @@ const (
 	claimContractName = "claim_restful_001"
 	claimVersion      = "2.0.0"
 	claimByteCodePath = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
-	//useTLS            = true
-	useTLS = false
+	useTLS            = true
+	//useTLS = false
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 	caCertPath               = "../../testdata/crypto-config/wx-org1.chainmaker.org/ca/ca.crt"
