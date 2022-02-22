@@ -615,7 +615,7 @@ func (cc *ChainClient) checkAliasOnChain() error {
 		}
 
 		if !ok {
-			errMsg := fmt.Sprintf("alias havenot on chain yet, and try again")
+			errMsg := "alias havenot on chain yet, and try again"
 			cc.logger.Debugf(sdkErrStringFormat, errMsg)
 			return errors.New(errMsg)
 		}
