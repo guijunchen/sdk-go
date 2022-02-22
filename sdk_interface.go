@@ -1097,4 +1097,36 @@ type SDKInterface interface {
 	// ```go
 	AttachGasLimit(payload *common.Payload, limit *common.Limit) *common.Payload
 	// ```
+
+	// ## 14 别名相关接口
+	// ### 14.1 添加别名
+	// ```go
+	AddAlias() (*common.TxResponse, error)
+	// ```
+
+	// ### 14.2 构造修改别名payload
+	// ```go
+	CreateUpdateAliasPayload(alias, certPEM string) *common.Payload
+	// ```
+
+	// ### 14.3 签署别名payload
+	// ```go
+	SignUpdateAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
+	// ```
+
+	// ### 14.4 发起更新别名交易
+	// ```go
+	UpdateAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
+		timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	// ```
+
+	// ### 14.5 查询别名详细信息
+	// ```go
+	QueryCurrentAlias(alias string) (*common.AliasInfo, error)
+	// ```
+
+	// ### 14.6 根据高度查别名信息
+	// ```go
+	QueryCertByAliasAndBlockHeight(alias, blockHeight string) (*common.AliasCertInfo, error)
+	// ```
 }

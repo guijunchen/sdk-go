@@ -93,6 +93,8 @@ type chainClientConfigModel struct {
 	AuthType string `mapstructure:"auth_type"`
 	// 需要额外指定的算法类型，当前只用于指定公钥身份模式下的Hash算法
 	Crypto *cryptoModel `mapstructure:"crypto"`
+	// 别名
+	Alias string `mapstructure:"alias"`
 }
 
 type ChainClientConfigModel struct {
