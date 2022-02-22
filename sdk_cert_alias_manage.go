@@ -58,7 +58,7 @@ func (cc *ChainClient) QueryCurrentAlias(alias string) (*common.AliasInfo, error
 	kvs := []*common.KeyValuePair{
 		{
 			Key:   KEY_ALIAS,
-			Value: []byte(cc.alias),
+			Value: []byte(alias),
 		},
 	}
 
@@ -90,7 +90,7 @@ func (cc *ChainClient) QueryCertByAliasAndBlockHeight(alias, blockHeight string)
 	kvs := []*common.KeyValuePair{
 		{
 			Key:   KEY_ALIAS,
-			Value: []byte(cc.alias),
+			Value: []byte(alias),
 		},
 		{
 			Key:   KEY_BLOCK_HEIGHT,
