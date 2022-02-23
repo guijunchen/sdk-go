@@ -101,7 +101,7 @@ var priDir = &common.StrSlice{
 
 func testChainClientSaveData() {
 	codeHash := sha256.Sum256([]byte(computeCode))
-	txid := utils.GetRandTxId()
+	txid := utils.GetTimestampTxId()
 	result := &common.ContractResult{
 		Code:    0,
 		Result:  nil,
@@ -138,7 +138,7 @@ func testChainClientSaveData() {
 }
 
 func testChainClientSaveDir() {
-	txid := utils.GetRandTxId()
+	txid := utils.GetTimestampTxId()
 
 	cc, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
