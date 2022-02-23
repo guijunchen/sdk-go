@@ -167,7 +167,7 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	}
 
 	// 若设置了别名，便启用
-	if len(cc.alias) > 0 {
+	if config.authType == PermissionedWithCert && len(cc.alias) > 0 {
 		if err := cc.EnableAlias(); err != nil {
 			return nil, err
 		}
