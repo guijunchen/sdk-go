@@ -1109,7 +1109,7 @@ type SDKInterface interface {
 	CreateUpdateAliasPayload(alias, certPEM string) *common.Payload
 	// ```
 
-	// ### 14.3 签署别名payload
+	// ### 14.3 Sign更新别名payload
 	// ```go
 	SignUpdateAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
 	// ```
@@ -1122,11 +1122,22 @@ type SDKInterface interface {
 
 	// ### 14.5 查询别名详细信息
 	// ```go
-	QueryCurrentAlias(alias string) (*common.AliasInfo, error)
+	QueryCertsAlias(aliases []string) (*common.AliasInfos, error)
 	// ```
 
-	// ### 14.6 根据高度查别名信息
+	// ### 14.6 构造删除别名payload
 	// ```go
-	QueryCertByAliasAndBlockHeight(alias, blockHeight string) (*common.AliasCertInfo, error)
+	CreateDeleteCertsAliasPayload(aliases []string) *common.Payload
+	// ```
+
+	// ### 14.7 Sign删除别名payload
+	// ```go
+	SignDeleteAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
+	// ```
+
+	// ### 14.8 发起删除别名交易
+	// ```go
+	DeleteCertsAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
+		timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 }

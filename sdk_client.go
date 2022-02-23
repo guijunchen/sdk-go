@@ -591,14 +591,18 @@ func (cc *ChainClient) EnableAlias() error {
 }
 
 func (cc *ChainClient) getCheckAlias() (bool, error) {
-	aliasInfo, err := cc.QueryCurrentAlias(cc.alias)
+	aliasInfos, err := cc.QueryCertsAlias([]string{cc.alias})
 	if err != nil {
-		errMsg := fmt.Sprintf("QueryCurrentAlias failed, %s", err.Error())
+		errMsg := fmt.Sprintf("QueryCertsAlias failed, %s", err.Error())
 		cc.logger.Errorf(sdkErrStringFormat, errMsg)
 		return false, errors.New(errMsg)
 	}
 
-	if aliasInfo.Alias != cc.alias {
+	if len(aliasInfos.AliasInfos) != 1 {
+		return false, errors.New("alias not found")
+	}
+
+	if aliasInfos.AliasInfos[0].Alias != cc.alias {
 		return false, errors.New("alias not equal")
 	}
 
