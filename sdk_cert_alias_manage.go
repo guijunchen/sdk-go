@@ -58,7 +58,7 @@ func (cc *ChainClient) QueryCertsAlias(aliases []string) (*common.AliasInfos, er
 
 	kvs := []*common.KeyValuePair{
 		{
-			Key:   KEY_ALIAS,
+			Key:   KEY_ALIASES,
 			Value: []byte(strings.Join(aliases, ",")),
 		},
 	}
@@ -83,7 +83,7 @@ func (cc *ChainClient) QueryCertsAlias(aliases []string) (*common.AliasInfos, er
 	return aliasInfos, nil
 }
 
-func (cc *ChainClient) CreateUpdateAliasPayload(alias, certPEM string) *common.Payload {
+func (cc *ChainClient) CreateUpdateCertByAliasPayload(alias, newCertPEM string) *common.Payload {
 	cc.logger.Debugf("[SDK] create [UpdateAlias] to be signed payload")
 
 	pairs := []*common.KeyValuePair{
@@ -93,7 +93,7 @@ func (cc *ChainClient) CreateUpdateAliasPayload(alias, certPEM string) *common.P
 		},
 		{
 			Key:   KEY_CERT,
-			Value: []byte(certPEM),
+			Value: []byte(newCertPEM),
 		},
 	}
 

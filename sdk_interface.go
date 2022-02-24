@@ -1104,38 +1104,63 @@ type SDKInterface interface {
 	AddAlias() (*common.TxResponse, error)
 	// ```
 
-	// ### 14.2 构造修改别名payload
+	// ### 14.2 构造更新别名的证书 payload
+	// **参数说明**
+	//   - alias: 带更新证书的别名
+	//   - newCertPEM: 新的证书，此新证书将替换掉alias关联的证书
 	// ```go
-	CreateUpdateAliasPayload(alias, certPEM string) *common.Payload
+	CreateUpdateCertByAliasPayload(alias, newCertPEM string) *common.Payload
 	// ```
 
 	// ### 14.3 Sign更新别名payload
+	// **参数说明**
+	//   - payload: 交易payload
 	// ```go
 	SignUpdateAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
 	// ```
 
 	// ### 14.4 发起更新别名交易
+	// **参数说明**
+	//   - payload: 交易payload
+	//   - endorsers: 背书签名信息列表
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 	// ```go
 	UpdateAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
 		timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 
 	// ### 14.5 查询别名详细信息
+	// **参数说明**
+	//   - aliases: 带查询的证书别名切片，根据这些别名查询返回AliasInfos
 	// ```go
 	QueryCertsAlias(aliases []string) (*common.AliasInfos, error)
 	// ```
 
 	// ### 14.6 构造删除别名payload
+	// **参数说明**
+	//   - aliases: 带删除的证书别名切片
 	// ```go
 	CreateDeleteCertsAliasPayload(aliases []string) *common.Payload
 	// ```
 
 	// ### 14.7 Sign删除别名payload
+	// **参数说明**
+	//   - payload: 交易payload
 	// ```go
 	SignDeleteAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
 	// ```
 
 	// ### 14.8 发起删除别名交易
+	// **参数说明**
+	//   - payload: 交易payload
+	//   - endorsers: 背书签名信息列表
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 	// ```go
 	DeleteCertsAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
 		timeout int64, withSyncResult bool) (*common.TxResponse, error)
