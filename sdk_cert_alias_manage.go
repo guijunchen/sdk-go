@@ -100,7 +100,7 @@ func (cc *ChainClient) CreateUpdateCertByAliasPayload(alias, newCertPEM string) 
 	return cc.CreateCertManagePayload(syscontract.CertManageFunction_CERT_ALIAS_UPDATE.String(), pairs)
 }
 
-func (cc *ChainClient) SignUpdateAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error) {
+func (cc *ChainClient) SignUpdateCertByAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error) {
 	return cc.SignCertManagePayload(payload)
 }
 

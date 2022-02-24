@@ -1112,11 +1112,11 @@ type SDKInterface interface {
 	CreateUpdateCertByAliasPayload(alias, newCertPEM string) *common.Payload
 	// ```
 
-	// ### 14.3 Sign更新别名payload
+	// ### 14.3 Sign 更新别名的证书 payload
 	// **参数说明**
 	//   - payload: 交易payload
 	// ```go
-	SignUpdateAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
+	SignUpdateCertByAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
 	// ```
 
 	// ### 14.4 发起 更新别名的证书 交易
