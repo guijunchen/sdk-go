@@ -1112,14 +1112,14 @@ type SDKInterface interface {
 	CreateUpdateCertByAliasPayload(alias, newCertPEM string) *common.Payload
 	// ```
 
-	// ### 14.3 Sign更新别名payload
+	// ### 14.3 Sign 更新别名的证书 payload
 	// **参数说明**
 	//   - payload: 交易payload
 	// ```go
-	SignUpdateAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
+	SignUpdateCertByAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
 	// ```
 
-	// ### 14.4 发起更新别名交易
+	// ### 14.4 发起 更新别名的证书 交易
 	// **参数说明**
 	//   - payload: 交易payload
 	//   - endorsers: 背书签名信息列表
@@ -1128,7 +1128,7 @@ type SDKInterface interface {
 	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
 	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
 	// ```go
-	UpdateAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
+	UpdateCertByAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
 		timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 

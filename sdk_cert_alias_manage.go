@@ -84,7 +84,7 @@ func (cc *ChainClient) QueryCertsAlias(aliases []string) (*common.AliasInfos, er
 }
 
 func (cc *ChainClient) CreateUpdateCertByAliasPayload(alias, newCertPEM string) *common.Payload {
-	cc.logger.Debugf("[SDK] create [UpdateAlias] to be signed payload")
+	cc.logger.Debugf("[SDK] create [UpdateCertByAlias] to be signed payload")
 
 	pairs := []*common.KeyValuePair{
 		{
@@ -100,11 +100,11 @@ func (cc *ChainClient) CreateUpdateCertByAliasPayload(alias, newCertPEM string) 
 	return cc.CreateCertManagePayload(syscontract.CertManageFunction_CERT_ALIAS_UPDATE.String(), pairs)
 }
 
-func (cc *ChainClient) SignUpdateAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error) {
+func (cc *ChainClient) SignUpdateCertByAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error) {
 	return cc.SignCertManagePayload(payload)
 }
 
-func (cc *ChainClient) UpdateAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
+func (cc *ChainClient) UpdateCertByAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	return cc.SendCertManageRequest(payload, endorsers, timeout, withSyncResult)
 }
