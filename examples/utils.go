@@ -15,7 +15,6 @@ import (
 	"io/ioutil"
 
 	"chainmaker.org/chainmaker/common/v2/crypto"
-
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/common/v2/evmutils"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
@@ -188,10 +187,9 @@ func CreateChainClientWithSDKConf(sdkConfPath string) (*sdk.ChainClient, error) 
 
 	// Enable certificate compression
 	if cc.GetAuthType() == sdk.PermissionedWithCert {
-		err = cc.EnableCertHash()
-	}
-	if err != nil {
-		return nil, err
+		if err := cc.EnableCertHash(); err != nil {
+			return nil, err
+		}
 	}
 	return cc, nil
 }

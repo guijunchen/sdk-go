@@ -10,7 +10,6 @@ require (
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
-	github.com/gorilla/websocket v1.4.3-0.20220104015952-9111bb834a68
 	github.com/hokaccha/go-prettyjson v0.0.0-20201222001619-a42f9ac2ec8e
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/testify v1.7.0
