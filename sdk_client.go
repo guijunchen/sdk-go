@@ -211,7 +211,7 @@ func (cc *ChainClient) GenerateTxRequest(payload *common.Payload,
 			signer = &accesscontrol.Member{
 				OrgId:      cc.orgId,
 				MemberInfo: []byte(cc.alias),
-				MemberType: accesscontrol.MemberType_CERT_HASH,
+				MemberType: accesscontrol.MemberType_ALIAS,
 			}
 		} else if cc.enabledCrtHash && len(cc.userCrtHash) > 0 {
 			signer = &accesscontrol.Member{
