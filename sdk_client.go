@@ -610,6 +610,10 @@ func (cc *ChainClient) getCheckAlias() (bool, error) {
 		return false, errors.New("alias not equal")
 	}
 
+	if aliasInfos.AliasInfos[0].NowCert.Cert == nil {
+		return false, errors.New("alias has been deleted")
+	}
+
 	return true, nil
 }
 
