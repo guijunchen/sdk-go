@@ -70,7 +70,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	resp3, err := cc.UpdateCertByAlias(deleteAliasPayload, endorsers2, -1, true)
+	resp3, err := cc.DeleteCertsAlias(deleteAliasPayload, endorsers2, -1, true)
 	if err != nil {
 		log.Fatal(err)
 	}
