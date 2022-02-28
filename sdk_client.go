@@ -429,6 +429,10 @@ func (cc *ChainClient) GetCertPEM() []byte {
 	return cc.userCrtBytes
 }
 
+func (cc *ChainClient) GetLocalCertAlias() string {
+	return cc.alias
+}
+
 // ChangeSigner change ChainClient siger. signerCrt passes nil in Public or PermissionedWithKey mode
 func (cc *ChainClient) ChangeSigner(signerPrivKey crypto.PrivateKey, signerCrt *bcx509.Certificate) error {
 	signerPubKey := signerPrivKey.PublicKey()
