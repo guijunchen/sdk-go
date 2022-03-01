@@ -51,6 +51,8 @@ type rpcClientConfigModel struct {
 type pkcs11ConfigModel struct {
 	// 是否开启pkcs11
 	Enabled bool `mapstructure:"enabled"`
+	// interface type of lib, only support pkcs11 and sdf
+	Type string `mapstructure:"type"`
 	// path to the .so file of pkcs11 interface
 	Library string `mapstructure:"library"`
 	// label for the slot to be used

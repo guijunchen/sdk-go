@@ -13,7 +13,6 @@ import (
 	"chainmaker.org/chainmaker/common/v2/cert"
 	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/crypto/asym"
-	"chainmaker.org/chainmaker/common/v2/crypto/pkcs11"
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
@@ -263,7 +262,7 @@ func MakePkEndorserWithPath(keyFilePath string, hashType crypto.HashType, orgId 
 		[]byte(memberInfo), payload)
 }
 
-func MakeEndorserWithPathAndP11Handle(keyFilePath, crtFilePath string, p11Handle *pkcs11.P11Handle,
+func MakeEndorserWithPathAndP11Handle(keyFilePath, crtFilePath string, p11Handle interface{},
 	payload *common.Payload) (*common.EndorsementEntry, error) {
 	if p11Handle == nil {
 		return nil, errors.New("p11Handle must not nil")
