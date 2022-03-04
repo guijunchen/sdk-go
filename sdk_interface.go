@@ -367,7 +367,7 @@ type SDKInterface interface {
 	//   - blockInterval: 出块间隔，单位:ms，其值范围为[10, +∞]
 	// ```go
 	CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize,
-		blockInterval uint32) (*common.Payload, error)
+		blockInterval, txParamterSize uint32) (*common.Payload, error)
 	// ```
 
 	// ### 3.8 添加信任组织根证书待签名payload生成

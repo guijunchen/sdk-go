@@ -136,7 +136,7 @@ func (cc *ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout,
 }
 
 func (cc *ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity,
-	blockSize, blockInterval uint32) (*common.Payload, error) {
+	blockSize, blockInterval, txParamterSize uint32) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [BlockUpdate] to be signed payload")
 
 	pairs := []*common.KeyValuePair{
@@ -184,6 +184,12 @@ func (cc *ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify boo
 		pairs = append(pairs, &common.KeyValuePair{
 			Key:   utils.KeyBlockInterval,
 			Value: []byte(strconv.FormatUint(uint64(blockInterval), 10)),
+		})
+	}
+	if txParamterSize > 0 {
+		pairs = append(pairs, &common.KeyValuePair{
+			Key:   utils.KeyTxParamterSize,
+			Value: []byte(strconv.FormatUint(uint64(txParamterSize), 10)),
 		})
 	}
 

@@ -81,7 +81,8 @@ func testChainConfig(client *sdk.ChainClient) {
 	blockTxCapacity := uint32(rand.Intn(1000)) + 1
 	blockSize := uint32(rand.Intn(10)) + 1
 	blockInterval := uint32(rand.Intn(10000)) + 10
-	testChainConfigBlockUpdate(client, txTimestampVerify, txTimeout, blockTxCapacity, blockSize, blockInterval, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
+	txParameterSize := uint32(rand.Intn(100))
+	testChainConfigBlockUpdate(client, txTimestampVerify, txTimeout, blockTxCapacity, blockSize, blockInterval, txParameterSize, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	time.Sleep(2 * time.Second)
 	chainConfig = testGetChainConfig(client)
 	fmt.Printf("tx_timestamp_verify: %s, txTimeout: %d, blockTxCapacity: %d, blockSize: %d, blockInterval: %d\n", strconv.FormatBool(txTimestampVerify), txTimeout, blockTxCapacity, blockSize, blockInterval)
@@ -404,11 +405,11 @@ func testChainConfigCoreUpdate(client *sdk.ChainClient, txSchedulerTimeout, txSc
 }
 
 func testChainConfigBlockUpdate(client *sdk.ChainClient, txTimestampVerify bool,
-	txTimeout, blockTxCapacity, blockSize, blockInterval uint32, usernames ...string) {
+	txTimeout, blockTxCapacity, blockSize, blockInterval, txParameterSize uint32, usernames ...string) {
 
 	// 配置块更新payload生成
 	payload, err := client.CreateChainConfigBlockUpdatePayload(
-		txTimestampVerify, txTimeout, blockTxCapacity, blockSize, blockInterval)
+		txTimestampVerify, txTimeout, blockTxCapacity, blockSize, blockInterval, txParameterSize)
 	if err != nil {
 		log.Fatalln(err)
 	}
