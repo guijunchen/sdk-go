@@ -35,7 +35,7 @@ func (cc *ChainClient) AddAlias() (*common.TxResponse, error) {
 
 	payload := cc.CreateCertManagePayload(syscontract.CertManageFunction_CERT_ALIAS_ADD.String(), kvs)
 
-	resp, err := cc.proposalRequest(payload, nil)
+	resp, err := cc.sendContractRequest(payload, nil, -1, true)
 	if err != nil {
 		return resp, fmt.Errorf(errStringFormat, payload.TxType.String(), err.Error())
 	}
