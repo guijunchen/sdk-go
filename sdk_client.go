@@ -579,7 +579,7 @@ func (cc *ChainClient) EnableAlias() error {
 		return errors.New(errMsg)
 	}
 
-	if err = checkProposalRequestResp(resp, true); err != nil {
+	if err = utils.CheckProposalRequestResp(resp, true); err != nil {
 		errMsg := fmt.Sprintf("enable alias AddAlias got invalid resp, %s", err.Error())
 		cc.logger.Errorf(sdkErrStringFormat, errMsg)
 		return errors.New(errMsg)

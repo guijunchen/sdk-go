@@ -40,7 +40,7 @@ func (cc *ChainClient) AddAlias() (*common.TxResponse, error) {
 		return resp, fmt.Errorf(errStringFormat, payload.TxType.String(), err.Error())
 	}
 
-	if err = checkProposalRequestResp(resp, false); err != nil {
+	if err = utils.CheckProposalRequestResp(resp, true); err != nil {
 		return nil, fmt.Errorf(errStringFormat, payload.TxType.String(), err.Error())
 	}
 
@@ -71,7 +71,7 @@ func (cc *ChainClient) QueryCertsAlias(aliases []string) (*common.AliasInfos, er
 		return nil, fmt.Errorf(errStringFormat, payload.TxType.String(), err.Error())
 	}
 
-	if err = checkProposalRequestResp(resp, true); err != nil {
+	if err = utils.CheckProposalRequestResp(resp, true); err != nil {
 		return nil, fmt.Errorf(errStringFormat, payload.TxType.String(), err.Error())
 	}
 
