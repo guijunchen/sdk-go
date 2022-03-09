@@ -1104,7 +1104,7 @@ type SDKInterface interface {
 	AddAlias() (*common.TxResponse, error)
 	// ```
 
-	// ### 14.2 构造更新别名的证书 payload
+	// ### 14.2 构造`更新别名的证书`payload
 	// **参数说明**
 	//   - alias: 带更新证书的别名
 	//   - newCertPEM: 新的证书，此新证书将替换掉alias关联的证书
@@ -1112,14 +1112,14 @@ type SDKInterface interface {
 	CreateUpdateCertByAliasPayload(alias, newCertPEM string) *common.Payload
 	// ```
 
-	// ### 14.3 Sign 更新别名的证书 payload
+	// ### 14.3 签名`更新别名的证书`payload
 	// **参数说明**
 	//   - payload: 交易payload
 	// ```go
 	SignUpdateCertByAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
 	// ```
 
-	// ### 14.4 发起 更新别名的证书 交易
+	// ### 14.4 发起`更新别名的证书`交易
 	// **参数说明**
 	//   - payload: 交易payload
 	//   - endorsers: 背书签名信息列表
@@ -1139,21 +1139,21 @@ type SDKInterface interface {
 	QueryCertsAlias(aliases []string) (*common.AliasInfos, error)
 	// ```
 
-	// ### 14.6 构造删除别名payload
+	// ### 14.6 构造`删除别名`payload
 	// **参数说明**
 	//   - aliases: 带删除的证书别名切片
 	// ```go
 	CreateDeleteCertsAliasPayload(aliases []string) *common.Payload
 	// ```
 
-	// ### 14.7 Sign删除别名payload
+	// ### 14.7 签名`删除别名`payload
 	// **参数说明**
 	//   - payload: 交易payload
 	// ```go
 	SignDeleteAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
 	// ```
 
-	// ### 14.8 发起删除别名交易
+	// ### 14.8 发起`删除别名`交易
 	// **参数说明**
 	//   - payload: 交易payload
 	//   - endorsers: 背书签名信息列表
