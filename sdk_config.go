@@ -238,6 +238,9 @@ type ChainClientConfig struct {
 	// retry config
 	retryLimit    int // if <=0 then use DefaultRetryLimit
 	retryInterval int // if <=0 then use DefaultRetryInterval
+
+	// alias
+	alias string
 }
 
 type CryptoConfig struct {
@@ -359,6 +362,12 @@ func WithRetryInterval(interval int) ChainClientOption {
 	}
 }
 
+func WithChainClientAlias(alias string) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.alias = alias
+	}
+}
+
 // WithChainClientLogger 设置Logger对象，便于日志打印
 func WithChainClientLogger(logger utils.Logger) ChainClientOption {
 	return func(config *ChainClientConfig) {
@@ -437,6 +446,10 @@ func setChainConfig(config *ChainClientConfig) {
 
 	if utils.Config.ChainClientConfig.OrgId != "" && config.orgId == "" {
 		config.orgId = utils.Config.ChainClientConfig.OrgId
+	}
+
+	if utils.Config.ChainClientConfig.Alias != "" && config.alias == "" {
+		config.alias = utils.Config.ChainClientConfig.Alias
 	}
 }
 
