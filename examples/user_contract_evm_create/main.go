@@ -22,22 +22,176 @@ import (
 )
 
 const (
-	createContractTimeout = 5
+	CreateContractTimeout = 5
 	ContractCName   	  = "CreatorC"
 	ContractDName   	  = "beCreated"
-	storageVersion        = "1.0.0"
+	StorageVersion        = "1.0.0"
 	CBinPath   			  = "../../testdata/inner-create-evm-demo/C.bin"
 	CABIPath        	  = "../../testdata/inner-create-evm-demo/C.abi"
 	DABIPath        	  = "../../testdata/inner-create-evm-demo/D.abi"
+
+	FactoryName   	      = "contractFactory"
+	FactoryBinPath   	  = "../../testdata/inner-create-evm-demo/Factory.bin"
+	FactoryABIPath        = "../../testdata/inner-create-evm-demo/Factory.abi"
+	StoreName   	      = "contractStorage"
+	StorageBinPath        = "../../testdata/storage-evm-demo/storage.bin"
+	StorageABIPath        = "../../testdata/storage-evm-demo/storage.abi"
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
 func main() {
-	testContractCreateContract(sdkConfigOrg1Client1Path)
+	testInternalCreate(sdkConfigOrg1Client1Path)
+	testExternalCreate(sdkConfigOrg1Client1Path)
 }
 
-func testContractCreateContract(sdkPath string) {
+func testExternalCreate(sdkPath string) {
+	fmt.Println("====================== create client ======================")
+	client, err := examples.CreateChainClientWithSDKConf(sdkPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("====================== 创建Factory合约 ======================")
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	testCreateFactory(client, true, true, usernames...)
+
+	fmt.Println("====================== 调用Factory合约的create方法创建store合约 ======================")
+	testFactoryCreateContractStore(client, true)
+
+	fmt.Println("====================== 调用(被Factory合约创建的)store合约的set方法 ======================")
+	testStoreContractSet(client, true)
+
+	fmt.Println("====================== 调用(被Factory合约创建的)store合约的get方法 ======================")
+	testStoreContractGet(client, true)
+}
+
+func testCreateFactory(client *sdk.ChainClient, withSyncResult bool, isIgnoreSameContract bool, usernames ...string) {
+
+	codeBytes, err := ioutil.ReadFile(FactoryBinPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	resp, err := createUserContract(client, FactoryName, StorageVersion, string(codeBytes), common.RuntimeType_EVM,
+		nil, withSyncResult, usernames...)
+	if !isIgnoreSameContract {
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+
+	fmt.Printf("CREATE EVM factory contract resp: [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
+	fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n",  resp.ContractResult.Code,
+		resp.ContractResult.Message, resp.ContractResult.Result)
+}
+
+func testFactoryCreateContractStore(client *sdk.ChainClient, withSyncResult bool) {
+
+	abiJson, err := ioutil.ReadFile(FactoryABIPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	myAbi, err := abi.JSON(strings.NewReader(string(abiJson)))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	hexCode, err := ioutil.ReadFile(StorageBinPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	code,_ := hex.DecodeString(string(hexCode))
+
+	dataByte, err := myAbi.Pack("create", StoreName, code)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dataString := hex.EncodeToString(dataByte)
+	method := dataString[0:8]
+
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   "data",
+			Value: []byte(dataString),
+		},
+	}
+
+	err = invokeUserContract(client, FactoryName, method, "", kvs, withSyncResult)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func testStoreContractSet(client *sdk.ChainClient, withSyncResult bool) {
+
+	abiJson, err := ioutil.ReadFile(StorageABIPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	myAbi, err := abi.JSON(strings.NewReader(string(abiJson)))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dataByte, err := myAbi.Pack("set", big.NewInt(100))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dataString := hex.EncodeToString(dataByte)
+	method := dataString[0:8]
+
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   "data",
+			Value: []byte(dataString),
+		},
+	}
+
+	err = invokeUserContract(client, StoreName, method, "", kvs, withSyncResult)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func testStoreContractGet(client *sdk.ChainClient, withSyncResult bool) {
+
+	abiJson, err := ioutil.ReadFile(StorageABIPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	myAbi, err := abi.JSON(strings.NewReader(string(abiJson)))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dataByte, err := myAbi.Pack("get")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dataString := hex.EncodeToString(dataByte)
+	method := dataString[0:8]
+
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   "data",
+			Value: []byte(dataString),
+		},
+	}
+
+	err = invokeUserContract(client, StoreName, method, "", kvs, withSyncResult)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func testInternalCreate(sdkPath string) {
 	fmt.Println("====================== create client ======================")
 	client, err := examples.CreateChainClientWithSDKConf(sdkPath)
 	if err != nil {
@@ -62,7 +216,7 @@ func testCCreate(client *sdk.ChainClient, withSyncResult bool, isIgnoreSameContr
 		log.Fatalln(err)
 	}
 
-	resp, err := createUserContract(client, ContractCName, storageVersion, string(codeBytes), common.RuntimeType_EVM,
+	resp, err := createUserContract(client, ContractCName, StorageVersion, string(codeBytes), common.RuntimeType_EVM,
 		nil, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
@@ -88,7 +242,7 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 		return nil, err
 	}
 
-	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, CreateContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}
@@ -179,9 +333,12 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 	}
 
 	if !withSyncResult {
-		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
+		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message,
+			resp.ContractResult.Result)
 	} else {
-		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%s]\n", resp.Code, resp.Message, resp.ContractResult)
+		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
+		fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n",  resp.ContractResult.Code,
+			resp.ContractResult.Message, resp.ContractResult.Result)
 	}
 
 	return nil
