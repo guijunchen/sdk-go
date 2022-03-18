@@ -72,6 +72,10 @@ type chainClientConfigModel struct {
 	UserKeyFilePath string `mapstructure:"user_key_file_path"`
 	// 客户端用户证书路径
 	UserCrtFilePath string `mapstructure:"user_crt_file_path"`
+	// 客户端用户加密私钥路径
+	UserEncKeyFilePath string `mapstructure:"user_enc_key_file_path"`
+	// 客户端用户加密证书路径
+	UserEncCrtFilePath string `mapstructure:"user_enc_crt_file_path"`
 	// 证书模式下：客户端用户交易签名私钥路径(若未设置，将使用user_key_file_path)
 	// 公钥模式下：客户端用户交易签名的私钥路径(必须设置)
 	UserSignKeyFilePath string `mapstructure:"user_sign_key_file_path"`
