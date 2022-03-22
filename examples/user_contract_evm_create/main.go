@@ -23,29 +23,29 @@ import (
 
 const (
 	CreateContractTimeout = 5
-	ContractCName   	  = "CreatorC"
-	ContractDName   	  = "beCreated"
+	ContractCName         = "CreatorC"
+	ContractDName         = "beCreated"
 	StorageVersion        = "1.0.0"
-	CBinPath   			  = "../../testdata/inner-create-evm-demo/C.bin"
-	CABIPath        	  = "../../testdata/inner-create-evm-demo/C.abi"
-	DABIPath        	  = "../../testdata/inner-create-evm-demo/D.abi"
+	CBinPath              = "../../testdata/inner-create-evm-demo/C.bin"
+	CABIPath              = "../../testdata/inner-create-evm-demo/C.abi"
+	DABIPath              = "../../testdata/inner-create-evm-demo/D.abi"
 
-	FactoryName   	      = "contractFactory"
-	FactoryBinPath   	  = "../../testdata/inner-create-evm-demo/Factory.bin"
-	FactoryABIPath        = "../../testdata/inner-create-evm-demo/Factory.abi"
-	StoreName   	      = "contractStorage"
-	StorageBinPath        = "../../testdata/storage-evm-demo/storage.bin"
-	StorageABIPath        = "../../testdata/storage-evm-demo/storage.abi"
+	FactoryName    = "contractFactory"
+	FactoryBinPath = "../../testdata/inner-create-evm-demo/Factory.bin"
+	FactoryABIPath = "../../testdata/inner-create-evm-demo/Factory.abi"
+	StoreName      = "contractStorage"
+	StorageBinPath = "../../testdata/storage-evm-demo/storage.bin"
+	StorageABIPath = "../../testdata/storage-evm-demo/storage.abi"
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
 func main() {
-	testInternalCreate(sdkConfigOrg1Client1Path)
-	testExternalCreate(sdkConfigOrg1Client1Path)
+	testStaticCreate(sdkConfigOrg1Client1Path)
+	testDynamicCreate(sdkConfigOrg1Client1Path)
 }
 
-func testExternalCreate(sdkPath string) {
+func testDynamicCreate(sdkPath string) {
 	fmt.Println("====================== create client ======================")
 	client, err := examples.CreateChainClientWithSDKConf(sdkPath)
 	if err != nil {
@@ -82,7 +82,7 @@ func testCreateFactory(client *sdk.ChainClient, withSyncResult bool, isIgnoreSam
 	}
 
 	fmt.Printf("CREATE EVM factory contract resp: [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
-	fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n",  resp.ContractResult.Code,
+	fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n", resp.ContractResult.Code,
 		resp.ContractResult.Message, resp.ContractResult.Result)
 }
 
@@ -102,7 +102,7 @@ func testFactoryCreateContractStore(client *sdk.ChainClient, withSyncResult bool
 	if err != nil {
 		log.Fatalln(err)
 	}
-	code,_ := hex.DecodeString(string(hexCode))
+	code, _ := hex.DecodeString(string(hexCode))
 
 	dataByte, err := myAbi.Pack("create", StoreName, code)
 	if err != nil {
@@ -191,7 +191,7 @@ func testStoreContractGet(client *sdk.ChainClient, withSyncResult bool) {
 	}
 }
 
-func testInternalCreate(sdkPath string) {
+func testStaticCreate(sdkPath string) {
 	fmt.Println("====================== create client ======================")
 	client, err := examples.CreateChainClientWithSDKConf(sdkPath)
 	if err != nil {
@@ -337,7 +337,7 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 			resp.ContractResult.Result)
 	} else {
 		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
-		fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n",  resp.ContractResult.Code,
+		fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n", resp.ContractResult.Code,
 			resp.ContractResult.Message, resp.ContractResult.Result)
 	}
 
