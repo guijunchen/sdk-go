@@ -325,10 +325,8 @@ func (cc *ChainClient) CreateChainConfigTrustMemberDeletePayload(trustMemberInfo
 			Value: []byte(trustMemberInfo),
 		},
 	}
-	//payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
-	//	syscontract.ChainConfigFunction_TRUST_MEMBER_DELETE.String(), pairs, seq+1, nil)
 	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
-		syscontract.ChainConfigFunction_TRUST_ROOT_DELETE.String(), pairs, seq+1, nil)
+		syscontract.ChainConfigFunction_TRUST_MEMBER_DELETE.String(), pairs, seq+1, nil)
 
 	return payload, nil
 }
