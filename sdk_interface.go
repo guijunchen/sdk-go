@@ -357,7 +357,7 @@ type SDKInterface interface {
 	CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout uint64) (*common.Payload, error)
 	// ```
 
-	// ### 3.7 更新Core模块待签名payload生成
+	// ### 3.7 更新链配置的区块相关参数待签名payload生成
 	// **参数说明**
 	//   - txTimestampVerify: 是否需要开启交易时间戳校验
 	//   - (以下参数，若无需修改，请置为-1)
