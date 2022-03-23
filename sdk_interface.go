@@ -365,6 +365,7 @@ type SDKInterface interface {
 	//   - blockTxCapacity: 区块中最大交易数，其值范围为(0, +∞]
 	//   - blockSize: 区块最大限制，单位MB，其值范围为(0, +∞]
 	//   - blockInterval: 出块间隔，单位:ms，其值范围为[10, +∞]
+	//   - txParamterSize: 交易的参数的最大值限制，单位：MB，其值范围为[0,100]
 	// ```go
 	CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize,
 		blockInterval, txParamterSize uint32) (*common.Payload, error)
