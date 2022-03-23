@@ -357,7 +357,7 @@ type SDKInterface interface {
 	CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout uint64) (*common.Payload, error)
 	// ```
 
-	// ### 3.7 更新Core模块待签名payload生成
+	// ### 3.7 更新链配置的区块相关参数待签名payload生成
 	// **参数说明**
 	//   - txTimestampVerify: 是否需要开启交易时间戳校验
 	//   - (以下参数，若无需修改，请置为-1)
@@ -365,6 +365,7 @@ type SDKInterface interface {
 	//   - blockTxCapacity: 区块中最大交易数，其值范围为(0, +∞]
 	//   - blockSize: 区块最大限制，单位MB，其值范围为(0, +∞]
 	//   - blockInterval: 出块间隔，单位:ms，其值范围为[10, +∞]
+	//   - txParamterSize: 交易的参数的最大值限制，单位：MB，其值范围为[0,100]
 	// ```go
 	CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize,
 		blockInterval, txParamterSize uint32) (*common.Payload, error)
