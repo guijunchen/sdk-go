@@ -3,8 +3,8 @@ module chainmaker.org/chainmaker/sdk-go/v2
 go 1.16
 
 require (
-	chainmaker.org/chainmaker/common/v2 v2.2.1-0.20220325052223-7bb40822077c
-	chainmaker.org/chainmaker/pb-go/v2 v2.2.1-0.20220321081926-5eeb47ff2f5e
+	chainmaker.org/chainmaker/common/v2 v2.2.1-0.20220325094239-eaf08fe8a1f8
+	chainmaker.org/chainmaker/pb-go/v2 v2.2.1-0.20220325091111-7b6ff1727aa8
 	github.com/Rican7/retry v0.1.0
 	github.com/ethereum/go-ethereum v1.10.4
 	github.com/go-sql-driver/mysql v1.4.1
