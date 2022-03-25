@@ -154,7 +154,7 @@ func invokePerfTest(client *sdk.ChainClient, method string, done chan struct{}) 
 		}
 	}()
 	runParallel(func(threadIndex int) {
-		txId := sdkutils.GetRandTxId()
+		txId := sdkutils.GetTimestampTxId()
 		preHandler(txId)
 		token := IntToBytes(rand.Intn(randSize))
 		ski := hex.EncodeToString(token)

@@ -241,6 +241,8 @@ type ChainClientConfig struct {
 
 	// alias
 	alias string
+
+	enableNormalKey bool
 }
 
 type CryptoConfig struct {
@@ -261,6 +263,12 @@ type ChainClientOption func(*ChainClientConfig)
 func WithAuthType(authType string) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.authType = StringToAuthTypeMap[authType]
+	}
+}
+
+func WithEnableNormalKey(enableNormalKey bool) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.enableNormalKey = enableNormalKey
 	}
 }
 
@@ -451,6 +459,8 @@ func setChainConfig(config *ChainClientConfig) {
 	if utils.Config.ChainClientConfig.Alias != "" && config.alias == "" {
 		config.alias = utils.Config.ChainClientConfig.Alias
 	}
+
+	config.enableNormalKey = utils.Config.ChainClientConfig.EnableNormalKey
 }
 
 // 如果参数没有设置，便使用配置文件的配置
