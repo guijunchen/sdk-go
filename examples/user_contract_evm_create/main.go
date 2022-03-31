@@ -8,20 +8,21 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"chainmaker.org/chainmaker/common/v2/crypto"
-	"chainmaker.org/chainmaker/common/v2/random/uuid"
-	"chainmaker.org/chainmaker/pb-go/v2/common"
-	sdk "chainmaker.org/chainmaker/sdk-go/v2"
-	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 	"encoding/hex"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"strconv"
 	"strings"
 	"time"
+
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/common/v2/random/uuid"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
+	"chainmaker.org/chainmaker/sdk-go/v2/examples"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 )
 
 const (
@@ -98,7 +99,7 @@ func testFactoryCreateContractClaim(client *sdk.ChainClient, withSyncResult bool
 	}
 
 	//hexCode, err := ioutil.ReadFile(claimBinPath)
-	code, err := ioutil.ReadFile(claimBinPath)//wasm文件不需要decode
+	code, err := ioutil.ReadFile(claimBinPath) //wasm文件不需要decode
 	if err != nil {
 		log.Fatalln(err)
 	}
