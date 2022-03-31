@@ -48,8 +48,8 @@ const (
 )
 
 func main() {
-	testStaticCreate(sdkConfigOrg1Client1Path)
-	testDynamicCreate(sdkConfigOrg1Client1Path)
+	//testStaticCreate(sdkConfigOrg1Client1Path)
+	//testDynamicCreate(sdkConfigOrg1Client1Path)
 	testCrossVmCreate(sdkConfigOrg1Client1Path)
 }
 
@@ -61,10 +61,10 @@ func testCrossVmCreate(sdkPath string) {
 	}
 
 	//注意，如果testDynamicCreate也执行的话，要注释掉以下三行代码，因为Factory合约已经被创建了，单独测试TestCrossVmCreate可以放开注释
-	//fmt.Println("====================== 创建Factory合约 ======================")
-	//usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1,
-	//examples.UserNameOrg4Admin1}
-	//testCreateFactory(client, true, true, usernames...)
+	fmt.Println("====================== 创建Factory合约 ======================")
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1,
+	examples.UserNameOrg4Admin1}
+	testCreateFactory(client, true, true, usernames...)
 
 	fmt.Println("====================== 调用Factory合约的create方法创建claim（rust）合约 ======================")
 	testFactoryCreateContractClaim(client, true)
@@ -76,8 +76,6 @@ func testCrossVmCreate(sdkPath string) {
 	}
 
 	fmt.Println("====================== 查询claim(rust)合约 ======================")
-	//txId := "1cbdbe6106cc4132b464185ea8275d0a53c0261b7b1a470fb0c3f10bd4a57ba6"
-	//fileHash = txId[len(txId)/2:]
 	kvs := []*common.KeyValuePair{
 		{
 			Key:   "file_hash",
