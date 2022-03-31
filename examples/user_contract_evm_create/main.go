@@ -26,20 +26,20 @@ import (
 )
 
 const (
-	CreateContractTimeout = 5
-	ContractCName         = "CreatorC"
-	ContractDName         = "beCreated"
-	StorageVersion        = "1.0.0"
-	CBinPath              = "../../testdata/inner-create-evm-demo/C.bin"
-	CABIPath              = "../../testdata/inner-create-evm-demo/C.abi"
-	DABIPath              = "../../testdata/inner-create-evm-demo/D.abi"
+	createContractTimeout = 5
+	contractCName         = "CreatorC"
+	contractDName         = "beCreated"
+	storageVersion        = "1.0.0"
+	cBinPath              = "../../testdata/inner-create-evm-demo/C.bin"
+	cABIPath              = "../../testdata/inner-create-evm-demo/C.abi"
+	dABIPath              = "../../testdata/inner-create-evm-demo/D.abi"
 
-	FactoryName    = "contractFactory"
-	FactoryBinPath = "../../testdata/inner-create-evm-demo/Factory.bin"
-	FactoryABIPath = "../../testdata/inner-create-evm-demo/Factory.abi"
-	StoreName      = "contractStorage"
-	StorageBinPath = "../../testdata/storage-evm-demo/storage.bin"
-	StorageABIPath = "../../testdata/storage-evm-demo/storage.abi"
+	factoryName    = "contractFactory"
+	factoryBinPath = "../../testdata/inner-create-evm-demo/Factory.bin"
+	factoryABIPath = "../../testdata/inner-create-evm-demo/Factory.abi"
+	storeName      = "contractStorage"
+	storageBinPath = "../../testdata/storage-evm-demo/storage.bin"
+	storageABIPath = "../../testdata/storage-evm-demo/storage.abi"
 
 	claimName    = "claim001"
 	claimBinPath = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
@@ -62,7 +62,8 @@ func testCrossVmCreate(sdkPath string) {
 
 	//注意，如果testDynamicCreate也执行的话，要注释掉以下三行代码，因为Factory合约已经被创建了，单独测试TestCrossVmCreate可以放开注释
 	//fmt.Println("====================== 创建Factory合约 ======================")
-	//usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	//usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1,
+	//examples.UserNameOrg4Admin1}
 	//testCreateFactory(client, true, true, usernames...)
 
 	fmt.Println("====================== 调用Factory合约的create方法创建claim（rust）合约 ======================")
@@ -88,7 +89,7 @@ func testCrossVmCreate(sdkPath string) {
 
 func testFactoryCreateContractClaim(client *sdk.ChainClient, withSyncResult bool) {
 
-	abiJson, err := ioutil.ReadFile(FactoryABIPath)
+	abiJson, err := ioutil.ReadFile(factoryABIPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -119,7 +120,7 @@ func testFactoryCreateContractClaim(client *sdk.ChainClient, withSyncResult bool
 		},
 	}
 
-	err = invokeUserContract(client, FactoryName, method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, factoryName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -171,7 +172,8 @@ func testDynamicCreate(sdkPath string) {
 	}
 
 	fmt.Println("====================== 创建Factory合约 ======================")
-	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1,
+		examples.UserNameOrg4Admin1}
 	testCreateFactory(client, true, true, usernames...)
 
 	fmt.Println("====================== 调用Factory合约的create方法创建store合约 ======================")
@@ -186,12 +188,12 @@ func testDynamicCreate(sdkPath string) {
 
 func testCreateFactory(client *sdk.ChainClient, withSyncResult bool, isIgnoreSameContract bool, usernames ...string) {
 
-	codeBytes, err := ioutil.ReadFile(FactoryBinPath)
+	codeBytes, err := ioutil.ReadFile(factoryBinPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := createUserContract(client, FactoryName, StorageVersion, string(codeBytes), common.RuntimeType_EVM,
+	resp, err := createUserContract(client, factoryName, storageVersion, string(codeBytes), common.RuntimeType_EVM,
 		nil, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
@@ -206,7 +208,7 @@ func testCreateFactory(client *sdk.ChainClient, withSyncResult bool, isIgnoreSam
 
 func testFactoryCreateContractStore(client *sdk.ChainClient, withSyncResult bool) {
 
-	abiJson, err := ioutil.ReadFile(FactoryABIPath)
+	abiJson, err := ioutil.ReadFile(factoryABIPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -216,13 +218,13 @@ func testFactoryCreateContractStore(client *sdk.ChainClient, withSyncResult bool
 		log.Fatalln(err)
 	}
 
-	hexCode, err := ioutil.ReadFile(StorageBinPath)
+	hexCode, err := ioutil.ReadFile(storageBinPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	code, _ := hex.DecodeString(string(hexCode))
 
-	dataByte, err := myAbi.Pack("create", big.NewInt(int64(common.RuntimeType_EVM)), StoreName, code)
+	dataByte, err := myAbi.Pack("create", big.NewInt(int64(common.RuntimeType_EVM)), storeName, code)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -237,7 +239,7 @@ func testFactoryCreateContractStore(client *sdk.ChainClient, withSyncResult bool
 		},
 	}
 
-	err = invokeUserContract(client, FactoryName, method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, factoryName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -245,7 +247,7 @@ func testFactoryCreateContractStore(client *sdk.ChainClient, withSyncResult bool
 
 func testStoreContractSet(client *sdk.ChainClient, withSyncResult bool) {
 
-	abiJson, err := ioutil.ReadFile(StorageABIPath)
+	abiJson, err := ioutil.ReadFile(storageABIPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -270,7 +272,7 @@ func testStoreContractSet(client *sdk.ChainClient, withSyncResult bool) {
 		},
 	}
 
-	err = invokeUserContract(client, StoreName, method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, storeName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -278,7 +280,7 @@ func testStoreContractSet(client *sdk.ChainClient, withSyncResult bool) {
 
 func testStoreContractGet(client *sdk.ChainClient, withSyncResult bool) {
 
-	abiJson, err := ioutil.ReadFile(StorageABIPath)
+	abiJson, err := ioutil.ReadFile(storageABIPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -303,7 +305,7 @@ func testStoreContractGet(client *sdk.ChainClient, withSyncResult bool) {
 		},
 	}
 
-	err = invokeUserContract(client, StoreName, method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, storeName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -317,7 +319,8 @@ func testStaticCreate(sdkPath string) {
 	}
 
 	fmt.Println("====================== 创建Creator C合约 ======================")
-	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1,
+		examples.UserNameOrg4Admin1}
 	testCCreate(client, true, true, usernames...)
 
 	fmt.Println("====================== 调用创建者C合约 ======================")
@@ -329,12 +332,12 @@ func testStaticCreate(sdkPath string) {
 
 func testCCreate(client *sdk.ChainClient, withSyncResult bool, isIgnoreSameContract bool, usernames ...string) {
 
-	codeBytes, err := ioutil.ReadFile(CBinPath)
+	codeBytes, err := ioutil.ReadFile(cBinPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := createUserContract(client, ContractCName, StorageVersion, string(codeBytes), common.RuntimeType_EVM,
+	resp, err := createUserContract(client, contractCName, storageVersion, string(codeBytes), common.RuntimeType_EVM,
 		nil, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
@@ -360,7 +363,7 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 		return nil, err
 	}
 
-	resp, err := client.SendContractManageRequest(payload, endorsers, CreateContractTimeout, withSyncResult)
+	resp, err := client.SendContractManageRequest(payload, endorsers, createContractTimeout, withSyncResult)
 	if err != nil {
 		return nil, err
 	}
@@ -375,7 +378,7 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 
 func testInvokeC(client *sdk.ChainClient, withSyncResult bool) {
 
-	abiJson, err := ioutil.ReadFile(CABIPath)
+	abiJson, err := ioutil.ReadFile(cABIPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -385,7 +388,7 @@ func testInvokeC(client *sdk.ChainClient, withSyncResult bool) {
 		log.Fatalln(err)
 	}
 
-	dataByte, err := myAbi.Pack("createDSalted", big.NewInt(10000), ContractDName)
+	dataByte, err := myAbi.Pack("createDSalted", big.NewInt(10000), contractDName)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -400,7 +403,7 @@ func testInvokeC(client *sdk.ChainClient, withSyncResult bool) {
 		},
 	}
 
-	err = invokeUserContract(client, ContractCName, method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, contractCName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -408,7 +411,7 @@ func testInvokeC(client *sdk.ChainClient, withSyncResult bool) {
 
 func testInvokeD(client *sdk.ChainClient, withSyncResult bool) {
 
-	abiJson, err := ioutil.ReadFile(DABIPath)
+	abiJson, err := ioutil.ReadFile(dABIPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -433,13 +436,14 @@ func testInvokeD(client *sdk.ChainClient, withSyncResult bool) {
 		},
 	}
 
-	err = invokeUserContract(client, ContractDName, method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, contractDName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, kvs []*common.KeyValuePair, withSyncResult bool) error {
+func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string, kvs []*common.KeyValuePair,
+	withSyncResult bool) error {
 
 	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
 	if err != nil {
@@ -447,7 +451,7 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 	}
 
 	if resp.Code != common.TxStatusCode_SUCCESS {
-		return fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
+		return fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]", resp.Code, resp.Message)
 	}
 
 	if !withSyncResult {
