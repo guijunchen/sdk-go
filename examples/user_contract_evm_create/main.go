@@ -42,15 +42,14 @@ const (
 	StorageABIPath = "../../testdata/storage-evm-demo/storage.abi"
 
 	claimName    = "claim001"
-	claimVersion = "1.0.0"
 	claimBinPath = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
 func main() {
-	//testStaticCreate(sdkConfigOrg1Client1Path)
-	//testDynamicCreate(sdkConfigOrg1Client1Path)
+	testStaticCreate(sdkConfigOrg1Client1Path)
+	testDynamicCreate(sdkConfigOrg1Client1Path)
 	testCrossVmCreate(sdkConfigOrg1Client1Path)
 }
 
@@ -61,9 +60,10 @@ func testCrossVmCreate(sdkPath string) {
 		log.Fatalln(err)
 	}
 
-	fmt.Println("====================== 创建Factory合约 ======================")
-	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
-	testCreateFactory(client, true, true, usernames...)
+	//注意，如果testDynamicCreate也执行的话，要注释掉以下三行代码，因为Factory合约已经被创建了，单独测试TestCrossVmCreate可以放开注释
+	//fmt.Println("====================== 创建Factory合约 ======================")
+	//usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	//testCreateFactory(client, true, true, usernames...)
 
 	fmt.Println("====================== 调用Factory合约的create方法创建claim（rust）合约 ======================")
 	testFactoryCreateContractClaim(client, true)
