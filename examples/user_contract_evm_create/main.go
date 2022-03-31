@@ -9,6 +9,7 @@ package main
 
 import (
 	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/common/v2/random/uuid"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
@@ -18,7 +19,9 @@ import (
 	"io/ioutil"
 	"log"
 	"math/big"
+	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -37,12 +40,126 @@ const (
 	StorageBinPath = "../../testdata/storage-evm-demo/storage.bin"
 	StorageABIPath = "../../testdata/storage-evm-demo/storage.abi"
 
+	claimName    = "claim001"
+	claimVersion = "1.0.0"
+	claimBinPath = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
+
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
 func main() {
-	testStaticCreate(sdkConfigOrg1Client1Path)
-	testDynamicCreate(sdkConfigOrg1Client1Path)
+	//testStaticCreate(sdkConfigOrg1Client1Path)
+	//testDynamicCreate(sdkConfigOrg1Client1Path)
+	testCrossVmCreate(sdkConfigOrg1Client1Path)
+}
+
+func testCrossVmCreate(sdkPath string) {
+	fmt.Println("====================== create client ======================")
+	client, err := examples.CreateChainClientWithSDKConf(sdkPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("====================== 创建Factory合约 ======================")
+	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
+	testCreateFactory(client, true, true, usernames...)
+
+	fmt.Println("====================== 调用Factory合约的create方法创建claim（rust）合约 ======================")
+	testFactoryCreateContractClaim(client, true)
+
+	fmt.Println("====================== 调用claim（rust）合约 ======================")
+	fileHash, err := testUserContractClaimInvoke(client, "save", true)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("====================== 查询claim(rust)合约 ======================")
+	//txId := "1cbdbe6106cc4132b464185ea8275d0a53c0261b7b1a470fb0c3f10bd4a57ba6"
+	//fileHash = txId[len(txId)/2:]
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   "file_hash",
+			Value: []byte(fileHash),
+		},
+	}
+	testUserContractClaimQuery(client, "find_by_file_hash", kvs)
+}
+
+func testFactoryCreateContractClaim(client *sdk.ChainClient, withSyncResult bool) {
+
+	abiJson, err := ioutil.ReadFile(FactoryABIPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	myAbi, err := abi.JSON(strings.NewReader(string(abiJson)))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	//hexCode, err := ioutil.ReadFile(claimBinPath)
+	code, err := ioutil.ReadFile(claimBinPath)//wasm文件不需要decode
+	if err != nil {
+		log.Fatalln(err)
+	}
+	//code, _ := hex.DecodeString(string(hexCode))
+
+	dataByte, err := myAbi.Pack("create", big.NewInt(int64(common.RuntimeType_WASMER)), claimName, code)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dataString := hex.EncodeToString(dataByte)
+	method := dataString[0:8]
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   "data",
+			Value: []byte(dataString),
+		},
+	}
+
+	err = invokeUserContract(client, FactoryName, method, "", kvs, withSyncResult)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func testUserContractClaimInvoke(client *sdk.ChainClient,
+	method string, withSyncResult bool) (string, error) {
+
+	curTime := strconv.FormatInt(time.Now().Unix(), 10)
+
+	fileHash := uuid.GetUUID()
+	kvs := []*common.KeyValuePair{
+		{
+			Key:   "time",
+			Value: []byte(curTime),
+		},
+		{
+			Key:   "file_hash",
+			Value: []byte(fileHash),
+		},
+		{
+			Key:   "file_name",
+			Value: []byte(fmt.Sprintf("file_%s", curTime)),
+		},
+	}
+
+	err := invokeUserContract(client, claimName, method, "", kvs, withSyncResult)
+	if err != nil {
+		return "", err
+	}
+
+	return fileHash, nil
+}
+
+func testUserContractClaimQuery(client *sdk.ChainClient, method string, kvs []*common.KeyValuePair) {
+	resp, err := client.QueryContract(claimName, method, kvs, -1)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("QUERY claim contract resp: %+v\n", resp)
 }
 
 func testDynamicCreate(sdkPath string) {
@@ -104,7 +221,7 @@ func testFactoryCreateContractStore(client *sdk.ChainClient, withSyncResult bool
 	}
 	code, _ := hex.DecodeString(string(hexCode))
 
-	dataByte, err := myAbi.Pack("create", StoreName, code)
+	dataByte, err := myAbi.Pack("create", big.NewInt(int64(common.RuntimeType_EVM)), StoreName, code)
 	if err != nil {
 		log.Fatalln(err)
 	}
