@@ -115,7 +115,7 @@ func testUserContractBalanceEVM(sdkPath string) {
 }
 
 func testUserContractBalanceEVMCreate(client *sdk.ChainClient, withSyncResult bool, isIgnoreSameContract bool, usernames ...string) {
-	resp, err := createUserContract(client, examples.CalcContractName(balanceContractName), balanceVersion,
+	resp, err := createUserContract(client, balanceContractName, balanceVersion,
 		balanceByteCodePath, common.RuntimeType_EVM, nil, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
@@ -185,7 +185,7 @@ func testUserContractBalanceEVMTransfer(client *sdk.ChainClient, withSyncResult 
 		},
 	}
 
-	err = invokeUserContract(client, examples.CalcContractName(balanceContractName), method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, balanceContractName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -220,7 +220,7 @@ func testUserContractBalanceEVMUpdateBalance(client *sdk.ChainClient, address st
 		},
 	}
 
-	err = invokeUserContract(client, examples.CalcContractName(balanceContractName), method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, balanceContractName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -274,7 +274,7 @@ func testUserContractBalanceEVMGetBalance(client *sdk.ChainClient, address strin
 		},
 	}
 
-	result, err := invokeUserContractWithResult(client, examples.CalcContractName(balanceContractName), method, "", kvs, withSyncResult)
+	result, err := invokeUserContractWithResult(client, balanceContractName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -327,7 +327,7 @@ func testUserContractBalanceEVMUpdateMyBalance(client *sdk.ChainClient, data int
 		},
 	}
 
-	err = invokeUserContract(client, examples.CalcContractName(balanceContractName), method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, balanceContractName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -361,7 +361,7 @@ func testUserContractBalanceEVMGetMyBalance(client *sdk.ChainClient, address str
 		},
 	}
 
-	result, err := invokeUserContractWithResult(client, examples.CalcContractName(balanceContractName), method, "", kvs, withSyncResult)
+	result, err := invokeUserContractWithResult(client, balanceContractName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
