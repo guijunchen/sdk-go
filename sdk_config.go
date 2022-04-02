@@ -205,11 +205,15 @@ type ChainClientConfig struct {
 	// 以下xxxPath和xxxBytes同时指定的话，优先使用Bytes
 	userKeyFilePath     string
 	userCrtFilePath     string
+	userEncKeyFilePath  string //only for gmtls1.1
+	userEncCrtFilePath  string
 	userSignKeyFilePath string // 公钥模式下使用该字段
 	userSignCrtFilePath string
 
 	userKeyBytes     []byte
 	userCrtBytes     []byte
+	userEncKeyBytes  []byte //only for gmtls1.1
+	userEncCrtBytes  []byte
 	userSignKeyBytes []byte // 公钥模式下使用该字段
 	userSignCrtBytes []byte
 
@@ -238,6 +242,9 @@ type ChainClientConfig struct {
 	// retry config
 	retryLimit    int // if <=0 then use DefaultRetryLimit
 	retryInterval int // if <=0 then use DefaultRetryInterval
+
+	// alias
+	alias string
 }
 
 type CryptoConfig struct {
@@ -359,6 +366,12 @@ func WithRetryInterval(interval int) ChainClientOption {
 	}
 }
 
+func WithChainClientAlias(alias string) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.alias = alias
+	}
+}
+
 // WithChainClientLogger 设置Logger对象，便于日志打印
 func WithChainClientLogger(logger utils.Logger) ChainClientOption {
 	return func(config *ChainClientConfig) {
@@ -438,8 +451,13 @@ func setChainConfig(config *ChainClientConfig) {
 	if utils.Config.ChainClientConfig.OrgId != "" && config.orgId == "" {
 		config.orgId = utils.Config.ChainClientConfig.OrgId
 	}
+
+	if utils.Config.ChainClientConfig.Alias != "" && config.alias == "" {
+		config.alias = utils.Config.ChainClientConfig.Alias
+	}
 }
 
+// nolint
 // 如果参数没有设置，便使用配置文件的配置
 func setUserConfig(config *ChainClientConfig) {
 	if config.authType == PermissionedWithKey || config.authType == Public { // 公钥身份或公链模式
@@ -459,6 +477,16 @@ func setUserConfig(config *ChainClientConfig) {
 	if utils.Config.ChainClientConfig.UserCrtFilePath != "" && config.userCrtFilePath == "" &&
 		config.userCrtBytes == nil {
 		config.userCrtFilePath = utils.Config.ChainClientConfig.UserCrtFilePath
+	}
+
+	if utils.Config.ChainClientConfig.UserEncKeyFilePath != "" && config.userEncKeyFilePath == "" &&
+		config.userEncKeyBytes == nil {
+		config.userEncKeyFilePath = utils.Config.ChainClientConfig.UserEncKeyFilePath
+	}
+
+	if utils.Config.ChainClientConfig.UserEncCrtFilePath != "" && config.userEncCrtFilePath == "" &&
+		config.userEncCrtBytes == nil {
+		config.userEncCrtFilePath = utils.Config.ChainClientConfig.UserEncCrtFilePath
 	}
 
 	if utils.Config.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyFilePath == "" &&
@@ -747,6 +775,9 @@ func dealConfig(config *ChainClientConfig) error {
 		return err
 	}
 
+	//gmtls enc key/cert set
+	_ = dealUserEncCrtKeyConfig(config)
+
 	if err = dealUserSignCrtConfig(config); err != nil {
 		return err
 	}
@@ -787,6 +818,21 @@ func dealUserKeyConfig(config *ChainClientConfig) (err error) {
 		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
 	}
 
+	return nil
+}
+
+// dealUserEncCrtKeyConfig is used to load tls enc key/crt
+// if the files from config are not valid, use default tls, no error is returned!
+func dealUserEncCrtKeyConfig(config *ChainClientConfig) (err error) {
+	keyBytes, err1 := ioutil.ReadFile(config.userEncKeyFilePath)
+	crtBytes, err2 := ioutil.ReadFile(config.userEncCrtFilePath)
+
+	if err1 == nil && err2 == nil && keyBytes != nil && crtBytes != nil {
+		config.logger.Debugf("[SDK] use gmtls")
+		config.userEncKeyBytes, config.userEncCrtBytes = keyBytes, crtBytes
+	} else {
+		config.logger.Debugf("[SDK] use tls")
+	}
 	return nil
 }
 

@@ -29,6 +29,9 @@ func GetRandTxId() string {
 func CheckProposalRequestResp(resp *common.TxResponse, needContractResult bool) error {
 	if resp.Code != common.TxStatusCode_SUCCESS {
 		if resp.Message == "" {
+			if resp.ContractResult != nil && resp.ContractResult.Code != SUCCESS {
+				return errors.New(resp.ContractResult.Message)
+			}
 			return errors.New(resp.Code.String())
 		}
 		return errors.New(resp.Message)
