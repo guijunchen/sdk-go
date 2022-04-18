@@ -84,7 +84,11 @@ func (cc *ChainClient) sendContractRequest(payload *common.Payload, endorsers []
 func (cc *ChainClient) CreatePayload(txId string, txType common.TxType, contractName, method string,
 	kvs []*common.KeyValuePair, seq uint64, limit *common.Limit) *common.Payload {
 	if txId == "" {
-		txId = utils.GetRandTxId()
+		if cc.enableNormalKey {
+			txId = utils.GetRandTxId()
+		} else {
+			txId = utils.GetTimestampTxId()
+		}
 	}
 
 	payload := utils.NewPayload(
