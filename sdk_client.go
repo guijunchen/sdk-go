@@ -69,6 +69,9 @@ type ChainClient struct {
 	// alias support
 	enabledAlias bool
 	alias        string
+
+	// default TimestampKey , true NormalKey support
+	enableNormalKey bool
 }
 
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
@@ -164,6 +167,8 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 
 		retryLimit:    config.retryLimit,
 		retryInterval: config.retryInterval,
+
+		enableNormalKey: config.enableNormalKey,
 	}
 
 	// 若设置了别名，便启用
@@ -174,6 +179,10 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	}
 
 	return cc, nil
+}
+
+func (cc *ChainClient) IsEnableNormalKey() bool {
+	return cc.enableNormalKey
 }
 
 func (cc *ChainClient) Stop() error {

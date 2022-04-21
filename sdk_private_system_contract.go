@@ -26,7 +26,11 @@ func (cc *ChainClient) SaveDir(orderId, txId string,
 	privateDir *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 
 	if txId == "" {
-		txId = utils.GetRandTxId()
+		if cc.enableNormalKey {
+			txId = utils.GetRandTxId()
+		} else {
+			txId = utils.GetTimestampTxId()
+		}
 	}
 
 	cc.logger.Infof("[SDK] begin to save dir , [contract:%s]/[method:%s]/[txId:%s]",
@@ -95,7 +99,11 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, isD
 	sign []byte, events *common.StrSlice, privateReq []byte, withSyncResult bool,
 	timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
-		txId = utils.GetRandTxId()
+		if cc.enableNormalKey {
+			txId = utils.GetRandTxId()
+		} else {
+			txId = utils.GetTimestampTxId()
+		}
 	}
 
 	cc.logger.Infof("[SDK] begin to save data , [contract:%s]/[method:%s]/[txId:%s]",
@@ -258,7 +266,11 @@ func (cc *ChainClient) CheckCallerCertAuth(payload string, orgIds []string, sign
 func (cc *ChainClient) SaveEnclaveCACert(
 	enclaveCACert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
-		txId = utils.GetRandTxId()
+		if cc.enableNormalKey {
+			txId = utils.GetRandTxId()
+		} else {
+			txId = utils.GetTimestampTxId()
+		}
 	}
 
 	cc.logger.Infof("[SDK] begin to save ca cert , [contract:%s]/[method:%s]/[txId:%s]",
@@ -290,7 +302,11 @@ func (cc *ChainClient) SaveEnclaveCACert(
 func (cc *ChainClient) SaveEnclaveReport(
 	enclaveId, report, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
-		txId = utils.GetRandTxId()
+		if cc.enableNormalKey {
+			txId = utils.GetRandTxId()
+		} else {
+			txId = utils.GetTimestampTxId()
+		}
 	}
 
 	cc.logger.Infof("[SDK] begin to save enclave report , [contract:%s]/[method:%s]/[txId:%s]",
@@ -322,7 +338,11 @@ func (cc *ChainClient) SaveEnclaveReport(
 
 func (cc *ChainClient) CreateSaveEnclaveCACertPayload(enclaveCACert string, txId string) (*common.Payload, error) {
 	if txId == "" {
-		txId = utils.GetRandTxId()
+		if cc.enableNormalKey {
+			txId = utils.GetRandTxId()
+		} else {
+			txId = utils.GetTimestampTxId()
+		}
 	}
 
 	cc.logger.Infof("[SDK] begin to save ca cert , [contract:%s]/[method:%s]/[txId:%s]",
@@ -368,7 +388,11 @@ func (cc *ChainClient) GetEnclaveCACert() ([]byte, error) {
 
 func (cc *ChainClient) CreateSaveEnclaveReportPayload(enclaveId, report, txId string) (*common.Payload, error) {
 	if txId == "" {
-		txId = utils.GetRandTxId()
+		if cc.enableNormalKey {
+			txId = utils.GetRandTxId()
+		} else {
+			txId = utils.GetTimestampTxId()
+		}
 	}
 
 	cc.logger.Infof("[SDK] begin to save enclave report , [contract:%s]/[method:%s]/[txId:%s]",
@@ -392,7 +416,11 @@ func (cc *ChainClient) CreateSaveEnclaveReportPayload(enclaveId, report, txId st
 func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncResult bool,
 	timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
-		txId = utils.GetRandTxId()
+		if cc.enableNormalKey {
+			txId = utils.GetRandTxId()
+		} else {
+			txId = utils.GetTimestampTxId()
+		}
 	}
 
 	cc.logger.Infof("[SDK] begin to save_remote_attestation_proof , [contract:%s]/[method:%s]/[txId:%s]",

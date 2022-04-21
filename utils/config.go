@@ -99,6 +99,8 @@ type chainClientConfigModel struct {
 	Crypto *cryptoModel `mapstructure:"crypto"`
 	// 别名
 	Alias string `mapstructure:"alias"`
+	// 默认使用 TimestampKey ，如果 EnableNormalKey 设置为 true 则使用 NormalKey
+	EnableNormalKey bool `mapstructure:"enable_normal_key"`
 }
 
 type ChainClientConfigModel struct {
