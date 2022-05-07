@@ -74,7 +74,7 @@ func main() {
 
 func testHibeContractCounterGo() {
 
-	txId = utils.GetRandTxId()
+	txId = utils.GetTimestampTxId()
 	client, err := examples.CreateChainClientWithSDKConf(sdkConfigOrg1Client1Path)
 	if err != nil {
 		log.Fatalln(err)

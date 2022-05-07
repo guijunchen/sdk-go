@@ -69,7 +69,7 @@ func testUserContractStorageEVMCreate(client *sdk.ChainClient, withSyncResult bo
 		log.Fatalln(err)
 	}
 
-	resp, err := createUserContract(client, examples.CalcContractName(storageContractName), storageVersion,
+	resp, err := createUserContract(client, storageContractName, storageVersion,
 		string(codeBytes), common.RuntimeType_EVM, nil, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
@@ -134,7 +134,7 @@ func testUserContractStorageEVMSet(client *sdk.ChainClient, data int64, withSync
 		},
 	}
 
-	err = invokeUserContract(client, examples.CalcContractName(storageContractName), method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, storageContractName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -187,7 +187,7 @@ func testUserContractStorageEVMGet(client *sdk.ChainClient, withSyncResult bool)
 		},
 	}
 
-	result, err := invokeUserContractWithResult(client, examples.CalcContractName(storageContractName), method, "", kvs, withSyncResult)
+	result, err := invokeUserContractWithResult(client, storageContractName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}

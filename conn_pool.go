@@ -64,6 +64,8 @@ type ClientConnectionPool struct {
 	logger            utils.Logger
 	userKeyBytes      []byte
 	userCrtBytes      []byte
+	userEncKeyBytes   []byte
+	userEncCrtBytes   []byte
 	rpcMaxRecvMsgSize int
 	rpcMaxSendMsgSize int
 }
@@ -74,6 +76,8 @@ func NewConnPool(config *ChainClientConfig) (*ClientConnectionPool, error) {
 		logger:            config.logger,
 		userKeyBytes:      config.userKeyBytes,
 		userCrtBytes:      config.userCrtBytes,
+		userEncKeyBytes:   config.userEncKeyBytes,
+		userEncCrtBytes:   config.userEncCrtBytes,
 		rpcMaxRecvMsgSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize * 1024 * 1024,
 		rpcMaxSendMsgSize: config.rpcClientConfig.rpcClientMaxSendMessageSize * 1024 * 1024,
 	}
@@ -107,19 +111,23 @@ func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, 
 	if useTLS {
 		if len(caCerts) != 0 {
 			tlsClient = ca.CAClient{
-				ServerName: tlsHostName,
-				CaCerts:    caCerts,
-				CertBytes:  pool.userCrtBytes,
-				KeyBytes:   pool.userKeyBytes,
-				Logger:     pool.logger,
+				ServerName:   tlsHostName,
+				CaCerts:      caCerts,
+				CertBytes:    pool.userCrtBytes,
+				KeyBytes:     pool.userKeyBytes,
+				EncCertBytes: pool.userEncCrtBytes,
+				EncKeyBytes:  pool.userEncKeyBytes,
+				Logger:       pool.logger,
 			}
 		} else {
 			tlsClient = ca.CAClient{
-				ServerName: tlsHostName,
-				CaPaths:    caPaths,
-				CertBytes:  pool.userCrtBytes,
-				KeyBytes:   pool.userKeyBytes,
-				Logger:     pool.logger,
+				ServerName:   tlsHostName,
+				CaPaths:      caPaths,
+				CertBytes:    pool.userCrtBytes,
+				KeyBytes:     pool.userKeyBytes,
+				EncCertBytes: pool.userEncCrtBytes,
+				EncKeyBytes:  pool.userEncKeyBytes,
+				Logger:       pool.logger,
 			}
 		}
 

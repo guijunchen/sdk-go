@@ -357,7 +357,7 @@ type SDKInterface interface {
 	CreateChainConfigCoreUpdatePayload(txSchedulerTimeout, txSchedulerValidateTimeout uint64) (*common.Payload, error)
 	// ```
 
-	// ### 3.7 更新Core模块待签名payload生成
+	// ### 3.7 更新链配置的区块相关参数待签名payload生成
 	// **参数说明**
 	//   - txTimestampVerify: 是否需要开启交易时间戳校验
 	//   - (以下参数，若无需修改，请置为-1)
@@ -365,9 +365,10 @@ type SDKInterface interface {
 	//   - blockTxCapacity: 区块中最大交易数，其值范围为(0, +∞]
 	//   - blockSize: 区块最大限制，单位MB，其值范围为(0, +∞]
 	//   - blockInterval: 出块间隔，单位:ms，其值范围为[10, +∞]
+	//   - txParamterSize: 交易的参数的最大值限制，单位：MB，其值范围为[0,100]
 	// ```go
 	CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity, blockSize,
-		blockInterval uint32) (*common.Payload, error)
+		blockInterval, txParamterSize uint32) (*common.Payload, error)
 	// ```
 
 	// ### 3.8 添加信任组织根证书待签名payload生成
@@ -1096,5 +1097,73 @@ type SDKInterface interface {
 	//   - limit: transaction limitation，执行交易时的资源消耗上限
 	// ```go
 	AttachGasLimit(payload *common.Payload, limit *common.Limit) *common.Payload
+	// ```
+
+	// ## 14 别名相关接口
+	// ### 14.1 添加别名
+	// ```go
+	AddAlias() (*common.TxResponse, error)
+	// ```
+
+	// ### 14.2 构造`更新别名的证书`payload
+	// **参数说明**
+	//   - alias: 带更新证书的别名
+	//   - newCertPEM: 新的证书，此新证书将替换掉alias关联的证书
+	// ```go
+	CreateUpdateCertByAliasPayload(alias, newCertPEM string) *common.Payload
+	// ```
+
+	// ### 14.3 签名`更新别名的证书`payload
+	// **参数说明**
+	//   - payload: 交易payload
+	// ```go
+	SignUpdateCertByAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
+	// ```
+
+	// ### 14.4 发起`更新别名的证书`交易
+	// **参数说明**
+	//   - payload: 交易payload
+	//   - endorsers: 背书签名信息列表
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
+	// ```go
+	UpdateCertByAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
+		timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	// ```
+
+	// ### 14.5 查询别名详细信息
+	// **参数说明**
+	//   - aliases: 带查询的证书别名切片，根据这些别名查询返回AliasInfos
+	// ```go
+	QueryCertsAlias(aliases []string) (*common.AliasInfos, error)
+	// ```
+
+	// ### 14.6 构造`删除别名`payload
+	// **参数说明**
+	//   - aliases: 带删除的证书别名切片
+	// ```go
+	CreateDeleteCertsAliasPayload(aliases []string) *common.Payload
+	// ```
+
+	// ### 14.7 签名`删除别名`payload
+	// **参数说明**
+	//   - payload: 交易payload
+	// ```go
+	SignDeleteAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error)
+	// ```
+
+	// ### 14.8 发起`删除别名`交易
+	// **参数说明**
+	//   - payload: 交易payload
+	//   - endorsers: 背书签名信息列表
+	//   - timeout: 超时时间，单位：s，若传入-1，将使用默认超时时间：10s
+	//   - withSyncResult: 是否同步获取交易执行结果
+	//            当为true时，若成功调用，common.TxResponse.ContractResult.Result为common.TransactionInfo
+	//            当为false时，若成功调用，common.TxResponse.ContractResult为空，可以通过common.TxResponse.TxId查询交易结果
+	// ```go
+	DeleteCertsAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
+		timeout int64, withSyncResult bool) (*common.TxResponse, error)
 	// ```
 }

@@ -136,7 +136,7 @@ func (cc *ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout,
 }
 
 func (cc *ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity,
-	blockSize, blockInterval uint32) (*common.Payload, error) {
+	blockSize, blockInterval, txParamterSize uint32) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [BlockUpdate] to be signed payload")
 
 	pairs := []*common.KeyValuePair{
@@ -184,6 +184,12 @@ func (cc *ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify boo
 		pairs = append(pairs, &common.KeyValuePair{
 			Key:   utils.KeyBlockInterval,
 			Value: []byte(strconv.FormatUint(uint64(blockInterval), 10)),
+		})
+	}
+	if txParamterSize > 0 {
+		pairs = append(pairs, &common.KeyValuePair{
+			Key:   utils.KeyTxParamterSize,
+			Value: []byte(strconv.FormatUint(uint64(txParamterSize), 10)),
 		})
 	}
 
@@ -299,10 +305,8 @@ func (cc *ChainClient) CreateChainConfigTrustMemberAddPayload(trustMemberOrgId, 
 		},
 	}
 
-	//payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
-	//	syscontract.ChainConfigFunction_TRUST_MEMBER_ADD.String(), pairs, seq+1, nil)
 	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
-		syscontract.ChainConfigFunction_TRUST_ROOT_ADD.String(), pairs, seq+1, nil)
+		syscontract.ChainConfigFunction_TRUST_MEMBER_ADD.String(), pairs, seq+1, nil)
 
 	return payload, nil
 }
@@ -321,10 +325,8 @@ func (cc *ChainClient) CreateChainConfigTrustMemberDeletePayload(trustMemberInfo
 			Value: []byte(trustMemberInfo),
 		},
 	}
-	//payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
-	//	syscontract.ChainConfigFunction_TRUST_MEMBER_DELETE.String(), pairs, seq+1, nil)
 	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
-		syscontract.ChainConfigFunction_TRUST_ROOT_DELETE.String(), pairs, seq+1, nil)
+		syscontract.ChainConfigFunction_TRUST_MEMBER_DELETE.String(), pairs, seq+1, nil)
 
 	return payload, nil
 }

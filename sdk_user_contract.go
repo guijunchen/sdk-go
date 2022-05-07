@@ -186,7 +186,11 @@ func (cc *ChainClient) QueryContract(contractName, method string, kvs []*common.
 func (cc *ChainClient) GetTxRequest(contractName, method, txId string, kvs []*common.KeyValuePair) (
 	*common.TxRequest, error) {
 	if txId == "" {
-		txId = utils.GetRandTxId()
+		if cc.enableNormalKey {
+			txId = utils.GetRandTxId()
+		} else {
+			txId = utils.GetTimestampTxId()
+		}
 	}
 
 	cc.logger.Debugf("[SDK] begin to create TxRequest, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
