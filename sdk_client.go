@@ -109,10 +109,11 @@ func NewRPCClientConfig(opts ...RPCClientOption) *RPCClientConfig {
 	return config
 }
 
-func NewPkcs11Config(enabled bool, libPath, label, password string,
+func NewPkcs11Config(enabled bool, typ, libPath, label, password string,
 	sessionCacheSize int, hashAlgo string) *Pkcs11Config {
 	return &Pkcs11Config{
 		Enabled:          enabled,
+		Type:             typ,
 		Library:          libPath,
 		Label:            label,
 		Password:         password,

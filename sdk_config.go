@@ -11,6 +11,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"strings"
+
+	"chainmaker.org/chainmaker/common/v2/crypto/sdf"
 
 	"chainmaker.org/chainmaker/common/v2/cert"
 	"chainmaker.org/chainmaker/common/v2/crypto"
@@ -37,11 +40,11 @@ const (
 
 var (
 	// global thread-safe pkcs11 handler
-	p11Handle *pkcs11.P11Handle
+	hsmHandle interface{}
 )
 
-func GetP11Handle() *pkcs11.P11Handle {
-	return p11Handle
+func GetP11Handle() interface{} {
+	return hsmHandle
 }
 
 // NodeConfig 节点配置
@@ -147,6 +150,8 @@ func WithRPCClientMaxSendMessageSize(size int) RPCClientOption {
 type Pkcs11Config struct {
 	// 是否开启pkcs11, 如果为 ture 则下面所有的字段都是必填
 	Enabled bool
+	// interface type of lib, support pkcs11 and sdf
+	Type string
 	// path to the .so file of pkcs11 interface
 	Library string
 	// label for the slot to be used
@@ -562,6 +567,7 @@ func setPkcs11Config(config *ChainClientConfig) {
 		if utils.Config.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
 			config.pkcs11Config = NewPkcs11Config(
 				utils.Config.ChainClientConfig.Pkcs11Config.Enabled,
+				utils.Config.ChainClientConfig.Pkcs11Config.Type,
 				utils.Config.ChainClientConfig.Pkcs11Config.Library,
 				utils.Config.ChainClientConfig.Pkcs11Config.Label,
 				utils.Config.ChainClientConfig.Pkcs11Config.Password,
@@ -732,6 +738,9 @@ func checkPkcs11Config(config *ChainClientConfig) error {
 	if config.pkcs11Config.Library == "" {
 		return errors.New("config.pkcs11Config.Library must not empty")
 	}
+	if config.pkcs11Config.Type == "" {
+		return errors.New("config.pkcs11Config.Type must not empty")
+	}
 	if config.pkcs11Config.Label == "" {
 		return errors.New("config.pkcs11Config.Label must not empty")
 	}
@@ -901,12 +910,18 @@ func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 	}
 
 	if config.pkcs11Config.Enabled {
-		p11Handle, err = pkcs11.New(config.pkcs11Config.Library, config.pkcs11Config.Label,
-			config.pkcs11Config.Password, config.pkcs11Config.SessionCacheSize, config.pkcs11Config.Hash)
+		if strings.EqualFold(config.pkcs11Config.Type, "pkcs11") {
+			hsmHandle, err = pkcs11.New(config.pkcs11Config.Library, config.pkcs11Config.Label,
+				config.pkcs11Config.Password, config.pkcs11Config.SessionCacheSize, config.pkcs11Config.Hash)
+		} else if strings.EqualFold(config.pkcs11Config.Type, "sdf") {
+			hsmHandle, err = sdf.New(config.pkcs11Config.Library, config.pkcs11Config.SessionCacheSize)
+		} else {
+			err = fmt.Errorf("type is not valid, want pkcs11 or sdf, got %s", config.pkcs11Config.Type)
+		}
 		if err != nil {
 			return fmt.Errorf("failed to initialize pkcs11 handle, %s", err)
 		}
-		config.privateKey, err = cert.ParseP11PrivKey(p11Handle, config.userSignKeyBytes)
+		config.privateKey, err = cert.ParseP11PrivKey(hsmHandle, config.userSignKeyBytes)
 		if err != nil {
 			return fmt.Errorf("cert.ParseP11PrivKey failed, %s", err)
 		}
