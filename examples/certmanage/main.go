@@ -173,7 +173,7 @@ func testDeleteCert(client *sdk.ChainClient, certHashes []string) {
 		log.Fatalln(err)
 	}
 
-	resp, err := client.SendCertManageRequest(payload, endorsers, -1, true)
+	resp, err := client.SendCertManageRequest(payload, endorsers, -1, false)
 	if err != nil {
 		log.Fatalln(err)
 	}
