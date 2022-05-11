@@ -11,6 +11,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"strings"
+
+	"chainmaker.org/chainmaker/common/v2/crypto/sdf"
 
 	"chainmaker.org/chainmaker/common/v2/cert"
 	"chainmaker.org/chainmaker/common/v2/crypto"
@@ -37,11 +40,11 @@ const (
 
 var (
 	// global thread-safe pkcs11 handler
-	p11Handle *pkcs11.P11Handle
+	hsmHandle interface{}
 )
 
-func GetP11Handle() *pkcs11.P11Handle {
-	return p11Handle
+func GetP11Handle() interface{} {
+	return hsmHandle
 }
 
 // NodeConfig 节点配置
@@ -147,6 +150,8 @@ func WithRPCClientMaxSendMessageSize(size int) RPCClientOption {
 type Pkcs11Config struct {
 	// 是否开启pkcs11, 如果为 ture 则下面所有的字段都是必填
 	Enabled bool
+	// interface type of lib, support pkcs11 and sdf
+	Type string
 	// path to the .so file of pkcs11 interface
 	Library string
 	// label for the slot to be used
@@ -205,11 +210,15 @@ type ChainClientConfig struct {
 	// 以下xxxPath和xxxBytes同时指定的话，优先使用Bytes
 	userKeyFilePath     string
 	userCrtFilePath     string
+	userEncKeyFilePath  string //only for gmtls1.1
+	userEncCrtFilePath  string
 	userSignKeyFilePath string // 公钥模式下使用该字段
 	userSignCrtFilePath string
 
 	userKeyBytes     []byte
 	userCrtBytes     []byte
+	userEncKeyBytes  []byte //only for gmtls1.1
+	userEncCrtBytes  []byte
 	userSignKeyBytes []byte // 公钥模式下使用该字段
 	userSignCrtBytes []byte
 
@@ -463,6 +472,7 @@ func setChainConfig(config *ChainClientConfig) {
 	config.enableNormalKey = utils.Config.ChainClientConfig.EnableNormalKey
 }
 
+// nolint
 // 如果参数没有设置，便使用配置文件的配置
 func setUserConfig(config *ChainClientConfig) {
 	if config.authType == PermissionedWithKey || config.authType == Public { // 公钥身份或公链模式
@@ -482,6 +492,16 @@ func setUserConfig(config *ChainClientConfig) {
 	if utils.Config.ChainClientConfig.UserCrtFilePath != "" && config.userCrtFilePath == "" &&
 		config.userCrtBytes == nil {
 		config.userCrtFilePath = utils.Config.ChainClientConfig.UserCrtFilePath
+	}
+
+	if utils.Config.ChainClientConfig.UserEncKeyFilePath != "" && config.userEncKeyFilePath == "" &&
+		config.userEncKeyBytes == nil {
+		config.userEncKeyFilePath = utils.Config.ChainClientConfig.UserEncKeyFilePath
+	}
+
+	if utils.Config.ChainClientConfig.UserEncCrtFilePath != "" && config.userEncCrtFilePath == "" &&
+		config.userEncCrtBytes == nil {
+		config.userEncCrtFilePath = utils.Config.ChainClientConfig.UserEncCrtFilePath
 	}
 
 	if utils.Config.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyFilePath == "" &&
@@ -547,6 +567,7 @@ func setPkcs11Config(config *ChainClientConfig) {
 		if utils.Config.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
 			config.pkcs11Config = NewPkcs11Config(
 				utils.Config.ChainClientConfig.Pkcs11Config.Enabled,
+				utils.Config.ChainClientConfig.Pkcs11Config.Type,
 				utils.Config.ChainClientConfig.Pkcs11Config.Library,
 				utils.Config.ChainClientConfig.Pkcs11Config.Label,
 				utils.Config.ChainClientConfig.Pkcs11Config.Password,
@@ -717,6 +738,9 @@ func checkPkcs11Config(config *ChainClientConfig) error {
 	if config.pkcs11Config.Library == "" {
 		return errors.New("config.pkcs11Config.Library must not empty")
 	}
+	if config.pkcs11Config.Type == "" {
+		return errors.New("config.pkcs11Config.Type must not empty")
+	}
 	if config.pkcs11Config.Label == "" {
 		return errors.New("config.pkcs11Config.Label must not empty")
 	}
@@ -770,6 +794,9 @@ func dealConfig(config *ChainClientConfig) error {
 		return err
 	}
 
+	//gmtls enc key/cert set
+	_ = dealUserEncCrtKeyConfig(config)
+
 	if err = dealUserSignCrtConfig(config); err != nil {
 		return err
 	}
@@ -810,6 +837,21 @@ func dealUserKeyConfig(config *ChainClientConfig) (err error) {
 		return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
 	}
 
+	return nil
+}
+
+// dealUserEncCrtKeyConfig is used to load tls enc key/crt
+// if the files from config are not valid, use default tls, no error is returned!
+func dealUserEncCrtKeyConfig(config *ChainClientConfig) (err error) {
+	keyBytes, err1 := ioutil.ReadFile(config.userEncKeyFilePath)
+	crtBytes, err2 := ioutil.ReadFile(config.userEncCrtFilePath)
+
+	if err1 == nil && err2 == nil && keyBytes != nil && crtBytes != nil {
+		config.logger.Debugf("[SDK] use gmtls")
+		config.userEncKeyBytes, config.userEncCrtBytes = keyBytes, crtBytes
+	} else {
+		config.logger.Debugf("[SDK] use tls")
+	}
 	return nil
 }
 
@@ -868,12 +910,18 @@ func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 	}
 
 	if config.pkcs11Config.Enabled {
-		p11Handle, err = pkcs11.New(config.pkcs11Config.Library, config.pkcs11Config.Label,
-			config.pkcs11Config.Password, config.pkcs11Config.SessionCacheSize, config.pkcs11Config.Hash)
+		if strings.EqualFold(config.pkcs11Config.Type, "pkcs11") {
+			hsmHandle, err = pkcs11.New(config.pkcs11Config.Library, config.pkcs11Config.Label,
+				config.pkcs11Config.Password, config.pkcs11Config.SessionCacheSize, config.pkcs11Config.Hash)
+		} else if strings.EqualFold(config.pkcs11Config.Type, "sdf") {
+			hsmHandle, err = sdf.New(config.pkcs11Config.Library, config.pkcs11Config.SessionCacheSize)
+		} else {
+			err = fmt.Errorf("type is not valid, want pkcs11 or sdf, got %s", config.pkcs11Config.Type)
+		}
 		if err != nil {
 			return fmt.Errorf("failed to initialize pkcs11 handle, %s", err)
 		}
-		config.privateKey, err = cert.ParseP11PrivKey(p11Handle, config.userSignKeyBytes)
+		config.privateKey, err = cert.ParseP11PrivKey(hsmHandle, config.userSignKeyBytes)
 		if err != nil {
 			return fmt.Errorf("cert.ParseP11PrivKey failed, %s", err)
 		}
