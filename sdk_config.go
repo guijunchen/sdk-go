@@ -243,6 +243,9 @@ type ChainClientConfig struct {
 	alias string
 
 	enableNormalKey bool
+
+	// enable tx result dispatcher
+	enableTxResultDispatcher bool
 }
 
 type CryptoConfig struct {
@@ -401,6 +404,14 @@ func WithRPCClientConfig(conf *RPCClientConfig) ChainClientOption {
 func WithPkcs11Config(conf *Pkcs11Config) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.pkcs11Config = conf
+	}
+}
+
+// WithEnableTxResultDispatcher 设置是否启用 异步订阅机制获取交易结果。
+// 默认不启用，如不启用将继续使用轮训机制获取交易结果。
+func WithEnableTxResultDispatcher(enable bool) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.enableTxResultDispatcher = enable
 	}
 }
 
