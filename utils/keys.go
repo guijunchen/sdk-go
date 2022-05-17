@@ -1,3 +1,9 @@
+/*
+Copyright (C) THL A29 Limited, a Tencent company. All rights reserved.
+
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package utils
 
 //nolint
@@ -30,7 +36,7 @@ const (
 	KeyBlockTxCapacity = "block_tx_capacity"
 	KeyBlockSize       = "block_size"
 	KeyBlockInterval   = "block_interval"
-	KeyTxParamterSize   = "tx_parameter_size"
+	KeyTxParamterSize  = "tx_parameter_size"
 
 	// CertManage keys
 	KeyCertHashes = "cert_hashes"
