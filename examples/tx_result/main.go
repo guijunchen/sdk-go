@@ -61,7 +61,7 @@ func testUserContractClaim() {
 	}
 	for {
 		fmt.Printf("TPS: %d\n", threadNum*int(time.Second/threadDuration))
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * 10)
 	}
 }
 
