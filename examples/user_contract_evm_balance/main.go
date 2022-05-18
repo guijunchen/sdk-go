@@ -15,7 +15,7 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
+	"chainmaker.org/chainmaker/common/v2/evmutils/abi"
 
 	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/evmutils"

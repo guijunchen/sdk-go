@@ -8,41 +8,42 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"chainmaker.org/chainmaker/common/v2/crypto"
-	"chainmaker.org/chainmaker/common/v2/evmutils"
-	"chainmaker.org/chainmaker/common/v2/random/uuid"
-	"chainmaker.org/chainmaker/pb-go/v2/common"
-	sdk "chainmaker.org/chainmaker/sdk-go/v2"
-	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 	"encoding/hex"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"strconv"
 	"strings"
 	"time"
+
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/common/v2/evmutils"
+	"chainmaker.org/chainmaker/common/v2/evmutils/abi"
+	"chainmaker.org/chainmaker/common/v2/random/uuid"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
+	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 )
 
 const (
 	createContractTimeout = 5
 	contractVersion       = "1.0.0"
 
-	calleeName   	      = "callee"
-	calleeBin   	  	  = "../../testdata/cross-call-evm-demo/Callee.bin"
+	calleeName = "callee"
+	calleeBin  = "../../testdata/cross-call-evm-demo/Callee.bin"
 
-	callerName            = "caller"
-	callerBin             = "../../testdata/cross-call-evm-demo/Caller.bin"
-	callerABI             = "../../testdata/cross-call-evm-demo/Caller.abi"
+	callerName = "caller"
+	callerBin  = "../../testdata/cross-call-evm-demo/Caller.bin"
+	callerABI  = "../../testdata/cross-call-evm-demo/Caller.abi"
 
-	crossVmName           = "crossVm"
-	crossVmBin            = "../../testdata/cross-call-evm-demo/CrossCall.bin"
-	crossVmABI            = "../../testdata/cross-call-evm-demo/CrossCall.abi"
+	crossVmName = "crossVm"
+	crossVmBin  = "../../testdata/cross-call-evm-demo/CrossCall.bin"
+	crossVmABI  = "../../testdata/cross-call-evm-demo/CrossCall.abi"
 
-	claimName    		  = "claim001"
-	claimVersion		  = "2.0.0"
-	claimBinPath 		  = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
+	claimName                = "claim001"
+	claimVersion             = "2.0.0"
+	claimBinPath             = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
@@ -103,7 +104,7 @@ func testCreateCrossVmContract(client *sdk.ChainClient, withSyncResult bool, isI
 	}
 
 	fmt.Printf("CREATE EVM cross vm call contract resp: [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
-	fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n",  resp.ContractResult.Code,
+	fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n", resp.ContractResult.Code,
 		resp.ContractResult.Message, resp.ContractResult.Result)
 }
 
@@ -133,7 +134,7 @@ func testCallerCrossCallClaimSaveMethod(client *sdk.ChainClient, withSyncResult 
 	method := dataString[0:8]
 	kvs := []*common.KeyValuePair{
 		{
-			Key:   "data",//protocol.ContractEvmParamKey
+			Key:   "data", //protocol.ContractEvmParamKey
 			Value: []byte(dataString),
 		},
 	}
@@ -191,7 +192,7 @@ func testCreateCallee(client *sdk.ChainClient, withSyncResult bool, isIgnoreSame
 	}
 
 	fmt.Printf("CREATE EVM callee contract resp: [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
-	fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n",  resp.ContractResult.Code,
+	fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n", resp.ContractResult.Code,
 		resp.ContractResult.Message, resp.ContractResult.Result)
 }
 
@@ -211,7 +212,7 @@ func testCreateCaller(client *sdk.ChainClient, withSyncResult bool, isIgnoreSame
 	}
 
 	fmt.Printf("CREATE EVM caller contract resp: [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
-	fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n",  resp.ContractResult.Code,
+	fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n", resp.ContractResult.Code,
 		resp.ContractResult.Message, resp.ContractResult.Result)
 }
 
@@ -239,7 +240,7 @@ func testCallerCrossCallCalleeAdder(client *sdk.ChainClient, withSyncResult bool
 
 	kvs := []*common.KeyValuePair{
 		{
-			Key:   "data",//protocol.ContractEvmParamKey
+			Key:   "data", //protocol.ContractEvmParamKey
 			Value: []byte(dataString),
 		},
 	}
@@ -294,7 +295,7 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 			resp.ContractResult.Result)
 	} else {
 		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
-		fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n",  resp.ContractResult.Code,
+		fmt.Printf("contract result: [code:%d]/[msg:%s]/[contractResult:%+X]\n", resp.ContractResult.Code,
 			resp.ContractResult.Message, resp.ContractResult.Result)
 	}
 

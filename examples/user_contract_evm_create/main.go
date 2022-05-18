@@ -18,11 +18,11 @@ import (
 	"time"
 
 	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/common/v2/evmutils/abi"
 	"chainmaker.org/chainmaker/common/v2/random/uuid"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 )
 
 const (
@@ -63,7 +63,7 @@ func testCrossVmCreate(sdkPath string) {
 	//注意，如果testDynamicCreate也执行的话，要注释掉以下三行代码，因为Factory合约已经被创建了，单独测试TestCrossVmCreate可以放开注释
 	fmt.Println("====================== 创建Factory合约 ======================")
 	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1,
-	examples.UserNameOrg4Admin1}
+		examples.UserNameOrg4Admin1}
 	testCreateFactory(client, true, true, usernames...)
 
 	fmt.Println("====================== 调用Factory合约的create方法创建claim（rust）合约 ======================")

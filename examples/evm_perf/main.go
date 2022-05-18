@@ -22,7 +22,7 @@ import (
 
 	sdkutils "chainmaker.org/chainmaker/sdk-go/v2/utils"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
+	"chainmaker.org/chainmaker/common/v2/evmutils/abi"
 
 	"chainmaker.org/chainmaker/common/v2/evmutils"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
