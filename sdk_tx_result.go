@@ -94,7 +94,7 @@ func (d *txResultDispatcher) subscribe() error {
 	if err != nil {
 		return err
 	}
-	d.cc.logger.Debug("txResultDispatcher subscribe success")
+	d.cc.logger.Debugf("txResultDispatcher subscribe success, block height %d", d.nextBlockNum)
 
 	for {
 		select {
@@ -104,7 +104,10 @@ func (d *txResultDispatcher) subscribe() error {
 			}
 
 			blockInfo := block.(*common.BlockInfo)
+			d.cc.logger.Debugf("received block height: %d tx count: %d",
+				blockInfo.Block.Header.BlockHeight, len(blockInfo.Block.Txs))
 			for _, tx := range blockInfo.Block.Txs {
+				d.cc.logger.Debugf("received tx %s", tx.Payload.TxId)
 				d.txC <- tx
 			}
 			d.nextBlockNum = int64(blockInfo.Block.Header.BlockHeight) + 1
