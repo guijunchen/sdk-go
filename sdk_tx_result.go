@@ -103,7 +103,7 @@ func (d *txResultDispatcher) subscribe() error {
 				return errors.New("chan is closed")
 			}
 
-			blockInfo := block.(*common.BlockInfo)
+			blockInfo, _ := block.(*common.BlockInfo)
 			d.cc.logger.Debugf("received block height: %d tx count: %d",
 				blockInfo.Block.Header.BlockHeight, len(blockInfo.Block.Txs))
 			for _, tx := range blockInfo.Block.Txs {
