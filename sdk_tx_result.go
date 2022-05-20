@@ -107,7 +107,6 @@ func (d *txResultDispatcher) subscribe() error {
 			d.cc.logger.Debugf("received block height: %d tx count: %d",
 				blockInfo.Block.Header.BlockHeight, len(blockInfo.Block.Txs))
 			for _, tx := range blockInfo.Block.Txs {
-				d.cc.logger.Debugf("received tx %s", tx.Payload.TxId)
 				d.txC <- tx
 			}
 			d.nextBlockNum = int64(blockInfo.Block.Header.BlockHeight) + 1
