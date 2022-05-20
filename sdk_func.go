@@ -170,6 +170,9 @@ func GetCMAddressFromPKHex(pkHex string, hashType string) (string, error) {
 	}
 
 	pk, err := asym.PublicKeyFromDER(pkDER)
+	if err != nil {
+		return "", err
+	}
 
 	ski, err := commonCrt.ComputeSKI(crypto.HashAlgoMap[hashType], pk.ToStandardKey())
 	if err != nil {

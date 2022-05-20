@@ -173,7 +173,7 @@ func TestCMAddress(t *testing.T) {
 		expect string
 	}{
 		{
-			"pkHex",
+			"CMPkHex",
 			input{
 				"3059301306072a8648ce3d020106082a811ccf5501822d034200044a4c24cf037b0c7a027e634b994a5fdbcd0faa718ce9053e3f75fcb9a865523a605aff92b5f99e728f51a924d4f18d5819c42f9b626bdf6eea911946efe7442d",
 				crypto.CRYPTO_ALGO_SHA256,
@@ -181,7 +181,7 @@ func TestCMAddress(t *testing.T) {
 			"4cd0b5e8f6d6df38ecdc06c7431a48dd0265cb1e",
 		},
 		{
-			"pkPEM",
+			"CMPkPEM",
 			input{
 				`-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoEcz1UBgi0DQgAESkwkzwN7DHoCfmNLmUpf280PqnGM
@@ -192,7 +192,7 @@ MFkwEwYHKoZIzj0CAQYIKoEcz1UBgi0DQgAESkwkzwN7DHoCfmNLmUpf280PqnGM
 			"4cd0b5e8f6d6df38ecdc06c7431a48dd0265cb1e",
 		},
 		{
-			"certPEM",
+			"CMCertPEM",
 			input{
 				`-----BEGIN CERTIFICATE-----
 MIICzjCCAi+gAwIBAgIDCzLUMAoGCCqGSM49BAMCMGoxCzAJBgNVBAYTAkNOMRAw
@@ -218,7 +218,7 @@ CpIO2ZrxkJ1Nm/FKZzMLQjp7Dm//xEMkpCbqqC6koOkRP2MKGSnEGXGfRr1QgBvr
 			"305f98514f3c2f6fcaeb8247ed147bacf99990f8",
 		},
 		{
-			"certPath",
+			"CMCertPath",
 			input{
 				`-----BEGIN CERTIFICATE-----
 MIICzjCCAi+gAwIBAgIDCzLUMAoGCCqGSM49BAMCMGoxCzAJBgNVBAYTAkNOMRAw
@@ -252,13 +252,13 @@ CpIO2ZrxkJ1Nm/FKZzMLQjp7Dm//xEMkpCbqqC6koOkRP2MKGSnEGXGfRr1QgBvr
 				addr string
 			)
 
-			if tt.name == "pkHex" {
+			if tt.name == "CMPkHex" {
 				addr, err = GetCMAddressFromPKHex(tt.input.data, tt.input.hashType)
-			} else if tt.name == "pkPEM" {
+			} else if tt.name == "CMPkPEM" {
 				addr, err = GetCMAddressFromPKPEM(tt.input.data, tt.input.hashType)
-			} else if tt.name == "certPEM" {
+			} else if tt.name == "CMCertPEM" {
 				addr, err = GetCMAddressFromCertPEM(tt.input.data)
-			} else if tt.name == "certPath" {
+			} else if tt.name == "CMCertPath" {
 				var tmpFile *os.File
 				tmpFile, err = ioutil.TempFile(os.TempDir(), "zx-*.crt")
 				require.Nil(t, err)
