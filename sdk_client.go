@@ -196,7 +196,9 @@ func (cc *ChainClient) IsEnableNormalKey() bool {
 }
 
 func (cc *ChainClient) Stop() error {
-	cc.txResultDispatcher.stop()
+	if cc.txResultDispatcher != nil {
+		cc.txResultDispatcher.stop()
+	}
 	return cc.pool.Close()
 }
 
