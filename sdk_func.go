@@ -196,8 +196,12 @@ func GetCMAddressFromPKPEM(pkPEM string, hashType string) (string, error) {
 }
 
 func GetCMAddressFromCertPEM(certPEM string) (string, error) {
-	blockCrt, _ := pem.Decode([]byte(certPEM))
-	crt, err := bcx509.ParseCertificate(blockCrt.Bytes)
+	pemBlock, _ := pem.Decode([]byte(certPEM))
+	if pemBlock == nil {
+		return "", fmt.Errorf("fail to resolve certificate from PEM string")
+	}
+	crt, err := bcx509.ParseCertificate(pemBlock.Bytes)
+
 	if err != nil {
 		return "", fmt.Errorf("get chainmaker address failed, %s", err.Error())
 	}
