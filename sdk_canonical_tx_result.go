@@ -67,7 +67,6 @@ func (cc *ChainClient) syncCanonicalTxResult(txId string) (*common.Result, error
 
 func canonicalPollingTxResult(ctx context.Context, cc *ChainClient, pool ConnectionPool,
 	txId string, txResultC chan *common.Result) error {
-	cc.logger.Debugf("pointer of pool %p", pool)
 	var (
 		txInfo *common.TransactionInfo
 		err    error
