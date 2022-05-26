@@ -183,3 +183,18 @@ func (cc *ChainClient) AttachGasLimit(payload *common.Payload, limit *common.Lim
 	payload.Limit = limit
 	return payload
 }
+
+// EstimateGas estimate gas used of payload
+func (cc *ChainClient) EstimateGas(payload *common.Payload) (uint64, error) {
+	cc.logger.Debugf("[SDK] begin EstimateGas")
+	payload.TxType = common.TxType_QUERY_CONTRACT
+	resp, err := cc.proposalRequestWithTimeout(payload, nil, -1)
+	if err != nil {
+		return 0, err
+	}
+
+	if resp.Code != 0 {
+		return 0, errors.New(resp.Message)
+	}
+	return resp.ContractResult.GasUsed, nil
+}
