@@ -1098,6 +1098,15 @@ type SDKInterface interface {
 	AttachGasLimit(payload *common.Payload, limit *common.Limit) *common.Payload
 	// ```
 
+	// ### 13.11 估算交易的gas消耗量
+	// **参数说明**
+	//   - payload: 待估算gas消耗量的交易payload
+	// **返回值说明**
+	//   - uint64: 估算出的gas消耗量
+	// ```go
+	EstimateGas(payload *common.Payload) (uint64, error)
+	// ```
+
 	// ## 14 别名相关接口
 	// ### 14.1 添加别名
 	// ```go
