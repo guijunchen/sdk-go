@@ -246,6 +246,8 @@ type ChainClientConfig struct {
 
 	// enable tx result dispatcher
 	enableTxResultDispatcher bool
+	// enable sync canonical tx result
+	enableSyncCanonicalTxResult bool
 }
 
 type CryptoConfig struct {
@@ -412,6 +414,13 @@ func WithPkcs11Config(conf *Pkcs11Config) ChainClientOption {
 func WithEnableTxResultDispatcher(enable bool) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.enableTxResultDispatcher = enable
+	}
+}
+
+// WithEnableSyncCanonicalTxResult 设置是否启用 同步获取权威的公认的交易结果，即超过半数共识的交易。默认不启用。
+func WithEnableSyncCanonicalTxResult(enable bool) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.enableSyncCanonicalTxResult = enable
 	}
 }
 

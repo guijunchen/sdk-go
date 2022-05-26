@@ -100,6 +100,37 @@ func NewConnPool(config *ChainClientConfig) (*ClientConnectionPool, error) {
 	return pool, nil
 }
 
+// NewCanonicalTxFetcherPools 创建连接池
+func NewCanonicalTxFetcherPools(config *ChainClientConfig) (map[string]ConnectionPool, error) {
+	var pools = make(map[string]ConnectionPool)
+	for idx, node := range config.nodeList {
+		pool := &ClientConnectionPool{
+			logger:            config.logger,
+			userKeyBytes:      config.userKeyBytes,
+			userCrtBytes:      config.userCrtBytes,
+			rpcMaxRecvMsgSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize * 1024 * 1024,
+			rpcMaxSendMsgSize: config.rpcClientConfig.rpcClientMaxSendMessageSize * 1024 * 1024,
+		}
+		for i := 0; i < node.connCnt; i++ {
+			cli := &networkClient{
+				nodeAddr:          node.addr,
+				useTLS:            node.useTLS,
+				caPaths:           node.caPaths,
+				caCerts:           node.caCerts,
+				tlsHostName:       node.tlsHostName,
+				ID:                fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
+				rpcMaxRecvMsgSize: pool.rpcMaxRecvMsgSize,
+				rpcMaxSendMsgSize: pool.rpcMaxSendMsgSize,
+			}
+			pool.connections = append(pool.connections, cli)
+		}
+		// 打散，用作负载均衡
+		pool.connections = shuffle(pool.connections)
+		pools[node.addr] = pool
+	}
+	return pools, nil
+}
+
 // 初始化GPRC客户端连接
 func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string,
 	tlsHostName string) (*grpc.ClientConn, error) {

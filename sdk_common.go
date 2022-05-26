@@ -30,6 +30,8 @@ const (
 func (cc *ChainClient) GetSyncResult(txId string) (*common.Result, error) {
 	if cc.enableTxResultDispatcher {
 		return cc.asyncTxResult(txId)
+	} else if cc.enableSyncCanonicalTxResult {
+		return cc.syncCanonicalTxResult(txId)
 	}
 	return cc.pollingTxResult(txId)
 }

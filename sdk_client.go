@@ -35,11 +35,12 @@ var _ SDKInterface = (*ChainClient)(nil)
 
 type ChainClient struct {
 	// common config
-	logger             utils.Logger
-	pool               ConnectionPool
-	txResultDispatcher *txResultDispatcher
-	chainId            string
-	orgId              string
+	logger                  utils.Logger
+	pool                    ConnectionPool
+	canonicalTxFetcherPools map[string]ConnectionPool
+	txResultDispatcher      *txResultDispatcher
+	chainId                 string
+	orgId                   string
 
 	userCrtBytes []byte
 	userCrt      *bcx509.Certificate
@@ -75,6 +76,8 @@ type ChainClient struct {
 
 	// enable tx result dispatcher
 	enableTxResultDispatcher bool
+	// enable sync canonical tx result
+	enableSyncCanonicalTxResult bool
 }
 
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
@@ -171,8 +174,9 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		retryLimit:    config.retryLimit,
 		retryInterval: config.retryInterval,
 
-		enableNormalKey:          config.enableNormalKey,
-		enableTxResultDispatcher: config.enableTxResultDispatcher,
+		enableNormalKey:             config.enableNormalKey,
+		enableTxResultDispatcher:    config.enableTxResultDispatcher,
+		enableSyncCanonicalTxResult: config.enableSyncCanonicalTxResult,
 	}
 
 	// 若设置了别名，便启用
@@ -186,6 +190,11 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	if cc.enableTxResultDispatcher {
 		cc.txResultDispatcher = newTxResultDispatcher(cc)
 		go cc.txResultDispatcher.start()
+	} else if cc.enableSyncCanonicalTxResult {
+		cc.canonicalTxFetcherPools, err = NewCanonicalTxFetcherPools(config)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return cc, nil
@@ -198,6 +207,9 @@ func (cc *ChainClient) IsEnableNormalKey() bool {
 func (cc *ChainClient) Stop() error {
 	if cc.txResultDispatcher != nil {
 		cc.txResultDispatcher.stop()
+	}
+	for _, pool := range cc.canonicalTxFetcherPools {
+		pool.Close()
 	}
 	return cc.pool.Close()
 }
