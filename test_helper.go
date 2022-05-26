@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"chainmaker.org/chainmaker/common/v2/ca"
+	"chainmaker.org/chainmaker/common/v2/crypto"
 	cmx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	apipb "chainmaker.org/chainmaker/pb-go/v2/api"
 	cmnpb "chainmaker.org/chainmaker/pb-go/v2/common"
@@ -61,18 +62,59 @@ func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverTxError error,
 	_mockServer.txResponse = serverTxResponse
 	_mockServer.txErr = serverTxError
 
-	return &ChainClient{
+	var hashType = ""
+	var publicKey crypto.PublicKey
+	var pkBytes []byte
+	var pkPem string
+	if conf.authType == PermissionedWithKey || conf.authType == Public {
+		hashType = conf.crypto.hash
+		publicKey = conf.userPk
+		pkPem, err = publicKey.String()
+		if err != nil {
+			return nil, err
+		}
+
+		pkBytes = []byte(pkPem)
+	}
+
+	cc := &ChainClient{
 		pool:            pool,
 		logger:          conf.logger,
 		chainId:         conf.chainId,
 		orgId:           conf.orgId,
+		alias:           conf.alias,
 		userCrtBytes:    conf.userSignCrtBytes,
 		userCrt:         conf.userCrt,
 		privateKey:      conf.privateKey,
 		archiveConfig:   conf.archiveConfig,
 		rpcClientConfig: conf.rpcClientConfig,
-		authType:        conf.authType,
-	}, nil
+		pkcs11Config:    conf.pkcs11Config,
+
+		publicKey: publicKey,
+		hashType:  hashType,
+		authType:  conf.authType,
+		pkBytes:   pkBytes,
+
+		retryLimit:    conf.retryLimit,
+		retryInterval: conf.retryInterval,
+
+		enableNormalKey:             conf.enableNormalKey,
+		enableTxResultDispatcher:    conf.enableTxResultDispatcher,
+		enableSyncCanonicalTxResult: conf.enableSyncCanonicalTxResult,
+	}
+
+	// 启动 异步订阅交易结果
+	if cc.enableTxResultDispatcher {
+		cc.txResultDispatcher = newTxResultDispatcher(cc)
+		go cc.txResultDispatcher.start()
+	} else if cc.enableSyncCanonicalTxResult {
+		cc.canonicalTxFetcherPools, err = newMockCanonicalTxFetcherPools(conf)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return cc, nil
 }
 
 func newMockConnPool(config *ChainClientConfig) (*mockConnectionPool, error) {
@@ -104,6 +146,36 @@ func newMockConnPool(config *ChainClientConfig) (*mockConnectionPool, error) {
 	pool.connections = shuffle(pool.connections)
 
 	return pool, nil
+}
+
+func newMockCanonicalTxFetcherPools(config *ChainClientConfig) (map[string]ConnectionPool, error) {
+	var pools = make(map[string]ConnectionPool)
+	for idx, node := range config.nodeList {
+		pool := &mockConnectionPool{
+			logger:            config.logger,
+			userKeyBytes:      config.userKeyBytes,
+			userCrtBytes:      config.userCrtBytes,
+			rpcMaxRecvMsgSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize * 1024 * 1024,
+			rpcMaxSendMsgSize: config.rpcClientConfig.rpcClientMaxSendMessageSize * 1024 * 1024,
+		}
+		for i := 0; i < node.connCnt; i++ {
+			cli := &networkClient{
+				nodeAddr:          node.addr,
+				useTLS:            node.useTLS,
+				caPaths:           node.caPaths,
+				caCerts:           node.caCerts,
+				tlsHostName:       node.tlsHostName,
+				ID:                fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
+				rpcMaxRecvMsgSize: pool.rpcMaxRecvMsgSize,
+				rpcMaxSendMsgSize: pool.rpcMaxSendMsgSize,
+			}
+			pool.connections = append(pool.connections, cli)
+		}
+		// 打散，用作负载均衡
+		pool.connections = shuffle(pool.connections)
+		pools[node.addr] = pool
+	}
+	return pools, nil
 }
 
 func (pool *mockConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string,
