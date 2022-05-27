@@ -652,3 +652,24 @@ func (cc *ChainClient) SendChainConfigUpdateRequest(payload *common.Payload, end
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	return cc.sendContractRequest(payload, endorsers, timeout, withSyncResult)
 }
+
+func (cc *ChainClient) CreateChainConfigOptimizeChargeGasPayload(enable bool) (*common.Payload, error) {
+	cc.logger.Debug("[SDK] begin CreateChainConfigOptimizeChargeGasPayload")
+
+	var pairs = []*common.KeyValuePair{
+		{
+			Key:   utils.KeyEnableOptimizeChargeGas,
+			Value: []byte(strconv.FormatBool(enable)),
+		},
+	}
+
+	seq, err := cc.GetChainConfigSequence()
+	if err != nil {
+		return nil, fmt.Errorf(getCCSeqErrStringFormat, err)
+	}
+
+	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
+		syscontract.ChainConfigFunction_CORE_UPDATE.String(), pairs, seq+1, nil)
+
+	return payload, nil
+}

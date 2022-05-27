@@ -517,6 +517,11 @@ type SDKInterface interface {
 	CreateChainConfigEnableOrDisableGasPayload() (*common.Payload, error)
 	// ```
 
+	// ### 3.27 开启或关闭链配置的Gas优化payload生成
+	// ```go
+	CreateChainConfigOptimizeChargeGasPayload(enable bool) (*common.Payload, error)
+	// ```
+
 	// ## 4 证书管理接口
 	// ### 4.1 用户证书添加
 	// **参数说明**
