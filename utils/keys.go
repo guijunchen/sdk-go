@@ -24,13 +24,14 @@ const (
 	// CoreConfig keys
 	KeyTxSchedulerTimeout         = "tx_scheduler_timeout"
 	KeyTxSchedulerValidateTimeout = "tx_scheduler_validate_timeout"
+	KeyEnableOptimizeChargeGas    = "enable_optimize_charge_gas"
 
 	// BlockConfig keys
 	KeyTxTimeOut       = "tx_timeout"
 	KeyBlockTxCapacity = "block_tx_capacity"
 	KeyBlockSize       = "block_size"
 	KeyBlockInterval   = "block_interval"
-	KeyTxParamterSize   = "tx_parameter_size"
+	KeyTxParamterSize  = "tx_parameter_size"
 
 	// CertManage keys
 	KeyCertHashes = "cert_hashes"
