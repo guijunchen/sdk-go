@@ -17,6 +17,7 @@ import (
 	"chainmaker.org/chainmaker/pb-go/v2/discovery"
 	"chainmaker.org/chainmaker/pb-go/v2/store"
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
+	"chainmaker.org/chainmaker/pb-go/v2/txpool"
 )
 
 // SDKInterface # ChainMaker Go SDK 接口说明
@@ -1178,5 +1179,31 @@ type SDKInterface interface {
 	// ```go
 	DeleteCertsAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
 		timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	// ```
+
+	// ## 15 交易池相关接口
+	// ### 15.1 获取交易池状态
+	// ```go
+	GetPoolStatus() (*txpool.TxPoolStatus, error)
+	// ```
+
+	// ### 15.2 获取不同交易类型和阶段中的交易Id列表。
+	// **参数说明**
+	//   - txType: 交易类型 在pb的txpool包中进行了定义
+	//   - txStage: 交易阶段 在pb的txpool包中进行了定义
+	// **返回值说明**
+	//   - []string: 交易Id列表
+	// ```go
+	GetTxIdsByTypeAndStage(txType txpool.TxType, txStage txpool.TxStage) ([]string, error)
+	// ```
+
+	// ### 15.3 根据txIds获取交易池中存在的txs，并返回交易池缺失的tx的txIds
+	// **参数说明**
+	//   - txIds: 交易Id列表
+	// **返回值说明**
+	//   - []*common.Transaction: 交易池中存在的txs
+	//   - []string: 交易池缺失的tx的txIds
+	// ```go
+	GetTxsInPoolByTxIds(txIds []string) ([]*common.Transaction, []string, error)
 	// ```
 }

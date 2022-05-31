@@ -20,6 +20,7 @@ import (
 	apipb "chainmaker.org/chainmaker/pb-go/v2/api"
 	cmnpb "chainmaker.org/chainmaker/pb-go/v2/common"
 	confpb "chainmaker.org/chainmaker/pb-go/v2/config"
+	"chainmaker.org/chainmaker/pb-go/v2/txpool"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
@@ -60,7 +61,7 @@ func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverTxError error,
 	}
 
 	_mockServer.txResponse = serverTxResponse
-	_mockServer.txErr = serverTxError
+	_mockServer.err = serverTxError
 
 	var hashType = ""
 	var publicKey crypto.PublicKey
@@ -286,12 +287,15 @@ func (pool *mockConnectionPool) Close() error {
 
 type mockRpcNodeServer struct {
 	apipb.UnimplementedRpcNodeServer
-	txResponse *cmnpb.TxResponse
-	txErr      error
+	txResponse                 *cmnpb.TxResponse
+	getPoolStatusResp          *txpool.TxPoolStatus
+	getTxIdsByTypeAndStageResp *txpool.GetTxIdsByTypeAndStageResponse
+	getTxsInPoolByTxIdsResp    *txpool.GetTxsInPoolByTxIdsResponse
+	err                        error
 }
 
 func (s *mockRpcNodeServer) SendRequest(ctx context.Context, req *cmnpb.TxRequest) (*cmnpb.TxResponse, error) {
-	return s.txResponse, s.txErr
+	return s.txResponse, s.err
 }
 
 func (s *mockRpcNodeServer) Subscribe(req *cmnpb.TxRequest, server apipb.RpcNode_SubscribeServer) error {
@@ -316,6 +320,19 @@ func (s *mockRpcNodeServer) CheckNewBlockChainConfig(ctx context.Context,
 	return &confpb.CheckNewBlockChainConfigResponse{
 		Code: 0,
 	}, nil
+}
+
+func (s *mockRpcNodeServer) GetPoolStatus(ctx context.Context,
+	req *txpool.GetPoolStatusRequest) (*txpool.TxPoolStatus, error) {
+	return s.getPoolStatusResp, s.err
+}
+func (s *mockRpcNodeServer) GetTxIdsByTypeAndStage(ctx context.Context,
+	req *txpool.GetTxIdsByTypeAndStageRequest) (*txpool.GetTxIdsByTypeAndStageResponse, error) {
+	return s.getTxIdsByTypeAndStageResp, s.err
+}
+func (s *mockRpcNodeServer) GetTxsInPoolByTxIds(ctx context.Context,
+	req *txpool.GetTxsInPoolByTxIdsRequest) (*txpool.GetTxsInPoolByTxIdsResponse, error) {
+	return s.getTxsInPoolByTxIdsResp, s.err
 }
 
 func dialer(useTLS bool, caPaths, caCerts []string) func(context.Context, string) (net.Conn, error) {

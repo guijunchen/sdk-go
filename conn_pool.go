@@ -55,7 +55,7 @@ type networkClient struct {
 func (cli *networkClient) sendRequestWithTimeout(txReq *common.TxRequest, timeout int64) (*common.TxResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel() // releases resources if SendRequest completes before timeout elapses
-	return cli.rpcNode.SendRequest(ctx, txReq, grpc.MaxCallSendMsgSize(cli.rpcMaxSendMsgSize))
+	return cli.rpcNode.SendRequest(ctx, txReq)
 }
 
 // ClientConnectionPool 客户端连接池结构定义
@@ -158,11 +158,23 @@ func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, 
 		if err != nil {
 			return nil, err
 		}
-		return grpc.Dial(nodeAddr, grpc.WithTransportCredentials(*c),
-			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)))
+		return grpc.Dial(
+			nodeAddr,
+			grpc.WithTransportCredentials(*c),
+			grpc.WithDefaultCallOptions(
+				grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize),
+				grpc.MaxCallSendMsgSize(pool.rpcMaxSendMsgSize),
+			),
+		)
 	}
-	return grpc.Dial(nodeAddr, grpc.WithInsecure(),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)))
+	return grpc.Dial(
+		nodeAddr,
+		grpc.WithInsecure(),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize),
+			grpc.MaxCallSendMsgSize(pool.rpcMaxSendMsgSize),
+		),
+	)
 }
 
 // 获取空闲的可用客户端连接对象
