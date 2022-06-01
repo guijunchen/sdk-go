@@ -15,7 +15,7 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
+	"chainmaker.org/chainmaker/common/v2/evmutils/abi"
 
 	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/evmutils"
@@ -144,7 +144,7 @@ func testUserContractTokenEVMCreate(client *sdk.ChainClient, withSyncResult bool
 	//bc := string(byteCode)
 	//bc = strings.TrimSpace(bc)
 
-	resp, err := createUserContract(client, examples.CalcContractName(tokenContractName), tokenVersion, string(byteCode),
+	resp, err := createUserContract(client, tokenContractName, tokenVersion, string(byteCode),
 		common.RuntimeType_EVM, pairs, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
@@ -214,7 +214,7 @@ func testUserContractTokenEVMTransfer(client *sdk.ChainClient, amount int64, wit
 		},
 	}
 
-	err = invokeUserContract(client, examples.CalcContractName(tokenContractName), method, "", kvs, withSyncResult)
+	err = invokeUserContract(client, tokenContractName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -250,7 +250,7 @@ func testUserContractTokenEVMBalanceOf(client *sdk.ChainClient, address string, 
 		},
 	}
 
-	result, err := invokeUserContractWithResult(client, examples.CalcContractName(tokenContractName), method, "", kvs, withSyncResult)
+	result, err := invokeUserContractWithResult(client, tokenContractName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}

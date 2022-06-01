@@ -22,7 +22,7 @@ import (
 
 	sdkutils "chainmaker.org/chainmaker/sdk-go/v2/utils"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
+	"chainmaker.org/chainmaker/common/v2/evmutils/abi"
 
 	"chainmaker.org/chainmaker/common/v2/evmutils"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
@@ -231,7 +231,7 @@ func testUserContractBalanceEVMCreate(client *sdk.ChainClient, withSyncResult bo
 		log.Fatalln(err)
 	}
 
-	resp, err := createUserContract(client, examples.CalcContractName(balanceContractName), balanceVersion,
+	resp, err := createUserContract(client, balanceContractName, balanceVersion,
 		string(byteCode), common.RuntimeType_EVM, nil, withSyncResult, usernames...)
 	if !isIgnoreSameContract {
 		if err != nil {
@@ -298,7 +298,7 @@ func testUserContractBalanceEVMIncreaseBalance(client *sdk.ChainClient, address 
 		},
 	}
 
-	err = invokeUserContract(client, examples.CalcContractName(balanceContractName), methodStr, "", kvs, withSyncResult)
+	err = invokeUserContract(client, balanceContractName, methodStr, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}
