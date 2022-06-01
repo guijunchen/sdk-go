@@ -162,3 +162,70 @@ func GetZXAddressFromCertPEM(certPEM string) (string, error) {
 func GetZXAddressFromCertPath(certPath string) (string, error) {
 	return evmutils.ZXAddressFromCertificatePath(certPath)
 }
+
+func GetCMAddressFromPKHex(pkHex string, hashType string) (string, error) {
+	pkDER, err := hex.DecodeString(pkHex)
+	if err != nil {
+		return "", err
+	}
+
+	pk, err := asym.PublicKeyFromDER(pkDER)
+	if err != nil {
+		return "", err
+	}
+
+	ski, err := commonCrt.ComputeSKI(crypto.HashAlgoMap[hashType], pk.ToStandardKey())
+	if err != nil {
+		return "", fmt.Errorf("failed to calculate ski from public key, %s", err.Error())
+	}
+	return calculateCMAddressFromSKI(hex.EncodeToString(ski))
+}
+
+func GetCMAddressFromPKPEM(pkPEM string, hashType string) (string, error) {
+	publicKey, err := asym.PublicKeyFromPEM([]byte(pkPEM))
+	if err != nil {
+		return "", fmt.Errorf("parse public key failed, %s", err.Error())
+	}
+
+	ski, err := commonCrt.ComputeSKI(crypto.HashAlgoMap[hashType], publicKey.ToStandardKey())
+	if err != nil {
+		return "", fmt.Errorf("failed to calculate ski from public key, %s", err.Error())
+	}
+	return calculateCMAddressFromSKI(hex.EncodeToString(ski))
+
+}
+
+func GetCMAddressFromCertPEM(certPEM string) (string, error) {
+	pemBlock, _ := pem.Decode([]byte(certPEM))
+	if pemBlock == nil {
+		return "", fmt.Errorf("fail to resolve certificate from PEM string")
+	}
+	crt, err := bcx509.ParseCertificate(pemBlock.Bytes)
+
+	if err != nil {
+		return "", fmt.Errorf("get chainmaker address failed, %s", err.Error())
+	}
+
+	ski := hex.EncodeToString(crt.SubjectKeyId)
+	return calculateCMAddressFromSKI(ski)
+}
+
+func GetCMAddressFromCertPath(certPath string) (string, error) {
+	certContent, err := ioutil.ReadFile(certPath)
+	if err != nil {
+		return "", fmt.Errorf("fail to load certificate from file [%s]: %v", certPath, err)
+	}
+
+	return GetCMAddressFromCertPEM(string(certContent))
+}
+
+func calculateCMAddressFromSKI(ski string) (string, error) {
+	addrInt, err := evmutils.MakeAddressFromHex(ski)
+	if err != nil {
+		return "", fmt.Errorf("failed to calculate address of chainmaker type, %s", err.Error())
+	}
+
+	addr := evmutils.BigToAddress(addrInt)
+	addrBytes := addr[:]
+	return hex.EncodeToString(addrBytes), nil
+}

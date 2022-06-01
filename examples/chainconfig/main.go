@@ -44,6 +44,7 @@ func main() {
 	//testChainConfig(client)
 	testChainConfigGasEnable(client)
 	testChainConfigAlterAddrType(client)
+	//optimizeChargeGasPayload(client, false, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 }
 
 func testChainConfig(client *sdk.ChainClient) {
@@ -647,5 +648,14 @@ func signAndSendRequest(client *sdk.ChainClient, payload *common.Payload, userna
 		log.Fatalln(err)
 	}
 
-	//fmt.Printf("ChainConfigUpdate resp: %+v\n", resp)
+	//examples.PrintPrettyJson(resp)
+}
+
+func optimizeChargeGasPayload(cc *sdk.ChainClient, enableOptimizeChargeGas bool, usernames ...string) {
+	payload, err := cc.CreateChainConfigOptimizeChargeGasPayload(enableOptimizeChargeGas)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	signAndSendRequest(cc, payload, usernames...)
 }

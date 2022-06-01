@@ -312,3 +312,41 @@ func TestChainClient_AttachGasLimit(t *testing.T) {
 		})
 	}
 }
+
+func TestChainClient_EstimateGas(t *testing.T) {
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverErr    error
+	}{
+		{
+			"good",
+			&common.TxResponse{
+				Code: common.TxStatusCode_SUCCESS,
+				ContractResult: &common.ContractResult{
+					Code:    0,
+					Result:  []byte("this is a example"),
+					Message: "OK",
+					GasUsed: 123,
+				},
+			},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			payload, err := cc.CreateContractCreatePayload("claim", "v1",
+				"./testdata/claim-wasm-demo/rust-fact-2.0.0.wasm", common.RuntimeType_WASMER,
+				[]*common.KeyValuePair{})
+			require.Nil(t, err)
+			gas, err := cc.EstimateGas(payload)
+			require.Nil(t, err)
+			require.Greater(t, gas, uint64(0))
+		})
+	}
+}

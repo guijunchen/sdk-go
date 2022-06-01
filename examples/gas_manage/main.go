@@ -10,8 +10,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
@@ -88,6 +90,11 @@ func main() {
 
 	fmt.Println("====================== 查询gas账户的状态 ======================")
 	if err := getGasAccountStatus(client, addr); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("====================== 估算交易的gas消耗量 ======================")
+	if err := estimateGas(client); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -194,5 +201,25 @@ func getGasAccountStatus(cc *sdk.ChainClient, address string) error {
 	}
 
 	fmt.Printf("get gas account status: %+v\n", status)
+	return nil
+}
+
+func estimateGas(cc *sdk.ChainClient) error {
+	var (
+		claimContractName = fmt.Sprintf("claim%d", time.Now().UnixNano())
+		claimVersion      = "2.0.0"
+		claimByteCodePath = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
+	)
+	payload, err := cc.CreateContractCreatePayload(claimContractName, claimVersion, claimByteCodePath,
+		common.RuntimeType_WASMER, []*common.KeyValuePair{})
+	if err != nil {
+		return err
+	}
+
+	gas, err := cc.EstimateGas(payload)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("estimate gas: %+v\n", gas)
 	return nil
 }

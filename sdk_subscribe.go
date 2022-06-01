@@ -17,7 +17,6 @@ import (
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/gogo/protobuf/proto"
-	"google.golang.org/grpc"
 )
 
 func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRWSet,
@@ -56,8 +55,7 @@ func (cc *ChainClient) Subscribe(ctx context.Context, payload *common.Payload) (
 		return nil, err
 	}
 
-	resp, err := client.rpcNode.Subscribe(ctx, req, grpc.MaxCallSendMsgSize(client.rpcMaxSendMsgSize),
-		grpc.MaxCallRecvMsgSize(client.rpcMaxRecvMsgSize))
+	resp, err := client.rpcNode.Subscribe(ctx, req)
 	if err != nil {
 		return nil, err
 	}

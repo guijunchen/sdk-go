@@ -9,14 +9,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Rican7/retry"
-	"github.com/Rican7/retry/strategy"
-
 	"chainmaker.org/chainmaker/common/v2/crypto"
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
+	"github.com/Rican7/retry"
+	"github.com/Rican7/retry/strategy"
 )
 
 const (
@@ -29,6 +28,15 @@ const (
 )
 
 func (cc *ChainClient) GetSyncResult(txId string) (*common.Result, error) {
+	if cc.enableTxResultDispatcher {
+		return cc.asyncTxResult(txId)
+	} else if cc.enableSyncCanonicalTxResult {
+		return cc.syncCanonicalTxResult(txId)
+	}
+	return cc.pollingTxResult(txId)
+}
+
+func (cc *ChainClient) pollingTxResult(txId string) (*common.Result, error) {
 	var (
 		txInfo *common.TransactionInfo
 		err    error
@@ -55,6 +63,21 @@ func (cc *ChainClient) GetSyncResult(txId string) (*common.Result, error) {
 	}
 
 	return txInfo.Transaction.Result, nil
+}
+
+func (cc *ChainClient) asyncTxResult(txId string) (*common.Result, error) {
+	txResultC := cc.txResultDispatcher.register(txId)
+	defer cc.txResultDispatcher.unregister(txId)
+
+	timeout := time.Duration(cc.retryInterval*cc.retryLimit) * time.Millisecond
+	ticker := time.NewTicker(timeout)
+	defer ticker.Stop()
+	select {
+	case r := <-txResultC:
+		return r, nil
+	case <-ticker.C:
+		return nil, fmt.Errorf("get transaction result timed out, timeout=%s", timeout)
+	}
 }
 
 func (cc *ChainClient) sendContractRequest(payload *common.Payload, endorsers []*common.EndorsementEntry,

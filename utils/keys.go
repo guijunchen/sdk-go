@@ -30,6 +30,7 @@ const (
 	// CoreConfig keys
 	KeyTxSchedulerTimeout         = "tx_scheduler_timeout"
 	KeyTxSchedulerValidateTimeout = "tx_scheduler_validate_timeout"
+	KeyEnableOptimizeChargeGas    = "enable_optimize_charge_gas"
 
 	// BlockConfig keys
 	KeyTxTimeOut       = "tx_timeout"

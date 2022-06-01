@@ -55,7 +55,7 @@ type networkClient struct {
 func (cli *networkClient) sendRequestWithTimeout(txReq *common.TxRequest, timeout int64) (*common.TxResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel() // releases resources if SendRequest completes before timeout elapses
-	return cli.rpcNode.SendRequest(ctx, txReq, grpc.MaxCallSendMsgSize(cli.rpcMaxSendMsgSize))
+	return cli.rpcNode.SendRequest(ctx, txReq)
 }
 
 // ClientConnectionPool 客户端连接池结构定义
@@ -104,6 +104,37 @@ func NewConnPool(config *ChainClientConfig) (*ClientConnectionPool, error) {
 	return pool, nil
 }
 
+// NewCanonicalTxFetcherPools 创建连接池
+func NewCanonicalTxFetcherPools(config *ChainClientConfig) (map[string]ConnectionPool, error) {
+	var pools = make(map[string]ConnectionPool)
+	for idx, node := range config.nodeList {
+		pool := &ClientConnectionPool{
+			logger:            config.logger,
+			userKeyBytes:      config.userKeyBytes,
+			userCrtBytes:      config.userCrtBytes,
+			rpcMaxRecvMsgSize: config.rpcClientConfig.rpcClientMaxReceiveMessageSize * 1024 * 1024,
+			rpcMaxSendMsgSize: config.rpcClientConfig.rpcClientMaxSendMessageSize * 1024 * 1024,
+		}
+		for i := 0; i < node.connCnt; i++ {
+			cli := &networkClient{
+				nodeAddr:          node.addr,
+				useTLS:            node.useTLS,
+				caPaths:           node.caPaths,
+				caCerts:           node.caCerts,
+				tlsHostName:       node.tlsHostName,
+				ID:                fmt.Sprintf("%v-%v-%v", idx, node.addr, node.tlsHostName),
+				rpcMaxRecvMsgSize: pool.rpcMaxRecvMsgSize,
+				rpcMaxSendMsgSize: pool.rpcMaxSendMsgSize,
+			}
+			pool.connections = append(pool.connections, cli)
+		}
+		// 打散，用作负载均衡
+		pool.connections = shuffle(pool.connections)
+		pools[node.addr] = pool
+	}
+	return pools, nil
+}
+
 // 初始化GPRC客户端连接
 func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string,
 	tlsHostName string) (*grpc.ClientConn, error) {
@@ -135,11 +166,23 @@ func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, 
 		if err != nil {
 			return nil, err
 		}
-		return grpc.Dial(nodeAddr, grpc.WithTransportCredentials(*c),
-			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)))
+		return grpc.Dial(
+			nodeAddr,
+			grpc.WithTransportCredentials(*c),
+			grpc.WithDefaultCallOptions(
+				grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize),
+				grpc.MaxCallSendMsgSize(pool.rpcMaxSendMsgSize),
+			),
+		)
 	}
-	return grpc.Dial(nodeAddr, grpc.WithInsecure(),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)))
+	return grpc.Dial(
+		nodeAddr,
+		grpc.WithInsecure(),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize),
+			grpc.MaxCallSendMsgSize(pool.rpcMaxSendMsgSize),
+		),
+	)
 }
 
 // 获取空闲的可用客户端连接对象

@@ -25,7 +25,6 @@ linters:
     - govet
     - lll
     - rowserrcheck
-    - errcheck
     - misspell
     - unused
     - varcheck

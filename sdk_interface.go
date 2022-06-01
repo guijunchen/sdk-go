@@ -17,6 +17,7 @@ import (
 	"chainmaker.org/chainmaker/pb-go/v2/discovery"
 	"chainmaker.org/chainmaker/pb-go/v2/store"
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
+	"chainmaker.org/chainmaker/pb-go/v2/txpool"
 )
 
 // SDKInterface # ChainMaker Go SDK 接口说明
@@ -516,6 +517,11 @@ type SDKInterface interface {
 	// ### 3.26 启用或停用Gas计费开关payload生成
 	// ```go
 	CreateChainConfigEnableOrDisableGasPayload() (*common.Payload, error)
+	// ```
+
+	// ### 3.27 开启或关闭链配置的Gas优化payload生成
+	// ```go
+	CreateChainConfigOptimizeChargeGasPayload(enable bool) (*common.Payload, error)
 	// ```
 
 	// ## 4 证书管理接口
@@ -1099,6 +1105,15 @@ type SDKInterface interface {
 	AttachGasLimit(payload *common.Payload, limit *common.Limit) *common.Payload
 	// ```
 
+	// ### 13.11 估算交易的gas消耗量
+	// **参数说明**
+	//   - payload: 待估算gas消耗量的交易payload
+	// **返回值说明**
+	//   - uint64: 估算出的gas消耗量
+	// ```go
+	EstimateGas(payload *common.Payload) (uint64, error)
+	// ```
+
 	// ## 14 别名相关接口
 	// ### 14.1 添加别名
 	// ```go
@@ -1165,5 +1180,31 @@ type SDKInterface interface {
 	// ```go
 	DeleteCertsAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
 		timeout int64, withSyncResult bool) (*common.TxResponse, error)
+	// ```
+
+	// ## 15 交易池相关接口
+	// ### 15.1 获取交易池状态
+	// ```go
+	GetPoolStatus() (*txpool.TxPoolStatus, error)
+	// ```
+
+	// ### 15.2 获取不同交易类型和阶段中的交易Id列表。
+	// **参数说明**
+	//   - txType: 交易类型 在pb的txpool包中进行了定义
+	//   - txStage: 交易阶段 在pb的txpool包中进行了定义
+	// **返回值说明**
+	//   - []string: 交易Id列表
+	// ```go
+	GetTxIdsByTypeAndStage(txType txpool.TxType, txStage txpool.TxStage) ([]string, error)
+	// ```
+
+	// ### 15.3 根据txIds获取交易池中存在的txs，并返回交易池缺失的tx的txIds
+	// **参数说明**
+	//   - txIds: 交易Id列表
+	// **返回值说明**
+	//   - []*common.Transaction: 交易池中存在的txs
+	//   - []string: 交易池缺失的tx的txIds
+	// ```go
+	GetTxsInPoolByTxIds(txIds []string) ([]*common.Transaction, []string, error)
 	// ```
 }

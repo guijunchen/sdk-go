@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
@@ -64,6 +65,54 @@ func TestGetChainConfig(t *testing.T) {
 				require.Nil(t, err)
 				require.Equal(t, tt.serverTxResp.ContractResult.Result, bz)
 			}
+		})
+	}
+}
+
+func TestChainClient_CreateChainConfigOptimizeChargeGasPayload(t *testing.T) {
+	chainConfigBz, err := proto.Marshal(&config.ChainConfig{
+		Sequence: 1,
+	})
+	require.Nil(t, err)
+	tests := []struct {
+		name         string
+		enable       bool
+		serverTxResp *common.TxResponse
+	}{
+		{
+			"true",
+			true,
+			&common.TxResponse{
+				Code: common.TxStatusCode_SUCCESS,
+				ContractResult: &common.ContractResult{
+					Result: chainConfigBz,
+				},
+			},
+		},
+		{
+			"false",
+			false,
+			&common.TxResponse{
+				Code: common.TxStatusCode_SUCCESS,
+				ContractResult: &common.ContractResult{
+					Result: chainConfigBz,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cli, err := newMockChainClient(tt.serverTxResp, nil, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cli.Stop()
+
+			payload, err := cli.CreateChainConfigOptimizeChargeGasPayload(tt.enable)
+			require.Nil(t, err)
+			require.Equal(t, len(payload.Parameters), 1)
+			actual, err := strconv.ParseBool(string(payload.Parameters[0].Value))
+			require.Nil(t, err)
+			require.Equal(t, tt.enable, actual)
 		})
 	}
 }

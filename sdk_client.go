@@ -12,7 +12,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"chainmaker.org/chainmaker/common/v2/crypto"
@@ -36,10 +35,12 @@ var _ SDKInterface = (*ChainClient)(nil)
 
 type ChainClient struct {
 	// common config
-	logger  utils.Logger
-	pool    ConnectionPool
-	chainId string
-	orgId   string
+	logger                  utils.Logger
+	pool                    ConnectionPool
+	canonicalTxFetcherPools map[string]ConnectionPool
+	txResultDispatcher      *txResultDispatcher
+	chainId                 string
+	orgId                   string
 
 	userCrtBytes []byte
 	userCrt      *bcx509.Certificate
@@ -72,6 +73,11 @@ type ChainClient struct {
 
 	// default TimestampKey , true NormalKey support
 	enableNormalKey bool
+
+	// enable tx result dispatcher
+	enableTxResultDispatcher bool
+	// enable sync canonical tx result
+	enableSyncCanonicalTxResult bool
 }
 
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
@@ -169,12 +175,25 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		retryLimit:    config.retryLimit,
 		retryInterval: config.retryInterval,
 
-		enableNormalKey: config.enableNormalKey,
+		enableNormalKey:             config.enableNormalKey,
+		enableTxResultDispatcher:    config.enableTxResultDispatcher,
+		enableSyncCanonicalTxResult: config.enableSyncCanonicalTxResult,
 	}
 
 	// 若设置了别名，便启用
 	if config.authType == PermissionedWithCert && len(cc.alias) > 0 {
 		if err := cc.EnableAlias(); err != nil {
+			return nil, err
+		}
+	}
+
+	// 启动 异步订阅交易结果
+	if cc.enableTxResultDispatcher {
+		cc.txResultDispatcher = newTxResultDispatcher(cc)
+		go cc.txResultDispatcher.start()
+	} else if cc.enableSyncCanonicalTxResult {
+		cc.canonicalTxFetcherPools, err = NewCanonicalTxFetcherPools(config)
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -187,6 +206,12 @@ func (cc *ChainClient) IsEnableNormalKey() bool {
 }
 
 func (cc *ChainClient) Stop() error {
+	if cc.txResultDispatcher != nil {
+		cc.txResultDispatcher.stop()
+	}
+	for _, pool := range cc.canonicalTxFetcherPools {
+		pool.Close()
+	}
 	return cc.pool.Close()
 }
 
@@ -282,9 +307,10 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 	)
 
 	if timeout < 0 {
-		timeout = DefaultSendTxTimeout
-		if strings.HasPrefix(txRequest.Payload.TxType.String(), "QUERY") {
+		if txRequest.Payload.TxType == common.TxType_QUERY_CONTRACT {
 			timeout = DefaultGetTxTimeout
+		} else {
+			timeout = DefaultSendTxTimeout
 		}
 	}
 
