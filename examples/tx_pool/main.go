@@ -59,7 +59,7 @@ func getTxIdsByTypeAndStage(cc *sdk.ChainClient) error {
 }
 
 func getTxsInPoolByTxIds(cc *sdk.ChainClient) error {
-	txs, txIds, err := cc.GetTxsInPoolByTxIds([]string{})
+	txs, txIds, err := cc.GetTxsInPoolByTxIds([]string{"not exists tx id"})
 	if err != nil {
 		return err
 	}
