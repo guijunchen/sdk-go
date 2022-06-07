@@ -14,16 +14,27 @@ contract D {
 }
 
 contract C {
+    function bytesCopy(bytes memory src, bytes memory dst, uint begin) internal pure returns (bytes memory){
+        uint len = src.length < 31 ? src.length : 31;
+        for(uint i = 0; i < len; i++){
+            dst[begin + i] = src[i];
+        }
+        return dst;
+    }
+
     function createDSalted(uint arg, string calldata name) public {
-	    string memory str = name;
+	    bytes memory bytesname = bytes(name);
+        bytes memory custom = new bytes(32);
+
+        uint8 rtTypeEvm = 5;
+        custom[0] = bytes1(rtTypeEvm);
+        custom = bytesCopy(bytesname, custom, 1);
 
         bytes32 n;
 	    assembly{
-	        n := mload(add(str, 32))
+	        n := mload(add(custom, 32))
 	    }
 
-        D d = new D{salt: n, value: 5}(arg);
+        D d = new D{salt: n}(arg);
     }
 }
-
-
