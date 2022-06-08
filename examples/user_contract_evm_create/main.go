@@ -49,8 +49,8 @@ const (
 
 func main() {
 	//testStaticCreate(sdkConfigOrg1Client1Path)
-	//testDynamicCreate(sdkConfigOrg1Client1Path)
-	testCrossVmCreate(sdkConfigOrg1Client1Path)
+	testDynamicCreate(sdkConfigOrg1Client1Path)
+	//testCrossVmCreate(sdkConfigOrg1Client1Path)
 }
 
 func testCrossVmCreate(sdkPath string) {
@@ -104,7 +104,7 @@ func testFactoryCreateContractClaim(client *sdk.ChainClient, withSyncResult bool
 	}
 	//code, _ := hex.DecodeString(string(hexCode))
 
-	dataByte, err := myAbi.Pack("create", big.NewInt(int64(common.RuntimeType_WASMER)), claimName, code)
+	dataByte, err := myAbi.Pack("create", uint8(common.RuntimeType_WASMER), claimName, code)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -222,7 +222,7 @@ func testFactoryCreateContractStore(client *sdk.ChainClient, withSyncResult bool
 	}
 	code, _ := hex.DecodeString(string(hexCode))
 
-	dataByte, err := myAbi.Pack("create", big.NewInt(int64(common.RuntimeType_EVM)), storeName, code)
+	dataByte, err := myAbi.Pack("create", int8(common.RuntimeType_EVM), storeName, code)
 	if err != nil {
 		log.Fatalln(err)
 	}
