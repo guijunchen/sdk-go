@@ -12,13 +12,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gogo/protobuf/proto"
-
 	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/pb-go/v2/config"
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
+	"github.com/gogo/protobuf/proto"
 )
 
 const (

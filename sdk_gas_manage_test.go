@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/pb-go/v2/config"
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
 	"github.com/stretchr/testify/require"
 )
@@ -347,6 +348,40 @@ func TestChainClient_EstimateGas(t *testing.T) {
 			gas, err := cc.EstimateGas(payload)
 			require.Nil(t, err)
 			require.Greater(t, gas, uint64(0))
+		})
+	}
+}
+
+func TestChainClient_CreateSetInvokeBaseGasPayload(t *testing.T) {
+	chainConfig := &config.ChainConfig{Sequence: 1}
+	resultBz, err := chainConfig.Marshal()
+	require.Nil(t, err)
+
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverErr    error
+	}{
+		{
+			"good",
+			&common.TxResponse{
+				Code: common.TxStatusCode_SUCCESS,
+				ContractResult: &common.ContractResult{
+					Result: resultBz,
+				},
+			},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			_, err = cc.CreateSetInvokeBaseGasPayload(100)
+			require.Nil(t, err)
 		})
 	}
 }

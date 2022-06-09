@@ -1114,6 +1114,13 @@ type SDKInterface interface {
 	EstimateGas(payload *common.Payload) (uint64, error)
 	// ```
 
+	// ### 13.12 构造 配置账户基础gas消耗数量 payload
+	// **参数说明**
+	//   - amount: 基础gas消耗数量
+	// ```go
+	CreateSetInvokeBaseGasPayload(amount int64) (*common.Payload, error)
+	// ```
+
 	// ## 14 别名相关接口
 	// ### 14.1 添加别名
 	// ```go

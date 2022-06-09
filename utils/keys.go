@@ -81,6 +81,7 @@ const (
 	KeyGasChargePublicKey  = "charge_public_key"
 	KeyGasChargeGasAmount  = "charge_gas_amount"
 	KeyGasFrozenPublicKey  = "frozen_public_key"
+	KeySetInvokeBaseGas    = "set_invoke_base_gas"
 )
 
 //nolint

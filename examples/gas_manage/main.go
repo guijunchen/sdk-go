@@ -97,6 +97,11 @@ func main() {
 	if err := estimateGas(client); err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println("====================== 配置账户基础gas消耗数量 ======================")
+	if err := setInvokeBaseGas(client); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func setGasAdmin(cc *sdk.ChainClient, address string) error {
@@ -221,5 +226,32 @@ func estimateGas(cc *sdk.ChainClient) error {
 		return err
 	}
 	fmt.Printf("estimate gas: %+v\n", gas)
+	return nil
+}
+
+func setInvokeBaseGas(cc *sdk.ChainClient) error {
+	payload, err := cc.CreateSetInvokeBaseGasPayload(123)
+	if err != nil {
+		return err
+	}
+
+	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[cc.GetHashType()],
+		cc.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1,
+		examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
+	if err != nil {
+		return err
+	}
+	resp, err := cc.SendGasManageRequest(payload, endorsers, -1, true)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("set invoke base gas resp: %+v\n", resp)
+
+	chainConfig, err := cc.GetChainConfig()
+	if err != nil {
+		return err
+	}
+	examples.PrintPrettyJson(chainConfig)
 	return nil
 }

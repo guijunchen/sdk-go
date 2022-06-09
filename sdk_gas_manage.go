@@ -161,7 +161,7 @@ func (cc *ChainClient) GetGasAccountStatus(address string) (bool, error) {
 
 func (cc *ChainClient) SendGasManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
-	cc.logger.Debug("[SDK] begin to get chain config")
+	cc.logger.Debug("[SDK] begin SendGasManageRequest")
 	return cc.sendContractRequest(payload, endorsers, timeout, withSyncResult)
 }
 
@@ -197,4 +197,27 @@ func (cc *ChainClient) EstimateGas(payload *common.Payload) (uint64, error) {
 		return 0, errors.New(resp.Message)
 	}
 	return resp.ContractResult.GasUsed, nil
+}
+
+func (cc *ChainClient) CreateSetInvokeBaseGasPayload(amount int64) (*common.Payload, error) {
+	cc.logger.Debugf("[SDK] begin CreateSetInvokeBaseGasPayload")
+
+	if amount <= 0 {
+		return nil, errors.New("amount must > 0")
+	}
+
+	pairs := []*common.KeyValuePair{
+		{
+			Key:   utils.KeySetInvokeBaseGas,
+			Value: []byte(strconv.FormatInt(amount, 10)),
+		},
+	}
+
+	seq, err := cc.GetChainConfigSequence()
+	if err != nil {
+		return nil, err
+	}
+
+	return cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
+		syscontract.ChainConfigFunction_SET_INVOKE_BASE_GAS.String(), pairs, seq+1, nil), nil
 }
