@@ -19,6 +19,10 @@ import (
 )
 
 func TestChainClient_CreateSetGasAdminPayload(t *testing.T) {
+	chainConfig := &config.ChainConfig{Sequence: 1}
+	resultBz, err := chainConfig.Marshal()
+	require.Nil(t, err)
+
 	tests := []struct {
 		name         string
 		serverTxResp *common.TxResponse
@@ -26,7 +30,12 @@ func TestChainClient_CreateSetGasAdminPayload(t *testing.T) {
 	}{
 		{
 			"good",
-			&common.TxResponse{Code: common.TxStatusCode_SUCCESS},
+			&common.TxResponse{
+				Code: common.TxStatusCode_SUCCESS,
+				ContractResult: &common.ContractResult{
+					Result: resultBz,
+				},
+			},
 			nil,
 		},
 	}

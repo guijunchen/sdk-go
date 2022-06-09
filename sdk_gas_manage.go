@@ -27,8 +27,13 @@ func (cc *ChainClient) CreateSetGasAdminPayload(address string) (*common.Payload
 		},
 	}
 
-	return cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_ACCOUNT_MANAGER.String(),
-		syscontract.GasAccountFunction_SET_ADMIN.String(), pairs, defaultSeq, nil), nil
+	seq, err := cc.GetChainConfigSequence()
+	if err != nil {
+		return nil, err
+	}
+
+	return cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
+		syscontract.ChainConfigFunction_SET_ACCOUNT_MANAGER_ADMIN.String(), pairs, seq+1, nil), nil
 }
 
 func (cc *ChainClient) GetGasAdmin() (string, error) {
