@@ -30,6 +30,7 @@ const (
 
 var _ ConnectionPool = (*ClientConnectionPool)(nil)
 
+// ConnectionPool grpc connection pool interface
 type ConnectionPool interface {
 	initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string, tlsHostName string) (*grpc.ClientConn, error)
 	getClient() (*networkClient, error)

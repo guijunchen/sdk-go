@@ -105,10 +105,12 @@ type chainClientConfigModel struct {
 	EnableNormalKey bool `mapstructure:"enable_normal_key"`
 }
 
+// ChainClientConfigModel define ChainClientConfigModel
 type ChainClientConfigModel struct {
 	ChainClientConfig chainClientConfigModel `mapstructure:"chain_client"`
 }
 
+// InitConfig init config from config file path
 func InitConfig(confPath string) error {
 	var (
 		err       error

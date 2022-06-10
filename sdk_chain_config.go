@@ -24,6 +24,7 @@ const (
 	getCCSeqErrStringFormat = "get chain config sequence failed, %s"
 )
 
+// GetChainConfig get chain config
 func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 	cc.logger.Debug("[SDK] begin to get chain config")
 
@@ -48,6 +49,7 @@ func (cc *ChainClient) GetChainConfig() (*config.ChainConfig, error) {
 	return chainConfig, nil
 }
 
+// GetChainConfigByBlockHeight get chain config by block height
 func (cc *ChainClient) GetChainConfigByBlockHeight(blockHeight uint64) (*config.ChainConfig, error) {
 	cc.logger.Debugf("[SDK] begin to get chain config by block height [%d]", blockHeight)
 
@@ -77,6 +79,7 @@ func (cc *ChainClient) GetChainConfigByBlockHeight(blockHeight uint64) (*config.
 	return chainConfig, nil
 }
 
+// GetChainConfigSequence get chain config sequence
 func (cc *ChainClient) GetChainConfigSequence() (uint64, error) {
 	cc.logger.Debug("[SDK] begin to get chain config sequence")
 
@@ -88,10 +91,12 @@ func (cc *ChainClient) GetChainConfigSequence() (uint64, error) {
 	return chainConfig.Sequence, nil
 }
 
+// SignChainConfigPayload sign chain config payload
 func (cc *ChainClient) SignChainConfigPayload(payload *common.Payload) (*common.EndorsementEntry, error) {
 	return cc.SignPayload(payload)
 }
 
+// CreateChainConfigCoreUpdatePayload create chain config core update payload
 func (cc *ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout,
 	txSchedulerValidateTimeout uint64) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [CoreUpdate] to be signed payload")
@@ -134,6 +139,7 @@ func (cc *ChainClient) CreateChainConfigCoreUpdatePayload(txSchedulerTimeout,
 	return payload, nil
 }
 
+// CreateChainConfigBlockUpdatePayload create chain config block update payload
 func (cc *ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify bool, txTimeout, blockTxCapacity,
 	blockSize, blockInterval, txParamterSize uint32) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [BlockUpdate] to be signed payload")
@@ -203,6 +209,7 @@ func (cc *ChainClient) CreateChainConfigBlockUpdatePayload(txTimestampVerify boo
 	return payload, nil
 }
 
+// CreateChainConfigTrustRootAddPayload create chain config trust root add payload
 func (cc *ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId string,
 	trustRootCrt []string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [TrustRootAdd] to be signed payload")
@@ -229,6 +236,7 @@ func (cc *ChainClient) CreateChainConfigTrustRootAddPayload(trustRootOrgId strin
 	return payload, nil
 }
 
+// CreateChainConfigTrustRootUpdatePayload create chain config trust root update payload
 func (cc *ChainClient) CreateChainConfigTrustRootUpdatePayload(trustRootOrgId string,
 	trustRootCrt []string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [TrustRootUpdate] to be signed payload")
@@ -255,6 +263,7 @@ func (cc *ChainClient) CreateChainConfigTrustRootUpdatePayload(trustRootOrgId st
 	return payload, nil
 }
 
+// CreateChainConfigTrustRootDeletePayload create chain config trust root delete payload
 func (cc *ChainClient) CreateChainConfigTrustRootDeletePayload(trustRootOrgId string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [TrustRootDelete] to be signed payload")
 
@@ -276,6 +285,7 @@ func (cc *ChainClient) CreateChainConfigTrustRootDeletePayload(trustRootOrgId st
 	return payload, nil
 }
 
+// CreateChainConfigTrustMemberAddPayload create chain config trust member add payload
 func (cc *ChainClient) CreateChainConfigTrustMemberAddPayload(trustMemberOrgId, trustMemberNodeId,
 	trustMemberRole, trustMemberInfo string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [TrustRootAdd] to be signed payload")
@@ -310,6 +320,7 @@ func (cc *ChainClient) CreateChainConfigTrustMemberAddPayload(trustMemberOrgId, 
 	return payload, nil
 }
 
+// CreateChainConfigTrustMemberDeletePayload create chain config trust member delete payload
 func (cc *ChainClient) CreateChainConfigTrustMemberDeletePayload(trustMemberInfo string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [TrustRootDelete] to be signed payload")
 
@@ -330,6 +341,7 @@ func (cc *ChainClient) CreateChainConfigTrustMemberDeletePayload(trustMemberInfo
 	return payload, nil
 }
 
+// CreateChainConfigPermissionAddPayload create chain config permission add payload
 func (cc *ChainClient) CreateChainConfigPermissionAddPayload(permissionResourceName string,
 	policy *accesscontrol.Policy) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [PermissionAdd] to be signed payload")
@@ -357,6 +369,7 @@ func (cc *ChainClient) CreateChainConfigPermissionAddPayload(permissionResourceN
 	return payload, nil
 }
 
+// CreateChainConfigPermissionUpdatePayload create chain config permission update payload
 func (cc *ChainClient) CreateChainConfigPermissionUpdatePayload(permissionResourceName string,
 	policy *accesscontrol.Policy) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [PermissionUpdate] to be signed payload")
@@ -384,6 +397,7 @@ func (cc *ChainClient) CreateChainConfigPermissionUpdatePayload(permissionResour
 	return payload, nil
 }
 
+// CreateChainConfigPermissionDeletePayload create chain config permission delete payload
 func (cc *ChainClient) CreateChainConfigPermissionDeletePayload(resourceName string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [PermissionDelete] to be signed payload")
 
@@ -404,6 +418,7 @@ func (cc *ChainClient) CreateChainConfigPermissionDeletePayload(resourceName str
 	return payload, nil
 }
 
+// CreateChainConfigConsensusNodeIdAddPayload create chain config consensus node id add payload
 func (cc *ChainClient) CreateChainConfigConsensusNodeIdAddPayload(nodeOrgId string,
 	nodeIds []string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeAddrAdd] to be signed payload")
@@ -430,6 +445,7 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeIdAddPayload(nodeOrgId stri
 	return payload, nil
 }
 
+// CreateChainConfigConsensusNodeIdUpdatePayload create chain config consensus node id update payload
 func (cc *ChainClient) CreateChainConfigConsensusNodeIdUpdatePayload(nodeOrgId, nodeOldIds,
 	nodeNewIds string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeAddrUpdate] to be signed payload")
@@ -460,6 +476,7 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeIdUpdatePayload(nodeOrgId, 
 	return payload, nil
 }
 
+// CreateChainConfigConsensusNodeIdDeletePayload create chain config consensus node id delete payload
 func (cc *ChainClient) CreateChainConfigConsensusNodeIdDeletePayload(nodeOrgId,
 	nodeId string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeAddrDelete] to be signed payload")
@@ -486,6 +503,7 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeIdDeletePayload(nodeOrgId,
 	return payload, nil
 }
 
+// CreateChainConfigConsensusNodeOrgAddPayload create chain config consensus node org add payload
 func (cc *ChainClient) CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId string,
 	nodeIds []string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeOrgAdd] to be signed payload")
@@ -512,6 +530,7 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeOrgAddPayload(nodeOrgId str
 	return payload, nil
 }
 
+// CreateChainConfigConsensusNodeOrgUpdatePayload create chain config consensus node org update payload
 func (cc *ChainClient) CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId string,
 	nodeIds []string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeOrgUpdate] to be signed payload")
@@ -538,6 +557,7 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeOrgUpdatePayload(nodeOrgId 
 	return payload, nil
 }
 
+// CreateChainConfigConsensusNodeOrgDeletePayload create chain config consensus node org delete payload
 func (cc *ChainClient) CreateChainConfigConsensusNodeOrgDeletePayload(nodeOrgId string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusNodeOrgAdd] to be signed payload")
 
@@ -559,6 +579,7 @@ func (cc *ChainClient) CreateChainConfigConsensusNodeOrgDeletePayload(nodeOrgId 
 	return payload, nil
 }
 
+// CreateChainConfigConsensusExtAddPayload create chain config consensus ext add payload
 func (cc *ChainClient) CreateChainConfigConsensusExtAddPayload(kvs []*common.KeyValuePair) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusExtAdd] to be signed payload")
 
@@ -573,6 +594,7 @@ func (cc *ChainClient) CreateChainConfigConsensusExtAddPayload(kvs []*common.Key
 	return payload, nil
 }
 
+// CreateChainConfigConsensusExtUpdatePayload create chain config consensus ext update payload
 func (cc *ChainClient) CreateChainConfigConsensusExtUpdatePayload(kvs []*common.KeyValuePair) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusExtUpdate] to be signed payload")
 
@@ -587,6 +609,7 @@ func (cc *ChainClient) CreateChainConfigConsensusExtUpdatePayload(kvs []*common.
 	return payload, nil
 }
 
+// CreateChainConfigConsensusExtDeletePayload create chain config consensus ext delete payload
 func (cc *ChainClient) CreateChainConfigConsensusExtDeletePayload(keys []string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [ConsensusExtDelete] to be signed payload")
 
@@ -608,6 +631,7 @@ func (cc *ChainClient) CreateChainConfigConsensusExtDeletePayload(keys []string)
 	return payload, nil
 }
 
+// CreateChainConfigAlterAddrTypePayload create chain config alter address type payload
 func (cc *ChainClient) CreateChainConfigAlterAddrTypePayload(addrType string) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [AlterAddrType] to be signed payload")
 
@@ -633,6 +657,7 @@ func (cc *ChainClient) CreateChainConfigAlterAddrTypePayload(addrType string) (*
 	return payload, nil
 }
 
+// CreateChainConfigEnableOrDisableGasPayload create chain config enable or disable gas payload
 func (cc *ChainClient) CreateChainConfigEnableOrDisableGasPayload() (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin to create [EnableOrDisable] to be signed payload")
 
@@ -647,11 +672,13 @@ func (cc *ChainClient) CreateChainConfigEnableOrDisableGasPayload() (*common.Pay
 	return payload, nil
 }
 
+// SendChainConfigUpdateRequest send chain config update request to node
 func (cc *ChainClient) SendChainConfigUpdateRequest(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	return cc.sendContractRequest(payload, endorsers, timeout, withSyncResult)
 }
 
+// CreateChainConfigOptimizeChargeGasPayload create chain config optimize charge gas payload
 func (cc *ChainClient) CreateChainConfigOptimizeChargeGasPayload(enable bool) (*common.Payload, error) {
 	cc.logger.Debug("[SDK] begin CreateChainConfigOptimizeChargeGasPayload")
 

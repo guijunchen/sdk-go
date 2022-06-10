@@ -3,14 +3,17 @@ Copyright (C) THL A29 Limited, a Tencent company. All rights reserved.
 
 SPDX-License-Identifier: Apache-2.0
 */
+
 package utils
 
 import (
 	commonPb "chainmaker.org/chainmaker/pb-go/v2/common"
 )
 
+// PayloadOption define payload option func
 type PayloadOption func(*commonPb.Payload)
 
+// NewPayload new payload
 func NewPayload(opts ...PayloadOption) *commonPb.Payload {
 	config := &commonPb.Payload{}
 	for _, opt := range opts {

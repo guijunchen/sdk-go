@@ -18,6 +18,7 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
+// GetCertHash get cert hash on chain
 func (cc *ChainClient) GetCertHash() ([]byte, error) {
 	chainConfig, err := cc.GetChainConfig()
 
@@ -33,6 +34,7 @@ func (cc *ChainClient) GetCertHash() ([]byte, error) {
 	return certHash, nil
 }
 
+// QueryCert query cert on chain, returns *common.CertInfos
 func (cc *ChainClient) QueryCert(certHashes []string) (*common.CertInfos, error) {
 	cc.logger.Infof("[SDK] begin to query cert, [contract:%s]/[method:%s]",
 		syscontract.SystemContract_CERT_MANAGE.String(), syscontract.CertManageFunction_CERTS_QUERY.String())
@@ -64,6 +66,7 @@ func (cc *ChainClient) QueryCert(certHashes []string) (*common.CertInfos, error)
 	return certInfos, nil
 }
 
+// AddCert add ChainClient myself cert hash to chain
 func (cc *ChainClient) AddCert() (*common.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to add cert, [contract:%s]/[method:%s]",
 		syscontract.SystemContract_CERT_MANAGE.String(), syscontract.CertManageFunction_CERT_ADD.String())
@@ -92,6 +95,7 @@ func (cc *ChainClient) AddCert() (*common.TxResponse, error) {
 	return resp, nil
 }
 
+// DeleteCert delete myself cert hash on chain
 func (cc *ChainClient) DeleteCert(certHashes []string) (*common.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to delete cert, [contract:%s]/[method:%s]",
 		syscontract.SystemContract_CERT_MANAGE.String(), syscontract.CertManageFunction_CERTS_DELETE.String())
@@ -117,6 +121,7 @@ func (cc *ChainClient) DeleteCert(certHashes []string) (*common.TxResponse, erro
 	return resp, nil
 }
 
+// CreateCertManagePayload create `cert manage` payload
 func (cc *ChainClient) CreateCertManagePayload(method string, kvs []*common.KeyValuePair) *common.Payload {
 	cc.logger.Debugf("[SDK] create CertManagePayload, method: %s", method)
 	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_CERT_MANAGE.String(),
@@ -124,6 +129,7 @@ func (cc *ChainClient) CreateCertManagePayload(method string, kvs []*common.KeyV
 	return payload
 }
 
+// CreateCertManageFrozenPayload create `cert manage frozen` payload
 func (cc *ChainClient) CreateCertManageFrozenPayload(certs []string) *common.Payload {
 	pairs := []*common.KeyValuePair{
 		{
@@ -135,6 +141,7 @@ func (cc *ChainClient) CreateCertManageFrozenPayload(certs []string) *common.Pay
 	return cc.CreateCertManagePayload(syscontract.CertManageFunction_CERTS_FREEZE.String(), pairs)
 }
 
+// CreateCertManageUnfrozenPayload create `cert manage unfrozen` payload
 func (cc *ChainClient) CreateCertManageUnfrozenPayload(certs []string) *common.Payload {
 	pairs := []*common.KeyValuePair{
 		{
@@ -146,6 +153,7 @@ func (cc *ChainClient) CreateCertManageUnfrozenPayload(certs []string) *common.P
 	return cc.CreateCertManagePayload(syscontract.CertManageFunction_CERTS_UNFREEZE.String(), pairs)
 }
 
+// CreateCertManageRevocationPayload create `cert manage revocation` payload
 func (cc *ChainClient) CreateCertManageRevocationPayload(certCrl string) *common.Payload {
 	pairs := []*common.KeyValuePair{
 		{
@@ -157,10 +165,12 @@ func (cc *ChainClient) CreateCertManageRevocationPayload(certCrl string) *common
 	return cc.CreateCertManagePayload(syscontract.CertManageFunction_CERTS_REVOKE.String(), pairs)
 }
 
+// SignCertManagePayload sign `cert manage` payload
 func (cc *ChainClient) SignCertManagePayload(payload *common.Payload) (*common.EndorsementEntry, error) {
 	return cc.SignPayload(payload)
 }
 
+// SendCertManageRequest send cert manage request to node
 func (cc *ChainClient) SendCertManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	return cc.sendContractRequest(payload, endorsers, timeout, withSyncResult)

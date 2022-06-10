@@ -14,6 +14,7 @@ import (
 	"chainmaker.org/chainmaker/pb-go/v2/config"
 )
 
+// CheckNewBlockChainConfig check chain configuration and load new chain dynamically
 func (cc *ChainClient) CheckNewBlockChainConfig() error {
 	cc.logger.Debug("[SDK] begin to send check new block chain config command")
 	req := &config.CheckNewBlockChainConfigRequest{}

@@ -21,6 +21,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
+// GetTxByTxId get tx by tx id, returns *common.TransactionInfo
 func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
 		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID, txId)
@@ -54,6 +55,7 @@ func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error)
 	return transactionInfo, nil
 }
 
+// GetTxWithRWSetByTxId get tx with rwset by tx id
 func (cc *ChainClient) GetTxWithRWSetByTxId(txId string) (*common.TransactionInfoWithRWSet, error) {
 	cc.logger.Debugf("[SDK] begin GetTxWithRWSetByTxId, [method:%s]/[txId:%s]",
 		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID, txId)
@@ -91,6 +93,7 @@ func (cc *ChainClient) GetTxWithRWSetByTxId(txId string) (*common.TransactionInf
 	return tx, nil
 }
 
+// GetBlockByHeight get block by block height, returns *common.BlockInfo
 func (cc *ChainClient) GetBlockByHeight(blockHeight uint64, withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%t]",
 		syscontract.ChainQueryFunction_GET_BLOCK_BY_HEIGHT, blockHeight, withRWSet)
@@ -128,6 +131,7 @@ func (cc *ChainClient) GetBlockByHeight(blockHeight uint64, withRWSet bool) (*co
 	return blockInfo, nil
 }
 
+// GetBlockByHash get block by block hash, returns *common.BlockInfo
 func (cc *ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHash:%s]/[withRWSet:%t]",
 		syscontract.ChainQueryFunction_GET_BLOCK_BY_HASH, blockHash, withRWSet)
@@ -165,6 +169,7 @@ func (cc *ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*common
 	return blockInfo, nil
 }
 
+// GetBlockByTxId get block by tx id, returns *common.BlockInfo
 func (cc *ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]/[withRWSet:%t]",
 		syscontract.ChainQueryFunction_GET_BLOCK_BY_TX_ID, txId, withRWSet)
@@ -202,6 +207,7 @@ func (cc *ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*common.Bloc
 	return blockInfo, nil
 }
 
+// GetLastConfigBlock get last config block
 func (cc *ChainClient) GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[withRWSet:%t]",
 		syscontract.ChainQueryFunction_GET_LAST_CONFIG_BLOCK, withRWSet)
@@ -235,6 +241,7 @@ func (cc *ChainClient) GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, er
 	return blockInfo, nil
 }
 
+// GetChainInfo get chain info
 func (cc *ChainClient) GetChainInfo() (*discovery.ChainInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]", syscontract.ChainQueryFunction_GET_CHAIN_INFO)
 
@@ -259,6 +266,7 @@ func (cc *ChainClient) GetChainInfo() (*discovery.ChainInfo, error) {
 	return chainInfo, nil
 }
 
+// GetNodeChainList get node chain list
 func (cc *ChainClient) GetNodeChainList() (*discovery.ChainList, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		syscontract.ChainQueryFunction_GET_NODE_CHAIN_LIST)
@@ -284,6 +292,7 @@ func (cc *ChainClient) GetNodeChainList() (*discovery.ChainList, error) {
 	return chainList, nil
 }
 
+// GetFullBlockByHeight get full block by block height, returns *store.BlockWithRWSet
 func (cc *ChainClient) GetFullBlockByHeight(blockHeight uint64) (*store.BlockWithRWSet, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]",
 		syscontract.ChainQueryFunction_GET_FULL_BLOCK_BY_HEIGHT, blockHeight)
@@ -317,14 +326,17 @@ func (cc *ChainClient) GetFullBlockByHeight(blockHeight uint64) (*store.BlockWit
 	return fullBlockInfo, nil
 }
 
+// GetArchivedBlockHeight get archived block height
 func (cc *ChainClient) GetArchivedBlockHeight() (uint64, error) {
 	return cc.getBlockHeight("", "")
 }
 
+// GetBlockHeightByTxId get block height by tx id
 func (cc *ChainClient) GetBlockHeightByTxId(txId string) (uint64, error) {
 	return cc.getBlockHeight(txId, "")
 }
 
+// GetBlockHeightByHash get block height by block hash
 func (cc *ChainClient) GetBlockHeightByHash(blockHash string) (uint64, error) {
 	return cc.getBlockHeight("", blockHash)
 }
@@ -383,6 +395,7 @@ func (cc *ChainClient) getBlockHeight(txId, blockHash string) (uint64, error) {
 	return blockHeight, nil
 }
 
+// GetLastBlock get last block
 func (cc *ChainClient) GetLastBlock(withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[withRWSet:%t]",
 		syscontract.ChainQueryFunction_GET_LAST_BLOCK, withRWSet)
@@ -413,6 +426,7 @@ func (cc *ChainClient) GetLastBlock(withRWSet bool) (*common.BlockInfo, error) {
 	return blockInfo, nil
 }
 
+// GetCurrentBlockHeight get current block height
 func (cc *ChainClient) GetCurrentBlockHeight() (uint64, error) {
 	block, err := cc.GetLastBlock(false)
 	if err != nil {
@@ -422,6 +436,7 @@ func (cc *ChainClient) GetCurrentBlockHeight() (uint64, error) {
 	return block.Block.Header.BlockHeight, nil
 }
 
+// GetBlockHeaderByHeight get block header by block height
 func (cc *ChainClient) GetBlockHeaderByHeight(blockHeight uint64) (*common.BlockHeader, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]",
 		syscontract.ChainQueryFunction_GET_BLOCK_HEADER_BY_HEIGHT, blockHeight)
@@ -452,6 +467,7 @@ func (cc *ChainClient) GetBlockHeaderByHeight(blockHeight uint64) (*common.Block
 	return blockHeader, nil
 }
 
+// InvokeSystemContract invoke system contract
 func (cc *ChainClient) InvokeSystemContract(contractName, method, txId string, kvs []*common.KeyValuePair,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	cc.logger.Debugf("[SDK] begin to INVOKE system contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
@@ -462,6 +478,7 @@ func (cc *ChainClient) InvokeSystemContract(contractName, method, txId string, k
 	return cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 }
 
+// QuerySystemContract query system contract
 func (cc *ChainClient) QuerySystemContract(contractName, method string, kvs []*common.KeyValuePair,
 	timeout int64) (*common.TxResponse, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [contractName:%s]/[method:%s]/[params:%+v]",
@@ -477,6 +494,7 @@ func (cc *ChainClient) QuerySystemContract(contractName, method string, kvs []*c
 	return resp, nil
 }
 
+// GetMerklePathByTxId get merkle path by tx id
 func (cc *ChainClient) GetMerklePathByTxId(txId string) ([]byte, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
 		syscontract.ChainQueryFunction_GET_MERKLE_PATH_BY_TX_ID, txId)
@@ -518,16 +536,21 @@ func (cc *ChainClient) createNativeContractAccessPayload(method string,
 		method, kvs, defaultSeq, nil), nil
 }
 
+// CreateNativeContractAccessGrantPayload create `native contract access grant` payload
+// for grant access to a native contract
 func (cc *ChainClient) CreateNativeContractAccessGrantPayload(grantContractList []string) (*common.Payload, error) {
 	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_GRANT_CONTRACT_ACCESS.String(),
 		grantContractList)
 }
 
+// CreateNativeContractAccessRevokePayload create `native contract access revoke` payload
+// for revoke access to a native contract
 func (cc *ChainClient) CreateNativeContractAccessRevokePayload(revokeContractList []string) (*common.Payload, error) {
 	return cc.createNativeContractAccessPayload(syscontract.ContractManageFunction_REVOKE_CONTRACT_ACCESS.String(),
 		revokeContractList)
 }
 
+// GetContractInfo get contract info by contract name, returns *common.Contract
 func (cc *ChainClient) GetContractInfo(contractName string) (*common.Contract, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		syscontract.ContractQueryFunction_GET_CONTRACT_INFO)
@@ -558,6 +581,7 @@ func (cc *ChainClient) GetContractInfo(contractName string) (*common.Contract, e
 	return contract, nil
 }
 
+// GetContractList get all contracts from block chain, include user contract and system contract
 func (cc *ChainClient) GetContractList() ([]*common.Contract, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		syscontract.ContractQueryFunction_GET_CONTRACT_LIST)
@@ -582,6 +606,7 @@ func (cc *ChainClient) GetContractList() ([]*common.Contract, error) {
 	return contracts, nil
 }
 
+// GetDisabledNativeContractList get all disabled native contracts, returns contracts name list
 func (cc *ChainClient) GetDisabledNativeContractList() ([]string, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		syscontract.ContractQueryFunction_GET_DISABLED_CONTRACT_LIST)

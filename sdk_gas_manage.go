@@ -17,6 +17,7 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
+// CreateSetGasAdminPayload create set gas admin payload
 func (cc *ChainClient) CreateSetGasAdminPayload(address string) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [CreateSetGasAdminPayload] payload")
 
@@ -36,6 +37,7 @@ func (cc *ChainClient) CreateSetGasAdminPayload(address string) (*common.Payload
 		syscontract.ChainConfigFunction_SET_ACCOUNT_MANAGER_ADMIN.String(), pairs, seq+1, nil), nil
 }
 
+// GetGasAdmin get gas admin on chain, returns gas admin address
 func (cc *ChainClient) GetGasAdmin() (string, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		syscontract.GasAccountFunction_GET_ADMIN)
@@ -55,6 +57,7 @@ func (cc *ChainClient) GetGasAdmin() (string, error) {
 	return string(resp.ContractResult.Result), nil
 }
 
+// CreateRechargeGasPayload create recharge gas payload
 func (cc *ChainClient) CreateRechargeGasPayload(rechargeGasList []*syscontract.RechargeGas) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [CreateRechargeGasPayload] payload")
 
@@ -75,6 +78,7 @@ func (cc *ChainClient) CreateRechargeGasPayload(rechargeGasList []*syscontract.R
 		syscontract.GasAccountFunction_RECHARGE_GAS.String(), pairs, defaultSeq, nil), nil
 }
 
+// GetGasBalance returns gas balance of address
 func (cc *ChainClient) GetGasBalance(address string) (int64, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		syscontract.GasAccountFunction_GET_BALANCE)
@@ -104,6 +108,7 @@ func (cc *ChainClient) GetGasBalance(address string) (int64, error) {
 	return balance, nil
 }
 
+// CreateRefundGasPayload create refund gas payload
 func (cc *ChainClient) CreateRefundGasPayload(address string, amount int64) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [CreateRefundGasPayload] payload")
 
@@ -126,18 +131,21 @@ func (cc *ChainClient) CreateRefundGasPayload(address string, amount int64) (*co
 		syscontract.GasAccountFunction_REFUND_GAS.String(), pairs, defaultSeq, nil), nil
 }
 
+// CreateFrozenGasAccountPayload create frozen gas account payload
 func (cc *ChainClient) CreateFrozenGasAccountPayload(address string) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [CreateFrozenGasAccountPayload] payload")
 
 	return cc.createFrozenUnfrozenGasAccountPayload(syscontract.GasAccountFunction_FROZEN_ACCOUNT.String(), address)
 }
 
+// CreateUnfrozenGasAccountPayload create unfrozen gas account payload
 func (cc *ChainClient) CreateUnfrozenGasAccountPayload(address string) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [CreateFrozenGasAccountPayload] payload")
 
 	return cc.createFrozenUnfrozenGasAccountPayload(syscontract.GasAccountFunction_UNFROZEN_ACCOUNT.String(), address)
 }
 
+// GetGasAccountStatus get gas account status
 func (cc *ChainClient) GetGasAccountStatus(address string) (bool, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]",
 		syscontract.GasAccountFunction_ACCOUNT_STATUS)
@@ -164,6 +172,7 @@ func (cc *ChainClient) GetGasAccountStatus(address string) (bool, error) {
 	return string(resp.ContractResult.Result) == "0", nil
 }
 
+// SendGasManageRequest send gas manage request to node
 func (cc *ChainClient) SendGasManageRequest(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	cc.logger.Debug("[SDK] begin SendGasManageRequest")
@@ -184,6 +193,7 @@ func (cc *ChainClient) createFrozenUnfrozenGasAccountPayload(method string,
 		method, pairs, defaultSeq, nil), nil
 }
 
+// AttachGasLimit attach gas limit for payload
 func (cc *ChainClient) AttachGasLimit(payload *common.Payload, limit *common.Limit) *common.Payload {
 	payload.Limit = limit
 	return payload
@@ -204,6 +214,7 @@ func (cc *ChainClient) EstimateGas(payload *common.Payload) (uint64, error) {
 	return resp.ContractResult.GasUsed, nil
 }
 
+// CreateSetInvokeBaseGasPayload create set invoke base gas payload
 func (cc *ChainClient) CreateSetInvokeBaseGasPayload(amount int64) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] begin CreateSetInvokeBaseGasPayload")
 

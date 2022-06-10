@@ -3,6 +3,7 @@ Copyright (C) THL A29 Limited, a Tencent company. All rights reserved.
 
 SPDX-License-Identifier: Apache-2.0
 */
+
 package chainmaker_sdk_go
 
 import (
@@ -27,6 +28,7 @@ const (
 	defaultSeq = 0
 )
 
+// GetSyncResult get sync result of tx
 func (cc *ChainClient) GetSyncResult(txId string) (*common.Result, error) {
 	if cc.enableTxResultDispatcher {
 		return cc.asyncTxResult(txId)
@@ -104,6 +106,7 @@ func (cc *ChainClient) sendContractRequest(payload *common.Payload, endorsers []
 	return resp, nil
 }
 
+// CreatePayload create unsigned payload
 func (cc *ChainClient) CreatePayload(txId string, txType common.TxType, contractName, method string,
 	kvs []*common.KeyValuePair, seq uint64, limit *common.Limit) *common.Payload {
 	if txId == "" {
@@ -129,6 +132,7 @@ func (cc *ChainClient) CreatePayload(txId string, txType common.TxType, contract
 	return payload
 }
 
+// SignPayload sign payload, returns *common.EndorsementEntry
 func (cc *ChainClient) SignPayload(payload *common.Payload) (*common.EndorsementEntry, error) {
 	var (
 		sender    *accesscontrol.Member

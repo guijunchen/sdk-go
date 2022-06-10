@@ -47,6 +47,7 @@ func ReadHibePrvKeysWithFilePath(hibePrvKeyFilePath string) ([]byte, error) {
 	return prvKeyBytes, nil
 }
 
+// DecryptHibeTx DecryptHibeTx
 func DecryptHibeTx(localId string, hibeParams []byte, hibePrvKey []byte, tx *common.Transaction,
 	keyType crypto.KeyType) ([]byte, error) {
 	localParams, ok := new(hibe.Params).Unmarshal(hibeParams)

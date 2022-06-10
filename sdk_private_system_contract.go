@@ -20,8 +20,10 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
+// ContractResultCode_OK ContractResultCode_OK
 const ContractResultCode_OK uint32 = 0 //todo pb create const
 
+// SaveDir SaveDir
 func (cc *ChainClient) SaveDir(orderId, txId string,
 	privateDir *common.StrSlice, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 
@@ -61,6 +63,7 @@ func (cc *ChainClient) SaveDir(orderId, txId string,
 	return resp, nil
 }
 
+// GetContract GetContract
 func (cc *ChainClient) GetContract(contractName, codeHash string) (*common.PrivateGetContract, error) {
 
 	cc.logger.Infof("[SDK] begin to get contract , [contract:%s]/[method:%s]",
@@ -94,6 +97,7 @@ func (cc *ChainClient) GetContract(contractName, codeHash string) (*common.Priva
 	return contractInfo, nil
 }
 
+// SaveData SaveData
 func (cc *ChainClient) SaveData(contractName string, contractVersion string, isDeployment bool, codeHash []byte,
 	reportHash []byte, result *common.ContractResult, codeHeader []byte, txId string, rwSet *common.TxRWSet,
 	sign []byte, events *common.StrSlice, privateReq []byte, withSyncResult bool,
@@ -173,6 +177,7 @@ func (cc *ChainClient) SaveData(contractName string, contractVersion string, isD
 	return resp, nil
 }
 
+// GetData GetData
 func (cc *ChainClient) GetData(contractName, key string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
 		syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -200,6 +205,7 @@ func (cc *ChainClient) GetData(contractName, key string) ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
+// GetDir GetDir
 func (cc *ChainClient) GetDir(orderId string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
 		syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -226,6 +232,7 @@ func (cc *ChainClient) GetDir(orderId string) ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
+// CheckCallerCertAuth CheckCallerCertAuth
 func (cc *ChainClient) CheckCallerCertAuth(payload string, orgIds []string, signPairs []*syscontract.SignInfo) (
 	*common.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to check caller cert auth  , [contract:%s]/[method:%s]",
@@ -263,6 +270,7 @@ func (cc *ChainClient) CheckCallerCertAuth(payload string, orgIds []string, sign
 	return resp, nil
 }
 
+// SaveEnclaveCACert SaveEnclaveCACert
 func (cc *ChainClient) SaveEnclaveCACert(
 	enclaveCACert, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
@@ -299,6 +307,7 @@ func (cc *ChainClient) SaveEnclaveCACert(
 	return resp, nil
 }
 
+// SaveEnclaveReport SaveEnclaveReport
 func (cc *ChainClient) SaveEnclaveReport(
 	enclaveId, report, txId string, withSyncResult bool, timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
@@ -336,6 +345,7 @@ func (cc *ChainClient) SaveEnclaveReport(
 	return resp, nil
 }
 
+// CreateSaveEnclaveCACertPayload CreateSaveEnclaveCACertPayload
 func (cc *ChainClient) CreateSaveEnclaveCACertPayload(enclaveCACert string, txId string) (*common.Payload, error) {
 	if txId == "" {
 		if cc.enableNormalKey {
@@ -362,6 +372,7 @@ func (cc *ChainClient) CreateSaveEnclaveCACertPayload(enclaveCACert string, txId
 	return payload, nil
 }
 
+// GetEnclaveCACert GetEnclaveCACert
 func (cc *ChainClient) GetEnclaveCACert() ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get ca cert , [contract:%s]/[method:%s]",
 		syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -386,6 +397,7 @@ func (cc *ChainClient) GetEnclaveCACert() ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
+// CreateSaveEnclaveReportPayload CreateSaveEnclaveReportPayload
 func (cc *ChainClient) CreateSaveEnclaveReportPayload(enclaveId, report, txId string) (*common.Payload, error) {
 	if txId == "" {
 		if cc.enableNormalKey {
@@ -413,6 +425,7 @@ func (cc *ChainClient) CreateSaveEnclaveReportPayload(enclaveId, report, txId st
 	return payload, nil
 }
 
+// SaveRemoteAttestationProof SaveRemoteAttestationProof
 func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncResult bool,
 	timeout int64) (*common.TxResponse, error) {
 	if txId == "" {
@@ -449,6 +462,7 @@ func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncRe
 	return resp, nil
 }
 
+// GetEnclaveEncryptPubKey GetEnclaveEncryptPubKey
 func (cc *ChainClient) GetEnclaveEncryptPubKey(enclaveId string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin get_enclave_encrypt_pub_key() , [contract:%s]/[method:%s]",
 		syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -475,6 +489,7 @@ func (cc *ChainClient) GetEnclaveEncryptPubKey(enclaveId string) ([]byte, error)
 	return resp.ContractResult.Result, nil
 }
 
+// GetEnclaveVerificationPubKey GetEnclaveVerificationPubKey
 func (cc *ChainClient) GetEnclaveVerificationPubKey(enclaveId string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
 		syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -501,6 +516,7 @@ func (cc *ChainClient) GetEnclaveVerificationPubKey(enclaveId string) ([]byte, e
 	return resp.ContractResult.Result, nil
 }
 
+// GetEnclaveReport GetEnclaveReport
 func (cc *ChainClient) GetEnclaveReport(enclaveId string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
 		syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -527,6 +543,7 @@ func (cc *ChainClient) GetEnclaveReport(enclaveId string) ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
+// GetEnclaveChallenge GetEnclaveChallenge
 func (cc *ChainClient) GetEnclaveChallenge(enclaveId string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
 		syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -553,6 +570,7 @@ func (cc *ChainClient) GetEnclaveChallenge(enclaveId string) ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
+// GetEnclaveSignature GetEnclaveSignature
 func (cc *ChainClient) GetEnclaveSignature(enclaveId string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
 		syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -579,6 +597,7 @@ func (cc *ChainClient) GetEnclaveSignature(enclaveId string) ([]byte, error) {
 	return resp.ContractResult.Result, nil
 }
 
+// GetEnclaveProof GetEnclaveProof
 func (cc *ChainClient) GetEnclaveProof(enclaveId string) ([]byte, error) {
 	cc.logger.Infof("[SDK] begin to get data , [contract:%s]/[method:%s]",
 		syscontract.SystemContract_PRIVATE_COMPUTE.String(),
@@ -634,6 +653,7 @@ func checkProposalRequestResp(resp *common.TxResponse, needContractResult bool) 
 	return nil
 }
 
+// SendMultiSigningRequest SendMultiSigningRequest
 func (cc *ChainClient) SendMultiSigningRequest(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 

@@ -15,6 +15,7 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
+// MultiSignContractReq send online multi sign contract request to node
 func (cc *ChainClient) MultiSignContractReq(payload *common.Payload) (*common.TxResponse, error) {
 
 	resp, err := cc.proposalRequest(payload, nil)
@@ -29,6 +30,7 @@ func (cc *ChainClient) MultiSignContractReq(payload *common.Payload) (*common.Tx
 	return resp, nil
 }
 
+// MultiSignContractVote send online multi sign vote request to node
 func (cc *ChainClient) MultiSignContractVote(multiSignReqPayload *common.Payload,
 	endorser *common.EndorsementEntry, isAgree bool) (*common.TxResponse, error) {
 	agree := syscontract.VoteStatus_AGREE
@@ -64,6 +66,7 @@ func (cc *ChainClient) MultiSignContractVote(multiSignReqPayload *common.Payload
 	return resp, nil
 }
 
+// MultiSignContractQuery query online multi sign
 func (cc *ChainClient) MultiSignContractQuery(txId string) (*common.TxResponse, error) {
 
 	pairs := []*common.KeyValuePair{
@@ -86,6 +89,7 @@ func (cc *ChainClient) MultiSignContractQuery(txId string) (*common.TxResponse, 
 	return resp, nil
 }
 
+// CreateMultiSignReqPayload create multi sign payload
 func (cc *ChainClient) CreateMultiSignReqPayload(pairs []*common.KeyValuePair) *common.Payload {
 
 	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_MULTI_SIGN.String(),

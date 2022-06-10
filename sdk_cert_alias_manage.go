@@ -4,6 +4,7 @@ Copyright (C) THL A29 Limited, a Tencent company. All rights reserved.
 
 SPDX-License-Identifier: Apache-2.0
 */
+
 package chainmaker_sdk_go
 
 import (
@@ -17,11 +18,15 @@ import (
 )
 
 const (
-	KEY_ALIAS   = "alias"
+	// KEY_ALIAS key of alias
+	KEY_ALIAS = "alias"
+	// KEY_ALIASES key of aliases
 	KEY_ALIASES = "aliases"
-	KEY_CERT    = "cert"
+	// KEY_CERT key of cert
+	KEY_CERT = "cert"
 )
 
+// AddAlias add cert alias to block chain network
 func (cc *ChainClient) AddAlias() (*common.TxResponse, error) {
 	cc.logger.Infof("[SDK] begin to add alias, [contract:%s]/[method:%s]",
 		syscontract.SystemContract_CERT_MANAGE.String(), syscontract.CertManageFunction_CERT_ALIAS_ADD.String())
@@ -52,6 +57,7 @@ func (cc *ChainClient) AddAlias() (*common.TxResponse, error) {
 	return resp, nil
 }
 
+// QueryCertsAlias query cert alias on chain, returns *common.AliasInfos
 func (cc *ChainClient) QueryCertsAlias(aliases []string) (*common.AliasInfos, error) {
 	cc.logger.Infof("[SDK] begin to query cert by aliases, [contract:%s]/[method:%s]",
 		syscontract.SystemContract_CERT_MANAGE.String(), syscontract.CertManageFunction_CERTS_ALIAS_QUERY.String())
@@ -83,6 +89,7 @@ func (cc *ChainClient) QueryCertsAlias(aliases []string) (*common.AliasInfos, er
 	return aliasInfos, nil
 }
 
+// CreateUpdateCertByAliasPayload create `update cert by alias` payload
 func (cc *ChainClient) CreateUpdateCertByAliasPayload(alias, newCertPEM string) *common.Payload {
 	cc.logger.Debugf("[SDK] create [UpdateCertByAlias] to be signed payload")
 
@@ -100,15 +107,18 @@ func (cc *ChainClient) CreateUpdateCertByAliasPayload(alias, newCertPEM string) 
 	return cc.CreateCertManagePayload(syscontract.CertManageFunction_CERT_ALIAS_UPDATE.String(), pairs)
 }
 
+// SignUpdateCertByAliasPayload sign `update cert by alias` payload
 func (cc *ChainClient) SignUpdateCertByAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error) {
 	return cc.SignCertManagePayload(payload)
 }
 
+// UpdateCertByAlias update cert by alias on chain
 func (cc *ChainClient) UpdateCertByAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	return cc.SendCertManageRequest(payload, endorsers, timeout, withSyncResult)
 }
 
+// CreateDeleteCertsAliasPayload create `delete certs alias` payload
 func (cc *ChainClient) CreateDeleteCertsAliasPayload(aliases []string) *common.Payload {
 	cc.logger.Debugf("[SDK] create [DeleteAlias] to be signed payload")
 
@@ -122,10 +132,12 @@ func (cc *ChainClient) CreateDeleteCertsAliasPayload(aliases []string) *common.P
 	return cc.CreateCertManagePayload(syscontract.CertManageFunction_CERTS_ALIAS_DELETE.String(), pairs)
 }
 
+// SignDeleteAliasPayload sign `delete alias` payload
 func (cc *ChainClient) SignDeleteAliasPayload(payload *common.Payload) (*common.EndorsementEntry, error) {
 	return cc.SignCertManagePayload(payload)
 }
 
+// DeleteCertsAlias delete certs alias on chain
 func (cc *ChainClient) DeleteCertsAlias(payload *common.Payload, endorsers []*common.EndorsementEntry,
 	timeout int64, withSyncResult bool) (*common.TxResponse, error) {
 	return cc.SendCertManageRequest(payload, endorsers, timeout, withSyncResult)

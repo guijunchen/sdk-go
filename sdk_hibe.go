@@ -38,6 +38,7 @@ const (
 	HibeParamsValueKey = "params"
 )
 
+// CreateHibeInitParamsTxPayloadParams CreateHibeInitParamsTxPayloadParams
 func (cc *ChainClient) CreateHibeInitParamsTxPayloadParams(orgId string,
 	hibeParams []byte) ([]*common.KeyValuePair, error) {
 	if err := hibe.ValidateId(orgId); err != nil {
@@ -62,6 +63,7 @@ func (cc *ChainClient) CreateHibeInitParamsTxPayloadParams(orgId string,
 	return payloadParams, nil
 }
 
+// CreateHibeTxPayloadParamsWithHibeParams CreateHibeTxPayloadParamsWithHibeParams
 func (cc *ChainClient) CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte, receiverIds []string,
 	paramsBytesList [][]byte, txId string, keyType crypto.KeyType) ([]*common.KeyValuePair, error) {
 	if len(paramsBytesList) == 0 {
@@ -112,6 +114,7 @@ func (cc *ChainClient) CreateHibeTxPayloadParamsWithHibeParams(plaintext []byte,
 	return payloadParams, nil
 }
 
+// CreateHibeTxPayloadParamsWithoutHibeParams CreateHibeTxPayloadParamsWithoutHibeParams
 func (cc *ChainClient) CreateHibeTxPayloadParamsWithoutHibeParams(contractName, queryParamsMethod string,
 	plaintext []byte, receiverIds []string, receiverOrgIds []string, txId string, keyType crypto.KeyType,
 	timeout int64) ([]*common.KeyValuePair, error) {
@@ -132,6 +135,7 @@ func (cc *ChainClient) CreateHibeTxPayloadParamsWithoutHibeParams(contractName, 
 	return cc.CreateHibeTxPayloadParamsWithHibeParams(plaintext, receiverIds, hibeParamsBytesList, txId, keyType)
 }
 
+// QueryHibeParamsWithOrgId QueryHibeParamsWithOrgId
 func (cc *ChainClient) QueryHibeParamsWithOrgId(contractName, method, orgId string, timeout int64) ([]byte, error) {
 	if err := hibe.ValidateId(orgId); err != nil {
 		return nil, err
@@ -165,6 +169,7 @@ func (cc *ChainClient) QueryHibeParamsWithOrgId(contractName, method, orgId stri
 	return hibeParams.Marshal(), nil
 }
 
+// DecryptHibeTxByTxId DecryptHibeTxByTxId
 func (cc *ChainClient) DecryptHibeTxByTxId(localId string, hibeParams []byte, hibePrvKey []byte, txId string,
 	keyType crypto.KeyType) ([]byte, error) {
 	if txId == "" {

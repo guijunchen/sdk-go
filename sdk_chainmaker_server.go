@@ -14,6 +14,7 @@ import (
 	"chainmaker.org/chainmaker/pb-go/v2/config"
 )
 
+// GetChainMakerServerVersion get chainmaker version
 func (cc *ChainClient) GetChainMakerServerVersion() (string, error) {
 	cc.logger.Debug("[SDK] begin to get chainmaker server version")
 	req := &config.ChainMakerVersionRequest{}

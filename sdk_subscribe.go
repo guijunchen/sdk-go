@@ -19,6 +19,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
+// SubscribeBlock block subscription, returns channel of subscribed blocks
 func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock int64, withRWSet,
 	onlyHeader bool) (<-chan interface{}, error) {
 
@@ -27,6 +28,7 @@ func (cc *ChainClient) SubscribeBlock(ctx context.Context, startBlock, endBlock 
 	return cc.Subscribe(ctx, payload)
 }
 
+// SubscribeTx tx subscription, returns channel of subscribed txs
 func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int64, contractName string,
 	txIds []string) (<-chan interface{}, error) {
 
@@ -35,6 +37,7 @@ func (cc *ChainClient) SubscribeTx(ctx context.Context, startBlock, endBlock int
 	return cc.Subscribe(ctx, payload)
 }
 
+// SubscribeContractEvent contract event subscription, returns channel of subscribed contract events
 func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, startBlock, endBlock int64,
 	contractName, topic string) (<-chan interface{}, error) {
 
@@ -43,6 +46,7 @@ func (cc *ChainClient) SubscribeContractEvent(ctx context.Context, startBlock, e
 	return cc.Subscribe(ctx, payload)
 }
 
+// Subscribe returns channel of subscribed items
 func (cc *ChainClient) Subscribe(ctx context.Context, payload *common.Payload) (<-chan interface{}, error) {
 
 	req, err := cc.GenerateTxRequest(payload, nil)
@@ -129,6 +133,7 @@ func (cc *ChainClient) Subscribe(ctx context.Context, payload *common.Payload) (
 	return c, nil
 }
 
+// CreateSubscribeBlockPayload create subscribe block payload
 func (cc *ChainClient) CreateSubscribeBlockPayload(startBlock, endBlock int64,
 	withRWSet, onlyHeader bool) *common.Payload {
 
@@ -154,6 +159,7 @@ func (cc *ChainClient) CreateSubscribeBlockPayload(startBlock, endBlock int64,
 	)
 }
 
+// CreateSubscribeTxPayload create subscribe tx payload
 func (cc *ChainClient) CreateSubscribeTxPayload(startBlock, endBlock int64,
 	contractName string, txIds []string) *common.Payload {
 
@@ -179,6 +185,7 @@ func (cc *ChainClient) CreateSubscribeTxPayload(startBlock, endBlock int64,
 	)
 }
 
+// CreateSubscribeContractEventPayload create subscribe contract event payload
 func (cc *ChainClient) CreateSubscribeContractEventPayload(startBlock, endBlock int64,
 	contractName, topic string) *common.Payload {
 

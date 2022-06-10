@@ -24,7 +24,8 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
-// Deprecated: SignPayload use ./utils.MakeEndorserWithPem
+// SignPayload sign payload
+// Deprecated: use ./utils.MakeEndorserWithPem
 func SignPayload(keyPem, certPem []byte, payload *common.Payload) (*common.EndorsementEntry, error) {
 	key, err := asym.PrivateKeyFromPEM(keyPem, nil)
 	if err != nil {
@@ -40,7 +41,12 @@ func SignPayload(keyPem, certPem []byte, payload *common.Payload) (*common.Endor
 		return nil, fmt.Errorf("bcx509.ParseCertificate failed, %s", err)
 	}
 
-	signature, err := utils.SignPayload(key, crt, payload)
+	hashalgo, err := bcx509.GetHashFromSignatureAlgorithm(crt.SignatureAlgorithm)
+	if err != nil {
+		return nil, fmt.Errorf("invalid algorithm: %v", err)
+	}
+
+	signature, err := utils.SignPayloadWithHashType(key, hashalgo, payload)
 	if err != nil {
 		return nil, fmt.Errorf("SignPayload failed, %s", err)
 	}
@@ -64,6 +70,7 @@ func SignPayload(keyPem, certPem []byte, payload *common.Payload) (*common.Endor
 	return entry, nil
 }
 
+// SignPayloadWithPath use key/cert file path to sign payload
 // Deprecated: SignPayloadWithPath use ./utils.MakeEndorserWithPath instead.
 func SignPayloadWithPath(keyFilePath, crtFilePath string, payload *common.Payload) (*common.EndorsementEntry, error) {
 	// 读取私钥
@@ -81,6 +88,7 @@ func SignPayloadWithPath(keyFilePath, crtFilePath string, payload *common.Payloa
 	return SignPayload(keyBytes, crtBytes, payload)
 }
 
+// GetEVMAddressFromCertPath get evm address from cert file path
 func GetEVMAddressFromCertPath(certFilePath string) (string, error) {
 	certBytes, err := ioutil.ReadFile(certFilePath)
 	if err != nil {
@@ -90,6 +98,7 @@ func GetEVMAddressFromCertPath(certFilePath string) (string, error) {
 	return GetEVMAddressFromCertBytes(certBytes)
 }
 
+// GetEVMAddressFromPrivateKeyPath get evm address from private key file path
 func GetEVMAddressFromPrivateKeyPath(privateKeyFilePath, hashType string) (string, error) {
 	keyPem, err := ioutil.ReadFile(privateKeyFilePath)
 	if err != nil {
@@ -99,6 +108,7 @@ func GetEVMAddressFromPrivateKeyPath(privateKeyFilePath, hashType string) (strin
 	return GetEVMAddressFromPrivateKeyBytes(keyPem, hashType)
 }
 
+// GetEVMAddressFromCertBytes get evm address from cert bytes
 func GetEVMAddressFromCertBytes(certBytes []byte) (string, error) {
 	block, _ := pem.Decode(certBytes)
 	cert, err := bcx509.ParseCertificate(block.Bytes)
@@ -115,6 +125,7 @@ func GetEVMAddressFromCertBytes(certBytes []byte) (string, error) {
 	return addrInt.String(), nil
 }
 
+// GetEVMAddressFromPrivateKeyBytes get evm address from private key bytes
 func GetEVMAddressFromPrivateKeyBytes(privateKeyBytes []byte, hashType string) (string, error) {
 	privateKey, err := asym.PrivateKeyFromPEM(privateKeyBytes, nil)
 	if err != nil {
@@ -138,10 +149,12 @@ func GetEVMAddressFromPrivateKeyBytes(privateKeyBytes []byte, hashType string) (
 	return addrInt.String(), nil
 }
 
+// EasyCodecItemToParamsMap easy codec items to params map
 func (cc *ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string][]byte {
 	return serialize.EasyCodecItemToParamsMap(items)
 }
 
+// GetZXAddressFromPKHex get zhixinlian address from public key hex
 func GetZXAddressFromPKHex(pkHex string) (string, error) {
 	pk, err := hex.DecodeString(pkHex)
 	if err != nil {
@@ -151,18 +164,22 @@ func GetZXAddressFromPKHex(pkHex string) (string, error) {
 	return evmutils.ZXAddressFromPublicKeyDER(pk)
 }
 
+// GetZXAddressFromPKPEM get zhixinlian address from public key pem
 func GetZXAddressFromPKPEM(pkPEM string) (string, error) {
 	return evmutils.ZXAddressFromPublicKeyPEM([]byte(pkPEM))
 }
 
+// GetZXAddressFromCertPEM get zhixinlian address from cert pem
 func GetZXAddressFromCertPEM(certPEM string) (string, error) {
 	return evmutils.ZXAddressFromCertificatePEM([]byte(certPEM))
 }
 
+// GetZXAddressFromCertPath get zhixinlian address from cert file path
 func GetZXAddressFromCertPath(certPath string) (string, error) {
 	return evmutils.ZXAddressFromCertificatePath(certPath)
 }
 
+// GetCMAddressFromPKHex get chainmaker address from public key hex
 func GetCMAddressFromPKHex(pkHex string, hashType string) (string, error) {
 	pkDER, err := hex.DecodeString(pkHex)
 	if err != nil {
@@ -181,6 +198,7 @@ func GetCMAddressFromPKHex(pkHex string, hashType string) (string, error) {
 	return calculateCMAddressFromSKI(hex.EncodeToString(ski))
 }
 
+// GetCMAddressFromPKPEM get chainmaker address from public key pem
 func GetCMAddressFromPKPEM(pkPEM string, hashType string) (string, error) {
 	publicKey, err := asym.PublicKeyFromPEM([]byte(pkPEM))
 	if err != nil {
@@ -195,6 +213,7 @@ func GetCMAddressFromPKPEM(pkPEM string, hashType string) (string, error) {
 
 }
 
+// GetCMAddressFromCertPEM get chainmaker address from cert pem
 func GetCMAddressFromCertPEM(certPEM string) (string, error) {
 	pemBlock, _ := pem.Decode([]byte(certPEM))
 	if pemBlock == nil {
@@ -210,6 +229,7 @@ func GetCMAddressFromCertPEM(certPEM string) (string, error) {
 	return calculateCMAddressFromSKI(ski)
 }
 
+// GetCMAddressFromCertPath get chainmaker address from cert file path
 func GetCMAddressFromCertPath(certPath string) (string, error) {
 	certContent, err := ioutil.ReadFile(certPath)
 	if err != nil {

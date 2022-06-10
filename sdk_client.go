@@ -33,6 +33,7 @@ const (
 
 var _ SDKInterface = (*ChainClient)(nil)
 
+// ChainClient define chainmaker chain client to interact with node
 type ChainClient struct {
 	// common config
 	logger                  utils.Logger
@@ -80,6 +81,7 @@ type ChainClient struct {
 	enableSyncCanonicalTxResult bool
 }
 
+// NewNodeConfig new node config, returns *NodeConfig
 func NewNodeConfig(opts ...NodeOption) *NodeConfig {
 	config := &NodeConfig{}
 	for _, opt := range opts {
@@ -89,6 +91,7 @@ func NewNodeConfig(opts ...NodeOption) *NodeConfig {
 	return config
 }
 
+// NewConnPoolWithOptions new conn pool with optioins, returns *ClientConnectionPool
 func NewConnPoolWithOptions(opts ...ChainClientOption) (*ClientConnectionPool, error) {
 	config, err := generateConfig(opts...)
 	if err != nil {
@@ -98,6 +101,7 @@ func NewConnPoolWithOptions(opts ...ChainClientOption) (*ClientConnectionPool, e
 	return NewConnPool(config)
 }
 
+// NewArchiveConfig new archive config
 func NewArchiveConfig(opts ...ArchiveOption) *ArchiveConfig {
 	config := &ArchiveConfig{}
 	for _, opt := range opts {
@@ -107,6 +111,7 @@ func NewArchiveConfig(opts ...ArchiveOption) *ArchiveConfig {
 	return config
 }
 
+// NewRPCClientConfig new rpc client config
 func NewRPCClientConfig(opts ...RPCClientOption) *RPCClientConfig {
 	config := &RPCClientConfig{}
 	for _, opt := range opts {
@@ -115,6 +120,7 @@ func NewRPCClientConfig(opts ...RPCClientOption) *RPCClientConfig {
 	return config
 }
 
+// NewPkcs11Config new pkcs11 config
 func NewPkcs11Config(enabled bool, typ, libPath, label, password string,
 	sessionCacheSize int, hashAlgo string) *Pkcs11Config {
 	return &Pkcs11Config{
@@ -128,6 +134,7 @@ func NewPkcs11Config(enabled bool, typ, libPath, label, password string,
 	}
 }
 
+// NewChainClient new chain client
 func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	config, err := generateConfig(opts...)
 	if err != nil {
@@ -201,10 +208,12 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	return cc, nil
 }
 
+// IsEnableNormalKey whether to use normal key
 func (cc *ChainClient) IsEnableNormalKey() bool {
 	return cc.enableNormalKey
 }
 
+// Stop stop chain client
 func (cc *ChainClient) Stop() error {
 	if cc.txResultDispatcher != nil {
 		cc.txResultDispatcher.stop()
@@ -231,6 +240,7 @@ func (cc *ChainClient) proposalRequestWithTimeout(payload *common.Payload, endor
 	return cc.sendTxRequest(req, timeout)
 }
 
+// GenerateTxRequest sign payload and generate *common.TxRequest
 func (cc *ChainClient) GenerateTxRequest(payload *common.Payload,
 	endorsers []*common.EndorsementEntry) (*common.TxRequest, error) {
 	var (
@@ -432,39 +442,48 @@ func (cc *ChainClient) EnableCertHash() error {
 	return nil
 }
 
+// DisableCertHash disable cert hash logic
 func (cc *ChainClient) DisableCertHash() error {
 	cc.enabledCrtHash = false
 	return nil
 }
 
+// GetEnabledCrtHash check whether the cert hash logic is enabled
 func (cc *ChainClient) GetEnabledCrtHash() bool {
 	return cc.enabledCrtHash
 }
 
+// GetUserCrtHash get user cert hash of cc
 func (cc *ChainClient) GetUserCrtHash() []byte {
 	return cc.userCrtHash
 }
 
+// GetHashType get hash type of cc
 func (cc *ChainClient) GetHashType() string {
 	return cc.hashType
 }
 
+// GetAuthType get auth type of cc
 func (cc *ChainClient) GetAuthType() AuthType {
 	return cc.authType
 }
 
+// GetPublicKey get public key of cc
 func (cc *ChainClient) GetPublicKey() crypto.PublicKey {
 	return cc.publicKey
 }
 
+// GetPrivateKey get private key of cc
 func (cc *ChainClient) GetPrivateKey() crypto.PrivateKey {
 	return cc.privateKey
 }
 
+// GetCertPEM get cert pem of cc
 func (cc *ChainClient) GetCertPEM() []byte {
 	return cc.userCrtBytes
 }
 
+// GetLocalCertAlias get local cert alias of cc
 func (cc *ChainClient) GetLocalCertAlias() string {
 	return cc.alias
 }
@@ -554,10 +573,12 @@ func (cc *ChainClient) getCheckCertHash() (bool, error) {
 	return false, nil
 }
 
+// Pkcs11Config get pkcs11 config of cc
 func (cc *ChainClient) Pkcs11Config() *Pkcs11Config {
 	return cc.pkcs11Config
 }
 
+// CreateChainClient create chain client and init chain client, returns *ChainClient
 func CreateChainClient(pool ConnectionPool, userCrtBytes, privKey, userCrtHash []byte, orgId, chainId string,
 	enabledCrtHash int) (*ChainClient, error) {
 	cert, err := utils.ParseCert(userCrtBytes)
@@ -583,6 +604,7 @@ func CreateChainClient(pool ConnectionPool, userCrtBytes, privKey, userCrtHash [
 	return chain, nil
 }
 
+// EnableAlias enable cert alias logic
 func (cc *ChainClient) EnableAlias() error {
 	var (
 		err error

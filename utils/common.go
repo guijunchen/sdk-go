@@ -30,6 +30,7 @@ const (
 	Separator = byte(202)
 )
 
+// GetRandTxId get random tx id
 func GetRandTxId() string {
 	return uuid.GetUUID() + uuid.GetUUID()
 }
@@ -70,6 +71,7 @@ func GetNanoByTimestampTxId(timestampTxId string) (nano int64, err error) {
 	return
 }
 
+// CheckProposalRequestResp check tx response is ok or not
 func CheckProposalRequestResp(resp *common.TxResponse, needContractResult bool) error {
 	if resp.Code != common.TxStatusCode_SUCCESS {
 		if resp.Message == "" {
@@ -92,6 +94,7 @@ func CheckProposalRequestResp(resp *common.TxResponse, needContractResult bool) 
 	return nil
 }
 
+// GetCertificateId get cert id from cert pem
 func GetCertificateId(certPEM []byte, hashType string) ([]byte, error) {
 	if certPEM == nil {
 		return nil, fmt.Errorf("get cert certPEM == nil")
@@ -103,6 +106,7 @@ func GetCertificateId(certPEM []byte, hashType string) ([]byte, error) {
 	return GetCertificateIdFromDER(certDer.Bytes, hashType)
 }
 
+// GetCertificateIdFromDER get cert id from cert der
 func GetCertificateIdFromDER(certDER []byte, hashType string) ([]byte, error) {
 	if certDER == nil {
 		return nil, fmt.Errorf("get cert from der certDER == nil")
@@ -114,6 +118,7 @@ func GetCertificateIdFromDER(certDER []byte, hashType string) ([]byte, error) {
 	return id, nil
 }
 
+// ParseCert parse cert pem to *bcx509.Certificate
 func ParseCert(crtPEM []byte) (*bcx509.Certificate, error) {
 	certBlock, _ := pem.Decode(crtPEM)
 	if certBlock == nil {
@@ -128,6 +133,8 @@ func ParseCert(crtPEM []byte) (*bcx509.Certificate, error) {
 	return cert, nil
 }
 
+// Exists returns a boolean indicating whether the error is known to report
+// that a file or directory already exists.
 func Exists(path string) bool {
 	_, err := os.Stat(path)
 	if err != nil {
@@ -136,10 +143,12 @@ func Exists(path string) bool {
 	return true
 }
 
+// IsArchived returns a boolean indicating whether is archived by txStatusCode in common.TxStatusCode
 func IsArchived(txStatusCode common.TxStatusCode) bool {
 	return txStatusCode == common.TxStatusCode_ARCHIVED_BLOCK || txStatusCode == common.TxStatusCode_ARCHIVED_TX
 }
 
+// IsArchivedString returns a boolean indicating whether is archived by txStatusCode in string
 func IsArchivedString(txStatusCode string) bool {
 	return txStatusCode == common.TxStatusCode_ARCHIVED_BLOCK.String() ||
 		txStatusCode == common.TxStatusCode_ARCHIVED_TX.String()

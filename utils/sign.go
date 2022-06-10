@@ -3,6 +3,7 @@ Copyright (C) THL A29 Limited, a Tencent company. All rights reserved.
 
 SPDX-License-Identifier: Apache-2.0
 */
+
 package utils
 
 import (
@@ -19,6 +20,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
+// SignPayload sign payload
 // Deprecated: This function will be deleted when appropriate. Please use SignPayloadWithHashType
 func SignPayload(privateKey crypto.PrivateKey, cert *bcx509.Certificate, payload *common.Payload) ([]byte, error) {
 	payloadBytes, err := proto.Marshal(payload)
@@ -29,6 +31,7 @@ func SignPayload(privateKey crypto.PrivateKey, cert *bcx509.Certificate, payload
 	return SignPayloadBytes(privateKey, cert, payloadBytes)
 }
 
+// SignPayloadBytes sign payload bytes
 // Deprecated: This function will be deleted when appropriate. Please use SignPayloadBytesWithHashType
 func SignPayloadBytes(privateKey crypto.PrivateKey, cert *bcx509.Certificate, payloadBytes []byte) ([]byte, error) {
 	var opts crypto.SignOpts
@@ -43,6 +46,7 @@ func SignPayloadBytes(privateKey crypto.PrivateKey, cert *bcx509.Certificate, pa
 	return privateKey.SignWithOpts(payloadBytes, &opts)
 }
 
+// SignPayloadWithHashType sign payload with specified hash type
 func SignPayloadWithHashType(privateKey crypto.PrivateKey,
 	hashType crypto.HashType, payload *common.Payload) ([]byte, error) {
 	payloadBytes, err := proto.Marshal(payload)
@@ -53,6 +57,7 @@ func SignPayloadWithHashType(privateKey crypto.PrivateKey,
 	return SignPayloadBytesWithHashType(privateKey, hashType, payloadBytes)
 }
 
+// SignPayloadBytesWithHashType sign payload bytes with specified hash type
 func SignPayloadBytesWithHashType(privateKey crypto.PrivateKey,
 	hashType crypto.HashType, payloadBytes []byte) ([]byte, error) {
 	var opts crypto.SignOpts
@@ -62,6 +67,7 @@ func SignPayloadBytesWithHashType(privateKey crypto.PrivateKey,
 	return privateKey.SignWithOpts(payloadBytes, &opts)
 }
 
+// SignPayloadWithPath sign payload with specified key/cert file path
 func SignPayloadWithPath(keyFilePath, crtFilePath string, payload *common.Payload) ([]byte, error) {
 	// 读取私钥
 	keyPem, err := ioutil.ReadFile(keyFilePath)
@@ -93,6 +99,7 @@ func SignPayloadWithPath(keyFilePath, crtFilePath string, payload *common.Payloa
 	return SignPayloadWithHashType(key, hashAlgo, payload)
 }
 
+// SignPayloadWithPkPath sign payload with specified key file path
 func SignPayloadWithPkPath(keyFilePath, hashType string, payload *common.Payload) ([]byte, error) {
 	keyPem, err := ioutil.ReadFile(keyFilePath)
 	if err != nil {
@@ -107,6 +114,7 @@ func SignPayloadWithPkPath(keyFilePath, hashType string, payload *common.Payload
 	return SignPayloadWithHashType(key, crypto.HashAlgoMap[hashType], payload)
 }
 
+// NewEndorser returns *common.EndorsementEntry
 // Deprecated: This function will be deleted when appropriate. Please use NewEndorserWithMemberType
 func NewEndorser(orgId string, certPem []byte, sig []byte) *common.EndorsementEntry {
 	return &common.EndorsementEntry{
@@ -119,6 +127,7 @@ func NewEndorser(orgId string, certPem []byte, sig []byte) *common.EndorsementEn
 	}
 }
 
+// NewPkEndorser returns *common.EndorsementEntry
 func NewPkEndorser(orgId string, pk []byte, sig []byte) *common.EndorsementEntry {
 	return &common.EndorsementEntry{
 		Signer: &accesscontrol.Member{
@@ -130,6 +139,7 @@ func NewPkEndorser(orgId string, pk []byte, sig []byte) *common.EndorsementEntry
 	}
 }
 
+// NewEndorserWithMemberType new endorser with member type
 func NewEndorserWithMemberType(orgId string, memberInfo []byte, memberType accesscontrol.MemberType,
 	sig []byte) *common.EndorsementEntry {
 	return &common.EndorsementEntry{
@@ -142,6 +152,7 @@ func NewEndorserWithMemberType(orgId string, memberInfo []byte, memberType acces
 	}
 }
 
+// MakeEndorserWithPem make endorser with pem
 // Deprecated: This function will be deleted when appropriate. Please use MakeEndorser
 func MakeEndorserWithPem(keyPem, certPem []byte, payload *common.Payload) (*common.EndorsementEntry, error) {
 	key, err := asym.PrivateKeyFromPEM(keyPem, nil)
@@ -172,6 +183,7 @@ func MakeEndorserWithPem(keyPem, certPem []byte, payload *common.Payload) (*comm
 	return NewEndorserWithMemberType(orgId, certPem, accesscontrol.MemberType_CERT, signature), nil
 }
 
+// MakePkEndorserWithPem make public mode endorser with pem
 // Deprecated: This function will be deleted when appropriate. Please use MakeEndorser
 func MakePkEndorserWithPem(keyPem []byte, hashType crypto.HashType, orgId string,
 	payload *common.Payload) (*common.EndorsementEntry, error) {
@@ -188,6 +200,7 @@ func MakePkEndorserWithPem(keyPem []byte, hashType crypto.HashType, orgId string
 	return NewEndorserWithMemberType(orgId, keyPem, accesscontrol.MemberType_PUBLIC_KEY, signature), nil
 }
 
+// MakeEndorser returns *common.EndorsementEntry
 func MakeEndorser(orgId string, hashType crypto.HashType, memberType accesscontrol.MemberType, keyPem,
 	memberInfo []byte, payload *common.Payload) (*common.EndorsementEntry, error) {
 	var (
@@ -209,6 +222,7 @@ func MakeEndorser(orgId string, hashType crypto.HashType, memberType accesscontr
 	return NewEndorserWithMemberType(orgId, memberInfo, memberType, signature), nil
 }
 
+// MakeEndorserWithPath make endorser with key/cert file path
 func MakeEndorserWithPath(keyFilePath, crtFilePath string, payload *common.Payload) (*common.EndorsementEntry, error) {
 	// 读取私钥
 	keyPem, err := ioutil.ReadFile(keyFilePath)
@@ -240,6 +254,7 @@ func MakeEndorserWithPath(keyFilePath, crtFilePath string, payload *common.Paylo
 	return MakeEndorser(orgId, hashAlgo, accesscontrol.MemberType_CERT, keyPem, certPem, payload)
 }
 
+// MakePkEndorserWithPath make public mode endorser with key file path
 func MakePkEndorserWithPath(keyFilePath string, hashType crypto.HashType, orgId string,
 	payload *common.Payload) (*common.EndorsementEntry, error) {
 	keyPem, err := ioutil.ReadFile(keyFilePath)
@@ -262,6 +277,7 @@ func MakePkEndorserWithPath(keyFilePath string, hashType crypto.HashType, orgId 
 		[]byte(memberInfo), payload)
 }
 
+// MakeEndorserWithPathAndP11Handle make endorser with key/cert file path and P11Handle
 func MakeEndorserWithPathAndP11Handle(keyFilePath, crtFilePath string, p11Handle interface{},
 	payload *common.Payload) (*common.EndorsementEntry, error) {
 	if p11Handle == nil {

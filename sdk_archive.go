@@ -21,6 +21,7 @@ import (
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
+// CreateArchiveBlockPayload create `archive block` payload
 func (cc *ChainClient) CreateArchiveBlockPayload(targetBlockHeight uint64) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [Archive] to be signed payload")
 
@@ -37,6 +38,7 @@ func (cc *ChainClient) CreateArchiveBlockPayload(targetBlockHeight uint64) (*com
 	return payload, nil
 }
 
+// CreateRestoreBlockPayload create `restore block` payload
 func (cc *ChainClient) CreateRestoreBlockPayload(fullBlock []byte) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] create [restore] to be signed payload")
 
@@ -53,18 +55,22 @@ func (cc *ChainClient) CreateRestoreBlockPayload(fullBlock []byte) (*common.Payl
 	return payload, nil
 }
 
+// SignArchivePayload sign archive payload, currently do nothing
 func (cc *ChainClient) SignArchivePayload(payload *common.Payload) (*common.Payload, error) {
 	return payload, nil
 }
 
+// SendArchiveBlockRequest send `archive block` request to node grpc server
 func (cc *ChainClient) SendArchiveBlockRequest(payload *common.Payload, timeout int64) (*common.TxResponse, error) {
 	return cc.sendContractRequest(payload, nil, timeout, false)
 }
 
+// SendRestoreBlockRequest send `restore block` request to node grpc server
 func (cc *ChainClient) SendRestoreBlockRequest(payload *common.Payload, timeout int64) (*common.TxResponse, error) {
 	return cc.sendContractRequest(payload, nil, timeout, false)
 }
 
+// GetArchivedFullBlockByHeight get archived full block by block height, returns *store.BlockWithRWSet
 func (cc *ChainClient) GetArchivedFullBlockByHeight(blockHeight uint64) (*store.BlockWithRWSet, error) {
 	fullBlock, err := cc.GetFromArchiveStore(blockHeight)
 	if err != nil {
@@ -74,6 +80,7 @@ func (cc *ChainClient) GetArchivedFullBlockByHeight(blockHeight uint64) (*store.
 	return fullBlock, nil
 }
 
+// GetArchivedBlockByHeight get archived block by block height, returns *common.BlockInfo
 func (cc *ChainClient) GetArchivedBlockByHeight(blockHeight uint64, withRWSet bool) (*common.BlockInfo, error) {
 	fullBlock, err := cc.GetFromArchiveStore(blockHeight)
 	if err != nil {
@@ -91,6 +98,7 @@ func (cc *ChainClient) GetArchivedBlockByHeight(blockHeight uint64, withRWSet bo
 	return blockInfo, nil
 }
 
+// GetArchivedBlockByTxId get archived block by tx id, returns *common.BlockInfo
 func (cc *ChainClient) GetArchivedBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error) {
 	blockHeight, err := cc.GetBlockHeightByTxId(txId)
 	if err != nil {
@@ -100,6 +108,7 @@ func (cc *ChainClient) GetArchivedBlockByTxId(txId string, withRWSet bool) (*com
 	return cc.GetArchivedBlockByHeight(blockHeight, withRWSet)
 }
 
+// GetArchivedBlockByHash get archived block by block hash, returns *common.BlockInfo
 func (cc *ChainClient) GetArchivedBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error) {
 	blockHeight, err := cc.GetBlockHeightByHash(blockHash)
 	if err != nil {
@@ -109,6 +118,7 @@ func (cc *ChainClient) GetArchivedBlockByHash(blockHash string, withRWSet bool) 
 	return cc.GetArchivedBlockByHeight(blockHeight, withRWSet)
 }
 
+// GetArchivedTxByTxId get archived tx by tx id, returns *common.TransactionInfo
 func (cc *ChainClient) GetArchivedTxByTxId(txId string) (*common.TransactionInfo, error) {
 	blockHeight, err := cc.GetBlockHeightByTxId(txId)
 	if err != nil {
@@ -134,6 +144,9 @@ func (cc *ChainClient) GetArchivedTxByTxId(txId string) (*common.TransactionInfo
 	return nil, fmt.Errorf("CANNOT BE HERE! unknown tx [%s] in archive block [%d]", txId, blockHeight)
 }
 
+// GetFromArchiveStore get block from archive storage, currently supported storage is Mysql.
+// required sdk config file `archive` configured
+// returns *store.BlockWithRWSet
 func (cc *ChainClient) GetFromArchiveStore(blockHeight uint64) (*store.BlockWithRWSet, error) {
 	archiveType := utils.Config.ChainClientConfig.ArchiveConfig.Type
 	if archiveType == "mysql" {
@@ -143,6 +156,7 @@ func (cc *ChainClient) GetFromArchiveStore(blockHeight uint64) (*store.BlockWith
 	return nil, fmt.Errorf("unsupport archive type [%s]", archiveType)
 }
 
+// GetArchivedBlockFromMySQL get archived block from Mysql, returns *store.BlockWithRWSet
 func (cc *ChainClient) GetArchivedBlockFromMySQL(blockHeight uint64) (*store.BlockWithRWSet, error) {
 
 	var (

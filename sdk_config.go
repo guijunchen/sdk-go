@@ -43,6 +43,7 @@ var (
 	hsmHandle interface{}
 )
 
+// GetP11Handle get global thread-safe pkcs11 handler
 func GetP11Handle() interface{} {
 	return hsmHandle
 }
@@ -65,6 +66,7 @@ type NodeConfig struct {
 	tlsHostName string
 }
 
+// NodeOption define node option func
 type NodeOption func(config *NodeConfig)
 
 // WithNodeAddr 设置节点地址
@@ -102,6 +104,7 @@ func WithNodeCACerts(caCerts []string) NodeOption {
 	}
 }
 
+// WithNodeTLSHostName use tls host name
 func WithNodeTLSHostName(tlsHostName string) NodeOption {
 	return func(config *NodeConfig) {
 		config.tlsHostName = tlsHostName
@@ -115,6 +118,7 @@ type ArchiveConfig struct {
 	secretKey string
 }
 
+// ArchiveOption define archive option func
 type ArchiveOption func(config *ArchiveConfig)
 
 // WithSecretKey 设置Archive的secret key
@@ -130,6 +134,7 @@ type RPCClientConfig struct {
 	rpcClientMaxReceiveMessageSize, rpcClientMaxSendMessageSize int
 }
 
+// RPCClientOption define rpc client option func
 type RPCClientOption func(config *RPCClientConfig)
 
 // WithRPCClientMaxReceiveMessageSize 设置RPC Client的Max Receive Message Size
@@ -164,16 +169,17 @@ type Pkcs11Config struct {
 	Hash string
 }
 
+// AuthType define auth type of chain client
 type AuthType uint32
 
 const (
-	// permissioned with certificate
+	// PermissionedWithCert permissioned with certificate
 	PermissionedWithCert AuthType = iota + 1
 
-	// permissioned with public key
+	// PermissionedWithKey permissioned with public key
 	PermissionedWithKey
 
-	// public key
+	// Public public key
 	Public
 )
 
@@ -182,18 +188,21 @@ const (
 	DefaultAuthType = ""
 )
 
+// AuthTypeToStringMap define auth type to string map
 var AuthTypeToStringMap = map[AuthType]string{
 	PermissionedWithCert: "permissionedwithcert",
 	PermissionedWithKey:  "permissionedwithkey",
 	Public:               "public",
 }
 
+// StringToAuthTypeMap define string to auth type map
 var StringToAuthTypeMap = map[string]AuthType{
 	"permissionedwithcert": PermissionedWithCert,
 	"permissionedwithkey":  PermissionedWithKey,
 	"public":               Public,
 }
 
+// ChainClientConfig define chain client configuration
 type ChainClientConfig struct {
 	// logger若不设置，将采用默认日志文件输出日志，建议设置，以便采用集成系统的统一日志输出
 	logger utils.Logger
@@ -259,27 +268,32 @@ type ChainClientConfig struct {
 	enableSyncCanonicalTxResult bool
 }
 
+// CryptoConfig define crypto config
 type CryptoConfig struct {
 	hash string
 }
 
+// CryptoOption define crypto option func
 type CryptoOption func(config *CryptoConfig)
 
-// WithHashType 公钥模式下：添加用户哈希算法配置
+// WithHashAlgo 公钥模式下：添加用户哈希算法配置
 func WithHashAlgo(hashType string) CryptoOption {
 	return func(config *CryptoConfig) {
 		config.hash = hashType
 	}
 }
 
+// ChainClientOption define chain client option func
 type ChainClientOption func(*ChainClientConfig)
 
+// WithAuthType specified auth type
 func WithAuthType(authType string) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.authType = StringToAuthTypeMap[authType]
 	}
 }
 
+// WithEnableNormalKey specified use normal key or not
 func WithEnableNormalKey(enableNormalKey bool) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.enableNormalKey = enableNormalKey
@@ -384,6 +398,7 @@ func WithRetryInterval(interval int) ChainClientOption {
 	}
 }
 
+// WithChainClientAlias specified cert alias
 func WithChainClientAlias(alias string) ChainClientOption {
 	return func(config *ChainClientConfig) {
 		config.alias = alias
