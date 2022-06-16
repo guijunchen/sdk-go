@@ -124,6 +124,14 @@ func NewPkcs11Config(enabled bool, libPath, label, password string,
 	}
 }
 
+func NewCryptoConfig(opts ...CryptoOption) *CryptoConfig {
+	config := &CryptoConfig{}
+	for _, opt := range opts {
+		opt(config)
+	}
+	return config
+}
+
 func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	config, err := generateConfig(opts...)
 	if err != nil {
