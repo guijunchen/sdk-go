@@ -16,14 +16,20 @@ import (
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 )
 
+type txResult struct {
+	Result      *common.Result
+	TxTimestamp int64
+	BlockHeight uint64
+}
+
 type txResultDispatcher struct {
 	nextBlockNum int64
 	cc           *ChainClient
 	stopC        chan struct{}
-	txC          chan *common.Transaction
+	txC          chan *transaction
 
 	mux             sync.Mutex // mux protect txRegistrations
-	txRegistrations map[string]chan *common.Result
+	txRegistrations map[string]chan *txResult
 }
 
 func newTxResultDispatcher(cc *ChainClient) *txResultDispatcher {
@@ -31,8 +37,8 @@ func newTxResultDispatcher(cc *ChainClient) *txResultDispatcher {
 		nextBlockNum:    -1,
 		cc:              cc,
 		stopC:           make(chan struct{}),
-		txC:             make(chan *common.Transaction, 1),
-		txRegistrations: make(map[string]chan *common.Result),
+		txC:             make(chan *transaction, 1),
+		txRegistrations: make(map[string]chan *txResult),
 	}
 }
 
@@ -41,13 +47,13 @@ func newTxResultDispatcher(cc *ChainClient) *txResultDispatcher {
 // - txId is the transaction ID for which events are to be received
 // - Returns the channel that is used to receive result. The channel
 //   is closed when unregister is called.
-func (d *txResultDispatcher) register(txId string) chan *common.Result {
+func (d *txResultDispatcher) register(txId string) chan *txResult {
 	d.mux.Lock()
 	defer d.mux.Unlock()
 	if txResultC, exists := d.txRegistrations[txId]; exists {
 		return txResultC
 	}
-	txResultC := make(chan *common.Result, 1)
+	txResultC := make(chan *txResult, 1)
 	d.txRegistrations[txId] = txResultC
 	return txResultC
 }
@@ -68,10 +74,15 @@ func (d *txResultDispatcher) start() {
 		select {
 		case tx := <-d.txC:
 			d.mux.Lock()
-			if txResultC, exists := d.txRegistrations[tx.Payload.TxId]; exists {
+			if txResultC, exists := d.txRegistrations[tx.Transaction.Payload.TxId]; exists {
 				// non-blocking write to channel to ignore txResultC buffer is full in extreme cases
+				result := &txResult{
+					Result:      tx.Transaction.Result,
+					TxTimestamp: tx.Transaction.Payload.Timestamp,
+					BlockHeight: tx.BlockHeight,
+				}
 				select {
-				case txResultC <- tx.Result:
+				case txResultC <- result:
 				default:
 				}
 			}
@@ -84,6 +95,11 @@ func (d *txResultDispatcher) start() {
 
 func (d *txResultDispatcher) stop() {
 	close(d.stopC)
+}
+
+type transaction struct {
+	Transaction *common.Transaction
+	BlockHeight uint64
 }
 
 func (d *txResultDispatcher) subscribe() error {
@@ -107,7 +123,10 @@ func (d *txResultDispatcher) subscribe() error {
 			d.cc.logger.Debugf("received block height: %d tx count: %d",
 				blockInfo.Block.Header.BlockHeight, len(blockInfo.Block.Txs))
 			for _, tx := range blockInfo.Block.Txs {
-				d.txC <- tx
+				d.txC <- &transaction{
+					Transaction: tx,
+					BlockHeight: blockInfo.Block.Header.BlockHeight,
+				}
 			}
 			d.nextBlockNum = int64(blockInfo.Block.Header.BlockHeight) + 1
 		case <-d.stopC:
