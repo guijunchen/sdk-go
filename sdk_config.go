@@ -766,7 +766,11 @@ func checkArchiveConfig(config *ChainClientConfig) error {
 }
 
 func checkPkcs11Config(config *ChainClientConfig) error {
-	if config.pkcs11Config == nil || !config.pkcs11Config.Enabled {
+	if config.pkcs11Config == nil {
+		config.pkcs11Config = &Pkcs11Config{}
+		return nil
+	}
+	if !config.pkcs11Config.Enabled {
 		return nil
 	}
 	// 如果config.pkcs11Config.Enabled == true 则其他参数不能为空
