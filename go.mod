@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	chainmaker.org/chainmaker/common/v2 v2.2.2-0.20220527175551-62728a125f2d
-	chainmaker.org/chainmaker/pb-go/v2 v2.2.2-0.20220601073343-3015c97c2728
+	chainmaker.org/chainmaker/pb-go/v2 v2.2.2-0.20220617081650-cc775e8ce4db
 	github.com/Rican7/retry v0.1.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gogo/protobuf v1.3.2

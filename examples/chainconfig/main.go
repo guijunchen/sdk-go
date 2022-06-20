@@ -42,6 +42,7 @@ func main() {
 	}
 
 	//testChainConfig(client)
+	//testGetChainConfigPermissionList(client)
 	testChainConfigGasEnable(client)
 	testChainConfigAlterAddrType(client)
 	//optimizeChargeGasPayload(client, false, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
@@ -482,6 +483,15 @@ func testChainConfigPermissionDelete(client *sdk.ChainClient, permissionResource
 	}
 
 	signAndSendRequest(client, payload, usernames...)
+}
+
+func testGetChainConfigPermissionList(client *sdk.ChainClient) []*config.ResourcePolicy {
+	resp, err := client.GetChainConfigPermissionList()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Printf("GetChainConfigPermissionList[%d] resp: %+v\n", len(resp), resp)
+	return resp
 }
 
 func testChainConfigConsensusNodeIdAdd(client *sdk.ChainClient, nodeAddrOrgId string, nodeIds []string, usernames ...string) {

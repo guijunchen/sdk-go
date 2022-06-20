@@ -524,6 +524,10 @@ type SDKInterface interface {
 	CreateChainConfigOptimizeChargeGasPayload(enable bool) (*common.Payload, error)
 	// ```
 
+	// ### 3.28  查询最新权限配置列表
+	// ```go
+	GetChainConfigPermissionList() ([]*config.ResourcePolicy, error)
+
 	// ## 4 证书管理接口
 	// ### 4.1 用户证书添加
 	// **参数说明**

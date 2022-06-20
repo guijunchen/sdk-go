@@ -418,6 +418,31 @@ func (cc *ChainClient) CreateChainConfigPermissionDeletePayload(resourceName str
 	return payload, nil
 }
 
+// GetChainConfig get chain config
+func (cc *ChainClient) GetChainConfigPermissionList() ([]*config.ResourcePolicy, error) {
+	cc.logger.Debug("[SDK] begin to get chain config permission list")
+
+	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_CONFIG.String(),
+		syscontract.ChainConfigFunction_PERMISSION_LIST.String(), nil, defaultSeq, nil)
+
+	resp, err := cc.proposalRequest(payload, nil)
+	if err != nil {
+		return nil, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
+	}
+
+	if err := utils.CheckProposalRequestResp(resp, true); err != nil {
+		return nil, err
+	}
+
+	chainConfig := &config.ChainConfig{}
+	err = proto.Unmarshal(resp.ContractResult.Result, chainConfig)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal contract result failed, %s", err.Error())
+	}
+
+	return chainConfig.ResourcePolicies, nil
+}
+
 // CreateChainConfigConsensusNodeIdAddPayload create chain config consensus node id add payload
 func (cc *ChainClient) CreateChainConfigConsensusNodeIdAddPayload(nodeOrgId string,
 	nodeIds []string) (*common.Payload, error) {
