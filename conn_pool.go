@@ -21,6 +21,7 @@ import (
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/keepalive"
 )
 
 const (
@@ -139,6 +140,11 @@ func NewCanonicalTxFetcherPools(config *ChainClientConfig) (map[string]Connectio
 // 初始化GPRC客户端连接
 func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string,
 	tlsHostName string) (*grpc.ClientConn, error) {
+	var kacp = keepalive.ClientParameters{
+		Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
+		Timeout:             time.Second,      // wait 1 second for ping ack before considering the connection dead
+		PermitWithoutStream: true,             // send pings even without active streams
+	}
 	var tlsClient ca.CAClient
 	if useTLS {
 		if len(caCerts) != 0 {
@@ -174,6 +180,7 @@ func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, 
 				grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize),
 				grpc.MaxCallSendMsgSize(pool.rpcMaxSendMsgSize),
 			),
+			grpc.WithKeepaliveParams(kacp),
 		)
 	}
 	return grpc.Dial(
@@ -183,6 +190,7 @@ func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, 
 			grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize),
 			grpc.MaxCallSendMsgSize(pool.rpcMaxSendMsgSize),
 		),
+		grpc.WithKeepaliveParams(kacp),
 	)
 }
 
