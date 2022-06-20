@@ -10,6 +10,7 @@ package chainmaker_sdk_go
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc/keepalive"
 	"math/rand"
 	"time"
 
@@ -103,6 +104,11 @@ func NewConnPool(config *ChainClientConfig) (*ClientConnectionPool, error) {
 // 初始化GPRC客户端连接
 func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, caPaths, caCerts []string,
 	tlsHostName string) (*grpc.ClientConn, error) {
+	var kacp = keepalive.ClientParameters{
+		Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
+		Timeout:             time.Second,      // wait 1 second for ping ack before considering the connection dead
+		PermitWithoutStream: true,             // send pings even without active streams
+	}
 	var tlsClient ca.CAClient
 	if useTLS {
 		if len(caCerts) != 0 {
@@ -127,11 +133,25 @@ func (pool *ClientConnectionPool) initGRPCConnect(nodeAddr string, useTLS bool, 
 		if err != nil {
 			return nil, err
 		}
-		return grpc.Dial(nodeAddr, grpc.WithTransportCredentials(*c),
-			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)))
+		return grpc.Dial(
+			nodeAddr,
+			grpc.WithTransportCredentials(*c),
+			grpc.WithDefaultCallOptions(
+				grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize),
+				grpc.MaxCallSendMsgSize(pool.rpcMaxSendMsgSize),
+			),
+			grpc.WithKeepaliveParams(kacp),
+		)
 	}
-	return grpc.Dial(nodeAddr, grpc.WithInsecure(),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize)))
+	return grpc.Dial(
+		nodeAddr,
+		grpc.WithInsecure(),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(pool.rpcMaxRecvMsgSize),
+			grpc.MaxCallSendMsgSize(pool.rpcMaxSendMsgSize),
+		),
+		grpc.WithKeepaliveParams(kacp),
+	)
 }
 
 // 获取空闲的可用客户端连接对象
