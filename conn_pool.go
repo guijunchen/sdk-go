@@ -10,7 +10,6 @@ package chainmaker_sdk_go
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc/keepalive"
 	"math/rand"
 	"time"
 
@@ -22,6 +21,7 @@ import (
 	"github.com/Rican7/retry/strategy"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/keepalive"
 )
 
 const (
