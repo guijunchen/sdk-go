@@ -418,7 +418,7 @@ func (cc *ChainClient) CreateChainConfigPermissionDeletePayload(resourceName str
 	return payload, nil
 }
 
-// GetChainConfig get chain config
+// GetChainConfigPermissionList get chain config
 func (cc *ChainClient) GetChainConfigPermissionList() ([]*config.ResourcePolicy, error) {
 	cc.logger.Debug("[SDK] begin to get chain config permission list")
 

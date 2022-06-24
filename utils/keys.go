@@ -9,10 +9,12 @@ package utils
 //nolint
 const (
 	// System Block Contract keys
-	KeyBlockContractWithRWSet   = "withRWSet"
-	KeyBlockContractBlockHash   = "blockHash"
-	KeyBlockContractBlockHeight = "blockHeight"
-	KeyBlockContractTxId        = "txId"
+	KeyBlockContractWithRWSet        = "withRWSet"
+	KeyBlockContractBlockHash        = "blockHash"
+	KeyBlockContractBlockHeight      = "blockHeight"
+	KeyBlockContractTxId             = "txId"
+	KeyBlockContractTruncateValueLen = "truncateValueLen"
+	KeyBlockContractTruncateModel    = "truncateModel"
 
 	// System Chain Config Contract keys
 	KeyChainConfigContractRoot              = "root"

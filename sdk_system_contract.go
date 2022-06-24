@@ -93,23 +93,66 @@ func (cc *ChainClient) GetTxWithRWSetByTxId(txId string) (*common.TransactionInf
 	return tx, nil
 }
 
-// GetBlockByHeight get block by block height, returns *common.BlockInfo
-func (cc *ChainClient) GetBlockByHeight(blockHeight uint64, withRWSet bool) (*common.BlockInfo, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%t]",
-		syscontract.ChainQueryFunction_GET_BLOCK_BY_HEIGHT, blockHeight, withRWSet)
+type parameterBuilder func() *common.KeyValuePair
 
+func parBlockHeight(blockHeight uint64) parameterBuilder {
+	return func() *common.KeyValuePair {
+		return &common.KeyValuePair{
+			Key:   utils.KeyBlockContractBlockHeight,
+			Value: []byte(strconv.FormatUint(blockHeight, 10)),
+		}
+	}
+}
+func parWithRWSet(withRWSet bool) parameterBuilder {
+	return func() *common.KeyValuePair {
+		return &common.KeyValuePair{
+			Key:   utils.KeyBlockContractWithRWSet,
+			Value: []byte(strconv.FormatBool(withRWSet)),
+		}
+	}
+}
+func parBlockHash(blockHash string) parameterBuilder {
+	return func() *common.KeyValuePair {
+		return &common.KeyValuePair{
+			Key:   utils.KeyBlockContractBlockHash,
+			Value: []byte(blockHash),
+		}
+	}
+}
+
+func parTxId(txId string) parameterBuilder {
+	return func() *common.KeyValuePair {
+		return &common.KeyValuePair{
+			Key:   utils.KeyBlockContractTxId,
+			Value: []byte(txId),
+		}
+	}
+}
+
+func parTruncateValueLen(length int) parameterBuilder {
+	return func() *common.KeyValuePair {
+		return &common.KeyValuePair{
+			Key:   utils.KeyBlockContractTruncateValueLen,
+			Value: []byte(strconv.Itoa(length)),
+		}
+	}
+}
+
+func parTruncateModelEmpty() parameterBuilder {
+	return func() *common.KeyValuePair {
+		return &common.KeyValuePair{
+			Key:   utils.KeyBlockContractTruncateModel,
+			Value: []byte("empty"), //超出长度则清空Value
+		}
+	}
+}
+func (cc *ChainClient) queryBlockInfo(queryBlockFunc string, parameter ...parameterBuilder) (*common.BlockInfo, error) {
+	var parameters []*common.KeyValuePair
+	for _, p := range parameter {
+		parameters = append(parameters, p())
+	}
 	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
-		syscontract.ChainQueryFunction_GET_BLOCK_BY_HEIGHT.String(), []*common.KeyValuePair{
-			{
-				Key:   utils.KeyBlockContractBlockHeight,
-				Value: []byte(strconv.FormatUint(blockHeight, 10)),
-			},
-			{
-				Key:   utils.KeyBlockContractWithRWSet,
-				Value: []byte(strconv.FormatBool(withRWSet)),
-			},
-		}, defaultSeq, nil,
-	)
+		queryBlockFunc, parameters, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -125,120 +168,55 @@ func (cc *ChainClient) GetBlockByHeight(blockHeight uint64, withRWSet bool) (*co
 
 	blockInfo := &common.BlockInfo{}
 	if err = proto.Unmarshal(resp.ContractResult.Result, blockInfo); err != nil {
-		return nil, fmt.Errorf("GetBlockByHeight unmarshal block info payload failed, %s", err)
+		return nil, fmt.Errorf("%s unmarshal block info payload failed, %s", queryBlockFunc, err)
 	}
 
 	return blockInfo, nil
+}
+
+// GetBlockByHeight get block by block height, returns *common.BlockInfo
+func (cc *ChainClient) GetBlockByHeight(blockHeight uint64, withRWSet bool) (*common.BlockInfo, error) {
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%t]",
+		syscontract.ChainQueryFunction_GET_BLOCK_BY_HEIGHT, blockHeight, withRWSet)
+	return cc.queryBlockInfo(syscontract.ChainQueryFunction_GET_BLOCK_BY_HEIGHT.String(),
+		parBlockHeight(blockHeight), parWithRWSet(withRWSet))
+}
+
+// GetBlockByHeightTruncate 根据区块高度获得区块，但是对于长度超过100的ParameterValue则清空Value
+// @param blockHeight
+// @param withRWSet
+// @return *common.BlockInfo
+// @return error
+func (cc *ChainClient) GetBlockByHeightTruncate(blockHeight uint64, withRWSet bool) (*common.BlockInfo, error) {
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%t]",
+		syscontract.ChainQueryFunction_GET_BLOCK_BY_HEIGHT, blockHeight, withRWSet)
+	return cc.queryBlockInfo(syscontract.ChainQueryFunction_GET_BLOCK_BY_HEIGHT.String(),
+		parBlockHeight(blockHeight), parWithRWSet(withRWSet),
+		parTruncateValueLen(100), parTruncateModelEmpty())
 }
 
 // GetBlockByHash get block by block hash, returns *common.BlockInfo
 func (cc *ChainClient) GetBlockByHash(blockHash string, withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHash:%s]/[withRWSet:%t]",
 		syscontract.ChainQueryFunction_GET_BLOCK_BY_HASH, blockHash, withRWSet)
-
-	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
-		syscontract.ChainQueryFunction_GET_BLOCK_BY_HASH.String(), []*common.KeyValuePair{
-			{
-				Key:   utils.KeyBlockContractBlockHash,
-				Value: []byte(blockHash),
-			},
-			{
-				Key:   utils.KeyBlockContractWithRWSet,
-				Value: []byte(strconv.FormatBool(withRWSet)),
-			},
-		}, defaultSeq, nil,
-	)
-
-	resp, err := cc.proposalRequest(payload, nil)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
-	}
-
-	if err = utils.CheckProposalRequestResp(resp, true); err != nil {
-		if utils.IsArchived(resp.Code) {
-			return nil, errors.New(resp.Code.String())
-		}
-		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
-	}
-
-	blockInfo := &common.BlockInfo{}
-	if err = proto.Unmarshal(resp.ContractResult.Result, blockInfo); err != nil {
-		return nil, fmt.Errorf("GetBlockByHash unmarshal block info payload failed, %s", err)
-	}
-
-	return blockInfo, nil
+	return cc.queryBlockInfo(syscontract.ChainQueryFunction_GET_BLOCK_BY_HASH.String(),
+		parBlockHash(blockHash), parWithRWSet(withRWSet))
 }
 
 // GetBlockByTxId get block by tx id, returns *common.BlockInfo
 func (cc *ChainClient) GetBlockByTxId(txId string, withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]/[withRWSet:%t]",
 		syscontract.ChainQueryFunction_GET_BLOCK_BY_TX_ID, txId, withRWSet)
-
-	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
-		syscontract.ChainQueryFunction_GET_BLOCK_BY_TX_ID.String(), []*common.KeyValuePair{
-			{
-				Key:   utils.KeyBlockContractTxId,
-				Value: []byte(txId),
-			},
-			{
-				Key:   utils.KeyBlockContractWithRWSet,
-				Value: []byte(strconv.FormatBool(withRWSet)),
-			},
-		}, defaultSeq, nil,
-	)
-
-	resp, err := cc.proposalRequest(payload, nil)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
-	}
-
-	if err = utils.CheckProposalRequestResp(resp, true); err != nil {
-		if utils.IsArchived(resp.Code) {
-			return nil, errors.New(resp.Code.String())
-		}
-		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
-	}
-
-	blockInfo := &common.BlockInfo{}
-	if err = proto.Unmarshal(resp.ContractResult.Result, blockInfo); err != nil {
-		return nil, fmt.Errorf("GetBlockByTxId unmarshal block info payload failed, %s", err)
-	}
-
-	return blockInfo, nil
+	return cc.queryBlockInfo(syscontract.ChainQueryFunction_GET_BLOCK_BY_TX_ID.String(),
+		parTxId(txId), parWithRWSet(withRWSet))
 }
 
 // GetLastConfigBlock get last config block
 func (cc *ChainClient) GetLastConfigBlock(withRWSet bool) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[withRWSet:%t]",
 		syscontract.ChainQueryFunction_GET_LAST_CONFIG_BLOCK, withRWSet)
-
-	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
-		syscontract.ChainQueryFunction_GET_LAST_CONFIG_BLOCK.String(), []*common.KeyValuePair{
-			{
-				Key:   utils.KeyBlockContractWithRWSet,
-				Value: []byte(strconv.FormatBool(withRWSet)),
-			},
-		}, defaultSeq, nil,
-	)
-
-	resp, err := cc.proposalRequest(payload, nil)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
-	}
-
-	if err = utils.CheckProposalRequestResp(resp, true); err != nil {
-		if utils.IsArchived(resp.Code) {
-			return nil, errors.New(resp.Code.String())
-		}
-		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
-	}
-
-	blockInfo := &common.BlockInfo{}
-	if err = proto.Unmarshal(resp.ContractResult.Result, blockInfo); err != nil {
-		return nil, fmt.Errorf("GetBlockByTxId unmarshal block info payload failed, %s", err)
-	}
-
-	return blockInfo, nil
+	return cc.queryBlockInfo(syscontract.ChainQueryFunction_GET_LAST_CONFIG_BLOCK.String(),
+		parWithRWSet(withRWSet))
 }
 
 // GetChainInfo get chain info
