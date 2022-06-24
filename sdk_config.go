@@ -26,9 +26,9 @@ const (
 	// MaxConnCnt 单ChainMaker节点最大连接数
 	MaxConnCnt = 1024
 	// DefaultGetTxTimeout 查询交易超时时间
-	DefaultGetTxTimeout = 10
+	DefaultGetTxTimeout = 60
 	// DefaultSendTxTimeout 发送交易超时时间
-	DefaultSendTxTimeout = 10
+	DefaultSendTxTimeout = 60
 	// DefaultRpcClientMaxReceiveMessageSize 默认grpc客户端接收message最大值 4M
 	DefaultRpcClientMaxReceiveMessageSize = 4
 	// DefaultRpcClientMaxSendMessageSize 默认grpc客户端发送message最大值 4M
