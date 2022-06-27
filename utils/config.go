@@ -44,8 +44,10 @@ type archiveConfigModel struct {
 }
 
 type rpcClientConfigModel struct {
-	MaxRecvMsgSize int `mapstructure:"max_receive_message_size"`
-	MaxSendMsgSize int `mapstructure:"max_send_message_size"`
+	MaxRecvMsgSize int   `mapstructure:"max_receive_message_size"`
+	MaxSendMsgSize int   `mapstructure:"max_send_message_size"`
+	SendTxTimeout  int64 `mapstructure:"send_tx_timeout"`
+	GetTxTimeout   int64 `mapstructure:"get_tx_timeout"`
 }
 
 type pkcs11ConfigModel struct {

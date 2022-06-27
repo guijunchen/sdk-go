@@ -26,9 +26,9 @@ const (
 	// MaxConnCnt 单ChainMaker节点最大连接数
 	MaxConnCnt = 1024
 	// DefaultGetTxTimeout 查询交易超时时间
-	DefaultGetTxTimeout = 60
+	DefaultGetTxTimeout = 10
 	// DefaultSendTxTimeout 发送交易超时时间
-	DefaultSendTxTimeout = 60
+	DefaultSendTxTimeout = 10
 	// DefaultRpcClientMaxReceiveMessageSize 默认grpc客户端接收message最大值 4M
 	DefaultRpcClientMaxReceiveMessageSize = 4
 	// DefaultRpcClientMaxSendMessageSize 默认grpc客户端发送message最大值 4M
@@ -125,6 +125,8 @@ func WithSecretKey(key string) ArchiveOption {
 type RPCClientConfig struct {
 	// grpc客户端接收和发送消息时，允许单条message大小的最大值(MB)
 	rpcClientMaxReceiveMessageSize, rpcClientMaxSendMessageSize int
+	// grpc客户端发送交易和查询交易超时时间
+	rpcClientSendTxTimeout, rpcClientGetTxTimeout int64
 }
 
 type RPCClientOption func(config *RPCClientConfig)
@@ -140,6 +142,20 @@ func WithRPCClientMaxReceiveMessageSize(size int) RPCClientOption {
 func WithRPCClientMaxSendMessageSize(size int) RPCClientOption {
 	return func(config *RPCClientConfig) {
 		config.rpcClientMaxSendMessageSize = size
+	}
+}
+
+// WithRPCClientSendTxTimeout 设置RPC Client的发送交易超时时间
+func WithRPCClientSendTxTimeout(timeout int64) RPCClientOption {
+	return func(config *RPCClientConfig) {
+		config.rpcClientSendTxTimeout = timeout
+	}
+}
+
+// WithRPCClientGetTxTimeout 设置RPC Client的查询交易超时时间
+func WithRPCClientGetTxTimeout(timeout int64) RPCClientOption {
+	return func(config *RPCClientConfig) {
+		config.rpcClientGetTxTimeout = timeout
 	}
 }
 
@@ -555,6 +571,8 @@ func setRPCClientConfig(config *ChainClientConfig) {
 		rpcClient := NewRPCClientConfig(
 			WithRPCClientMaxReceiveMessageSize(utils.Config.ChainClientConfig.RPCClientConfig.MaxRecvMsgSize),
 			WithRPCClientMaxSendMessageSize(utils.Config.ChainClientConfig.RPCClientConfig.MaxSendMsgSize),
+			WithRPCClientSendTxTimeout(utils.Config.ChainClientConfig.RPCClientConfig.SendTxTimeout),
+			WithRPCClientGetTxTimeout(utils.Config.ChainClientConfig.RPCClientConfig.GetTxTimeout),
 		)
 		config.rpcClientConfig = rpcClient
 	}
@@ -759,6 +777,8 @@ func checkRPCClientConfig(config *ChainClientConfig) error {
 		rpcClient := NewRPCClientConfig(
 			WithRPCClientMaxReceiveMessageSize(DefaultRpcClientMaxReceiveMessageSize),
 			WithRPCClientMaxSendMessageSize(DefaultRpcClientMaxSendMessageSize),
+			WithRPCClientSendTxTimeout(DefaultSendTxTimeout),
+			WithRPCClientGetTxTimeout(DefaultGetTxTimeout),
 		)
 		config.rpcClientConfig = rpcClient
 	} else {
@@ -767,6 +787,12 @@ func checkRPCClientConfig(config *ChainClientConfig) error {
 		}
 		if config.rpcClientConfig.rpcClientMaxSendMessageSize <= 0 {
 			config.rpcClientConfig.rpcClientMaxSendMessageSize = DefaultRpcClientMaxSendMessageSize
+		}
+		if config.rpcClientConfig.rpcClientSendTxTimeout <= 0 {
+			config.rpcClientConfig.rpcClientSendTxTimeout = DefaultSendTxTimeout
+		}
+		if config.rpcClientConfig.rpcClientGetTxTimeout <= 0 {
+			config.rpcClientConfig.rpcClientGetTxTimeout = DefaultGetTxTimeout
 		}
 	}
 	return nil

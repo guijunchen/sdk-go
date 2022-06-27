@@ -309,6 +309,14 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 		}
 	}
 
+	if cc.rpcClientConfig.rpcClientGetTxTimeout != 0 &&
+		txRequest.Payload.TxType == common.TxType_QUERY_CONTRACT {
+		timeout = cc.rpcClientConfig.rpcClientGetTxTimeout
+	} else if cc.rpcClientConfig.rpcClientSendTxTimeout != 0 &&
+		txRequest.Payload.TxType != common.TxType_QUERY_CONTRACT {
+		timeout = cc.rpcClientConfig.rpcClientSendTxTimeout
+	}
+
 	ignoreAddrs := make(map[string]struct{})
 	for {
 		client, err := cc.pool.getClientWithIgnoreAddrs(ignoreAddrs)
