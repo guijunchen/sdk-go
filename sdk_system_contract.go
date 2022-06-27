@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/pb-go/v2/discovery"
@@ -21,57 +22,14 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
-// GetTxByTxId get tx by tx id, returns *common.TransactionInfo
-func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error) {
-	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
-		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID, txId)
-
+func (cc *ChainClient) queryTxInfo(parameter ...parameterBuilder) (
+	*common.TransactionInfoWithRWSet, error) {
+	var parameters []*common.KeyValuePair
+	for _, p := range parameter {
+		parameters = append(parameters, p())
+	}
 	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
-		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID.String(), []*common.KeyValuePair{
-			{
-				Key:   utils.KeyBlockContractTxId,
-				Value: []byte(txId),
-			},
-		}, defaultSeq, nil,
-	)
-
-	resp, err := cc.proposalRequest(payload, nil)
-	if err != nil {
-		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
-	}
-
-	if err = utils.CheckProposalRequestResp(resp, true); err != nil {
-		if utils.IsArchived(resp.Code) {
-			return nil, errors.New(resp.Code.String())
-		}
-		return nil, fmt.Errorf(errStringFormat, payload.TxType, err)
-	}
-
-	transactionInfo := &common.TransactionInfo{}
-	if err = proto.Unmarshal(resp.ContractResult.Result, transactionInfo); err != nil {
-		return nil, fmt.Errorf("GetTxByTxId unmarshal transaction info payload failed, %s", err)
-	}
-
-	return transactionInfo, nil
-}
-
-// GetTxWithRWSetByTxId get tx with rwset by tx id
-func (cc *ChainClient) GetTxWithRWSetByTxId(txId string) (*common.TransactionInfoWithRWSet, error) {
-	cc.logger.Debugf("[SDK] begin GetTxWithRWSetByTxId, [method:%s]/[txId:%s]",
-		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID, txId)
-
-	payload := cc.CreatePayload("", common.TxType_QUERY_CONTRACT, syscontract.SystemContract_CHAIN_QUERY.String(),
-		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID.String(), []*common.KeyValuePair{
-			{
-				Key:   utils.KeyBlockContractTxId,
-				Value: []byte(txId),
-			},
-			{
-				Key:   utils.KeyBlockContractWithRWSet,
-				Value: []byte("true"),
-			},
-		}, defaultSeq, nil,
-	)
+		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID.String(), parameters, defaultSeq, nil)
 
 	resp, err := cc.proposalRequest(payload, nil)
 	if err != nil {
@@ -87,10 +45,50 @@ func (cc *ChainClient) GetTxWithRWSetByTxId(txId string) (*common.TransactionInf
 
 	tx := &common.TransactionInfoWithRWSet{}
 	if err = proto.Unmarshal(resp.ContractResult.Result, tx); err != nil {
-		return nil, fmt.Errorf("GetTxWithRWSetByTxId unmarshal failed, %s", err)
+		return nil, fmt.Errorf("GetTxByTxId unmarshal failed, %s", err)
 	}
 
 	return tx, nil
+}
+
+// GetTxByTxId get tx by tx id, returns *common.TransactionInfo
+func (cc *ChainClient) GetTxByTxId(txId string) (*common.TransactionInfo, error) {
+	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[txId:%s]",
+		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID, txId)
+	tx, err := cc.queryTxInfo(parTxId(txId))
+	if err != nil {
+		return nil, err
+	}
+	transactionInfo := &common.TransactionInfo{
+		Transaction:    tx.Transaction,
+		BlockHeight:    tx.BlockHeight,
+		BlockHash:      tx.BlockHash,
+		TxIndex:        tx.TxIndex,
+		BlockTimestamp: tx.BlockTimestamp,
+	}
+	return transactionInfo, nil
+}
+
+// GetTxWithRWSetByTxId get tx with rwset by tx id
+func (cc *ChainClient) GetTxWithRWSetByTxId(txId string) (*common.TransactionInfoWithRWSet, error) {
+	cc.logger.Debugf("[SDK] begin GetTxWithRWSetByTxId, [method:%s]/[txId:%s]",
+		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID, txId)
+	return cc.queryTxInfo(parTxId(txId), parWithRWSet(true))
+}
+
+// GetTxByTxIdTruncate 根据TxId获得Transaction对象，并根据参数进行截断
+// @param txId
+// @param withRWSet
+// @param truncateLength
+// @param truncateModel
+// @return *common.TransactionInfoWithRWSet
+// @return error
+func (cc *ChainClient) GetTxByTxIdTruncate(txId string, withRWSet bool, truncateLength int,
+	truncateModel string) (*common.TransactionInfoWithRWSet, error) {
+	cc.logger.Debugf("[SDK] begin GetTxWithRWSetByTxId, [method:%s]/[txId:%s]",
+		syscontract.ChainQueryFunction_GET_TX_BY_TX_ID, txId)
+	return cc.queryTxInfo(parTxId(txId), parWithRWSet(withRWSet), parTruncateValueLen(truncateLength),
+		parTruncateModelReplace(truncateModel))
 }
 
 type parameterBuilder func() *common.KeyValuePair
@@ -138,11 +136,44 @@ func parTruncateValueLen(length int) parameterBuilder {
 	}
 }
 
+//parTruncateModelEmpty 超出长度则清空Value
 func parTruncateModelEmpty() parameterBuilder {
 	return func() *common.KeyValuePair {
 		return &common.KeyValuePair{
 			Key:   utils.KeyBlockContractTruncateModel,
-			Value: []byte("empty"), //超出长度则清空Value
+			Value: []byte("empty"),
+		}
+	}
+}
+
+//parTruncateModelTruncate 超出长度则截断超出部分的Value
+func parTruncateModelTruncate() parameterBuilder {
+	return func() *common.KeyValuePair {
+		return &common.KeyValuePair{
+			Key:   utils.KeyBlockContractTruncateModel,
+			Value: []byte("truncate"),
+		}
+	}
+}
+
+//parTruncateModelHash 超出长度则计算Value的Hash替代Value
+func parTruncateModelHash() parameterBuilder {
+	return func() *common.KeyValuePair {
+		return &common.KeyValuePair{
+			Key:   utils.KeyBlockContractTruncateModel,
+			Value: []byte("hash"),
+		}
+	}
+}
+
+// parTruncateModelReplace 指定字符串替代Value
+// @param str
+// @return parameterBuilder
+func parTruncateModelReplace(str string) parameterBuilder {
+	return func() *common.KeyValuePair {
+		return &common.KeyValuePair{
+			Key:   utils.KeyBlockContractTruncateModel,
+			Value: []byte(str),
 		}
 	}
 }
@@ -185,14 +216,28 @@ func (cc *ChainClient) GetBlockByHeight(blockHeight uint64, withRWSet bool) (*co
 // GetBlockByHeightTruncate 根据区块高度获得区块，但是对于长度超过100的ParameterValue则清空Value
 // @param blockHeight
 // @param withRWSet
+// @param truncateLength 截断的长度设置
+// @param truncateModel 截断的模式设置:hash,truncate,empty
 // @return *common.BlockInfo
 // @return error
-func (cc *ChainClient) GetBlockByHeightTruncate(blockHeight uint64, withRWSet bool) (*common.BlockInfo, error) {
+func (cc *ChainClient) GetBlockByHeightTruncate(blockHeight uint64, withRWSet bool, truncateLength int,
+	truncateModel string) (*common.BlockInfo, error) {
 	cc.logger.Debugf("[SDK] begin to QUERY system contract, [method:%s]/[blockHeight:%d]/[withRWSet:%t]",
 		syscontract.ChainQueryFunction_GET_BLOCK_BY_HEIGHT, blockHeight, withRWSet)
+	var model parameterBuilder
+	switch strings.ToLower(truncateModel) {
+	case "hash":
+		model = parTruncateModelHash()
+	case "truncate":
+		model = parTruncateModelTruncate()
+	case "empty":
+		model = parTruncateModelEmpty()
+	default:
+		model = parTruncateModelReplace(truncateModel)
+	}
 	return cc.queryBlockInfo(syscontract.ChainQueryFunction_GET_BLOCK_BY_HEIGHT.String(),
 		parBlockHeight(blockHeight), parWithRWSet(withRWSet),
-		parTruncateValueLen(100), parTruncateModelEmpty())
+		parTruncateValueLen(truncateLength), model)
 }
 
 // GetBlockByHash get block by block hash, returns *common.BlockInfo
