@@ -38,7 +38,7 @@ func (cc *ChainClient) GetSyncResult(txId string) (*common.Result, error) {
 	return cc.pollingTxResult(txId)
 }
 
-func (cc *ChainClient) GetSyncResultV2(txId string) (*txResult, error) {
+func (cc *ChainClient) getSyncResultV2(txId string) (*txResult, error) {
 	if cc.enableTxResultDispatcher {
 		return cc.asyncTxResult(txId)
 	}
@@ -134,7 +134,7 @@ func (cc *ChainClient) sendContractRequestV2(payload *common.Payload, endorsers 
 	txResp := &TxResponse{Response: resp}
 	if resp.Code == common.TxStatusCode_SUCCESS {
 		if withSyncResult {
-			result, err := cc.GetSyncResultV2(payload.TxId)
+			result, err := cc.getSyncResultV2(payload.TxId)
 			if err != nil {
 				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
 			}

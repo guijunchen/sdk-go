@@ -301,20 +301,12 @@ func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64)
 		errMsg string
 	)
 
-	if timeout < 0 {
+	if timeout <= 0 {
 		if txRequest.Payload.TxType == common.TxType_QUERY_CONTRACT {
-			timeout = DefaultGetTxTimeout
+			timeout = cc.rpcClientConfig.rpcClientGetTxTimeout
 		} else {
-			timeout = DefaultSendTxTimeout
+			timeout = cc.rpcClientConfig.rpcClientSendTxTimeout
 		}
-	}
-
-	if cc.rpcClientConfig.rpcClientGetTxTimeout != 0 &&
-		txRequest.Payload.TxType == common.TxType_QUERY_CONTRACT {
-		timeout = cc.rpcClientConfig.rpcClientGetTxTimeout
-	} else if cc.rpcClientConfig.rpcClientSendTxTimeout != 0 &&
-		txRequest.Payload.TxType != common.TxType_QUERY_CONTRACT {
-		timeout = cc.rpcClientConfig.rpcClientSendTxTimeout
 	}
 
 	ignoreAddrs := make(map[string]struct{})
