@@ -134,6 +134,17 @@ func NewPkcs11Config(enabled bool, typ, libPath, label, password string,
 	}
 }
 
+// NewCryptoConfig 根据传入参数创建新的CryptoConfig对象
+// @param opts
+// @return *CryptoConfig
+func NewCryptoConfig(opts ...CryptoOption) *CryptoConfig {
+	config := &CryptoConfig{}
+	for _, opt := range opts {
+		opt(config)
+	}
+	return config
+}
+
 // NewChainClient new chain client
 func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	config, err := generateConfig(opts...)

@@ -164,7 +164,7 @@ func (cc *ChainClient) InvokeContract(contractName, method, txId string, kvs []*
 	return cc.InvokeContractWithLimit(contractName, method, txId, kvs, timeout, withSyncResult, nil)
 }
 
-// InvokeContractWithLimit nvoke contract with specified gas limit
+// InvokeContractWithLimit invoke contract with specified gas limit
 func (cc *ChainClient) InvokeContractWithLimit(contractName, method, txId string, kvs []*common.KeyValuePair,
 	timeout int64, withSyncResult bool, limit *common.Limit) (*common.TxResponse, error) {
 
@@ -174,6 +174,18 @@ func (cc *ChainClient) InvokeContractWithLimit(contractName, method, txId string
 	payload := cc.CreatePayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, defaultSeq, limit)
 
 	return cc.sendContractRequest(payload, nil, timeout, withSyncResult)
+}
+
+// InvokeContractWithLimitV2  invoke contract with specified gas limit
+func (cc *ChainClient) InvokeContractWithLimitV2(contractName, method, txId string, kvs []*common.KeyValuePair,
+	timeout int64, withSyncResult bool, limit *common.Limit) (*TxResponse, error) {
+
+	cc.logger.Debugf("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
+		contractName, method, txId, kvs)
+
+	payload := cc.CreatePayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, defaultSeq, limit)
+
+	return cc.sendContractRequestV2(payload, nil, timeout, withSyncResult)
 }
 
 // QueryContract query contract

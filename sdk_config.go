@@ -433,6 +433,13 @@ func WithPkcs11Config(conf *Pkcs11Config) ChainClientOption {
 	}
 }
 
+// WithCryptoConfig 设置crypto配置
+func WithCryptoConfig(conf *CryptoConfig) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.crypto = conf
+	}
+}
+
 // WithEnableTxResultDispatcher 设置是否启用 异步订阅机制获取交易结果。
 // 默认不启用，如不启用将继续使用轮训机制获取交易结果。
 func WithEnableTxResultDispatcher(enable bool) ChainClientOption {

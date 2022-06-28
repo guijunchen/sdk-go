@@ -31,11 +31,30 @@ const (
 // GetSyncResult get sync result of tx
 func (cc *ChainClient) GetSyncResult(txId string) (*common.Result, error) {
 	if cc.enableTxResultDispatcher {
-		return cc.asyncTxResult(txId)
+		r, err := cc.asyncTxResult(txId)
+		if err != nil {
+			return nil, err
+		}
+		return r.Result, nil
 	} else if cc.enableSyncCanonicalTxResult {
 		return cc.syncCanonicalTxResult(txId)
 	}
 	return cc.pollingTxResult(txId)
+}
+
+// getSyncResultV2 get sync result of tx
+// @param txId
+// @return *txResult
+// @return error
+func (cc *ChainClient) getSyncResultV2(txId string) (*txResult, error) {
+	if cc.enableTxResultDispatcher {
+		return cc.asyncTxResult(txId)
+	}
+	r, err := cc.pollingTxResult(txId)
+	if err != nil {
+		return nil, err
+	}
+	return &txResult{Result: r}, nil
 }
 
 func (cc *ChainClient) pollingTxResult(txId string) (*common.Result, error) {
@@ -67,7 +86,7 @@ func (cc *ChainClient) pollingTxResult(txId string) (*common.Result, error) {
 	return txInfo.Transaction.Result, nil
 }
 
-func (cc *ChainClient) asyncTxResult(txId string) (*common.Result, error) {
+func (cc *ChainClient) asyncTxResult(txId string) (*txResult, error) {
 	txResultC := cc.txResultDispatcher.register(txId)
 	defer cc.txResultDispatcher.unregister(txId)
 
@@ -104,6 +123,40 @@ func (cc *ChainClient) sendContractRequest(payload *common.Payload, endorsers []
 	}
 
 	return resp, nil
+}
+
+// TxResponse 交易响应对象
+type TxResponse struct {
+	Response    *common.TxResponse
+	TxTimestamp int64
+	BlockHeight uint64
+}
+
+func (cc *ChainClient) sendContractRequestV2(payload *common.Payload, endorsers []*common.EndorsementEntry,
+	timeout int64, withSyncResult bool) (*TxResponse, error) {
+
+	resp, err := cc.proposalRequestWithTimeout(payload, endorsers, timeout)
+	if err != nil {
+		return nil, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
+	}
+
+	txResp := &TxResponse{Response: resp}
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if withSyncResult {
+			result, err := cc.getSyncResultV2(payload.TxId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+			resp.Code = result.Result.Code
+			resp.Message = result.Result.Message
+			resp.ContractResult = result.Result.ContractResult
+			resp.TxId = payload.TxId
+			txResp.TxTimestamp = result.TxTimestamp
+			txResp.BlockHeight = result.BlockHeight
+		}
+	}
+
+	return txResp, nil
 }
 
 // CreatePayload create unsigned payload

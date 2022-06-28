@@ -23,7 +23,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// 同步获取权威的公认的交易结果，即超过半数共识的交易
+// syncCanonicalTxResult 同步获取权威的公认的交易结果，即超过半数共识的交易
 func (cc *ChainClient) syncCanonicalTxResult(txId string) (*common.Result, error) {
 	txResultC := make(chan *common.Result, 1)
 	defer close(txResultC)
