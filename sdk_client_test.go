@@ -20,16 +20,19 @@ import (
 func TestChainClient_ChangeSigner(t *testing.T) {
 	tests := []struct {
 		name                string
+		sdkConfigPath       string
 		userSignCrtFilePath string
 		userSignKeyFilePath string
 	}{
 		{
 			"PermissionedWithCert mode",
+			"./testdata/sdk_config.yml",
 			"./testdata/crypto-config/wx-org1.chainmaker.org/user/client1/client1.sign.crt",
 			"./testdata/crypto-config/wx-org1.chainmaker.org/user/client1/client1.sign.key",
 		},
 		{
 			"Public or PermissionedWithKey mode",
+			"./testdata/sdk_config_pk.yml",
 			"",
 			"./testdata/crypto-config-pk/public/admin/admin1/admin1.key",
 		},
@@ -52,7 +55,7 @@ func TestChainClient_ChangeSigner(t *testing.T) {
 				require.Nil(t, err)
 			}
 
-			cc := &ChainClient{}
+			cc, _ := NewChainClient(WithConfPath(tt.sdkConfigPath))
 			err = cc.ChangeSigner(privKey, userSignCrt)
 			require.Nil(t, err)
 
