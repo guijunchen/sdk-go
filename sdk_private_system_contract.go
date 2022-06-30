@@ -292,7 +292,7 @@ func (cc *ChainClient) SaveEnclaveCACert(
 		utils.KeyCaCert: []byte(enclaveCACert),
 	})
 
-	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
+	payload := cc.CreatePayload(txId, common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
 		syscontract.PrivateComputeFunction_SAVE_CA_CERT.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.sendContractRequest(payload, nil, timeout, withSyncResult)
@@ -330,7 +330,7 @@ func (cc *ChainClient) SaveEnclaveReport(
 		utils.KeyReport:    []byte(report),
 	})
 
-	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
+	payload := cc.CreatePayload(txId, common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
 		syscontract.PrivateComputeFunction_SAVE_ENCLAVE_REPORT.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.sendContractRequest(payload, nil, timeout, withSyncResult)
@@ -447,7 +447,7 @@ func (cc *ChainClient) SaveRemoteAttestationProof(proof, txId string, withSyncRe
 		utils.KeyProof: []byte(proof),
 	})
 
-	payload := cc.CreatePayload("", common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
+	payload := cc.CreatePayload(txId, common.TxType_INVOKE_CONTRACT, syscontract.SystemContract_PRIVATE_COMPUTE.String(),
 		syscontract.PrivateComputeFunction_SAVE_REMOTE_ATTESTATION.String(), pairs, defaultSeq, nil)
 
 	resp, err := cc.sendContractRequest(payload, nil, timeout, withSyncResult)

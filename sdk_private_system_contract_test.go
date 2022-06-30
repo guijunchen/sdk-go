@@ -795,7 +795,29 @@ func TestChainClient_SaveData(t *testing.T) {
 		wantErr      bool
 	}{
 		{
-			name: "bad",
+			name: "good",
+			serverTxResp: &common.TxResponse{
+				Code: common.TxStatusCode_SUCCESS,
+				ContractResult: &common.ContractResult{
+					Code:   ContractResultCode_OK,
+					Result: []byte("result"),
+				},
+			},
+
+			serverTxErr: nil,
+			args: args{
+				txId: "16fcaa5605b76ba0ca254bc88a6992c3abbcf57510cd4705a9648f31dd16c105",
+			},
+
+			want: &common.TxResponse{
+				ContractResult: &common.ContractResult{
+					Result: []byte("result")},
+				TxId: "16fcaa5605b76ba0ca254bc88a6992c3abbcf57510cd4705a9648f31dd16c105",
+			},
+			wantErr: false,
+		},
+		{
+			name: "good",
 			serverTxResp: &common.TxResponse{
 				Code: common.TxStatusCode_SUCCESS,
 				ContractResult: &common.ContractResult{
@@ -807,8 +829,11 @@ func TestChainClient_SaveData(t *testing.T) {
 			serverTxErr: nil,
 			args:        args{},
 
-			want:    nil,
-			wantErr: true,
+			want: &common.TxResponse{
+				ContractResult: &common.ContractResult{
+					Result: []byte("result")},
+			},
+			wantErr: false,
 		},
 	}
 
@@ -824,6 +849,7 @@ func TestChainClient_SaveData(t *testing.T) {
 				t.Errorf("SaveData() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			got.TxId = tt.want.TxId
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("SaveData() got = %v, want %v", got, tt.want)
 			}
@@ -849,7 +875,28 @@ func TestChainClient_SaveDir(t *testing.T) {
 		wantErr      bool
 	}{
 		{
-			name: "bad",
+			name: "good",
+			serverTxResp: &common.TxResponse{
+				Code: common.TxStatusCode_SUCCESS,
+				ContractResult: &common.ContractResult{
+					Code:   ContractResultCode_OK,
+					Result: []byte("result"),
+				},
+			},
+			serverTxErr: nil,
+			args: args{
+				privateDir: &common.StrSlice{StrArr: nil},
+				txId:       "16fcaa5605b76ba0ca254bc88a6992c3abbcf57510cd4705a9648f31dd16c105",
+			},
+			want: &common.TxResponse{
+				ContractResult: &common.ContractResult{
+					Result: []byte("result")},
+				TxId: "16fcaa5605b76ba0ca254bc88a6992c3abbcf57510cd4705a9648f31dd16c105",
+			},
+			wantErr: false,
+		},
+		{
+			name: "good",
 			serverTxResp: &common.TxResponse{
 				Code: common.TxStatusCode_SUCCESS,
 				ContractResult: &common.ContractResult{
@@ -861,8 +908,11 @@ func TestChainClient_SaveDir(t *testing.T) {
 			args: args{
 				privateDir: &common.StrSlice{StrArr: nil},
 			},
-			want:    nil,
-			wantErr: true,
+			want: &common.TxResponse{
+				ContractResult: &common.ContractResult{
+					Result: []byte("result")},
+			},
+			wantErr: false,
 		},
 	}
 
@@ -877,6 +927,7 @@ func TestChainClient_SaveDir(t *testing.T) {
 				t.Errorf("SaveDir() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			got.TxId = tt.want.TxId
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("SaveDir() got = %v, want %v", got, tt.want)
 			}
@@ -901,7 +952,27 @@ func TestChainClient_SaveEnclaveCACert(t *testing.T) {
 		wantErr      bool
 	}{
 		{
-			name: "bad",
+			name: "good",
+			serverTxResp: &common.TxResponse{
+				Code: common.TxStatusCode_SUCCESS,
+				ContractResult: &common.ContractResult{
+					Code:   ContractResultCode_OK,
+					Result: []byte("result"),
+				},
+			},
+			serverTxErr: nil,
+			args: args{
+				txId: "16fcaa5605b76ba0ca254bc88a6992c3abbcf57510cd4705a9648f31dd16c105",
+			},
+			want: &common.TxResponse{
+				ContractResult: &common.ContractResult{
+					Result: []byte("result")},
+				TxId: "16fcaa5605b76ba0ca254bc88a6992c3abbcf57510cd4705a9648f31dd16c105",
+			},
+			wantErr: false,
+		},
+		{
+			name: "good",
 			serverTxResp: &common.TxResponse{
 				Code: common.TxStatusCode_SUCCESS,
 				ContractResult: &common.ContractResult{
@@ -911,8 +982,11 @@ func TestChainClient_SaveEnclaveCACert(t *testing.T) {
 			},
 			serverTxErr: nil,
 			args:        args{},
-			want:        nil,
-			wantErr:     true,
+			want: &common.TxResponse{
+				ContractResult: &common.ContractResult{
+					Result: []byte("result")},
+			},
+			wantErr: false,
 		},
 	}
 
@@ -927,6 +1001,7 @@ func TestChainClient_SaveEnclaveCACert(t *testing.T) {
 				t.Errorf("SaveEnclaveCACert() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			got.TxId = tt.want.TxId
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("SaveEnclaveCACert() got = %v, want %v", got, tt.want)
 			}
@@ -952,7 +1027,27 @@ func TestChainClient_SaveEnclaveReport(t *testing.T) {
 		wantErr      bool
 	}{
 		{
-			name: "bad",
+			name: "good",
+			serverTxResp: &common.TxResponse{
+				Code: common.TxStatusCode_SUCCESS,
+				ContractResult: &common.ContractResult{
+					Code:   ContractResultCode_OK,
+					Result: []byte("result"),
+				},
+			},
+			serverTxErr: nil,
+			args: args{
+				txId: "16fcaa5605b76ba0ca254bc88a6992c3abbcf57510cd4705a9648f31dd16c105",
+			},
+			want: &common.TxResponse{
+				ContractResult: &common.ContractResult{
+					Result: []byte("result")},
+				TxId: "16fcaa5605b76ba0ca254bc88a6992c3abbcf57510cd4705a9648f31dd16c105",
+			},
+			wantErr: false,
+		},
+		{
+			name: "good",
 			serverTxResp: &common.TxResponse{
 				Code: common.TxStatusCode_SUCCESS,
 				ContractResult: &common.ContractResult{
@@ -962,8 +1057,11 @@ func TestChainClient_SaveEnclaveReport(t *testing.T) {
 			},
 			serverTxErr: nil,
 			args:        args{},
-			want:        nil,
-			wantErr:     true,
+			want: &common.TxResponse{
+				ContractResult: &common.ContractResult{
+					Result: []byte("result")},
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -977,6 +1075,7 @@ func TestChainClient_SaveEnclaveReport(t *testing.T) {
 				t.Errorf("SaveEnclaveReport() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			got.TxId = tt.want.TxId
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("SaveEnclaveReport() got = %v, want %v", got, tt.want)
 			}
@@ -1000,7 +1099,27 @@ func TestChainClient_SaveRemoteAttestationProof(t *testing.T) {
 		wantErr      bool
 	}{
 		{
-			name: "bad",
+			name: "good",
+			serverTxResp: &common.TxResponse{
+				Code: common.TxStatusCode_SUCCESS,
+				ContractResult: &common.ContractResult{
+					Code:   ContractResultCode_OK,
+					Result: []byte("result"),
+				},
+			},
+			serverTxErr: nil,
+			args: args{
+				txId: "16fcaa5605b76ba0ca254bc88a6992c3abbcf57510cd4705a9648f31dd16c105",
+			},
+			want: &common.TxResponse{
+				ContractResult: &common.ContractResult{
+					Result: []byte("result")},
+				TxId: "16fcaa5605b76ba0ca254bc88a6992c3abbcf57510cd4705a9648f31dd16c105",
+			},
+			wantErr: false,
+		},
+		{
+			name: "good",
 			serverTxResp: &common.TxResponse{
 				Code: common.TxStatusCode_SUCCESS,
 				ContractResult: &common.ContractResult{
@@ -1010,8 +1129,11 @@ func TestChainClient_SaveRemoteAttestationProof(t *testing.T) {
 			},
 			serverTxErr: nil,
 			args:        args{},
-			want:        nil,
-			wantErr:     true,
+			want: &common.TxResponse{
+				ContractResult: &common.ContractResult{
+					Result: []byte("result")},
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -1025,6 +1147,7 @@ func TestChainClient_SaveRemoteAttestationProof(t *testing.T) {
 				t.Errorf("SaveRemoteAttestationProof() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			got.TxId = tt.want.TxId
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("SaveRemoteAttestationProof() got = %v, want %v", got, tt.want)
 			}
@@ -1049,7 +1172,7 @@ func TestChainClient_SendMultiSigningRequest(t *testing.T) {
 		wantErr      bool
 	}{
 		{
-			name: "bad",
+			name: "good",
 			serverTxResp: &common.TxResponse{
 				Code: common.TxStatusCode_SUCCESS,
 				ContractResult: &common.ContractResult{
@@ -1061,8 +1184,11 @@ func TestChainClient_SendMultiSigningRequest(t *testing.T) {
 			args: args{
 				payload: &common.Payload{},
 			},
-			want:    nil,
-			wantErr: true,
+			want: &common.TxResponse{
+				ContractResult: &common.ContractResult{
+					Result: []byte("result")},
+			},
+			wantErr: false,
 		},
 	}
 
