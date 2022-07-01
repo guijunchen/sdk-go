@@ -957,14 +957,13 @@ func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 			if err != nil {
 				return fmt.Errorf("read user private Key file failed, %s", err.Error())
 			}
-
-			config.privateKey, err = asym.PrivateKeyFromPEM(config.userSignKeyBytes, nil)
-			if err != nil {
-				return fmt.Errorf("PrivateKeyFromPEM failed, %s", err.Error())
-			}
-
-			config.userPk = config.privateKey.PublicKey()
 		}
+		config.privateKey, err = asym.PrivateKeyFromPEM(config.userSignKeyBytes, nil)
+		if err != nil {
+			return fmt.Errorf("PrivateKeyFromPEM failed, %s", err.Error())
+		}
+
+		config.userPk = config.privateKey.PublicKey()
 		return nil
 	}
 
