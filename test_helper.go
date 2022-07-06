@@ -102,6 +102,7 @@ func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverTxError error,
 		enableNormalKey:             conf.enableNormalKey,
 		enableTxResultDispatcher:    conf.enableTxResultDispatcher,
 		enableSyncCanonicalTxResult: conf.enableSyncCanonicalTxResult,
+		ConfigModel:                 conf.ConfigModel,
 	}
 
 	// 启动 异步订阅交易结果

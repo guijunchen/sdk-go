@@ -18,7 +18,6 @@ import (
 	"chainmaker.org/chainmaker/common/v2/crypto"
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
-	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
 func TestSignPayloadWithPath(t *testing.T) {
@@ -42,8 +41,8 @@ func TestSignPayloadWithPath(t *testing.T) {
 			require.Nil(t, err)
 			defer cli.Stop()
 
-			e, err := SignPayloadWithPath(utils.Config.ChainClientConfig.UserSignKeyFilePath,
-				utils.Config.ChainClientConfig.UserSignCrtFilePath, tt.unsignedPayload)
+			e, err := SignPayloadWithPath(cli.ConfigModel.ChainClientConfig.UserSignKeyFilePath,
+				cli.ConfigModel.ChainClientConfig.UserSignCrtFilePath, tt.unsignedPayload)
 			require.Equal(t, tt.wantErr, err != nil)
 
 			payloadBz, err := proto.Marshal(tt.unsignedPayload)
