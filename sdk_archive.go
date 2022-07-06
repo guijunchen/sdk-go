@@ -148,7 +148,7 @@ func (cc *ChainClient) GetArchivedTxByTxId(txId string) (*common.TransactionInfo
 // required sdk config file `archive` configured
 // returns *store.BlockWithRWSet
 func (cc *ChainClient) GetFromArchiveStore(blockHeight uint64) (*store.BlockWithRWSet, error) {
-	archiveType := utils.Config.ChainClientConfig.ArchiveConfig.Type
+	archiveType := cc.ConfigModel.ChainClientConfig.ArchiveConfig.Type
 	if archiveType == "mysql" {
 		return cc.GetArchivedBlockFromMySQL(blockHeight)
 	}
@@ -165,7 +165,7 @@ func (cc *ChainClient) GetArchivedBlockFromMySQL(blockHeight uint64) (*store.Blo
 		blockWithRWSet      store.BlockWithRWSet
 	)
 
-	dest := utils.Config.ChainClientConfig.ArchiveConfig.Dest
+	dest := cc.ConfigModel.ChainClientConfig.ArchiveConfig.Dest
 	destList := strings.Split(dest, ":")
 	if len(destList) != 4 {
 		return nil, fmt.Errorf("invalid archive dest")

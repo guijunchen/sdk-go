@@ -14,9 +14,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Config global ChainClientConfigModel
-var Config *ChainClientConfigModel
-
 type cryptoModel struct {
 	Hash string `mapstructure:"hash"`
 }
@@ -113,24 +110,24 @@ type ChainClientConfigModel struct {
 }
 
 // InitConfig init config from config file path
-func InitConfig(confPath string) error {
+func InitConfig(confPath string) (*ChainClientConfigModel, error) {
 	var (
 		err       error
 		confViper *viper.Viper
 	)
 
 	if confViper, err = initViper(confPath); err != nil {
-		return fmt.Errorf("Load sdk config failed, %s", err)
+		return nil, fmt.Errorf("Load sdk config failed, %s", err)
 	}
 
-	Config = &ChainClientConfigModel{}
-	if err = confViper.Unmarshal(&Config); err != nil {
-		return fmt.Errorf("Unmarshal config file failed, %s", err)
+	configModel := &ChainClientConfigModel{}
+	if err = confViper.Unmarshal(&configModel); err != nil {
+		return nil, fmt.Errorf("Unmarshal config file failed, %s", err)
 	}
 
-	Config.ChainClientConfig.AuthType = strings.ToLower(Config.ChainClientConfig.AuthType)
+	configModel.ChainClientConfig.AuthType = strings.ToLower(configModel.ChainClientConfig.AuthType)
 
-	return nil
+	return configModel, nil
 }
 
 func initViper(confPath string) (*viper.Viper, error) {

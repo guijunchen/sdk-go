@@ -8,12 +8,11 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"chainmaker.org/chainmaker/common/v2/crypto/sdf"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
-
-	"chainmaker.org/chainmaker/common/v2/crypto/sdf"
 
 	"chainmaker.org/chainmaker/common/v2/cert"
 	"chainmaker.org/chainmaker/common/v2/crypto"
@@ -282,6 +281,8 @@ type ChainClientConfig struct {
 	enableTxResultDispatcher bool
 	// enable sync canonical tx result
 	enableSyncCanonicalTxResult bool
+
+	ConfigModel *utils.ChainClientConfigModel
 }
 
 // CryptoConfig define crypto config
@@ -493,10 +494,10 @@ func generateConfig(opts ...ChainClientOption) (*ChainClientConfig, error) {
 
 func setAuthType(config *ChainClientConfig) {
 	if config.authType == 0 {
-		if utils.Config.ChainClientConfig.AuthType == "" {
+		if config.ConfigModel.ChainClientConfig.AuthType == "" {
 			config.authType = PermissionedWithCert
 		} else {
-			config.authType = StringToAuthTypeMap[utils.Config.ChainClientConfig.AuthType]
+			config.authType = StringToAuthTypeMap[config.ConfigModel.ChainClientConfig.AuthType]
 		}
 	}
 }
@@ -507,75 +508,75 @@ func setCrypto(config *ChainClientConfig) {
 		return
 	}
 
-	if utils.Config.ChainClientConfig.Crypto != nil && config.crypto == nil {
+	if config.ConfigModel.ChainClientConfig.Crypto != nil && config.crypto == nil {
 		config.crypto = &CryptoConfig{
-			hash: utils.Config.ChainClientConfig.Crypto.Hash,
+			hash: config.ConfigModel.ChainClientConfig.Crypto.Hash,
 		}
 	}
 }
 
 func setChainConfig(config *ChainClientConfig) {
-	if utils.Config.ChainClientConfig.ChainId != "" && config.chainId == "" {
-		config.chainId = utils.Config.ChainClientConfig.ChainId
+	if config.ConfigModel.ChainClientConfig.ChainId != "" && config.chainId == "" {
+		config.chainId = config.ConfigModel.ChainClientConfig.ChainId
 	}
 
-	if utils.Config.ChainClientConfig.OrgId != "" && config.orgId == "" {
-		config.orgId = utils.Config.ChainClientConfig.OrgId
+	if config.ConfigModel.ChainClientConfig.OrgId != "" && config.orgId == "" {
+		config.orgId = config.ConfigModel.ChainClientConfig.OrgId
 	}
 
-	if utils.Config.ChainClientConfig.Alias != "" && config.alias == "" {
-		config.alias = utils.Config.ChainClientConfig.Alias
+	if config.ConfigModel.ChainClientConfig.Alias != "" && config.alias == "" {
+		config.alias = config.ConfigModel.ChainClientConfig.Alias
 	}
 
-	config.enableNormalKey = utils.Config.ChainClientConfig.EnableNormalKey
+	config.enableNormalKey = config.ConfigModel.ChainClientConfig.EnableNormalKey
 }
 
 // nolint
 // 如果参数没有设置，便使用配置文件的配置
 func setUserConfig(config *ChainClientConfig) {
 	if config.authType == PermissionedWithKey || config.authType == Public { // 公钥身份或公链模式
-		if utils.Config.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyFilePath == "" &&
+		if config.ConfigModel.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyFilePath == "" &&
 			config.userSignKeyBytes == nil {
-			config.userSignKeyFilePath = utils.Config.ChainClientConfig.UserSignKeyFilePath
+			config.userSignKeyFilePath = config.ConfigModel.ChainClientConfig.UserSignKeyFilePath
 		}
 		return
 	}
 
 	// 默认证书模式
-	if utils.Config.ChainClientConfig.UserKeyFilePath != "" && config.userKeyFilePath == "" &&
+	if config.ConfigModel.ChainClientConfig.UserKeyFilePath != "" && config.userKeyFilePath == "" &&
 		config.userKeyBytes == nil {
-		config.userKeyFilePath = utils.Config.ChainClientConfig.UserKeyFilePath
+		config.userKeyFilePath = config.ConfigModel.ChainClientConfig.UserKeyFilePath
 	}
 
-	if utils.Config.ChainClientConfig.UserCrtFilePath != "" && config.userCrtFilePath == "" &&
+	if config.ConfigModel.ChainClientConfig.UserCrtFilePath != "" && config.userCrtFilePath == "" &&
 		config.userCrtBytes == nil {
-		config.userCrtFilePath = utils.Config.ChainClientConfig.UserCrtFilePath
+		config.userCrtFilePath = config.ConfigModel.ChainClientConfig.UserCrtFilePath
 	}
 
-	if utils.Config.ChainClientConfig.UserEncKeyFilePath != "" && config.userEncKeyFilePath == "" &&
+	if config.ConfigModel.ChainClientConfig.UserEncKeyFilePath != "" && config.userEncKeyFilePath == "" &&
 		config.userEncKeyBytes == nil {
-		config.userEncKeyFilePath = utils.Config.ChainClientConfig.UserEncKeyFilePath
+		config.userEncKeyFilePath = config.ConfigModel.ChainClientConfig.UserEncKeyFilePath
 	}
 
-	if utils.Config.ChainClientConfig.UserEncCrtFilePath != "" && config.userEncCrtFilePath == "" &&
+	if config.ConfigModel.ChainClientConfig.UserEncCrtFilePath != "" && config.userEncCrtFilePath == "" &&
 		config.userEncCrtBytes == nil {
-		config.userEncCrtFilePath = utils.Config.ChainClientConfig.UserEncCrtFilePath
+		config.userEncCrtFilePath = config.ConfigModel.ChainClientConfig.UserEncCrtFilePath
 	}
 
-	if utils.Config.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyFilePath == "" &&
+	if config.ConfigModel.ChainClientConfig.UserSignKeyFilePath != "" && config.userSignKeyFilePath == "" &&
 		config.userSignKeyBytes == nil {
-		config.userSignKeyFilePath = utils.Config.ChainClientConfig.UserSignKeyFilePath
+		config.userSignKeyFilePath = config.ConfigModel.ChainClientConfig.UserSignKeyFilePath
 	}
 
-	if utils.Config.ChainClientConfig.UserSignCrtFilePath != "" && config.userSignCrtFilePath == "" &&
+	if config.ConfigModel.ChainClientConfig.UserSignCrtFilePath != "" && config.userSignCrtFilePath == "" &&
 		config.userSignCrtBytes == nil {
-		config.userSignCrtFilePath = utils.Config.ChainClientConfig.UserSignCrtFilePath
+		config.userSignCrtFilePath = config.ConfigModel.ChainClientConfig.UserSignCrtFilePath
 	}
 }
 
 func setNodeList(config *ChainClientConfig) {
-	if len(utils.Config.ChainClientConfig.NodesConfig) > 0 && len(config.nodeList) == 0 {
-		for _, conf := range utils.Config.ChainClientConfig.NodesConfig {
+	if len(config.ConfigModel.ChainClientConfig.NodesConfig) > 0 && len(config.nodeList) == 0 {
+		for _, conf := range config.ConfigModel.ChainClientConfig.NodesConfig {
 			// 只允许证书模式下启用TLS
 			if config.authType == PermissionedWithKey || config.authType == Public {
 				conf.EnableTLS = false
@@ -600,10 +601,10 @@ func setNodeList(config *ChainClientConfig) {
 }
 
 func setArchiveConfig(config *ChainClientConfig) {
-	if utils.Config.ChainClientConfig.ArchiveConfig != nil && config.archiveConfig == nil {
+	if config.ConfigModel.ChainClientConfig.ArchiveConfig != nil && config.archiveConfig == nil {
 		archive := NewArchiveConfig(
 			// secret key
-			WithSecretKey(utils.Config.ChainClientConfig.ArchiveConfig.SecretKey),
+			WithSecretKey(config.ConfigModel.ChainClientConfig.ArchiveConfig.SecretKey),
 		)
 
 		config.archiveConfig = archive
@@ -611,12 +612,12 @@ func setArchiveConfig(config *ChainClientConfig) {
 }
 
 func setRPCClientConfig(config *ChainClientConfig) {
-	if utils.Config.ChainClientConfig.RPCClientConfig != nil && config.rpcClientConfig == nil {
+	if config.ConfigModel.ChainClientConfig.RPCClientConfig != nil && config.rpcClientConfig == nil {
 		rpcClient := NewRPCClientConfig(
-			WithRPCClientMaxReceiveMessageSize(utils.Config.ChainClientConfig.RPCClientConfig.MaxRecvMsgSize),
-			WithRPCClientMaxSendMessageSize(utils.Config.ChainClientConfig.RPCClientConfig.MaxSendMsgSize),
-			WithRPCClientSendTxTimeout(utils.Config.ChainClientConfig.RPCClientConfig.SendTxTimeout),
-			WithRPCClientGetTxTimeout(utils.Config.ChainClientConfig.RPCClientConfig.GetTxTimeout),
+			WithRPCClientMaxReceiveMessageSize(config.ConfigModel.ChainClientConfig.RPCClientConfig.MaxRecvMsgSize),
+			WithRPCClientMaxSendMessageSize(config.ConfigModel.ChainClientConfig.RPCClientConfig.MaxSendMsgSize),
+			WithRPCClientSendTxTimeout(config.ConfigModel.ChainClientConfig.RPCClientConfig.SendTxTimeout),
+			WithRPCClientGetTxTimeout(config.ConfigModel.ChainClientConfig.RPCClientConfig.GetTxTimeout),
 		)
 		config.rpcClientConfig = rpcClient
 	}
@@ -624,22 +625,22 @@ func setRPCClientConfig(config *ChainClientConfig) {
 
 func setPkcs11Config(config *ChainClientConfig) {
 	if config.authType == PermissionedWithCert {
-		if utils.Config.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
+		if config.ConfigModel.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
 			config.pkcs11Config = NewPkcs11Config(
-				utils.Config.ChainClientConfig.Pkcs11Config.Enabled,
-				utils.Config.ChainClientConfig.Pkcs11Config.Type,
-				utils.Config.ChainClientConfig.Pkcs11Config.Library,
-				utils.Config.ChainClientConfig.Pkcs11Config.Label,
-				utils.Config.ChainClientConfig.Pkcs11Config.Password,
-				utils.Config.ChainClientConfig.Pkcs11Config.SessionCacheSize,
-				utils.Config.ChainClientConfig.Pkcs11Config.Hash,
+				config.ConfigModel.ChainClientConfig.Pkcs11Config.Enabled,
+				config.ConfigModel.ChainClientConfig.Pkcs11Config.Type,
+				config.ConfigModel.ChainClientConfig.Pkcs11Config.Library,
+				config.ConfigModel.ChainClientConfig.Pkcs11Config.Label,
+				config.ConfigModel.ChainClientConfig.Pkcs11Config.Password,
+				config.ConfigModel.ChainClientConfig.Pkcs11Config.SessionCacheSize,
+				config.ConfigModel.ChainClientConfig.Pkcs11Config.Hash,
 			)
 		}
 	} else {
 		config.pkcs11Config = &Pkcs11Config{
 			Enabled: false,
 		}
-		//if utils.Config.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
+		//if config.ConfigModel.ChainClientConfig.Pkcs11Config != nil && config.pkcs11Config == nil {
 		//	config.pkcs11Config = &Pkcs11Config{
 		//	}
 		//}
@@ -647,8 +648,8 @@ func setPkcs11Config(config *ChainClientConfig) {
 }
 
 func setRetryConfig(config *ChainClientConfig) {
-	config.retryLimit = utils.Config.ChainClientConfig.RetryLimit
-	config.retryInterval = utils.Config.ChainClientConfig.RetryInterval
+	config.retryLimit = config.ConfigModel.ChainClientConfig.RetryLimit
+	config.retryInterval = config.ConfigModel.ChainClientConfig.RetryInterval
 }
 
 func readConfigFile(config *ChainClientConfig) error {
@@ -656,10 +657,15 @@ func readConfigFile(config *ChainClientConfig) error {
 	if config.confPath == "" {
 		return nil
 	}
-
-	if err := utils.InitConfig(config.confPath); err != nil {
+	var (
+		configModel *utils.ChainClientConfigModel
+		err         error
+	)
+	if configModel, err = utils.InitConfig(config.confPath); err != nil {
 		return fmt.Errorf("init config failed, %s", err.Error())
 	}
+
+	config.ConfigModel = configModel
 
 	setAuthType(config)
 

@@ -79,6 +79,8 @@ type ChainClient struct {
 	enableTxResultDispatcher bool
 	// enable sync canonical tx result
 	enableSyncCanonicalTxResult bool
+
+	ConfigModel *utils.ChainClientConfigModel
 }
 
 // NewNodeConfig new node config, returns *NodeConfig
@@ -196,6 +198,8 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		enableNormalKey:             config.enableNormalKey,
 		enableTxResultDispatcher:    config.enableTxResultDispatcher,
 		enableSyncCanonicalTxResult: config.enableSyncCanonicalTxResult,
+
+		ConfigModel: config.ConfigModel,
 	}
 
 	// 若设置了别名，便启用

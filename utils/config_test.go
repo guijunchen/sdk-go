@@ -26,7 +26,7 @@ func TestInitConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := InitConfig(tt.confPath)
+			_, err := InitConfig(tt.confPath)
 			require.Nil(t, err)
 		})
 	}
