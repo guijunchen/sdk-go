@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
-	"chainmaker.org/chainmaker/common/v2/crypto/sdf"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -18,6 +17,7 @@ import (
 	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/crypto/asym"
 	"chainmaker.org/chainmaker/common/v2/crypto/pkcs11"
+	"chainmaker.org/chainmaker/common/v2/crypto/sdf"
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/common/v2/log"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
