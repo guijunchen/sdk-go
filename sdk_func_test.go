@@ -135,9 +135,9 @@ CpIO2ZrxkJ1Nm/FKZzMLQjp7Dm//xEMkpCbqqC6koOkRP2MKGSnEGXGfRr1QgBvr
 			)
 
 			if tt.name == "pkHex" {
-				addr, err = GetZXAddressFromPKHex(tt.input)
+				addr, err = GetZXAddressFromPKHex(tt.input, crypto.CRYPTO_ALGO_SM3)
 			} else if tt.name == "pkPEM" {
-				addr, err = GetZXAddressFromPKPEM(tt.input)
+				addr, err = GetZXAddressFromPKPEM(tt.input, crypto.CRYPTO_ALGO_SM3)
 			} else if tt.name == "certPEM" {
 				addr, err = GetZXAddressFromCertPEM(tt.input)
 			} else if tt.name == "certPath" {

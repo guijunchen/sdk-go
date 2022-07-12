@@ -13,15 +13,20 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	commonCrt "chainmaker.org/chainmaker/common/v2/cert"
 	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/crypto/asym"
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
-	"chainmaker.org/chainmaker/common/v2/evmutils"
 	"chainmaker.org/chainmaker/common/v2/serialize"
 	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/pb-go/v2/config"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
+	cmutils "chainmaker.org/chainmaker/utils/v2"
+)
+
+const (
+	// ZXLAddressPrefix define zhixinlian address prefix
+	ZXLAddressPrefix = "ZX"
 )
 
 // SignPayload sign payload
@@ -116,13 +121,7 @@ func GetEVMAddressFromCertBytes(certBytes []byte) (string, error) {
 		return "", fmt.Errorf("ParseCertificate cert failed, %s", err)
 	}
 
-	ski := hex.EncodeToString(cert.SubjectKeyId)
-	addrInt, err := evmutils.MakeAddressFromHex(ski)
-	if err != nil {
-		return "", fmt.Errorf("make address from cert SKI failed, %s", err)
-	}
-
-	return addrInt.String(), nil
+	return cmutils.CertToAddrStr(cert, config.AddrType_ETHEREUM)
 }
 
 // GetEVMAddressFromPrivateKeyBytes get evm address from private key bytes
@@ -131,22 +130,8 @@ func GetEVMAddressFromPrivateKeyBytes(privateKeyBytes []byte, hashType string) (
 	if err != nil {
 		return "", fmt.Errorf("PrivateKeyFromPEM failed, %s", err.Error())
 	}
-
 	publicKey := privateKey.PublicKey()
-
-	ski, err := commonCrt.ComputeSKI(crypto.HashAlgoMap[hashType], publicKey.ToStandardKey())
-	if err != nil {
-		return "", fmt.Errorf("computeSKI from publickey failed")
-	}
-
-	skiStr := hex.EncodeToString(ski)
-
-	addrInt, err := evmutils.MakeAddressFromHex(skiStr)
-	if err != nil {
-		return "", fmt.Errorf("make address from cert SKI failed, %s", err)
-	}
-
-	return addrInt.String(), nil
+	return cmutils.PkToAddrStr(publicKey, config.AddrType_ETHEREUM, crypto.HashAlgoMap[hashType])
 }
 
 // EasyCodecItemToParamsMap easy codec items to params map
@@ -155,28 +140,69 @@ func (cc *ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem
 }
 
 // GetZXAddressFromPKHex get zhixinlian address from public key hex
-func GetZXAddressFromPKHex(pkHex string) (string, error) {
-	pk, err := hex.DecodeString(pkHex)
+func GetZXAddressFromPKHex(pkHex, hashType string) (string, error) {
+	pkDER, err := hex.DecodeString(pkHex)
 	if err != nil {
 		return "", err
 	}
 
-	return evmutils.ZXAddressFromPublicKeyDER(pk)
+	pk, err := asym.PublicKeyFromDER(pkDER)
+	if err != nil {
+		return "", fmt.Errorf("fail to resolve public key from DER format: %v", err)
+	}
+
+	addr, err := cmutils.PkToAddrStr(pk, config.AddrType_ZXL, crypto.HashAlgoMap[hashType])
+	if err != nil {
+		return "", err
+	}
+	return ZXLAddressPrefix + addr, err
 }
 
 // GetZXAddressFromPKPEM get zhixinlian address from public key pem
-func GetZXAddressFromPKPEM(pkPEM string) (string, error) {
-	return evmutils.ZXAddressFromPublicKeyPEM([]byte(pkPEM))
+func GetZXAddressFromPKPEM(pkPEM, hashType string) (string, error) {
+	pemBlock, _ := pem.Decode([]byte(pkPEM))
+	if pemBlock == nil {
+		return "", fmt.Errorf("fail to resolve public key from PEM string")
+	}
+	pkDER := pemBlock.Bytes
+	pk, err := asym.PublicKeyFromDER(pkDER)
+	if err != nil {
+		return "", fmt.Errorf("fail to resolve public key from DER format: %v", err)
+	}
+
+	addr, err := cmutils.PkToAddrStr(pk, config.AddrType_ZXL, crypto.HashAlgoMap[hashType])
+	if err != nil {
+		return "", err
+	}
+	return ZXLAddressPrefix + addr, err
 }
 
 // GetZXAddressFromCertPEM get zhixinlian address from cert pem
 func GetZXAddressFromCertPEM(certPEM string) (string, error) {
-	return evmutils.ZXAddressFromCertificatePEM([]byte(certPEM))
+	pemBlock, _ := pem.Decode([]byte(certPEM))
+	if pemBlock == nil {
+		return "", fmt.Errorf("fail to resolve certificate from ")
+	}
+
+	cert, err := bcx509.ParseCertificate(pemBlock.Bytes)
+	if err != nil {
+		return "", fmt.Errorf("fail to resolve certificate from PEM format: %v", err)
+	}
+	addr, err := cmutils.CertToAddrStr(cert, config.AddrType_ZXL)
+	if err != nil {
+		return "", err
+	}
+	return ZXLAddressPrefix + addr, err
 }
 
 // GetZXAddressFromCertPath get zhixinlian address from cert file path
 func GetZXAddressFromCertPath(certPath string) (string, error) {
-	return evmutils.ZXAddressFromCertificatePath(certPath)
+	certContent, err := ioutil.ReadFile(certPath)
+	if err != nil {
+		return "", fmt.Errorf("fail to load certificate from file [%s]: %v", certPath, err)
+	}
+
+	return GetZXAddressFromCertPEM(string(certContent))
 }
 
 // GetCMAddressFromPKHex get chainmaker address from public key hex
@@ -191,11 +217,7 @@ func GetCMAddressFromPKHex(pkHex string, hashType string) (string, error) {
 		return "", err
 	}
 
-	ski, err := commonCrt.ComputeSKI(crypto.HashAlgoMap[hashType], pk.ToStandardKey())
-	if err != nil {
-		return "", fmt.Errorf("failed to calculate ski from public key, %s", err.Error())
-	}
-	return calculateCMAddressFromSKI(hex.EncodeToString(ski))
+	return cmutils.PkToAddrStr(pk, config.AddrType_CHAINMAKER, crypto.HashAlgoMap[hashType])
 }
 
 // GetCMAddressFromPKPEM get chainmaker address from public key pem
@@ -205,12 +227,7 @@ func GetCMAddressFromPKPEM(pkPEM string, hashType string) (string, error) {
 		return "", fmt.Errorf("parse public key failed, %s", err.Error())
 	}
 
-	ski, err := commonCrt.ComputeSKI(crypto.HashAlgoMap[hashType], publicKey.ToStandardKey())
-	if err != nil {
-		return "", fmt.Errorf("failed to calculate ski from public key, %s", err.Error())
-	}
-	return calculateCMAddressFromSKI(hex.EncodeToString(ski))
-
+	return cmutils.PkToAddrStr(publicKey, config.AddrType_CHAINMAKER, crypto.HashAlgoMap[hashType])
 }
 
 // GetCMAddressFromCertPEM get chainmaker address from cert pem
@@ -220,13 +237,11 @@ func GetCMAddressFromCertPEM(certPEM string) (string, error) {
 		return "", fmt.Errorf("fail to resolve certificate from PEM string")
 	}
 	crt, err := bcx509.ParseCertificate(pemBlock.Bytes)
-
 	if err != nil {
 		return "", fmt.Errorf("get chainmaker address failed, %s", err.Error())
 	}
 
-	ski := hex.EncodeToString(crt.SubjectKeyId)
-	return calculateCMAddressFromSKI(ski)
+	return cmutils.CertToAddrStr(crt, config.AddrType_CHAINMAKER)
 }
 
 // GetCMAddressFromCertPath get chainmaker address from cert file path
@@ -237,15 +252,4 @@ func GetCMAddressFromCertPath(certPath string) (string, error) {
 	}
 
 	return GetCMAddressFromCertPEM(string(certContent))
-}
-
-func calculateCMAddressFromSKI(ski string) (string, error) {
-	addrInt, err := evmutils.MakeAddressFromHex(ski)
-	if err != nil {
-		return "", fmt.Errorf("failed to calculate address of chainmaker type, %s", err.Error())
-	}
-
-	addr := evmutils.BigToAddress(addrInt)
-	addrBytes := addr[:]
-	return hex.EncodeToString(addrBytes), nil
 }
