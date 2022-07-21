@@ -16,7 +16,6 @@ import (
 	"os"
 	"reflect"
 
-	"chainmaker.org/chainmaker/common/v2/crypto"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 
@@ -367,7 +366,7 @@ func saveEnclaveCACert(client *sdk.ChainClient, enclaveCACert string, txId strin
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		return nil, err
@@ -484,7 +483,7 @@ func saveEnclaveReport(client *sdk.ChainClient, enclaveId string, report string,
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		return nil, err

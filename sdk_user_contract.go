@@ -176,6 +176,46 @@ func (cc *ChainClient) InvokeContractWithLimit(contractName, method, txId string
 	return cc.sendContractRequest(payload, nil, timeout, withSyncResult)
 }
 
+// InvokeContractBySigner invoke contract with specified signer.
+// use signer to sign payload if it is not nil.
+// use cc.privateKey to sign payload if signer is nil.
+func (cc *ChainClient) InvokeContractBySigner(contractName, method, txId string, kvs []*common.KeyValuePair,
+	timeout int64, withSyncResult bool, limit *common.Limit,
+	signer Signer) (*common.TxResponse, error) {
+
+	cc.logger.Debugf("[SDK] begin InvokeContractBySigner, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
+		contractName, method, txId, kvs)
+
+	// construct payload
+	payload := cc.CreatePayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, defaultSeq, limit)
+
+	// construct tx req & sign
+	req, err := cc.GenerateTxRequestBySigner(payload, nil, signer)
+	if err != nil {
+		return nil, err
+	}
+
+	// send tx req
+	resp, err := cc.sendTxRequest(req, timeout)
+	if err != nil {
+		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
+	}
+
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if withSyncResult {
+			result, err := cc.GetSyncResult(payload.TxId)
+			if err != nil {
+				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+			}
+			resp.Code = result.Code
+			resp.Message = result.Message
+			resp.ContractResult = result.ContractResult
+			resp.TxId = payload.TxId
+		}
+	}
+	return resp, nil
+}
+
 // InvokeContractWithLimitV2  invoke contract with specified gas limit
 func (cc *ChainClient) InvokeContractWithLimitV2(contractName, method, txId string, kvs []*common.KeyValuePair,
 	timeout int64, withSyncResult bool, limit *common.Limit) (*TxResponse, error) {

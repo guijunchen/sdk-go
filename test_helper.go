@@ -63,12 +63,12 @@ func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverTxError error,
 	_mockServer.txResponse = serverTxResponse
 	_mockServer.err = serverTxError
 
-	var hashType = ""
+	var hashType crypto.HashType
 	var publicKey crypto.PublicKey
 	var pkBytes []byte
 	var pkPem string
 	if conf.authType == PermissionedWithKey || conf.authType == Public {
-		hashType = conf.crypto.hash
+		hashType = crypto.HashAlgoMap[conf.crypto.hash]
 		publicKey = conf.userPk
 		pkPem, err = publicKey.String()
 		if err != nil {
@@ -76,6 +76,11 @@ func newMockChainClient(serverTxResponse *cmnpb.TxResponse, serverTxError error,
 		}
 
 		pkBytes = []byte(pkPem)
+	} else {
+		hashType, err = cmx509.GetHashFromSignatureAlgorithm(conf.userCrt.SignatureAlgorithm)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	cc := &ChainClient{

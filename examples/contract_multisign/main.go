@@ -14,7 +14,6 @@ import (
 	"strconv"
 	"time"
 
-	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/random/uuid"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
@@ -52,7 +51,7 @@ func main() {
 	fmt.Printf("send MultiSignContractReq resp: %+v\n", resp)
 
 	fmt.Println("====================== 各链管理员开始投票 ======================")
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[cc.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(cc.GetHashType(),
 		cc.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1,
 		examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {

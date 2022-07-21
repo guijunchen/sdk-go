@@ -62,7 +62,7 @@ type ChainClient struct {
 	// pkcs11 config
 	pkcs11Config *Pkcs11Config
 
-	hashType string
+	hashType crypto.HashType
 	authType AuthType
 	// retry config
 	retryLimit    int // if <=0 then use DefaultRetryLimit
@@ -159,12 +159,12 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		return nil, err
 	}
 
-	var hashType = ""
+	var hashType crypto.HashType
 	var publicKey crypto.PublicKey
 	var pkBytes []byte
 	var pkPem string
 	if config.authType == PermissionedWithKey || config.authType == Public {
-		hashType = config.crypto.hash
+		hashType = crypto.HashAlgoMap[config.crypto.hash]
 		publicKey = config.userPk
 		pkPem, err = publicKey.String()
 		if err != nil {
@@ -172,6 +172,11 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 		}
 
 		pkBytes = []byte(pkPem)
+	} else {
+		hashType, err = bcx509.GetHashFromSignatureAlgorithm(config.userCrt.SignatureAlgorithm)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	cc := &ChainClient{
@@ -255,74 +260,83 @@ func (cc *ChainClient) proposalRequestWithTimeout(payload *common.Payload, endor
 	return cc.sendTxRequest(req, timeout)
 }
 
-// GenerateTxRequest sign payload and generate *common.TxRequest
-func (cc *ChainClient) GenerateTxRequest(payload *common.Payload,
-	endorsers []*common.EndorsementEntry) (*common.TxRequest, error) {
-	var (
-		signer    *accesscontrol.Member
-		signBytes []byte
-		err       error
-	)
-
-	// 构造Sender
+func (cc *ChainClient) newAccessMember() *accesscontrol.Member {
+	var member *accesscontrol.Member
 	if cc.authType == PermissionedWithCert {
-
 		if cc.enabledAlias && len(cc.alias) > 0 {
-			signer = &accesscontrol.Member{
+			member = &accesscontrol.Member{
 				OrgId:      cc.orgId,
 				MemberInfo: []byte(cc.alias),
 				MemberType: accesscontrol.MemberType_ALIAS,
 			}
 		} else if cc.enabledCrtHash && len(cc.userCrtHash) > 0 {
-			signer = &accesscontrol.Member{
+			member = &accesscontrol.Member{
 				OrgId:      cc.orgId,
 				MemberInfo: cc.userCrtHash,
 				MemberType: accesscontrol.MemberType_CERT_HASH,
 			}
 		} else {
-			signer = &accesscontrol.Member{
+			member = &accesscontrol.Member{
 				OrgId:      cc.orgId,
 				MemberInfo: cc.userCrtBytes,
 				MemberType: accesscontrol.MemberType_CERT,
 			}
 		}
 	} else {
-		signer = &accesscontrol.Member{
+		member = &accesscontrol.Member{
 			OrgId:      cc.orgId,
 			MemberInfo: cc.pkBytes,
 			MemberType: accesscontrol.MemberType_PUBLIC_KEY,
 		}
 	}
+	return member
+}
 
+// GenerateTxRequest sign payload and generate *common.TxRequest
+func (cc *ChainClient) GenerateTxRequest(payload *common.Payload,
+	endorsers []*common.EndorsementEntry) (*common.TxRequest, error) {
 	req := &common.TxRequest{
 		Payload: payload,
 		Sender: &common.EndorsementEntry{
-			Signer:    signer,
-			Signature: nil,
+			Signer: cc.newAccessMember(),
 		},
 		Endorsers: endorsers,
 	}
+	var err error
+	req.Sender.Signature, err = utils.SignPayloadWithHashType(cc.privateKey, cc.hashType, payload)
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
+}
 
-	if cc.authType == PermissionedWithCert {
-		hashalgo, err := bcx509.GetHashFromSignatureAlgorithm(cc.userCrt.SignatureAlgorithm)
-		if err != nil {
-			return nil, fmt.Errorf("invalid algorithm: %v", err.Error())
-		}
-
-		signBytes, err = utils.SignPayloadWithHashType(cc.privateKey, hashalgo, payload)
-		if err != nil {
-			return nil, fmt.Errorf("SignPayload failed, %s", err.Error())
-		}
-	} else {
-		signBytes, err = utils.SignPayloadWithHashType(cc.privateKey, crypto.HashAlgoMap[cc.hashType], payload)
-		if err != nil {
-			return nil, fmt.Errorf("SignPayload failed, %s", err.Error())
-		}
+// GenerateTxRequestBySigner sign payload and generate *common.TxRequest
+// use signer to sign payload if it is not nil.
+// use cc.privateKey to sign payload if signer is nil.
+func (cc *ChainClient) GenerateTxRequestBySigner(payload *common.Payload, endorsers []*common.EndorsementEntry,
+	signer Signer) (*common.TxRequest, error) {
+	if signer == nil {
+		return cc.GenerateTxRequest(payload, endorsers)
 	}
 
-	req.Sender.Signature = signBytes
+	sig, err := signer.Sign(payload)
+	if err != nil {
+		return nil, err
+	}
 
-	return req, nil
+	member, err := signer.NewMember()
+	if err != nil {
+		return nil, err
+	}
+
+	return &common.TxRequest{
+		Payload: payload,
+		Sender: &common.EndorsementEntry{
+			Signer:    member,
+			Signature: sig,
+		},
+		Endorsers: endorsers,
+	}, nil
 }
 
 func (cc *ChainClient) sendTxRequest(txRequest *common.TxRequest, timeout int64) (*common.TxResponse, error) {
@@ -474,7 +488,7 @@ func (cc *ChainClient) GetUserCrtHash() []byte {
 }
 
 // GetHashType get hash type of cc
-func (cc *ChainClient) GetHashType() string {
+func (cc *ChainClient) GetHashType() crypto.HashType {
 	return cc.hashType
 }
 
@@ -504,7 +518,9 @@ func (cc *ChainClient) GetLocalCertAlias() string {
 }
 
 // ChangeSigner change ChainClient siger. signerCrt passes nil in Public or PermissionedWithKey mode
-func (cc *ChainClient) ChangeSigner(signerPrivKey crypto.PrivateKey, signerCrt *bcx509.Certificate) error {
+// publicModeHashType must be set in Public mode else set to zero value.
+func (cc *ChainClient) ChangeSigner(signerPrivKey crypto.PrivateKey, signerCrt *bcx509.Certificate,
+	publicModeHashType crypto.HashType) error {
 	signerPubKey := signerPrivKey.PublicKey()
 	pkPem, err := signerPubKey.String()
 	if err != nil {
@@ -519,6 +535,8 @@ func (cc *ChainClient) ChangeSigner(signerPrivKey crypto.PrivateKey, signerCrt *
 		crtPem := pem.EncodeToMemory(&pem.Block{Bytes: signerCrt.Raw, Type: "CERTIFICATE"})
 		cc.userCrtBytes = crtPem
 		cc.userCrt = signerCrt
+	} else {
+		cc.hashType = publicModeHashType
 	}
 	return nil
 }

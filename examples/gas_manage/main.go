@@ -109,7 +109,7 @@ func setGasAdmin(cc *sdk.ChainClient, address string) error {
 	if err != nil {
 		return err
 	}
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[cc.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(cc.GetHashType(),
 		cc.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1,
 		examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
@@ -235,7 +235,7 @@ func setInvokeBaseGas(cc *sdk.ChainClient) error {
 		return err
 	}
 
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[cc.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(cc.GetHashType(),
 		cc.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1,
 		examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {

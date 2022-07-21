@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"log"
 
-	"chainmaker.org/chainmaker/common/v2/crypto"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
 )
@@ -49,7 +48,7 @@ func main() {
 	fmt.Printf("newCertPEM=%s", newCertPEM)
 	updateAliasPayload := cc.CreateUpdateCertByAliasPayload(certAlias, newCertPEM)
 
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[cc.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(cc.GetHashType(),
 		cc.GetAuthType(), updateAliasPayload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1,
 		examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
@@ -71,7 +70,7 @@ func main() {
 	fmt.Println("====================== delete alias ======================")
 	deleteAliasPayload := cc.CreateDeleteCertsAliasPayload([]string{certAlias})
 
-	endorsers2, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[cc.GetHashType()],
+	endorsers2, err := examples.GetEndorsersWithAuthType(cc.GetHashType(),
 		cc.GetAuthType(), deleteAliasPayload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1,
 		examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {

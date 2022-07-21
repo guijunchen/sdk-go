@@ -10,7 +10,9 @@ import (
 	"errors"
 	"testing"
 
+	"chainmaker.org/chainmaker/common/v2/crypto/asym"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"chainmaker.org/chainmaker/sdk-go/v2/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -314,6 +316,51 @@ func TestInvokeContractWithLimit(t *testing.T) {
 
 			_, err = cc.InvokeContractWithLimit("claim", "save", "",
 				[]*common.KeyValuePair{}, -1, false, &common.Limit{GasLimit: 1000000})
+			require.Nil(t, err)
+		})
+	}
+}
+
+func TestInvokeContractBySigner(t *testing.T) {
+	tests := []struct {
+		name         string
+		serverTxResp *common.TxResponse
+		serverTxErr  error
+		privKeyPem   []byte
+		certPem      []byte
+		orgId        string
+	}{
+		{
+			"good",
+			&common.TxResponse{ContractResult: &common.ContractResult{
+				Result:  []byte{},
+				Message: "OK",
+			}},
+			nil,
+			[]byte("-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIByphjR4auvodMAWeaWsDXuADlGVi0ODAZtOh7tcIr2hoAoGCCqGSM49\nAwEHoUQDQgAE56xayRx0/a8KEXPxRfiSzYgJ/sE4tVeI/ZbjpiUX9m0TCJX7W/VH\ndm6WeJLOdCDuLLNvjGTyt8LLyqyubJI5AA==\n-----END EC PRIVATE KEY-----"),
+			[]byte("-----BEGIN CERTIFICATE-----\nMIICijCCAi+gAwIBAgIDBS9vMAoGCCqGSM49BAMCMIGKMQswCQYDVQQGEwJDTjEQ\nMA4GA1UECBMHQmVpamluZzEQMA4GA1UEBxMHQmVpamluZzEfMB0GA1UEChMWd3gt\nb3JnMS5jaGFpbm1ha2VyLm9yZzESMBAGA1UECxMJcm9vdC1jZXJ0MSIwIAYDVQQD\nExljYS53eC1vcmcxLmNoYWlubWFrZXIub3JnMB4XDTIwMTIwODA2NTM0M1oXDTI1\nMTIwNzA2NTM0M1owgZExCzAJBgNVBAYTAkNOMRAwDgYDVQQIEwdCZWlqaW5nMRAw\nDgYDVQQHEwdCZWlqaW5nMR8wHQYDVQQKExZ3eC1vcmcxLmNoYWlubWFrZXIub3Jn\nMQ8wDQYDVQQLEwZjbGllbnQxLDAqBgNVBAMTI2NsaWVudDEuc2lnbi53eC1vcmcx\nLmNoYWlubWFrZXIub3JnMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE56xayRx0\n/a8KEXPxRfiSzYgJ/sE4tVeI/ZbjpiUX9m0TCJX7W/VHdm6WeJLOdCDuLLNvjGTy\nt8LLyqyubJI5AKN7MHkwDgYDVR0PAQH/BAQDAgGmMA8GA1UdJQQIMAYGBFUdJQAw\nKQYDVR0OBCIEIMjAiM2eMzlQ9HzV9ePW69rfUiRZVT2pDBOMqM4WVJSAMCsGA1Ud\nIwQkMCKAIDUkP3EcubfENS6TH3DFczH5dAnC2eD73+wcUF/bEIlnMAoGCCqGSM49\nBAMCA0kAMEYCIQCWUHL0xisjQoW+o6VV12pBXIRJgdeUeAu2EIjptSg2GAIhAIxK\nLXpHIBFxIkmWlxUaanCojPSZhzEbd+8LRrmhEO8n\n-----END CERTIFICATE-----"),
+			"wx-org1.chainmaker.org",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := newMockChainClient(tt.serverTxResp, tt.serverTxErr, WithConfPath(sdkConfigPathForUT))
+			require.Nil(t, err)
+			defer cc.Stop()
+
+			privateKey, err := asym.PrivateKeyFromPEM(tt.privKeyPem, nil)
+			require.Nil(t, err)
+			cert, err := utils.ParseCert(tt.certPem)
+			require.Nil(t, err)
+
+			signer := &CertModeSigner{
+				PrivateKey: privateKey,
+				Cert:       cert,
+				OrgId:      tt.orgId,
+			}
+			_, err = cc.InvokeContractBySigner("claim", "save", "",
+				[]*common.KeyValuePair{}, -1, false, &common.Limit{GasLimit: 1000000}, signer)
 			require.Nil(t, err)
 		})
 	}

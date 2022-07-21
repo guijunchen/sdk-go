@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"time"
 
-	"chainmaker.org/chainmaker/common/v2/crypto"
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
@@ -211,7 +210,7 @@ func (cc *ChainClient) SignPayload(payload *common.Payload) (*common.Endorsement
 		}
 
 	} else {
-		signBytes, err = utils.SignPayloadWithHashType(cc.privateKey, crypto.HashAlgoMap[cc.hashType], payload)
+		signBytes, err = utils.SignPayloadWithHashType(cc.privateKey, cc.hashType, payload)
 		if err != nil {
 			return nil, fmt.Errorf("SignPayload failed, %s", err.Error())
 		}

@@ -56,7 +56,7 @@ func TestChainClient_ChangeSigner(t *testing.T) {
 			}
 
 			cc, _ := NewChainClient(WithConfPath(tt.sdkConfigPath))
-			err = cc.ChangeSigner(privKey, userSignCrt)
+			err = cc.ChangeSigner(privKey, userSignCrt, 0)
 			require.Nil(t, err)
 
 			pkPem, err := pubKey.String()

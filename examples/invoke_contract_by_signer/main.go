@@ -9,34 +9,34 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"strconv"
 	"time"
 
+	"chainmaker.org/chainmaker/common/v2/crypto/asym"
 	"chainmaker.org/chainmaker/common/v2/random/uuid"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
+	sdkutils "chainmaker.org/chainmaker/sdk-go/v2/utils"
 )
 
 var (
-	threadNum         = 10
-	threadDuration    = time.Millisecond * 100
 	claimContractName = fmt.Sprintf("claim%d", time.Now().UnixNano())
-	claimVersion      = "2.0.0"
+	claimVersion      = "v2.0.0"
 	claimByteCodePath = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
 
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
+
+	secondSignerCertFilePath    = "../../testdata/crypto-config/wx-org2.chainmaker.org/user/client1/client1.sign.crt"
+	secondSignerPrivKeyFilePath = "../../testdata/crypto-config/wx-org2.chainmaker.org/user/client1/client1.sign.key"
+	secondSignerOrgId           = "wx-org2.chainmaker.org"
 )
 
 func main() {
-	testUserContractClaim()
-}
-
-func testUserContractClaim() {
 	cc, err := sdk.NewChainClient(
 		sdk.WithConfPath(sdkConfigOrg1Client1Path),
-		sdk.WithEnableTxResultDispatcher(true),
 	)
 	if err != nil {
 		log.Fatalln(err)
@@ -44,30 +44,59 @@ func testUserContractClaim() {
 
 	fmt.Println("====================== 创建合约 ======================")
 	usernames := []string{examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1}
-	testUserContractClaimCreate(cc, true, usernames...)
+	testCreateUserContract(cc, claimContractName, claimVersion, claimByteCodePath,
+		common.RuntimeType_WASMER, []*common.KeyValuePair{}, true, usernames...)
 
-	fmt.Println("====================== 调用合约 ======================")
-	for i := 0; i < threadNum; i++ {
-		go func() {
-			for {
-				_, err = testUserContractClaimInvoke(cc, "save", true)
-				if err != nil {
-					log.Println(err)
-				}
-				time.Sleep(threadDuration)
-			}
-		}()
+	fmt.Println("====================== 使用其他signer调用合约 ======================")
+	certPem, err := ioutil.ReadFile(secondSignerCertFilePath)
+	if err != nil {
+		log.Fatalln(err)
 	}
-	for {
-		fmt.Printf("TPS: %d\n", threadNum*int(time.Second/threadDuration))
-		time.Sleep(time.Second * 10)
+	cert, err := sdkutils.ParseCert(certPem)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	privKeyPem, err := ioutil.ReadFile(secondSignerPrivKeyFilePath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	privateKey, err := asym.PrivateKeyFromPEM(privKeyPem, nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	signer := &sdk.CertModeSigner{
+		PrivateKey: privateKey,
+		Cert:       cert,
+		OrgId:      secondSignerOrgId,
+	}
+	_, err = testInvokeContractBySigner(cc, "save", true, signer)
+	if err != nil {
+		log.Println(err)
 	}
 }
 
-func testUserContractClaimCreate(client *sdk.ChainClient, withSyncResult bool, usernames ...string) {
+func testCreateUserContract(client *sdk.ChainClient, contractName, version, byteCodePath string, runtime common.RuntimeType,
+	kvs []*common.KeyValuePair, withSyncResult bool, usernames ...string) {
 
-	resp, err := createUserContract(client, claimContractName, claimVersion, claimByteCodePath,
-		common.RuntimeType_WASMER, []*common.KeyValuePair{}, withSyncResult, usernames...)
+	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	//endorsers, err := examples.GetEndorsers(payload, usernames...)
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
+		client.GetAuthType(), payload, usernames...)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	resp, err := client.SendContractManageRequest(payload, endorsers, -1, withSyncResult)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = examples.CheckProposalRequestResp(resp, true)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -75,39 +104,10 @@ func testUserContractClaimCreate(client *sdk.ChainClient, withSyncResult bool, u
 	fmt.Printf("CREATE claim contract resp: %+v\n", resp)
 }
 
-func createUserContract(client *sdk.ChainClient, contractName, version, byteCodePath string, runtime common.RuntimeType,
-	kvs []*common.KeyValuePair, withSyncResult bool, usernames ...string) (*common.TxResponse, error) {
-
-	payload, err := client.CreateContractCreatePayload(contractName, version, byteCodePath, runtime, kvs)
-	if err != nil {
-		return nil, err
-	}
-
-	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
-		client.GetAuthType(), payload, usernames...)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := client.SendContractManageRequest(payload, endorsers, -1, withSyncResult)
-	if err != nil {
-		return nil, err
-	}
-
-	err = examples.CheckProposalRequestResp(resp, true)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
-}
-
-func testUserContractClaimInvoke(client *sdk.ChainClient,
-	method string, withSyncResult bool) (string, error) {
+func testInvokeContractBySigner(client *sdk.ChainClient,
+	method string, withSyncResult bool, signer sdk.Signer) (string, error) {
 
 	curTime := strconv.FormatInt(time.Now().Unix(), 10)
-
 	fileHash := uuid.GetUUID()
 	kvs := []*common.KeyValuePair{
 		{
@@ -124,24 +124,14 @@ func testUserContractClaimInvoke(client *sdk.ChainClient,
 		},
 	}
 
-	err := invokeUserContract(client, claimContractName, method, "", kvs, withSyncResult)
+	resp, err := client.InvokeContractBySigner(claimContractName, method, "", kvs, -1,
+		withSyncResult, nil, signer)
 	if err != nil {
 		return "", err
 	}
 
-	return fileHash, nil
-}
-
-func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string,
-	kvs []*common.KeyValuePair, withSyncResult bool) error {
-
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
-	if err != nil {
-		return err
-	}
-
 	if resp.Code != common.TxStatusCode_SUCCESS {
-		return fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
+		return "", fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
 	}
 
 	if !withSyncResult {
@@ -149,6 +139,5 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 	} else {
 		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%s]\n", resp.Code, resp.Message, resp.ContractResult)
 	}
-
-	return nil
+	return fileHash, nil
 }

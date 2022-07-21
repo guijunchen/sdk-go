@@ -17,7 +17,6 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/pb-go/v2/accesscontrol"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/pb-go/v2/config"
@@ -641,7 +640,7 @@ func testChainConfigAlterAddrType(client *sdk.ChainClient) {
 func signAndSendRequest(client *sdk.ChainClient, payload *common.Payload, usernames ...string) {
 	// 各组织Admin权限用户签名
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)

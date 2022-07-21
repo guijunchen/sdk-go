@@ -12,7 +12,6 @@ import (
 	"log"
 	"time"
 
-	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"chainmaker.org/chainmaker/sdk-go/v2/examples"
@@ -143,7 +142,7 @@ func testUserContractCounterGoUpgrade(client *sdk.ChainClient, withSyncResult bo
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
@@ -170,7 +169,7 @@ func testUserContractCounterGoFreeze(client *sdk.ChainClient, withSyncResult boo
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
@@ -198,7 +197,7 @@ func testUserContractCounterGoUnfreeze(client *sdk.ChainClient, withSyncResult b
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
@@ -226,7 +225,7 @@ func testUserContractCounterGoRevoke(client *sdk.ChainClient, withSyncResult boo
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		log.Fatalln(err)
@@ -272,7 +271,7 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		return nil, err

@@ -14,7 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
@@ -88,7 +87,7 @@ func testCertManageFrozen(client *sdk.ChainClient, certs []string) {
 	payload := client.CreateCertManageFrozenPayload(certs)
 
 	//endorsers, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		log.Fatalln(err)
@@ -106,7 +105,7 @@ func testCertManageUnfrozen(client *sdk.ChainClient, certs []string) {
 	payload := client.CreateCertManageUnfrozenPayload(certs)
 
 	//endorsers, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		log.Fatalln(err)
@@ -124,7 +123,7 @@ func testCertManageRevoke(client *sdk.ChainClient, certCrl string) {
 	payload := client.CreateCertManageRevocationPayload(certCrl)
 
 	//endorsers, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		log.Fatalln(err)
@@ -167,7 +166,7 @@ func testDeleteCert(client *sdk.ChainClient, certHashes []string) {
 	payload := client.CreateCertManagePayload(syscontract.CertManageFunction_CERTS_DELETE.String(), pairs)
 
 	//endorsers, err := examples.GetEndorsers(payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, examples.UserNameOrg1Admin1, examples.UserNameOrg2Admin1, examples.UserNameOrg3Admin1, examples.UserNameOrg4Admin1)
 	if err != nil {
 		log.Fatalln(err)

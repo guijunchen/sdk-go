@@ -192,7 +192,7 @@ func createUserHibeContract(client *sdk.ChainClient, admin1, admin2, admin3, adm
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, admin1, admin2, admin3, admin4)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, admin1, admin2, admin3, admin4)
 	if err != nil {
 		return nil, err

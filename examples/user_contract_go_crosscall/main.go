@@ -15,7 +15,6 @@ import (
 
 	"strings"
 
-	"chainmaker.org/chainmaker/common/v2/crypto"
 	"chainmaker.org/chainmaker/common/v2/evmutils/abi"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
@@ -25,14 +24,14 @@ import (
 const (
 	createContractTimeout = 5
 
-	goCallerName 	= "goCaller"
+	goCallerName    = "goCaller"
 	goCallerVersion = "1.0.0"
 	goCallerBin     = "../../testdata/cross-call-go-demo/go_call_evm.wasm"
 
 	evmCalleeName            = "storage"
 	evmCalleeVersion         = "2.0.0"
 	evmCalleeBinPath         = "../../testdata/storage-evm-demo/storage.bin"
-	evmCalleeABI  			 = "../../testdata/storage-evm-demo/storage.abi"
+	evmCalleeABI             = "../../testdata/storage-evm-demo/storage.abi"
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
 )
 
@@ -183,7 +182,7 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 	}
 
 	//endorsers, err := examples.GetEndorsers(payload, usernames...)
-	endorsers, err := examples.GetEndorsersWithAuthType(crypto.HashAlgoMap[client.GetHashType()],
+	endorsers, err := examples.GetEndorsersWithAuthType(client.GetHashType(),
 		client.GetAuthType(), payload, usernames...)
 	if err != nil {
 		return nil, err
