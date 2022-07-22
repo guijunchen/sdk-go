@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package chainmaker_sdk_go
 
 import (
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -233,10 +234,13 @@ type ChainClientConfig struct {
 
 	// 以下xxxPath和xxxBytes同时指定的话，优先使用Bytes
 	userKeyFilePath     string
+	userKeyPwd          string
 	userCrtFilePath     string
 	userEncKeyFilePath  string //only for gmtls1.1
+	userEncKeyPwd       string
 	userEncCrtFilePath  string
 	userSignKeyFilePath string // 公钥模式下使用该字段
+	userSignKeyPwd      string
 	userSignCrtFilePath string
 
 	userKeyBytes     []byte
@@ -472,6 +476,27 @@ func WithEnableSyncCanonicalTxResult(enable bool) ChainClientOption {
 	}
 }
 
+// WithUserKeyPwd 配置用户私钥密码
+func WithUserKeyPwd(pwd string) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.userKeyPwd = pwd
+	}
+}
+
+// WithUserSignKeyPwd 配置用户签名私钥密码
+func WithUserSignKeyPwd(pwd string) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.userSignKeyPwd = pwd
+	}
+}
+
+// WithUserEncKeyPwd 配置国密双证书模式下用户私钥密码
+func WithUserEncKeyPwd(pwd string) ChainClientOption {
+	return func(config *ChainClientConfig) {
+		config.userEncKeyPwd = pwd
+	}
+}
+
 // 生成SDK配置并校验合法性
 func generateConfig(opts ...ChainClientOption) (*ChainClientConfig, error) {
 	config := &ChainClientConfig{}
@@ -571,6 +596,16 @@ func setUserConfig(config *ChainClientConfig) {
 	if config.ConfigModel.ChainClientConfig.UserSignCrtFilePath != "" && config.userSignCrtFilePath == "" &&
 		config.userSignCrtBytes == nil {
 		config.userSignCrtFilePath = config.ConfigModel.ChainClientConfig.UserSignCrtFilePath
+	}
+
+	if config.ConfigModel.ChainClientConfig.UserKeyPwd != "" && config.userKeyPwd == "" {
+		config.userKeyPwd = config.ConfigModel.ChainClientConfig.UserKeyPwd
+	}
+	if config.ConfigModel.ChainClientConfig.UserSignKeyPwd != "" && config.userSignKeyPwd == "" {
+		config.userSignKeyPwd = config.ConfigModel.ChainClientConfig.UserSignKeyPwd
+	}
+	if config.ConfigModel.ChainClientConfig.UserEncKeyPwd != "" && config.userEncKeyPwd == "" {
+		config.userEncKeyPwd = config.ConfigModel.ChainClientConfig.UserEncKeyPwd
 	}
 }
 
@@ -904,9 +939,18 @@ func dealUserKeyConfig(config *ChainClientConfig) (err error) {
 
 	if config.userKeyBytes == nil {
 		// 从私钥文件读取用户私钥，转换为privateKey对象
-		config.userKeyBytes, err = ioutil.ReadFile(config.userKeyFilePath)
+		userKeyBytes, err := ioutil.ReadFile(config.userKeyFilePath)
 		if err != nil {
 			return fmt.Errorf("read user key file failed, %s", err)
+		}
+		if config.userKeyPwd != "" {
+			config.userKeyBytes, err = encryptedPrivKeyPem2DecryptedPrivKeyPem(userKeyBytes,
+				[]byte(config.userKeyPwd))
+			if err != nil {
+				return err
+			}
+		} else {
+			config.userKeyBytes = userKeyBytes
 		}
 	}
 
@@ -926,7 +970,17 @@ func dealUserEncCrtKeyConfig(config *ChainClientConfig) (err error) {
 
 	if err1 == nil && err2 == nil && keyBytes != nil && crtBytes != nil {
 		config.logger.Debugf("[SDK] use gmtls")
-		config.userEncKeyBytes, config.userEncCrtBytes = keyBytes, crtBytes
+		//config.userEncKeyBytes, config.userEncCrtBytes = keyBytes, crtBytes
+		config.userEncCrtBytes = crtBytes
+		if config.userEncKeyPwd != "" {
+			config.userEncKeyBytes, err = encryptedPrivKeyPem2DecryptedPrivKeyPem(keyBytes,
+				[]byte(config.userEncKeyPwd))
+			if err != nil {
+				return err
+			}
+		} else {
+			config.userEncKeyBytes = keyBytes
+		}
 	} else {
 		config.logger.Debugf("[SDK] use tls")
 	}
@@ -955,13 +1009,35 @@ func dealUserSignCrtConfig(config *ChainClientConfig) (err error) {
 	return nil
 }
 
+func encryptedPrivKeyPem2DecryptedPrivKeyPem(encryptedPrivKeyPem, pwd []byte) ([]byte, error) {
+	block, _ := pem.Decode(encryptedPrivKeyPem)
+	privateKey, err := asym.PrivateKeyFromPEM(encryptedPrivKeyPem, pwd)
+	if err != nil {
+		return nil, fmt.Errorf("PrivateKeyFromPEM failed, %s", err.Error())
+	}
+	privDER, err := privateKey.Bytes()
+	if err != nil {
+		return nil, err
+	}
+	return pem.EncodeToMemory(&pem.Block{Bytes: privDER, Type: block.Type}), nil
+}
+
 func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 	// PermissionedWithKey, Public
 	if config.authType == PermissionedWithKey || config.authType == Public {
 		if config.userSignKeyBytes == nil {
-			config.userSignKeyBytes, err = ioutil.ReadFile(config.userSignKeyFilePath)
+			userSignKeyBytes, err := ioutil.ReadFile(config.userSignKeyFilePath)
 			if err != nil {
 				return fmt.Errorf("read user private Key file failed, %s", err.Error())
+			}
+			if config.userSignKeyPwd != "" {
+				config.userSignKeyBytes, err = encryptedPrivKeyPem2DecryptedPrivKeyPem(userSignKeyBytes,
+					[]byte(config.userSignKeyPwd))
+				if err != nil {
+					return err
+				}
+			} else {
+				config.userSignKeyBytes = userSignKeyBytes
 			}
 		}
 		config.privateKey, err = asym.PrivateKeyFromPEM(config.userSignKeyBytes, nil)
@@ -980,9 +1056,18 @@ func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 			return nil
 		}
 
-		config.userSignKeyBytes, err = ioutil.ReadFile(config.userSignKeyFilePath)
+		userSignKeyBytes, err := ioutil.ReadFile(config.userSignKeyFilePath)
 		if err != nil {
 			return fmt.Errorf("read user sign key file failed, %s", err.Error())
+		}
+		if config.userSignKeyPwd != "" {
+			config.userSignKeyBytes, err = encryptedPrivKeyPem2DecryptedPrivKeyPem(userSignKeyBytes,
+				[]byte(config.userSignKeyPwd))
+			if err != nil {
+				return err
+			}
+		} else {
+			config.userSignKeyBytes = userSignKeyBytes
 		}
 	}
 

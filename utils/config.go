@@ -71,15 +71,21 @@ type chainClientConfigModel struct {
 	OrgId string `mapstructure:"org_id"`
 	// 客户端用户私钥路径
 	UserKeyFilePath string `mapstructure:"user_key_file_path"`
+	// 客户端用户私钥密码
+	UserKeyPwd string `mapstructure:"user_key_pwd"`
 	// 客户端用户证书路径
 	UserCrtFilePath string `mapstructure:"user_crt_file_path"`
 	// 客户端用户加密私钥路径
 	UserEncKeyFilePath string `mapstructure:"user_enc_key_file_path"`
+	// 客户端用户加密私钥密码
+	UserEncKeyPwd string `mapstructure:"user_enc_key_pwd"`
 	// 客户端用户加密证书路径
 	UserEncCrtFilePath string `mapstructure:"user_enc_crt_file_path"`
 	// 证书模式下：客户端用户交易签名私钥路径(若未设置，将使用user_key_file_path)
 	// 公钥模式下：客户端用户交易签名的私钥路径(必须设置)
 	UserSignKeyFilePath string `mapstructure:"user_sign_key_file_path"`
+	// 客户端用户交易签名私钥密码
+	UserSignKeyPwd string `mapstructure:"user_sign_key_pwd"`
 	// 客户端用户交易签名证书路径(若未设置，将使用user_crt_file_path)
 	UserSignCrtFilePath string `mapstructure:"user_sign_crt_file_path"`
 	// 同步交易结果模式下，轮训获取交易结果时的最大轮训次数
