@@ -139,16 +139,6 @@ func invokeUserContract(client *sdk.ChainClient, contractName, method, txId stri
 	if err != nil {
 		return err
 	}
-
-	if resp.Code != common.TxStatusCode_SUCCESS {
-		return fmt.Errorf("invoke contract failed, [code:%d]/[msg:%s]\n", resp.Code, resp.Message)
-	}
-
-	if !withSyncResult {
-		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[txId:%s]\n", resp.Code, resp.Message, resp.ContractResult.Result)
-	} else {
-		fmt.Printf("invoke contract success, resp: [code:%d]/[msg:%s]/[contractResult:%s]\n", resp.Code, resp.Message, resp.ContractResult)
-	}
-
+	fmt.Printf("invoke contract resp: %+v\n", resp)
 	return nil
 }

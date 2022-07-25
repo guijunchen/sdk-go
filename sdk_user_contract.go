@@ -203,29 +203,19 @@ func (cc *ChainClient) InvokeContractBySigner(contractName, method, txId string,
 
 	if resp.Code == common.TxStatusCode_SUCCESS {
 		if withSyncResult {
-			result, err := cc.GetSyncResult(payload.TxId)
+			r, err := cc.getSyncResult(payload.TxId)
 			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+				return nil, fmt.Errorf("getSyncResult failed, %s", err.Error())
 			}
-			resp.Code = result.Code
-			resp.Message = result.Message
-			resp.ContractResult = result.ContractResult
+			resp.Code = r.Result.Code
+			resp.Message = r.Result.Message
+			resp.ContractResult = r.Result.ContractResult
 			resp.TxId = payload.TxId
+			resp.TxTimestamp = r.TxTimestamp
+			resp.TxBlockHeight = r.TxBlockHeight
 		}
 	}
 	return resp, nil
-}
-
-// InvokeContractWithLimitV2  invoke contract with specified gas limit
-func (cc *ChainClient) InvokeContractWithLimitV2(contractName, method, txId string, kvs []*common.KeyValuePair,
-	timeout int64, withSyncResult bool, limit *common.Limit) (*TxResponse, error) {
-
-	cc.logger.Debugf("[SDK] begin to INVOKE contract, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
-		contractName, method, txId, kvs)
-
-	payload := cc.CreatePayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, defaultSeq, limit)
-
-	return cc.sendContractRequestV2(payload, nil, timeout, withSyncResult)
 }
 
 // QueryContract query contract
@@ -282,17 +272,16 @@ func (cc *ChainClient) SendTxRequest(txRequest *common.TxRequest, timeout int64,
 		if !withSyncResult {
 			resp.TxId = txRequest.Payload.TxId
 		} else {
-			result, err := cc.GetSyncResult(txRequest.Payload.TxId)
+			r, err := cc.getSyncResult(txRequest.Payload.TxId)
 			if err != nil {
-				return nil, fmt.Errorf("get sync result failed, %s", err.Error())
+				return nil, fmt.Errorf("getSyncResult failed, %s", err.Error())
 			}
-
-			if result.ContractResult.Code != utils.SUCCESS {
-				resp.Code = common.TxStatusCode_CONTRACT_FAIL
-				resp.Message = result.ContractResult.Message
-			}
-
-			resp.ContractResult = result.ContractResult
+			resp.Code = r.Result.Code
+			resp.Message = r.Result.Message
+			resp.ContractResult = r.Result.ContractResult
+			resp.TxId = txRequest.Payload.TxId
+			resp.TxTimestamp = r.TxTimestamp
+			resp.TxBlockHeight = r.TxBlockHeight
 		}
 	}
 

@@ -944,7 +944,7 @@ func dealUserKeyConfig(config *ChainClientConfig) (err error) {
 			return fmt.Errorf("read user key file failed, %s", err)
 		}
 		if config.userKeyPwd != "" {
-			config.userKeyBytes, err = encryptedPrivKeyPem2DecryptedPrivKeyPem(userKeyBytes,
+			config.userKeyBytes, err = decryptPrivKeyPem(userKeyBytes,
 				[]byte(config.userKeyPwd))
 			if err != nil {
 				return err
@@ -973,7 +973,7 @@ func dealUserEncCrtKeyConfig(config *ChainClientConfig) (err error) {
 		//config.userEncKeyBytes, config.userEncCrtBytes = keyBytes, crtBytes
 		config.userEncCrtBytes = crtBytes
 		if config.userEncKeyPwd != "" {
-			config.userEncKeyBytes, err = encryptedPrivKeyPem2DecryptedPrivKeyPem(keyBytes,
+			config.userEncKeyBytes, err = decryptPrivKeyPem(keyBytes,
 				[]byte(config.userEncKeyPwd))
 			if err != nil {
 				return err
@@ -1009,7 +1009,7 @@ func dealUserSignCrtConfig(config *ChainClientConfig) (err error) {
 	return nil
 }
 
-func encryptedPrivKeyPem2DecryptedPrivKeyPem(encryptedPrivKeyPem, pwd []byte) ([]byte, error) {
+func decryptPrivKeyPem(encryptedPrivKeyPem, pwd []byte) ([]byte, error) {
 	block, _ := pem.Decode(encryptedPrivKeyPem)
 	privateKey, err := asym.PrivateKeyFromPEM(encryptedPrivKeyPem, pwd)
 	if err != nil {
@@ -1031,7 +1031,7 @@ func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 				return fmt.Errorf("read user private Key file failed, %s", err.Error())
 			}
 			if config.userSignKeyPwd != "" {
-				config.userSignKeyBytes, err = encryptedPrivKeyPem2DecryptedPrivKeyPem(userSignKeyBytes,
+				config.userSignKeyBytes, err = decryptPrivKeyPem(userSignKeyBytes,
 					[]byte(config.userSignKeyPwd))
 				if err != nil {
 					return err
@@ -1061,7 +1061,7 @@ func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 			return fmt.Errorf("read user sign key file failed, %s", err.Error())
 		}
 		if config.userSignKeyPwd != "" {
-			config.userSignKeyBytes, err = encryptedPrivKeyPem2DecryptedPrivKeyPem(userSignKeyBytes,
+			config.userSignKeyBytes, err = decryptPrivKeyPem(userSignKeyBytes,
 				[]byte(config.userSignKeyPwd))
 			if err != nil {
 				return err

@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"time"
 
+	"chainmaker.org/chainmaker/common/v2/crypto"
+	"chainmaker.org/chainmaker/common/v2/crypto/hash"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"chainmaker.org/chainmaker/pb-go/v2/syscontract"
 	"chainmaker.org/chainmaker/sdk-go/v2/utils"
@@ -24,8 +26,8 @@ import (
 )
 
 // syncCanonicalTxResult 同步获取权威的公认的交易结果，即超过半数共识的交易
-func (cc *ChainClient) syncCanonicalTxResult(txId string) (*common.Result, error) {
-	txResultC := make(chan *common.Result, 1)
+func (cc *ChainClient) syncCanonicalTxResult(txId string) (*txResult, error) {
+	txResultC := make(chan *txResult, 1)
 	defer close(txResultC)
 	txResultCount := make(map[string]int)
 	receiveCount := 0
@@ -45,13 +47,21 @@ func (cc *ChainClient) syncCanonicalTxResult(txId string) (*common.Result, error
 		select {
 		case r := <-txResultC:
 			if r != nil {
-				rStr := r.String()
-				if count, ok := txResultCount[rStr]; ok {
-					txResultCount[rStr] = count + 1
-				} else {
-					txResultCount[rStr] = 1
+				bz, err := proto.Marshal(r.Result)
+				if err != nil {
+					return nil, err
 				}
-				if txResultCount[rStr] >= canonicalNum {
+				sum, err := hash.Get(crypto.HASH_TYPE_SHA256, bz)
+				if err != nil {
+					return nil, err
+				}
+				sumStr := string(sum)
+				if count, ok := txResultCount[sumStr]; ok {
+					txResultCount[sumStr] = count + 1
+				} else {
+					txResultCount[sumStr] = 1
+				}
+				if txResultCount[sumStr] >= canonicalNum {
 					return r, nil
 				}
 			}
@@ -66,7 +76,7 @@ func (cc *ChainClient) syncCanonicalTxResult(txId string) (*common.Result, error
 }
 
 func canonicalPollingTxResult(ctx context.Context, cc *ChainClient, pool ConnectionPool,
-	txId string, txResultC chan *common.Result) error {
+	txId string, txResultC chan *txResult) error {
 	var (
 		txInfo *common.TransactionInfo
 		err    error
@@ -112,7 +122,11 @@ func canonicalPollingTxResult(ctx context.Context, cc *ChainClient, pool Connect
 			return nil
 		default:
 		}
-		txResultC <- txInfo.Transaction.Result
+		txResultC <- &txResult{
+			Result:        txInfo.Transaction.Result,
+			TxTimestamp:   txInfo.Transaction.Payload.Timestamp,
+			TxBlockHeight: txInfo.BlockHeight,
+		}
 		return nil
 	}
 }

@@ -17,9 +17,9 @@ import (
 )
 
 type txResult struct {
-	Result      *common.Result
-	TxTimestamp int64
-	BlockHeight uint64
+	Result        *common.Result
+	TxTimestamp   int64
+	TxBlockHeight uint64
 }
 
 type txResultDispatcher struct {
@@ -77,9 +77,9 @@ func (d *txResultDispatcher) start() {
 			if txResultC, exists := d.txRegistrations[tx.Transaction.Payload.TxId]; exists {
 				// non-blocking write to channel to ignore txResultC buffer is full in extreme cases
 				result := &txResult{
-					Result:      tx.Transaction.Result,
-					TxTimestamp: tx.Transaction.Payload.Timestamp,
-					BlockHeight: tx.BlockHeight,
+					Result:        tx.Transaction.Result,
+					TxTimestamp:   tx.Transaction.Payload.Timestamp,
+					TxBlockHeight: tx.BlockHeight,
 				}
 				select {
 				case txResultC <- result:
