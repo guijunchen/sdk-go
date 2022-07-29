@@ -104,7 +104,7 @@ func GetEVMAddressFromCertPath(certFilePath string) (string, error) {
 }
 
 // GetEVMAddressFromPrivateKeyPath get evm address from private key file path
-func GetEVMAddressFromPrivateKeyPath(privateKeyFilePath, hashType string) (string, error) {
+func GetEVMAddressFromPrivateKeyPath(privateKeyFilePath string, hashType crypto.HashType) (string, error) {
 	keyPem, err := ioutil.ReadFile(privateKeyFilePath)
 	if err != nil {
 		return "", fmt.Errorf("readFile failed, %s", err.Error())
@@ -125,13 +125,13 @@ func GetEVMAddressFromCertBytes(certBytes []byte) (string, error) {
 }
 
 // GetEVMAddressFromPrivateKeyBytes get evm address from private key bytes
-func GetEVMAddressFromPrivateKeyBytes(privateKeyBytes []byte, hashType string) (string, error) {
+func GetEVMAddressFromPrivateKeyBytes(privateKeyBytes []byte, hashType crypto.HashType) (string, error) {
 	privateKey, err := asym.PrivateKeyFromPEM(privateKeyBytes, nil)
 	if err != nil {
 		return "", fmt.Errorf("PrivateKeyFromPEM failed, %s", err.Error())
 	}
 	publicKey := privateKey.PublicKey()
-	return cmutils.PkToAddrStr(publicKey, config.AddrType_ETHEREUM, crypto.HashAlgoMap[hashType])
+	return cmutils.PkToAddrStr(publicKey, config.AddrType_ETHEREUM, hashType)
 }
 
 // EasyCodecItemToParamsMap easy codec items to params map
@@ -140,7 +140,7 @@ func (cc *ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem
 }
 
 // GetZXAddressFromPKHex get zhixinlian address from public key hex
-func GetZXAddressFromPKHex(pkHex, hashType string) (string, error) {
+func GetZXAddressFromPKHex(pkHex string, hashType crypto.HashType) (string, error) {
 	pkDER, err := hex.DecodeString(pkHex)
 	if err != nil {
 		return "", err
@@ -151,7 +151,7 @@ func GetZXAddressFromPKHex(pkHex, hashType string) (string, error) {
 		return "", fmt.Errorf("fail to resolve public key from DER format: %v", err)
 	}
 
-	addr, err := cmutils.PkToAddrStr(pk, config.AddrType_ZXL, crypto.HashAlgoMap[hashType])
+	addr, err := cmutils.PkToAddrStr(pk, config.AddrType_ZXL, hashType)
 	if err != nil {
 		return "", err
 	}
@@ -159,7 +159,7 @@ func GetZXAddressFromPKHex(pkHex, hashType string) (string, error) {
 }
 
 // GetZXAddressFromPKPEM get zhixinlian address from public key pem
-func GetZXAddressFromPKPEM(pkPEM, hashType string) (string, error) {
+func GetZXAddressFromPKPEM(pkPEM string, hashType crypto.HashType) (string, error) {
 	pemBlock, _ := pem.Decode([]byte(pkPEM))
 	if pemBlock == nil {
 		return "", fmt.Errorf("fail to resolve public key from PEM string")
@@ -170,7 +170,7 @@ func GetZXAddressFromPKPEM(pkPEM, hashType string) (string, error) {
 		return "", fmt.Errorf("fail to resolve public key from DER format: %v", err)
 	}
 
-	addr, err := cmutils.PkToAddrStr(pk, config.AddrType_ZXL, crypto.HashAlgoMap[hashType])
+	addr, err := cmutils.PkToAddrStr(pk, config.AddrType_ZXL, hashType)
 	if err != nil {
 		return "", err
 	}
@@ -206,7 +206,7 @@ func GetZXAddressFromCertPath(certPath string) (string, error) {
 }
 
 // GetCMAddressFromPKHex get chainmaker address from public key hex
-func GetCMAddressFromPKHex(pkHex string, hashType string) (string, error) {
+func GetCMAddressFromPKHex(pkHex string, hashType crypto.HashType) (string, error) {
 	pkDER, err := hex.DecodeString(pkHex)
 	if err != nil {
 		return "", err
@@ -217,17 +217,17 @@ func GetCMAddressFromPKHex(pkHex string, hashType string) (string, error) {
 		return "", err
 	}
 
-	return cmutils.PkToAddrStr(pk, config.AddrType_CHAINMAKER, crypto.HashAlgoMap[hashType])
+	return cmutils.PkToAddrStr(pk, config.AddrType_CHAINMAKER, hashType)
 }
 
 // GetCMAddressFromPKPEM get chainmaker address from public key pem
-func GetCMAddressFromPKPEM(pkPEM string, hashType string) (string, error) {
+func GetCMAddressFromPKPEM(pkPEM string, hashType crypto.HashType) (string, error) {
 	publicKey, err := asym.PublicKeyFromPEM([]byte(pkPEM))
 	if err != nil {
 		return "", fmt.Errorf("parse public key failed, %s", err.Error())
 	}
 
-	return cmutils.PkToAddrStr(publicKey, config.AddrType_CHAINMAKER, crypto.HashAlgoMap[hashType])
+	return cmutils.PkToAddrStr(publicKey, config.AddrType_CHAINMAKER, hashType)
 }
 
 // GetCMAddressFromCertPEM get chainmaker address from cert pem

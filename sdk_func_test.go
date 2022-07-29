@@ -135,9 +135,9 @@ CpIO2ZrxkJ1Nm/FKZzMLQjp7Dm//xEMkpCbqqC6koOkRP2MKGSnEGXGfRr1QgBvr
 			)
 
 			if tt.name == "pkHex" {
-				addr, err = GetZXAddressFromPKHex(tt.input, crypto.CRYPTO_ALGO_SM3)
+				addr, err = GetZXAddressFromPKHex(tt.input, crypto.HASH_TYPE_SM3)
 			} else if tt.name == "pkPEM" {
-				addr, err = GetZXAddressFromPKPEM(tt.input, crypto.CRYPTO_ALGO_SM3)
+				addr, err = GetZXAddressFromPKPEM(tt.input, crypto.HASH_TYPE_SM3)
 			} else if tt.name == "certPEM" {
 				addr, err = GetZXAddressFromCertPEM(tt.input)
 			} else if tt.name == "certPath" {
@@ -163,7 +163,7 @@ CpIO2ZrxkJ1Nm/FKZzMLQjp7Dm//xEMkpCbqqC6koOkRP2MKGSnEGXGfRr1QgBvr
 func TestCMAddress(t *testing.T) {
 	type input struct {
 		data     string
-		hashType string
+		hashType crypto.HashType
 	}
 
 	tests := []struct {
@@ -175,7 +175,7 @@ func TestCMAddress(t *testing.T) {
 			"CMPkHex",
 			input{
 				"3059301306072a8648ce3d020106082a811ccf5501822d034200044a4c24cf037b0c7a027e634b994a5fdbcd0faa718ce9053e3f75fcb9a865523a605aff92b5f99e728f51a924d4f18d5819c42f9b626bdf6eea911946efe7442d",
-				crypto.CRYPTO_ALGO_SHA256,
+				crypto.HASH_TYPE_SHA256,
 			},
 			"4cd0b5e8f6d6df38ecdc06c7431a48dd0265cb1e",
 		},
@@ -186,7 +186,7 @@ func TestCMAddress(t *testing.T) {
 MFkwEwYHKoZIzj0CAQYIKoEcz1UBgi0DQgAESkwkzwN7DHoCfmNLmUpf280PqnGM
 6QU+P3X8uahlUjpgWv+Stfmeco9RqSTU8Y1YGcQvm2Jr327qkRlG7+dELQ==
 -----END PUBLIC KEY-----`,
-				crypto.CRYPTO_ALGO_SHA256,
+				crypto.HASH_TYPE_SHA256,
 			},
 			"4cd0b5e8f6d6df38ecdc06c7431a48dd0265cb1e",
 		},
@@ -211,7 +211,7 @@ hp8YLjSflgw1+uWlMb/WCY60MyxZr/RRsTYpHu7FAkIBSMAVxw5RYySsf4J3bpM0
 CpIO2ZrxkJ1Nm/FKZzMLQjp7Dm//xEMkpCbqqC6koOkRP2MKGSnEGXGfRr1QgBvr
 8H8=
 -----END CERTIFICATE-----`,
-				"",
+				crypto.HASH_TYPE_SHA256,
 			},
 
 			"305f98514f3c2f6fcaeb8247ed147bacf99990f8",
@@ -237,7 +237,7 @@ hp8YLjSflgw1+uWlMb/WCY60MyxZr/RRsTYpHu7FAkIBSMAVxw5RYySsf4J3bpM0
 CpIO2ZrxkJ1Nm/FKZzMLQjp7Dm//xEMkpCbqqC6koOkRP2MKGSnEGXGfRr1QgBvr
 8H8=
 -----END CERTIFICATE-----`,
-				"",
+				crypto.HASH_TYPE_SHA256,
 			},
 
 			"305f98514f3c2f6fcaeb8247ed147bacf99990f8",

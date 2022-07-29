@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"sync/atomic"
 	"time"
 
 	"chainmaker.org/chainmaker/common/v2/random/uuid"
@@ -21,7 +22,6 @@ import (
 
 var (
 	threadNum         = 10
-	threadDuration    = time.Millisecond * 100
 	claimContractName = fmt.Sprintf("claim%d", time.Now().UnixNano())
 	claimVersion      = "2.0.0"
 	claimByteCodePath = "../../testdata/claim-wasm-demo/rust-fact-2.0.0.wasm"
@@ -37,6 +37,8 @@ func testUserContractClaim() {
 	cc, err := sdk.NewChainClient(
 		sdk.WithConfPath(sdkConfigOrg1Client1Path),
 		sdk.WithEnableTxResultDispatcher(true),
+		sdk.WithRetryLimit(20),
+		sdk.WithRetryInterval(2000),
 	)
 	if err != nil {
 		log.Fatalln(err)
@@ -47,20 +49,25 @@ func testUserContractClaim() {
 	testUserContractClaimCreate(cc, true, usernames...)
 
 	fmt.Println("====================== 调用合约 ======================")
+	var txCount int64
+	var calcTpsDuration = time.Second * 5
 	for i := 0; i < threadNum; i++ {
 		go func() {
 			for {
-				_, err = testUserContractClaimInvoke(cc, "save", true)
+				resp, err := testUserContractClaimInvoke(cc, "save", true)
 				if err != nil {
-					log.Println(err)
+					fmt.Printf("%s\ninvoke contract resp: %+v\n", err, resp)
+				} else {
+					atomic.AddInt64(&txCount, 1)
 				}
-				time.Sleep(threadDuration)
 			}
 		}()
 	}
 	for {
-		fmt.Printf("TPS: %d\n", threadNum*int(time.Second/threadDuration))
-		time.Sleep(time.Second * 10)
+		txNum := atomic.SwapInt64(&txCount, 0)
+		tps := float64(txNum) / calcTpsDuration.Seconds()
+		fmt.Printf("TPS: %.2f\n", tps)
+		time.Sleep(calcTpsDuration)
 	}
 }
 
@@ -90,21 +97,11 @@ func createUserContract(client *sdk.ChainClient, contractName, version, byteCode
 		return nil, err
 	}
 
-	resp, err := client.SendContractManageRequest(payload, endorsers, -1, withSyncResult)
-	if err != nil {
-		return nil, err
-	}
-
-	err = examples.CheckProposalRequestResp(resp, true)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+	return client.SendContractManageRequest(payload, endorsers, 20, withSyncResult)
 }
 
 func testUserContractClaimInvoke(client *sdk.ChainClient,
-	method string, withSyncResult bool) (string, error) {
+	method string, withSyncResult bool) (*common.TxResponse, error) {
 
 	curTime := strconv.FormatInt(time.Now().Unix(), 10)
 
@@ -124,21 +121,5 @@ func testUserContractClaimInvoke(client *sdk.ChainClient,
 		},
 	}
 
-	err := invokeUserContract(client, claimContractName, method, "", kvs, withSyncResult)
-	if err != nil {
-		return "", err
-	}
-
-	return fileHash, nil
-}
-
-func invokeUserContract(client *sdk.ChainClient, contractName, method, txId string,
-	kvs []*common.KeyValuePair, withSyncResult bool) error {
-
-	resp, err := client.InvokeContract(contractName, method, txId, kvs, -1, withSyncResult)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("invoke contract resp: %+v\n", resp)
-	return nil
+	return client.InvokeContract(claimContractName, method, "", kvs, -1, withSyncResult)
 }

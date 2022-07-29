@@ -34,7 +34,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	addr, err := sdk.GetZXAddressFromPKPEM(pk, crypto.CRYPTO_ALGO_SHA256)
+	addr, err := sdk.GetZXAddressFromPKPEM(pk, crypto.HASH_TYPE_SHA256)
 	fmt.Printf("addr: %s\n", addr)
 
 	fmt.Println("====================== 设置client自己为 gas admin ======================")

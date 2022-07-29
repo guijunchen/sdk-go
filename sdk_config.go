@@ -683,8 +683,12 @@ func setPkcs11Config(config *ChainClientConfig) {
 }
 
 func setRetryConfig(config *ChainClientConfig) {
-	config.retryLimit = config.ConfigModel.ChainClientConfig.RetryLimit
-	config.retryInterval = config.ConfigModel.ChainClientConfig.RetryInterval
+	if config.ConfigModel.ChainClientConfig.RetryLimit != 0 && config.retryLimit == 0 {
+		config.retryLimit = config.ConfigModel.ChainClientConfig.RetryLimit
+	}
+	if config.ConfigModel.ChainClientConfig.RetryInterval != 0 && config.retryInterval == 0 {
+		config.retryInterval = config.ConfigModel.ChainClientConfig.RetryInterval
+	}
 }
 
 func readConfigFile(config *ChainClientConfig) error {
