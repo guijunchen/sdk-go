@@ -23,10 +23,10 @@ type txResult struct {
 }
 
 type txResultDispatcher struct {
-	nextBlockNum int64
-	cc           *ChainClient
-	stopC        chan struct{}
-	txC          chan *transaction
+	startBlock int64
+	cc         *ChainClient
+	stopC      chan struct{}
+	txC        chan *transaction
 
 	mux             sync.Mutex // mux protect txRegistrations
 	txRegistrations map[string]chan *txResult
@@ -34,7 +34,7 @@ type txResultDispatcher struct {
 
 func newTxResultDispatcher(cc *ChainClient) *txResultDispatcher {
 	return &txResultDispatcher{
-		nextBlockNum:    -1,
+		startBlock:      -1,
 		cc:              cc,
 		stopC:           make(chan struct{}),
 		txC:             make(chan *transaction, 1),
@@ -106,11 +106,11 @@ func (d *txResultDispatcher) subscribe() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	dataC, err := d.cc.SubscribeBlock(ctx, d.nextBlockNum, -1, false, false)
+	dataC, err := d.cc.SubscribeBlock(ctx, d.startBlock, -1, false, false)
 	if err != nil {
 		return err
 	}
-	d.cc.logger.Debugf("txResultDispatcher subscribe success, block height %d", d.nextBlockNum)
+	d.cc.logger.Debugf("txResultDispatcher subscribe success, start block[%d]", d.startBlock)
 
 	for {
 		select {
@@ -128,7 +128,7 @@ func (d *txResultDispatcher) subscribe() error {
 					BlockHeight: blockInfo.Block.Header.BlockHeight,
 				}
 			}
-			d.nextBlockNum = int64(blockInfo.Block.Header.BlockHeight) + 1
+			d.startBlock = int64(blockInfo.Block.Header.BlockHeight)
 		case <-d.stopC:
 			return nil
 		}
