@@ -134,6 +134,33 @@ func GetEVMAddressFromPrivateKeyBytes(privateKeyBytes []byte, hashType crypto.Ha
 	return cmutils.PkToAddrStr(publicKey, config.AddrType_ETHEREUM, hashType)
 }
 
+// GetEVMAddressFromPKHex get evm address from public key hex
+func GetEVMAddressFromPKHex(pkHex string, hashType crypto.HashType) (string, error) {
+	pkDER, err := hex.DecodeString(pkHex)
+	if err != nil {
+		return "", err
+	}
+	pk, err := asym.PublicKeyFromDER(pkDER)
+	if err != nil {
+		return "", fmt.Errorf("fail to resolve public key from DER format: %v", err)
+	}
+	return cmutils.PkToAddrStr(pk, config.AddrType_ETHEREUM, hashType)
+}
+
+// GetEVMAddressFromPKPEM get evm address from public key pem
+func GetEVMAddressFromPKPEM(pkPEM string, hashType crypto.HashType) (string, error) {
+	pemBlock, _ := pem.Decode([]byte(pkPEM))
+	if pemBlock == nil {
+		return "", fmt.Errorf("fail to resolve public key from PEM string")
+	}
+	pkDER := pemBlock.Bytes
+	pk, err := asym.PublicKeyFromDER(pkDER)
+	if err != nil {
+		return "", fmt.Errorf("fail to resolve public key from DER format: %v", err)
+	}
+	return cmutils.PkToAddrStr(pk, config.AddrType_ETHEREUM, hashType)
+}
+
 // EasyCodecItemToParamsMap easy codec items to params map
 func (cc *ChainClient) EasyCodecItemToParamsMap(items []*serialize.EasyCodecItem) map[string][]byte {
 	return serialize.EasyCodecItemToParamsMap(items)

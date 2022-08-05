@@ -12,12 +12,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gogo/protobuf/proto"
-	"github.com/stretchr/testify/require"
-
 	"chainmaker.org/chainmaker/common/v2/crypto"
 	bcx509 "chainmaker.org/chainmaker/common/v2/crypto/x509"
 	"chainmaker.org/chainmaker/pb-go/v2/common"
+	"github.com/gogo/protobuf/proto"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSignPayloadWithPath(t *testing.T) {
@@ -58,6 +57,86 @@ func TestSignPayloadWithPath(t *testing.T) {
 			verified, err := cli.userCrt.PublicKey.VerifyWithOpts(payloadBz, e.Signature, &opts)
 			require.Nil(t, err)
 			require.True(t, verified)
+		})
+	}
+}
+
+func TestEVMAddress(t *testing.T) {
+	tests := []struct {
+		name       string
+		certPEM    string
+		pubKeyHex  string
+		pubKeyPEM  string
+		privKeyPEM string
+		hashType   crypto.HashType
+		expect     string
+	}{
+		{
+			"test parse evm address",
+			`-----BEGIN CERTIFICATE-----
+MIICdzCCAh6gAwIBAgIDDE8jMAoGCCqGSM49BAMCMIGKMQswCQYDVQQGEwJDTjEQ
+MA4GA1UECBMHQmVpamluZzEQMA4GA1UEBxMHQmVpamluZzEfMB0GA1UEChMWd3gt
+b3JnMS5jaGFpbm1ha2VyLm9yZzESMBAGA1UECxMJcm9vdC1jZXJ0MSIwIAYDVQQD
+ExljYS53eC1vcmcxLmNoYWlubWFrZXIub3JnMB4XDTIyMDgwNTA3MjMwMloXDTI3
+MDgwNDA3MjMwMlowgZExCzAJBgNVBAYTAkNOMRAwDgYDVQQIEwdCZWlqaW5nMRAw
+DgYDVQQHEwdCZWlqaW5nMR8wHQYDVQQKExZ3eC1vcmcxLmNoYWlubWFrZXIub3Jn
+MQ8wDQYDVQQLEwZjbGllbnQxLDAqBgNVBAMTI2NsaWVudDEuc2lnbi53eC1vcmcx
+LmNoYWlubWFrZXIub3JnMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7+Szqb9f
+7oHxobnS+D92ADt6jmDe2XglbjecXcvPJwXLeAd9FxDu/UBFoM+saQO4hvWzNCmR
+E3lOFD7spSU9RaNqMGgwDgYDVR0PAQH/BAQDAgbAMCkGA1UdDgQiBCCu+njHmEJm
+5j/qsEa1nHK1IF2IEu4tCKKjp5/ossJvyjArBgNVHSMEJDAigCC7A23XtvVNLr0L
+cyi3A4jFqiOmkI7DV9VL2ShhPFZ7zzAKBggqhkjOPQQDAgNHADBEAiBtOtyOojJm
+u1wNOCOjDiGCcPcKjtQbsma+fMqkd8nYAwIgWSXedyOvUEyO8browF+5UAwOpzjO
+0deYCoRcxyWnJqU=
+-----END CERTIFICATE-----`,
+			`3059301306072a8648ce3d020106082a8648ce3d03010703420004efe4b3a9bf5fee81f1a1b9d2f83f76003b7a8e60ded978256e379c5dcbcf2705cb78077d1710eefd4045a0cfac6903b886f5b334299113794e143eeca5253d45`,
+			`-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7+Szqb9f7oHxobnS+D92ADt6jmDe
+2XglbjecXcvPJwXLeAd9FxDu/UBFoM+saQO4hvWzNCmRE3lOFD7spSU9RQ==
+-----END PUBLIC KEY-----`,
+			`-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIAG7Q35sgdRJallUZ8OepYje26P6CwdckSUBccjM5g7woAoGCCqGSM49
+AwEHoUQDQgAE7+Szqb9f7oHxobnS+D92ADt6jmDe2XglbjecXcvPJwXLeAd9FxDu
+/UBFoM+saQO4hvWzNCmRE3lOFD7spSU9RQ==
+-----END EC PRIVATE KEY-----`,
+			crypto.HASH_TYPE_SHA256,
+			"bee79876aebe51796999b2ff97f542fc6501d08d",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			certTmpFile, err := os.CreateTemp("", "")
+			require.Nil(t, err)
+			_, err = certTmpFile.Write([]byte(tt.certPEM))
+			require.Nil(t, err)
+			defer os.Remove(certTmpFile.Name())
+
+			addr, err := GetEVMAddressFromCertPath(certTmpFile.Name())
+			require.Nil(t, err)
+			require.Equal(t, tt.expect, addr)
+			addr, err = GetEVMAddressFromCertBytes([]byte(tt.certPEM))
+			require.Nil(t, err)
+			require.Equal(t, tt.expect, addr)
+
+			privKeyTmpFile, err := os.CreateTemp("", "")
+			require.Nil(t, err)
+			_, err = privKeyTmpFile.Write([]byte(tt.privKeyPEM))
+			require.Nil(t, err)
+			defer os.Remove(privKeyTmpFile.Name())
+
+			addr, err = GetEVMAddressFromPrivateKeyPath(privKeyTmpFile.Name(), tt.hashType)
+			require.Nil(t, err)
+			require.Equal(t, tt.expect, addr)
+			addr, err = GetEVMAddressFromPrivateKeyBytes([]byte(tt.privKeyPEM), tt.hashType)
+			require.Nil(t, err)
+			require.Equal(t, tt.expect, addr)
+			addr, err = GetEVMAddressFromPKHex(tt.pubKeyHex, tt.hashType)
+			require.Nil(t, err)
+			require.Equal(t, tt.expect, addr)
+			addr, err = GetEVMAddressFromPKPEM(tt.pubKeyPEM, tt.hashType)
+			require.Nil(t, err)
+			require.Equal(t, tt.expect, addr)
 		})
 	}
 }

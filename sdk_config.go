@@ -256,7 +256,6 @@ type ChainClientConfig struct {
 	// 证书模式下
 	userCrt *bcx509.Certificate
 
-	// 公钥模式下
 	userPk crypto.PublicKey
 	crypto *CryptoConfig
 
@@ -1097,6 +1096,7 @@ func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 			return fmt.Errorf("parse user key file to privateKey obj failed, %s", err)
 		}
 	}
+	config.userPk = config.privateKey.PublicKey()
 
 	return nil
 }

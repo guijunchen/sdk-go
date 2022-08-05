@@ -160,24 +160,24 @@ func NewChainClient(opts ...ChainClientOption) (*ChainClient, error) {
 	}
 
 	var hashType crypto.HashType
-	var publicKey crypto.PublicKey
-	var pkBytes []byte
-	var pkPem string
 	if config.authType == PermissionedWithKey || config.authType == Public {
 		hashType = crypto.HashAlgoMap[config.crypto.hash]
-		publicKey = config.userPk
-		pkPem, err = publicKey.String()
-		if err != nil {
-			return nil, err
-		}
-
-		pkBytes = []byte(pkPem)
 	} else {
 		hashType, err = bcx509.GetHashFromSignatureAlgorithm(config.userCrt.SignatureAlgorithm)
 		if err != nil {
 			return nil, err
 		}
 	}
+
+	var publicKey crypto.PublicKey
+	var pkBytes []byte
+	var pkPem string
+	publicKey = config.userPk
+	pkPem, err = publicKey.String()
+	if err != nil {
+		return nil, err
+	}
+	pkBytes = []byte(pkPem)
 
 	cc := &ChainClient{
 		pool:            pool,
