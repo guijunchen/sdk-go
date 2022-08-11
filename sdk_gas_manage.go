@@ -218,8 +218,8 @@ func (cc *ChainClient) EstimateGas(payload *common.Payload) (uint64, error) {
 func (cc *ChainClient) CreateSetInvokeBaseGasPayload(amount int64) (*common.Payload, error) {
 	cc.logger.Debugf("[SDK] begin CreateSetInvokeBaseGasPayload")
 
-	if amount <= 0 {
-		return nil, errors.New("amount must > 0")
+	if amount < 0 {
+		return nil, errors.New("amount must >= 0")
 	}
 
 	pairs := []*common.KeyValuePair{
