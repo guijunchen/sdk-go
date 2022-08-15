@@ -169,13 +169,13 @@ func testUserContractBalanceEVMTransfer(client *sdk.ChainClient, withSyncResult 
 	//addr := evmutils.StringToAddress(client2Addr)
 	addr := evmutils.BigToAddress(evmutils.FromDecimalString(client2AddrInt))
 
-	dataByte, err := myAbi.Pack("transfer", addr, big.NewInt(amount))
+	method := "transfer"
+	dataByte, err := myAbi.Pack(method, addr, big.NewInt(amount))
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{
@@ -204,13 +204,13 @@ func testUserContractBalanceEVMUpdateBalance(client *sdk.ChainClient, address st
 	//addr := evmutils.StringToAddress(address)
 	addr := evmutils.BigToAddress(evmutils.FromDecimalString(address))
 
-	dataByte, err := myAbi.Pack("updateBalance", big.NewInt(data), addr)
+	method := "updateBalance"
+	dataByte, err := myAbi.Pack(method, big.NewInt(data), addr)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{
@@ -258,13 +258,13 @@ func testUserContractBalanceEVMGetBalance(client *sdk.ChainClient, address strin
 
 	addr := evmutils.BigToAddress(evmutils.FromDecimalString(address))
 
-	dataByte, err := myAbi.Pack("balances", addr)
+	method := "balances"
+	dataByte, err := myAbi.Pack(method, addr)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{
@@ -311,13 +311,13 @@ func testUserContractBalanceEVMUpdateMyBalance(client *sdk.ChainClient, data int
 		log.Fatalln(err)
 	}
 
-	dataByte, err := myAbi.Pack("updateMyBalance", big.NewInt(data))
+	method := "updateMyBalance"
+	dataByte, err := myAbi.Pack(method, big.NewInt(data))
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{
@@ -344,14 +344,14 @@ func testUserContractBalanceEVMGetMyBalance(client *sdk.ChainClient, address str
 	}
 
 	addr := evmutils.BigToAddress(evmutils.FromDecimalString(address))
+	method := "balances"
 	//dataByte, err := myAbi.Pack("balances", evmutils.BigToAddress(addr))
-	dataByte, err := myAbi.Pack("balances", addr)
+	dataByte, err := myAbi.Pack(method, addr)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{

@@ -289,7 +289,6 @@ func testUserContractBalanceEVMIncreaseBalance(client *sdk.ChainClient, address 
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	methodStr := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{
@@ -298,7 +297,7 @@ func testUserContractBalanceEVMIncreaseBalance(client *sdk.ChainClient, address 
 		},
 	}
 
-	err = invokeUserContract(client, balanceContractName, methodStr, "", kvs, withSyncResult)
+	err = invokeUserContract(client, balanceContractName, method, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -103,13 +103,13 @@ func testFactoryCreateContractClaim(client *sdk.ChainClient, withSyncResult bool
 	}
 	//code, _ := hex.DecodeString(string(hexCode))
 
-	dataByte, err := myAbi.Pack("create", uint8(common.RuntimeType_WASMER), claimName, code)
+	method := "create"
+	dataByte, err := myAbi.Pack(method, uint8(common.RuntimeType_WASMER), claimName, code)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 	kvs := []*common.KeyValuePair{
 		{
 			Key:   "data",
@@ -221,13 +221,13 @@ func testFactoryCreateContractStore(client *sdk.ChainClient, withSyncResult bool
 	}
 	code, _ := hex.DecodeString(string(hexCode))
 
-	dataByte, err := myAbi.Pack("create", int8(common.RuntimeType_EVM), storeName, code)
+	method := "create"
+	dataByte, err := myAbi.Pack(method, int8(common.RuntimeType_EVM), storeName, code)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{
@@ -254,13 +254,13 @@ func testStoreContractSet(client *sdk.ChainClient, withSyncResult bool) {
 		log.Fatalln(err)
 	}
 
-	dataByte, err := myAbi.Pack("set", big.NewInt(100))
+	method := "set"
+	dataByte, err := myAbi.Pack(method, big.NewInt(100))
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{
@@ -287,13 +287,13 @@ func testStoreContractGet(client *sdk.ChainClient, withSyncResult bool) {
 		log.Fatalln(err)
 	}
 
-	dataByte, err := myAbi.Pack("get")
+	method := "get"
+	dataByte, err := myAbi.Pack(method)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{
@@ -385,13 +385,13 @@ func testInvokeC(client *sdk.ChainClient, withSyncResult bool) {
 		log.Fatalln(err)
 	}
 
-	dataByte, err := myAbi.Pack("createDSalted", big.NewInt(10000), contractDName)
+	method := "createDSalted"
+	dataByte, err := myAbi.Pack(method, big.NewInt(10000), contractDName)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{
@@ -418,13 +418,13 @@ func testInvokeD(client *sdk.ChainClient, withSyncResult bool) {
 		log.Fatalln(err)
 	}
 
-	dataByte, err := myAbi.Pack("get")
+	method := "get"
+	dataByte, err := myAbi.Pack(method)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{

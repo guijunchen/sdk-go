@@ -72,13 +72,13 @@ func testUserContractStorageEVMGet(client *sdk.ChainClient, withSyncResult bool)
 		log.Fatalln(err)
 	}
 
-	dataByte, err := myAbi.Pack("get")
+	method := "get"
+	dataByte, err := myAbi.Pack(method)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{
@@ -131,13 +131,13 @@ func testGoCallEvmContractSetMethod(client *sdk.ChainClient, withSyncResult bool
 		log.Fatalln(err)
 	}
 
-	dataByte, err := myAbi.Pack("set", 100)
+	method := "set"
+	dataByte, err := myAbi.Pack(method, 100)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	evmMethod := dataString[0:8]
 	kvs := []*common.KeyValuePair{
 		{
 			Key:   "name",
@@ -145,7 +145,7 @@ func testGoCallEvmContractSetMethod(client *sdk.ChainClient, withSyncResult bool
 		},
 		{
 			Key:   "method",
-			Value: []byte(evmMethod),
+			Value: []byte(method),
 		},
 		{
 			Key:   "calldata",

@@ -198,13 +198,13 @@ func testUserContractTokenEVMTransfer(client *sdk.ChainClient, amount int64, wit
 	//addr := evmutils.StringToAddress(client2Addr)
 	addr := evmutils.BigToAddress(evmutils.FromDecimalString(client2AddrInt))
 
-	dataByte, err := myAbi.Pack("transfer", addr, big.NewInt(amount))
+	method := "transfer"
+	dataByte, err := myAbi.Pack(method, addr, big.NewInt(amount))
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{
@@ -240,7 +240,6 @@ func testUserContractTokenEVMBalanceOf(client *sdk.ChainClient, address string, 
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{
@@ -249,7 +248,7 @@ func testUserContractTokenEVMBalanceOf(client *sdk.ChainClient, address string, 
 		},
 	}
 
-	result, err := invokeUserContractWithResult(client, tokenContractName, method, "", kvs, withSyncResult)
+	result, err := invokeUserContractWithResult(client, tokenContractName, methodName, "", kvs, withSyncResult)
 	if err != nil {
 		log.Fatalln(err)
 	}

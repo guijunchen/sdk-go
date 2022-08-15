@@ -124,13 +124,13 @@ func testCallerCrossCallClaimSaveMethod(client *sdk.ChainClient, withSyncResult 
 	fileHash := uuid.GetUUID()
 	curTime := strconv.FormatInt(time.Now().Unix(), 10)
 	fileName := fmt.Sprintf("file_%s", curTime)
-	dataByte, err := myAbi.Pack("cross_call", claim, crossMethod, curTime, fileName, fileHash)
+	method := "cross_call"
+	dataByte, err := myAbi.Pack(method, claim, crossMethod, curTime, fileName, fileHash)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 	kvs := []*common.KeyValuePair{
 		{
 			Key:   "data", //protocol.ContractEvmParamKey
@@ -229,13 +229,13 @@ func testCallerCrossCallCalleeAdder(client *sdk.ChainClient, withSyncResult bool
 
 	addr := evmutils.MakeAddress([]byte(calleeName))
 	callee := evmutils.BigToAddress(addr)
-	dataByte, err := myAbi.Pack("crossCall", callee, big.NewInt(40), big.NewInt(60))
+	method := "crossCall"
+	dataByte, err := myAbi.Pack(method, callee, big.NewInt(40), big.NewInt(60))
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	dataString := hex.EncodeToString(dataByte)
-	method := dataString[0:8]
 
 	kvs := []*common.KeyValuePair{
 		{
