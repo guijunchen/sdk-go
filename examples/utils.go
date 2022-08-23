@@ -179,20 +179,9 @@ func CheckProposalRequestResp(resp *common.TxResponse, needContractResult bool) 
 
 // CreateChainClientWithSDKConf create a chain client with sdk config file path
 func CreateChainClientWithSDKConf(sdkConfPath string) (*sdk.ChainClient, error) {
-	cc, err := sdk.NewChainClient(
+	return sdk.NewChainClient(
 		sdk.WithConfPath(sdkConfPath),
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	// Enable certificate compression
-	if cc.GetAuthType() == sdk.PermissionedWithCert {
-		if err := cc.EnableCertHash(); err != nil {
-			return nil, err
-		}
-	}
-	return cc, nil
 }
 
 func CalcContractName(contractName string) string {
