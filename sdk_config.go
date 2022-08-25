@@ -993,16 +993,10 @@ func dealUserEncCrtKeyConfig(config *ChainClientConfig) (err error) {
 func dealUserSignCrtConfig(config *ChainClientConfig) (err error) {
 
 	if config.userSignCrtBytes == nil {
-		if config.userSignCrtFilePath == "" {
-			config.userSignCrtBytes = config.userCrtBytes
-			return nil
-		}
-
 		config.userSignCrtBytes, err = ioutil.ReadFile(config.userSignCrtFilePath)
 		if err != nil {
 			return fmt.Errorf("read user sign crt file failed, %s", err.Error())
 		}
-
 	}
 
 	if config.userCrt, err = utils.ParseCert(config.userSignCrtBytes); err != nil {
@@ -1054,11 +1048,6 @@ func dealUserSignKeyConfig(config *ChainClientConfig) (err error) {
 
 	// PermissionedWithCert
 	if config.userSignKeyBytes == nil {
-		if config.userSignKeyFilePath == "" {
-			config.userSignKeyBytes = config.userKeyBytes
-			return nil
-		}
-
 		userSignKeyBytes, err := ioutil.ReadFile(config.userSignKeyFilePath)
 		if err != nil {
 			return fmt.Errorf("read user sign key file failed, %s", err.Error())

@@ -100,7 +100,7 @@ AwEHoUQDQgAE7+Szqb9f7oHxobnS+D92ADt6jmDe2XglbjecXcvPJwXLeAd9FxDu
 /UBFoM+saQO4hvWzNCmRE3lOFD7spSU9RQ==
 -----END EC PRIVATE KEY-----`,
 			crypto.HASH_TYPE_SHA256,
-			"bee79876aebe51796999b2ff97f542fc6501d08d",
+			"d111b71769c5f0178ede4c0a06af744887fda53d",
 		},
 	}
 
