@@ -22,11 +22,9 @@ const (
 	createContractTimeout = 5
 	claimVersion          = "1.0.0"
 
-	claimContractName = "claim_docker_001"
-	//claimContractName     = "claim_zxl_002"
+	claimContractName = "docker-fact"
 
-	claimByteCodePath = "../../testdata/claim-docker-demo/claim_docker_001.7z"
-	//claimByteCodePath     = "../../testdata/claim-docker-demo/claim_zxl_002.7z"
+	claimByteCodePath = "../../testdata/claim-docker-demo/docker-fact.7z"
 
 	sdkConfigPKUser1Path     = "../sdk_configs/sdk_config_pk_user1.yml"
 	sdkConfigOrg1Client1Path = "../sdk_configs/sdk_config_org1_client1.yml"
