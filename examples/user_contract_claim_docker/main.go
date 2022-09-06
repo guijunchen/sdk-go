@@ -22,7 +22,7 @@ const (
 	createContractTimeout = 5
 	claimVersion          = "1.0.0"
 
-	claimContractName = "docker-fact"
+	claimContractName = "fact"
 
 	claimByteCodePath = "../../testdata/claim-docker-demo/docker-fact.7z"
 
