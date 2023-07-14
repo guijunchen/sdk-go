@@ -218,6 +218,45 @@ func (cc *ChainClient) InvokeContractBySigner(contractName, method, txId string,
 	return resp, nil
 }
 
+func (cc *ChainClient) InvokeContractByPayloadSigner(payload *common.Payload,
+	timeout int64, withSyncResult bool, limit *common.Limit,
+	signer Signer) (*common.TxResponse, error) {
+	//
+	//cc.logger.Debugf("[SDK] begin InvokeContractBySigner, [contractName:%s]/[method:%s]/[txId:%s]/[params:%+v]",
+	//	contractName, method, txId, kvs)
+
+	// construct payload
+	//payload := cc.CreatePayload(txId, common.TxType_INVOKE_CONTRACT, contractName, method, kvs, defaultSeq, limit)
+
+	// construct tx req & sign
+	req, err := cc.GenerateTxRequestBySigner(payload, nil, signer)
+	if err != nil {
+		return nil, err
+	}
+
+	// send tx req
+	resp, err := cc.sendTxRequest(req, timeout)
+	if err != nil {
+		return resp, fmt.Errorf("send %s failed, %s", payload.TxType.String(), err.Error())
+	}
+
+	if resp.Code == common.TxStatusCode_SUCCESS {
+		if withSyncResult {
+			r, err := cc.getSyncResult(payload.TxId)
+			if err != nil {
+				return nil, fmt.Errorf("getSyncResult failed, %s", err.Error())
+			}
+			resp.Code = r.Result.Code
+			resp.Message = r.Result.Message
+			resp.ContractResult = r.Result.ContractResult
+			resp.TxId = payload.TxId
+			resp.TxTimestamp = r.TxTimestamp
+			resp.TxBlockHeight = r.TxBlockHeight
+		}
+	}
+	return resp, nil
+}
+
 // QueryContract query contract
 func (cc *ChainClient) QueryContract(contractName, method string, kvs []*common.KeyValuePair,
 	timeout int64) (*common.TxResponse, error) {
